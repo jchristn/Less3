@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Joel Christner</Authors>
+    <Company>Joel Christner</Company>
+    <Product>Less3</Product>
+    <Description>&lt;3 Less3 is S3-compatible object storage that you can run on your laptop, server, whereever!</Description>
+    <Copyright>(c)2019 Joel Christner</Copyright>
+    <PackageLicenseUrl>https://github.com/jchristn/less3/blob/master/LICENSE.txt</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/jchristn/less3</PackageProjectUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/jchristn/less3/master/assets/icon.ico</PackageIconUrl>
+    <RepositoryUrl>https://github.com/jchristn/less3</RepositoryUrl>
+    <RepositoryType>Github</RepositoryType>
+    <PackageTags>S3 storage blob object storage rest restful</PackageTags>
+    <PackageReleaseNotes>Initial release, please see README.md on the project site for list of supported and unsupported APIs and capabilities.</PackageReleaseNotes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.S3" Version="3.3.102.22" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="SqliteHelper" Version="1.0.13" />
+    <PackageReference Include="SyslogLogging" Version="1.0.11" />
+    <PackageReference Include="System.Data.SQLite" Version="1.0.111" />
+    <PackageReference Include="Watson" Version="2.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="S3ServerInterface">
+      <HintPath>..\..\..\Misc\S3ServerInterface-1.4\S3ServerInterface\bin\Debug\netstandard2.0\S3ServerInterface.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

@@ -35,13 +35,47 @@ Less3 was designed to be consumed using either the AWS SDK or direct RESTful int
  
 ## Supported APIs
 
+Please refer to the compatibility matrix found in 'assets' for a full list of supported APIs and caveats.
+
 The following APIs are supported with Less3:
-- insert here
+- Service APIs
+  - ListBuckets
 
-## Unsupported APIs
+- Bucket APIs
+  - Write
+  - WriteTags
+  - WriteVersioning (no MFA delete support)
+  - Delete
+  - DeleteTags
+  - Exists
+  - Read (list objects v2)
+  - ReadVersions
+  - ReadTags
 
-The following APIs are not supported with Less3:
-- insert here
+- Object APIs
+  - Write
+  - WriteTags
+  - Delete
+  - DeleteMultiple
+  - DeleteTags
+  - Exists
+  - Read
+  - ReadRange
+  - ReadTags
+
+## API Support
+
+There are several minor differences between how S3 and less3 handle certain aspects of API requests.  However, these should be inconsequential from the perspective of the developer (for instance, version IDs are numbers internally within less3 rather than strings).  
+
+Should you find any incompatibilities or behavioral issues with the APIs listed above that are considered 'supported', please file an issue here along with details on the expected behavior.  I've tried to mimic the behavior of S3 while building out the API logic.  A link to the supporting documentation will also be helpful to aid me in righting the wrong :)
+
+## Compatibility and Testing
+
+I tested Less3 using the AWS SDK for C#, a live account on S3, CloudBerry Explorer for S3, and S3 Browser.  If you have or recommend other tools, please file an issue here and let me know!
+
+## Authentication and Authorization
+
+As of release v1.0.x, only primitive authentication and authorization supported, i.e. you cannot specify specific privileges to assign to access keys.
 
 ## Version History
 

@@ -27,10 +27,10 @@ First things first - do you need help or have feedback?  Contact me at joel dot 
 
 The binaries for Less3 can be created by compiling from source.  Executing the binary will create a series of JSON files containing the configuration for your node, including:
 
-- ```System.json``` - system configuration
-- ```Buckets.json``` - list of buckets exposed by less3
-- ```Users.json``` - list of users
-- ```Credentials.json``` - list of access keys
+- System.json - system configuration
+- Buckets.json - list of buckets exposed by less3
+- Users.json - list of users
+- Credentials.json - list of access keys
 
 The ```Server.DnsHostname``` MUST be set to a hostname.  You cannot use IP addresses (parsing will fail).  Incoming HTTP requests must have a HOST header value that matches the value in ```Server.DnsHostname```.  If it does not match, you will receive a ```400/Bad Request```.
 

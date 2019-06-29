@@ -14,7 +14,7 @@
           "SyslogLogging": "1.0.11",
           "System.Data.SQLite": "1.0.111",
           "Watson": "2.1.1",
-          "S3ServerInterface": "1.4.14.0"
+          "S3ServerInterface": "1.4.15.0"
         },
         "runtime": {
           "Less3.dll": {}
@@ -142,11 +142,11 @@
           }
         }
       },
-      "S3ServerInterface/1.4.14.0": {
+      "S3ServerInterface/1.4.15.0": {
         "runtime": {
           "S3ServerInterface.dll": {
-            "assemblyVersion": "1.4.14.0",
-            "fileVersion": "1.4.14.0"
+            "assemblyVersion": "1.4.15.0",
+            "fileVersion": "1.4.15.0"
           }
         }
       }
@@ -242,7 +242,7 @@
       "path": "watson/2.1.1",
       "hashPath": "watson.2.1.1.nupkg.sha512"
     },
-    "S3ServerInterface/1.4.14.0": {
+    "S3ServerInterface/1.4.15.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""

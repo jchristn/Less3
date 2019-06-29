@@ -1,0 +1,90 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\Code\\KVPbase\\Less3\\Less3\\Less3.csproj": {}
+  },
+  "projects": {
+    "C:\\Code\\KVPbase\\Less3\\Less3\\Less3.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Code\\KVPbase\\Less3\\Less3\\Less3.csproj",
+        "projectName": "Less3",
+        "projectPath": "C:\\Code\\KVPbase\\Less3\\Less3\\Less3.csproj",
+        "packagesPath": "C:\\Users\\joelc\\.nuget\\packages\\",
+        "outputPath": "C:\\Code\\KVPbase\\Less3\\Less3\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\joelc\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp2.2"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {},
+          "https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore-tooling/index.json": {},
+          "https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/index.json": {},
+          "https://dotnetfeed.blob.core.windows.net/aspnet-entityframeworkcore/index.json": {},
+          "https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json": {},
+          "https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json": {},
+          "https://dotnetfeed.blob.core.windows.net/dotnet-windowsdesktop/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp2.2": {
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp2.2": {
+          "dependencies": {
+            "AWSSDK.S3": {
+              "target": "Package",
+              "version": "[3.3.102.22, )"
+            },
+            "Microsoft.NETCore.App": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.2.0, )",
+              "autoReferenced": true
+            },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[12.0.2, )"
+            },
+            "SqliteHelper": {
+              "target": "Package",
+              "version": "[1.0.13, )"
+            },
+            "SyslogLogging": {
+              "target": "Package",
+              "version": "[1.0.11, )"
+            },
+            "System.Data.SQLite": {
+              "target": "Package",
+              "version": "[1.0.111, )"
+            },
+            "Watson": {
+              "target": "Package",
+              "version": "[2.1.1, )"
+            }
+          },
+          "imports": [
+            "net461"
+          ],
+          "assetTargetFallback": true,
+          "warn": true
+        }
+      }
+    }
+  }
+}

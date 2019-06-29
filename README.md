@@ -95,6 +95,18 @@ I tested Less3 using the AWS SDK for C#, a live account on S3, CloudBerry Explor
 
 As of release v1.0.x, only primitive authentication and authorization supported, i.e. you cannot specify specific privileges to assign to access keys.
  
+## Caveats
+
+Less3 is built using S3ServerInterface which currently doesn't pass streams to callbacks.  Thus, byte arrays (which can consume more memory) are used.  It is my intention to modify both S3ServerInterface and Less3 to use streams from incoming HTTP requests rather than byte arrays to better support efficient memory usage and larger objects.
+
+## Open Source Packages 
+
+Less3 is built using a series of open-source packages, including:
+
+- AWS SDK - https://github.com/aws/aws-sdk-net
+- S3 Server Interface - https://github.com/jchristn/s3serverinterface
+- Watson Webserver - https://github.com/jchristn/WatsonWebserver
+
 ## Version History
 
 Notes from previous versions (starting with v1.0.x) will be moved here.

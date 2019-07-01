@@ -69,14 +69,14 @@ namespace Less3.Api
             if (!_Buckets.Get(req.Bucket, out bucket))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler Delete unable to retrieve bucket configuration for bucket " + req.Bucket);
-                return new S3Response(req, 404, "text/plain", null, Encoding.UTF8.GetBytes("Not found"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchBucket);
             }
 
             BucketClient client = null;
             if (!_Buckets.GetClient(req.Bucket, out client))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler Delete unable to retrieve client for bucket " + req.Bucket);
-                return new S3Response(req, 500, "text/plain", null, Encoding.UTF8.GetBytes("Internal server error"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchBucket);
             }
 
             User user = null;
@@ -84,7 +84,7 @@ namespace Less3.Api
             if (!_Auth.Authenticate(req, out user, out cred))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler Delete unable to authenticate request for bucket " + req.Bucket);
-                return new S3Response(req, 401, "text/plain", null, Encoding.UTF8.GetBytes("Unauthorized"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.AccessDenied); 
             }
 
             if (bucket.PermittedAccessKeys.Contains(req.AccessKey) ||
@@ -98,7 +98,7 @@ namespace Less3.Api
                 if (count > 0 || bytes > 0)
                 {
                     _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler Delete bucket " + bucket.Name + " is not empty");
-                    return new S3Response(req, 409, "text/plain", null, Encoding.UTF8.GetBytes("Conflict"));
+                    return new S3Response(req, S3ServerInterface.ErrorCode.BucketNotEmpty);
                 }
 
                 _Logging.Log(LoggingModule.Severity.Info, "BucketHandler Delete deleting bucket " + req.Bucket);
@@ -108,7 +108,7 @@ namespace Less3.Api
             else
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler Delete unauthorized access attempt to bucket " + req.Bucket);
-                return new S3Response(req, 401, "text/plain", null, Encoding.UTF8.GetBytes("Unauthorized"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.AccessDenied); 
             }
         }
 
@@ -118,7 +118,7 @@ namespace Less3.Api
             if (!_Buckets.Get(req.Bucket, out bucket))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler DeleteTags unable to retrieve bucket configuration for bucket " + req.Bucket);
-                return new S3Response(req, 404, "text/plain", null, Encoding.UTF8.GetBytes("Not found"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchBucket);
             }
 
             User user = null;
@@ -126,7 +126,7 @@ namespace Less3.Api
             if (!_Auth.Authenticate(req, out user, out cred))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler DeleteTags unable to authenticate request for bucket " + req.Bucket);
-                return new S3Response(req, 401, "text/plain", null, Encoding.UTF8.GetBytes("Unauthorized"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.AccessDenied); 
             }
 
             if (bucket.PermittedAccessKeys.Contains(req.AccessKey) ||
@@ -140,7 +140,7 @@ namespace Less3.Api
             else
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler DeleteTags unauthorized access attempt to bucket " + req.Bucket);
-                return new S3Response(req, 401, "text/plain", null, Encoding.UTF8.GetBytes("Unauthorized"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.AccessDenied); 
             }
         }
 
@@ -150,7 +150,7 @@ namespace Less3.Api
             if (!_Buckets.Get(req.Bucket, out bucket))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler Exists unable to retrieve bucket configuration for bucket " + req.Bucket);
-                return new S3Response(req, 404, "text/plain", null, Encoding.UTF8.GetBytes("Not found"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchBucket);
             }
 
             if (bucket.EnablePublicRead) return new S3Response(req, 200, "text/plain", null, null);
@@ -167,7 +167,7 @@ namespace Less3.Api
             }
 
             _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler Exists unauthorized attempt to access bucket " + req.Bucket);
-            return new S3Response(req, 404, "text/plain", null, Encoding.UTF8.GetBytes("Not found"));
+            return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchBucket);
         }
 
         public S3Response Read(S3Request req)
@@ -187,14 +187,14 @@ namespace Less3.Api
             if (!_Buckets.Get(req.Bucket, out bucket))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler Read unable to retrieve bucket configuration for bucket " + req.Bucket);
-                return new S3Response(req, 404, "text/plain", null, Encoding.UTF8.GetBytes("Not found"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchBucket);
             }
 
             BucketClient client = null;
             if (!_Buckets.GetClient(req.Bucket, out client))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler Read unable to retrieve client for bucket " + req.Bucket);
-                return new S3Response(req, 500, "text/plain", null, Encoding.UTF8.GetBytes("Internal server error"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchBucket);
             }
 
             User user = null;
@@ -202,7 +202,7 @@ namespace Less3.Api
             if (!_Auth.Authenticate(req, out user, out cred))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler Read unable to authenticate request for bucket " + req.Bucket);
-                return new S3Response(req, 401, "text/plain", null, Encoding.UTF8.GetBytes("Unauthorized"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.AccessDenied); 
             }
 
             if (bucket.PermittedAccessKeys.Contains(req.AccessKey) ||
@@ -255,7 +255,7 @@ namespace Less3.Api
             else
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler Read unauthorized access attempt to bucket " + req.Bucket);
-                return new S3Response(req, 401, "text/plain", null, Encoding.UTF8.GetBytes("Unauthorized"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.AccessDenied); 
             }
         }
 
@@ -265,7 +265,7 @@ namespace Less3.Api
             if (!_Buckets.Get(req.Bucket, out bucket))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler ReadTags unable to retrieve bucket configuration for bucket " + req.Bucket);
-                return new S3Response(req, 404, "text/plain", null, Encoding.UTF8.GetBytes("Not found"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchBucket);
             }
 
             User user = null;
@@ -273,7 +273,7 @@ namespace Less3.Api
             if (!_Auth.Authenticate(req, out user, out cred))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler ReadTags unable to authenticate request for bucket " + req.Bucket);
-                return new S3Response(req, 401, "text/plain", null, Encoding.UTF8.GetBytes("Unauthorized"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.AccessDenied); 
             }
 
             if (bucket.PermittedAccessKeys.Contains(req.AccessKey) ||
@@ -295,7 +295,7 @@ namespace Less3.Api
             else
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler ReadTags unauthorized access attempt to bucket " + req.Bucket);
-                return new S3Response(req, 401, "text/plain", null, Encoding.UTF8.GetBytes("Unauthorized"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.AccessDenied); 
             }
         }
 
@@ -312,14 +312,14 @@ namespace Less3.Api
             if (!_Buckets.Get(req.Bucket, out bucket))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler ReadVersions unable to retrieve bucket configuration for bucket " + req.Bucket);
-                return new S3Response(req, 404, "text/plain", null, Encoding.UTF8.GetBytes("Not found"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchBucket);
             }
 
             BucketClient client = null;
             if (!_Buckets.GetClient(req.Bucket, out client))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler ReadVersions unable to retrieve client for bucket " + req.Bucket);
-                return new S3Response(req, 500, "text/plain", null, Encoding.UTF8.GetBytes("Internal server error"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchBucket);
             }
 
             User user = null;
@@ -327,7 +327,7 @@ namespace Less3.Api
             if (!_Auth.Authenticate(req, out user, out cred))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler ReadVersions unable to authenticate request for bucket " + req.Bucket);
-                return new S3Response(req, 401, "text/plain", null, Encoding.UTF8.GetBytes("Unauthorized"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.AccessDenied); 
             }
 
             if (bucket.PermittedAccessKeys.Contains(req.AccessKey) ||
@@ -399,7 +399,7 @@ namespace Less3.Api
             else
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler ReadVersions unauthorized access attempt to bucket " + req.Bucket);
-                return new S3Response(req, 401, "text/plain", null, Encoding.UTF8.GetBytes("Unauthorized"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.AccessDenied); 
             }
         }
 
@@ -409,7 +409,7 @@ namespace Less3.Api
             if (!_Buckets.Get(req.Bucket, out bucket))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler ReadVersioning unable to retrieve bucket configuration for bucket " + req.Bucket);
-                return new S3Response(req, 404, "text/plain", null, Encoding.UTF8.GetBytes("Not found"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchBucket);
             }
 
             User user = null;
@@ -417,7 +417,7 @@ namespace Less3.Api
             if (!_Auth.Authenticate(req, out user, out cred))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler ReadVersioning unable to authenticate request for bucket " + req.Bucket);
-                return new S3Response(req, 401, "text/plain", null, Encoding.UTF8.GetBytes("Unauthorized"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.AccessDenied); 
             }
 
             if (bucket.PermittedAccessKeys.Contains(req.AccessKey) ||
@@ -441,7 +441,7 @@ namespace Less3.Api
             else
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler ReadVersioning unauthorized access attempt to bucket " + req.Bucket);
-                return new S3Response(req, 401, "text/plain", null, Encoding.UTF8.GetBytes("Unauthorized"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.AccessDenied); 
             }
         }
 
@@ -457,7 +457,7 @@ namespace Less3.Api
                 catch (Exception e)
                 {
                     _Logging.LogException("BucketHandler", "Write", e);
-                    return new S3Response(req, 400, "text/plain", null, Encoding.UTF8.GetBytes("Bad request"));
+                    return new S3Response(req, S3ServerInterface.ErrorCode.InvalidRequest); 
                 }
             }
 
@@ -465,7 +465,7 @@ namespace Less3.Api
             if (_Buckets.Get(req.Bucket, out test))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler Write unable to retrieve bucket configuration for bucket " + req.Bucket);
-                return new S3Response(req, 404, "text/plain", null, Encoding.UTF8.GetBytes("Not found"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchBucket);
             }
 
             User user = null;
@@ -473,7 +473,7 @@ namespace Less3.Api
             if (!_Auth.Authenticate(req, out user, out cred))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler Write unable to authenticate request for bucket " + req.Bucket);
-                return new S3Response(req, 401, "text/plain", null, Encoding.UTF8.GetBytes("Unauthorized"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.AccessDenied); 
             }
 
             BucketConfiguration config = new BucketConfiguration(
@@ -486,7 +486,7 @@ namespace Less3.Api
             if (!_Buckets.Add(config))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler Write unable to write bucket " + req.Bucket);
-                return new S3Response(req, 500, "text/plain", null, Encoding.UTF8.GetBytes("Internal server error"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.InternalError);
             }
 
             return new S3Response(req, 200, "text/plain", null, null);
@@ -504,7 +504,7 @@ namespace Less3.Api
                 catch (Exception e)
                 {
                     _Logging.LogException("BucketHandler", "WriteTags", e);
-                    return new S3Response(req, 400, "text/plain", null, Encoding.UTF8.GetBytes("Bad request"));
+                    return new S3Response(req, S3ServerInterface.ErrorCode.InvalidRequest);
                 }
             }
 
@@ -512,7 +512,7 @@ namespace Less3.Api
             if (!_Buckets.Get(req.Bucket, out bucket))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler WriteTags unable to retrieve bucket configuration for bucket " + req.Bucket);
-                return new S3Response(req, 404, "text/plain", null, Encoding.UTF8.GetBytes("Not found"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchBucket);
             }
 
             User user = null;
@@ -520,7 +520,7 @@ namespace Less3.Api
             if (!_Auth.Authenticate(req, out user, out cred))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler WriteTags unable to authenticate request for bucket " + req.Bucket);
-                return new S3Response(req, 401, "text/plain", null, Encoding.UTF8.GetBytes("Unauthorized"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.AccessDenied); 
             }
 
             if (bucket.PermittedAccessKeys.Contains(req.AccessKey) ||
@@ -533,7 +533,7 @@ namespace Less3.Api
             else
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler WriteTags unauthorized access attempt to bucket " + req.Bucket);
-                return new S3Response(req, 401, "text/plain", null, Encoding.UTF8.GetBytes("Unauthorized"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.AccessDenied); 
             }
         }
 
@@ -549,7 +549,7 @@ namespace Less3.Api
                 catch (Exception e)
                 {
                     _Logging.LogException("BucketHandler", "WriteVersioning", e);
-                    return new S3Response(req, 400, "text/plain", null, Encoding.UTF8.GetBytes("Bad request"));
+                    return new S3Response(req, S3ServerInterface.ErrorCode.InvalidRequest);
                 }
             }
 
@@ -557,7 +557,7 @@ namespace Less3.Api
             if (!_Buckets.Get(req.Bucket, out bucket))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler WriteVersioning unable to retrieve bucket configuration for bucket " + req.Bucket);
-                return new S3Response(req, 404, "text/plain", null, Encoding.UTF8.GetBytes("Not found"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchBucket);
             }
 
             User user = null;
@@ -565,7 +565,7 @@ namespace Less3.Api
             if (!_Auth.Authenticate(req, out user, out cred))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler WriteVersioning unable to authenticate request for bucket " + req.Bucket);
-                return new S3Response(req, 401, "text/plain", null, Encoding.UTF8.GetBytes("Unauthorized"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.AccessDenied); 
             }
              
             if (bucket.PermittedAccessKeys.Contains(req.AccessKey) ||
@@ -589,7 +589,7 @@ namespace Less3.Api
             else
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler WriteVersioning unauthorized access attempt to bucket " + req.Bucket);
-                return new S3Response(req, 401, "text/plain", null, Encoding.UTF8.GetBytes("Unauthorized"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.AccessDenied); 
             }
         }
 

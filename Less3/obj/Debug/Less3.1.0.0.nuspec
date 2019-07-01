@@ -26,7 +26,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="C:\Code\KVPbase\Less3\Less3\bin\Debug\netcoreapp2.2\Less3.runtimeconfig.json" target="lib\netcoreapp2.2\Less3.runtimeconfig.json" />
-    <file src="C:\Code\KVPbase\Less3\Less3\bin\Debug\netcoreapp2.2\Less3.dll" target="lib\netcoreapp2.2\Less3.dll" />
+    <file src="C:\code\kvpbase\less3\Less3\bin\Debug\netcoreapp2.2\Less3.runtimeconfig.json" target="lib\netcoreapp2.2\Less3.runtimeconfig.json" />
+    <file src="C:\code\kvpbase\less3\Less3\bin\Debug\netcoreapp2.2\Less3.dll" target="lib\netcoreapp2.2\Less3.dll" />
   </files>
 </package>

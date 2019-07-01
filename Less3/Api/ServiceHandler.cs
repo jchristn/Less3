@@ -65,21 +65,21 @@ namespace Less3.Api
             if (String.IsNullOrEmpty(req.AccessKey))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "ServiceHandler ListBuckets no access key supplied");
-                return new S3Response(req, 401, "text/plain", null, Encoding.UTF8.GetBytes("Unauthorized"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.AccessDenied); 
             }
 
             Credential cred = null;
             if (!_Credentials.Get(req.AccessKey, out cred))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "ServiceHandler ListBuckets unable to retrieve credentials for access key " + req.AccessKey);
-                return new S3Response(req, 401, "text/plain", null, Encoding.UTF8.GetBytes("Unauthorized"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.AccessDenied); 
             }
 
             User user = null;
             if (!_Users.Get(cred.User, out user))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "ServiceHandler ListBuckets unable to retrieve user for access key " + req.AccessKey);
-                return new S3Response(req, 401, "text/plain", null, Encoding.UTF8.GetBytes("Unauthorized"));
+                return new S3Response(req, S3ServerInterface.ErrorCode.AccessDenied); 
             }
 
             List<BucketConfiguration> buckets = null;

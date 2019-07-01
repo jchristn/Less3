@@ -230,16 +230,7 @@ namespace Less3
         }
 
         static S3Response PreRequestHandler(S3Request req)
-        {
-            /*
-            Console.WriteLine(req.ToString());
-            if (req.Data != null)
-            {
-                if (req.Data.Length < 1024) Console.WriteLine(Encoding.UTF8.GetString(req.Data));
-                else Console.WriteLine("Data greater than 1KB, not displayed");
-            }
-            */
-
+        { 
             return null;
         }
 
@@ -248,22 +239,14 @@ namespace Less3
             TimeSpan span = resp.TimestampUtc - req.TimestampUtc;
             int ms = (int)span.TotalMilliseconds;
             _Logging.Log(LoggingModule.Severity.Debug, req.SourceIp + ":" + req.SourcePort + " " + req.Method.ToString() + " " + req.RawUrl + " " + resp.StatusCode + " [" + ms + "ms]");
-            
-            /*
-            Console.WriteLine(resp.ToString());
-            if (resp.Data != null)
-            {
-                if (resp.Data.Length < 1024) Console.WriteLine(Encoding.UTF8.GetString(resp.Data));
-                else Console.WriteLine("Data greater than 1KB, not displayed");
-            }
-            */
-
+             
             return true;
         }
 
         static S3Response DefaultRequestHandler(S3Request req)
         {
-            return new S3Response(req, 400, "text/plain", null, Encoding.UTF8.GetBytes("Unknown endpoint"));
+            Error error = new Error(ErrorCode.InvalidRequest);
+            return new S3Response(req, error);
         }
     }
 }

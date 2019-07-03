@@ -9,6 +9,9 @@ using Newtonsoft.Json.Converters;
 
 namespace Less3.Classes
 {
+    /// <summary>
+    /// Type of API request.
+    /// </summary>
     [JsonConverter(typeof(StringEnumConverter))]
     public enum RequestType
     {

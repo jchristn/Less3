@@ -18,6 +18,9 @@ using Less3.Classes;
 
 namespace Less3
 {
+    /// <summary>
+    /// Less3 is an S3-compatible object storage server.
+    /// </summary>
     class Program
     {
         static Settings _Settings;
@@ -84,7 +87,7 @@ namespace Less3
                 _Settings.Server.Ssl,
                 PreRequestHandler,
                 DefaultRequestHandler);
-
+            
             _S3Server.ConsoleDebug.Exceptions = true; 
 
             _S3Server.PostRequestHandler = PostRequestHandler;
@@ -150,7 +153,7 @@ namespace Less3
             string msg = 
                 Logo() + 
                 Environment.NewLine +
-                "  " + _Settings.ProductName + " v" + version + Environment.NewLine +
+                "  <3 :: Less3 :: S3-Compatible Object Storage :: v" + version + Environment.NewLine +
                 Environment.NewLine;
 
             Console.WriteLine(msg); 

@@ -16,6 +16,9 @@ using Less3.S3Responses;
 
 namespace Less3.Api
 {
+    /// <summary>
+    /// Object API callbacks.
+    /// </summary>
     public class ObjectHandler
     {
         #region Public-Members
@@ -35,6 +38,15 @@ namespace Less3.Api
 
         #region Constructors-and-Factories
 
+        /// <summary>
+        /// Instantiate the object.
+        /// </summary>
+        /// <param name="settings">Settings.</param>
+        /// <param name="logging">LoggingModule.</param>
+        /// <param name="credentials">CredentialManager.</param>
+        /// <param name="buckets">BucketManager.</param>
+        /// <param name="auth">AuthManager.</param>
+        /// <param name="users">UserManager.</param>
         public ObjectHandler(
             Settings settings,
             LoggingModule logging,
@@ -62,6 +74,11 @@ namespace Less3.Api
 
         #region Public-Methods
 
+        /// <summary>
+        /// Delete object API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response Delete(S3Request req)
         {
             Dictionary<string, string> respHeaders = new Dictionary<string, string>();
@@ -117,13 +134,19 @@ namespace Less3.Api
             return new S3Response(req, 204, "text/plain", null, null);
         }
 
+        /// <summary>
+        /// Delete multiple objects API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response DeleteMultiple(S3Request req)
         {
             DeleteMultiple reqBody = null;
-            if (req.Data != null)
+            if (req.DataStream != null)
             {
                 try
                 {
+                    req.Data = Common.StreamToBytes(req.DataStream); 
                     reqBody = Common.DeserializeXml<DeleteMultiple>(Encoding.UTF8.GetString(req.Data));
                 }
                 catch (Exception e)
@@ -192,6 +215,11 @@ namespace Less3.Api
             return new S3Response(req, 200, "application/xml", null, Encoding.UTF8.GetBytes(Common.SerializeXml(resp)));
         }
 
+        /// <summary>
+        /// Delete object tags API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response DeleteTags(S3Request req)
         {
             BucketConfiguration bucket = null;
@@ -239,6 +267,11 @@ namespace Less3.Api
             return new S3Response(req, 204, "text/plain", null, null);
         }
 
+        /// <summary>
+        /// Object exists API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response Exists(S3Request req)
         {
             BucketConfiguration bucket = null;
@@ -299,6 +332,11 @@ namespace Less3.Api
             }
         }
 
+        /// <summary>
+        /// Object read API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response Read(S3Request req)
         { 
             Dictionary<string, string> respHeaders = new Dictionary<string, string>();
@@ -351,12 +389,36 @@ namespace Less3.Api
             { 
                 respHeaders.Add("x-amz-delete-marker", "true");
                 return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchKey);
-            } 
+            }
 
-            byte[] respData = Common.ReadBinaryFile(GetObjectBlobFile(bucket, obj));
-            return new S3Response(req, 200, obj.ContentType, null, respData);
+            using (FileStream fs = new FileStream(GetObjectBlobFile(bucket, obj), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                MemoryStream ms = new MemoryStream();
+
+                long bytesRemaining = obj.ContentLength;
+                byte[] buffer = new byte[65536];
+                int bytesRead = 0;
+
+                while (bytesRemaining > 0)
+                {
+                    bytesRead = fs.Read(buffer, 0, buffer.Length);
+                    if (bytesRead > 0)
+                    {
+                        ms.Write(buffer, 0, bytesRead);
+                        bytesRemaining -= bytesRead;
+                    }
+                }
+
+                ms.Seek(0, SeekOrigin.Begin);
+                return new S3Response(req, 200, obj.ContentType, null, obj.ContentLength, ms); 
+            }
         }
-         
+
+        /// <summary>
+        /// Object read range API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response ReadRange(S3Request req)
         {
             Dictionary<string, string> respHeaders = new Dictionary<string, string>();
@@ -435,7 +497,12 @@ namespace Less3.Api
 
             return new S3Response(req, 200, obj.ContentType, null, respData);
         }
-         
+
+        /// <summary>
+        /// Object read tags API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response ReadTags(S3Request req)
         {
             long versionId = 1;
@@ -495,6 +562,11 @@ namespace Less3.Api
             }
         }
 
+        /// <summary>
+        /// Object write API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response Write(S3Request req)
         {
             BucketConfiguration bucket = null;
@@ -551,7 +623,7 @@ namespace Less3.Api
                     obj.Md5 = Common.Md5(req.Data);
                     obj.Owner = user.Name;
 
-                    if (!client.Add(obj, req.Data))
+                    if (!client.Add(obj, req.DataStream))
                     { 
                         _Logging.Log(LoggingModule.Severity.Warn, "ObjectHandler Write unable to write database entry for " + req.Bucket + "/" + req.Key);
                         return new S3Response(req, S3ServerInterface.ErrorCode.InternalError);
@@ -576,7 +648,7 @@ namespace Less3.Api
                     obj.Md5 = Common.Md5(req.Data);
                     obj.Owner = user.Name;
 
-                    if (!client.Add(obj, req.Data))
+                    if (!client.Add(obj, req.DataStream))
                     { 
                         _Logging.Log(LoggingModule.Severity.Warn, "ObjectHandler Write unable to write database entry for " + req.Bucket + "/" + req.Key);
                         return new S3Response(req, S3ServerInterface.ErrorCode.InternalError);
@@ -592,6 +664,11 @@ namespace Less3.Api
             }
         }
 
+        /// <summary>
+        /// Object write tags API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response WriteTags(S3Request req)
         {
             long versionId = 1;
@@ -599,10 +676,11 @@ namespace Less3.Api
             if (!String.IsNullOrEmpty(versionIdStr)) versionId = Convert.ToInt64(versionIdStr);
 
             Tagging reqBody = null;
-            if (req.Data != null)
+            if (req.DataStream != null)
             {
                 try
                 {
+                    req.Data = Common.StreamToBytes(req.DataStream); 
                     reqBody = Common.DeserializeXml<Tagging>(Encoding.UTF8.GetString(req.Data));
                 }
                 catch (Exception e)

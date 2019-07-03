@@ -17,6 +17,9 @@ using Less3.S3Responses;
 
 namespace Less3.Api
 {
+    /// <summary>
+    /// Bucket API callbacks.
+    /// </summary>
     public class BucketHandler
     {
         #region Public-Members
@@ -36,6 +39,15 @@ namespace Less3.Api
 
         #region Constructors-and-Factories
 
+        /// <summary>
+        /// Instantiate the object.
+        /// </summary>
+        /// <param name="settings">Settings.</param>
+        /// <param name="logging">LoggingModule.</param>
+        /// <param name="credentials">CredentialManager.</param>
+        /// <param name="buckets">BucketManager.</param>
+        /// <param name="auth">AuthManager.</param>
+        /// <param name="users">UserManager.</param>
         public BucketHandler(
             Settings settings,
             LoggingModule logging,
@@ -63,6 +75,11 @@ namespace Less3.Api
 
         #region Public-Methods
 
+        /// <summary>
+        /// Bucket delete API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response Delete(S3Request req)
         {
             BucketConfiguration bucket = null;
@@ -112,6 +129,11 @@ namespace Less3.Api
             }
         }
 
+        /// <summary>
+        /// Bucket delete tags API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response DeleteTags(S3Request req)
         {
             BucketConfiguration bucket = null;
@@ -144,6 +166,11 @@ namespace Less3.Api
             }
         }
 
+        /// <summary>
+        /// Bucket exists API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response Exists(S3Request req)
         {
             BucketConfiguration bucket = null;
@@ -170,6 +197,11 @@ namespace Less3.Api
             return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchBucket);
         }
 
+        /// <summary>
+        /// Bucket read API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response Read(S3Request req)
         {
             string continuationToken = req.RetrieveHeaderValue("continuation-token");
@@ -259,6 +291,11 @@ namespace Less3.Api
             }
         }
 
+        /// <summary>
+        /// Bucket read tags API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response ReadTags(S3Request req)
         {
             BucketConfiguration bucket = null;
@@ -299,6 +336,11 @@ namespace Less3.Api
             }
         }
 
+        /// <summary>
+        /// Bucket read versions API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response ReadVersions(S3Request req)
         {
             string prefix = req.RetrieveHeaderValue("prefix");
@@ -403,6 +445,11 @@ namespace Less3.Api
             }
         }
 
+        /// <summary>
+        /// Bucket read versioning API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response ReadVersioning(S3Request req)
         {
             BucketConfiguration bucket = null;
@@ -445,13 +492,19 @@ namespace Less3.Api
             }
         }
 
+        /// <summary>
+        /// Bucket write API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response Write(S3Request req)
         {
             S3Bucket reqBody = null;
-            if (req.Data != null)
+            if (req.DataStream != null)
             {
                 try
                 {
+                    req.Data = Common.StreamToBytes(req.DataStream);
                     reqBody = Common.DeserializeXml<S3Bucket>(Encoding.UTF8.GetString(req.Data));
                 }
                 catch (Exception e)
@@ -491,14 +544,20 @@ namespace Less3.Api
 
             return new S3Response(req, 200, "text/plain", null, null);
         }
-         
+
+        /// <summary>
+        /// Bucket write tags API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response WriteTags(S3Request req)
         {
             Tagging reqBody = null;
-            if (req.Data != null)
+            if (req.DataStream != null)
             {
                 try
                 {
+                    req.Data = Common.StreamToBytes(req.DataStream);
                     reqBody = Common.DeserializeXml<Tagging>(Encoding.UTF8.GetString(req.Data));
                 }
                 catch (Exception e)
@@ -537,13 +596,19 @@ namespace Less3.Api
             }
         }
 
+        /// <summary>
+        /// Bucket write versioning API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response WriteVersioning(S3Request req)
         {
             VersioningConfiguration reqBody = null;
-            if (req.Data != null)
+            if (req.DataStream != null)
             {
                 try
                 {
+                    req.Data = Common.StreamToBytes(req.DataStream); 
                     reqBody = Common.DeserializeXml<VersioningConfiguration>(Encoding.UTF8.GetString(req.Data));
                 }
                 catch (Exception e)

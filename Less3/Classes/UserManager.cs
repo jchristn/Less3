@@ -7,6 +7,9 @@ using SyslogLogging;
 
 namespace Less3.Classes
 {
+    /// <summary>
+    /// User manager.
+    /// </summary>
     public class UserManager
     {
         #region Public-Members
@@ -25,6 +28,11 @@ namespace Less3.Classes
 
         #region Constructors-and-Factories
 
+        /// <summary>
+        /// Instantiate the object.
+        /// </summary>
+        /// <param name="settings">Settings.</param>
+        /// <param name="logging">LoggingModule.</param>
         public UserManager(Settings settings, LoggingModule logging)
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
@@ -40,6 +48,9 @@ namespace Less3.Classes
 
         #region Public-Methods
 
+        /// <summary>
+        /// Load users from filesystem.
+        /// </summary>
         public void Load()
         {
             lock (_UsersLock)
@@ -48,6 +59,9 @@ namespace Less3.Classes
             }
         }
 
+        /// <summary>
+        /// Save users to filesystem.
+        /// </summary>
         public void Save()
         {
             lock (_UsersLock)
@@ -56,6 +70,10 @@ namespace Less3.Classes
             }
         }
          
+        /// <summary>
+        /// Add a user.
+        /// </summary>
+        /// <param name="name">Name.</param>
         public void Add(string name)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
@@ -76,6 +94,10 @@ namespace Less3.Classes
             if (added) Save();
         }
 
+        /// <summary>
+        /// Remove a user.
+        /// </summary>
+        /// <param name="name">Name.</param>
         public void Remove(string name)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
@@ -96,6 +118,12 @@ namespace Less3.Classes
             if (removed) Save();
         }
 
+        /// <summary>
+        /// Retrieve a user.
+        /// </summary>
+        /// <param name="name">Name.</param>
+        /// <param name="user">User.</param>
+        /// <returns>True if successful.</returns>
         public bool Get(string name, out User user)
         {
             user = null;

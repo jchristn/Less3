@@ -19,18 +19,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.S3" Version="3.3.102.22" />
+    <PackageReference Include="AWSSDK.S3" Version="3.3.102.24" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="S3ServerInterface" Version="1.5.0" />
     <PackageReference Include="SqliteHelper" Version="1.0.13" />
     <PackageReference Include="SyslogLogging" Version="1.0.11" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.111" />
     <PackageReference Include="Watson" Version="2.1.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="S3ServerInterface">
-      <HintPath>..\..\..\Misc\S3ServerInterface-1.4\S3ServerInterface\bin\Debug\netstandard2.0\S3ServerInterface.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

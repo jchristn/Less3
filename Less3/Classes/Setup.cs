@@ -7,6 +7,9 @@ using SyslogLogging;
 
 namespace Less3.Classes
 {
+    /// <summary>
+    /// Setup workflow.
+    /// </summary>
     public class Setup
     {
         #region Public-Members
@@ -19,6 +22,9 @@ namespace Less3.Classes
 
         #region Constructors-and-Factories
 
+        /// <summary>
+        /// Instantiate the object.
+        /// </summary>
         public Setup()
         {
             RunSetup();
@@ -72,14 +78,9 @@ namespace Less3.Classes
             #endregion
 
             #region Initial-Settings
-
-            currSettings.ProductName = "<3 :: Less3";
+             
             currSettings.EnableConsole = true;
-
-            #endregion
-
-            #region Set-Defaults
-
+             
             currSettings.Files = new Settings.SettingsFiles();
             currSettings.Files.Users = "./Users.json";
             currSettings.Files.Credentials = "./Credentials.json";
@@ -90,19 +91,10 @@ namespace Less3.Classes
             currSettings.Server.ListenerPort = 8000;
             currSettings.Server.Ssl = false;
 
-            currSettings.Server.HeaderApiKey = "x-api-key";
-            currSettings.Server.HeaderEmail = "x-email";
-            currSettings.Server.HeaderPassword = "x-password";
-            currSettings.Server.HeaderToken = "x-token";
-            currSettings.Server.HeaderVersion = "x-version";
-            currSettings.Server.AdminApiKey = "less3admin";
-            currSettings.Server.TokenExpirationSec = 86400;
-            currSettings.Server.FailedRequestsIntervalSec = 60;
-            currSettings.Server.MaxObjectSize = 2199023255552;      // 2TB object size
-            currSettings.Server.MaxTransferSize = 536870912;        // 512MB transfer size
+            currSettings.Server.HeaderApiKey = "x-api-key"; 
+            currSettings.Server.AdminApiKey = "less3admin";   
              
-            currSettings.Storage = new Settings.SettingsStorage();
-            currSettings.Storage.TempFiles = "./Temp/";
+            currSettings.Storage = new Settings.SettingsStorage(); 
             currSettings.Storage.Directory = "./Storage/";
              
             currSettings.Syslog = new Settings.SettingsSyslog();

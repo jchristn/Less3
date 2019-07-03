@@ -7,6 +7,9 @@ using SyslogLogging;
 
 namespace Less3.Classes
 {
+    /// <summary>
+    /// Credential manager.
+    /// </summary>
     public class CredentialManager
     {
         #region Public-Members
@@ -25,6 +28,11 @@ namespace Less3.Classes
 
         #region Constructors-and-Factories
 
+        /// <summary>
+        /// Instantiate the object.
+        /// </summary>
+        /// <param name="settings">Settings.</param>
+        /// <param name="logging">LoggingModule.</param>
         public CredentialManager(Settings settings, LoggingModule logging)
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
@@ -40,6 +48,9 @@ namespace Less3.Classes
 
         #region Public-Methods
 
+        /// <summary>
+        /// Load credentials from filesystem.
+        /// </summary>
         public void Load()
         {
             lock (_CredentialLock)
@@ -48,6 +59,9 @@ namespace Less3.Classes
             }
         }
 
+        /// <summary>
+        /// Save credentials to filesystem.
+        /// </summary>
         public void Save()
         {
             lock (_CredentialLock)
@@ -56,6 +70,12 @@ namespace Less3.Classes
             }
         }
 
+        /// <summary>
+        /// Check of credentials exist.
+        /// </summary>
+        /// <param name="accessKey">Access key.</param>
+        /// <param name="secretKey">Secret key.</param>
+        /// <returns>True if exists.</returns>
         public bool Exists(string accessKey, string secretKey)
         {
             if (String.IsNullOrEmpty(accessKey)) return false;
@@ -67,6 +87,12 @@ namespace Less3.Classes
             }
         }
 
+        /// <summary>
+        /// Retrieve user by access key.
+        /// </summary>
+        /// <param name="accessKey">Access key.</param>
+        /// <param name="user">User.</param>
+        /// <returns>True if successful.</returns>
         public bool GetUser(string accessKey, out string user)
         {
             user = null;
@@ -82,6 +108,12 @@ namespace Less3.Classes
             } 
         }
 
+        /// <summary>
+        /// Retrieve credential by access key.
+        /// </summary>
+        /// <param name="accessKey">Access key.</param>
+        /// <param name="credential">Credential.</param>
+        /// <returns>True if successful.</returns>
         public bool Get(string accessKey, out Credential credential)
         {
             credential = null;
@@ -96,6 +128,14 @@ namespace Less3.Classes
             }
         }
 
+        /// <summary>
+        /// Add a credential.
+        /// </summary>
+        /// <param name="user">User name.</param>
+        /// <param name="name">Name of the credential or description.</param>
+        /// <param name="accessKey">Access key.</param>
+        /// <param name="secretKey">Secret key.</param>
+        /// <param name="permit">List of permitted actions.</param>
         public void Add(string user, string name, string accessKey, string secretKey, List<RequestType> permit)
         {
             if (String.IsNullOrEmpty(user)) throw new ArgumentNullException(nameof(user));
@@ -119,6 +159,12 @@ namespace Less3.Classes
             if (added) Save();
         }
 
+        /// <summary>
+        /// Remove a credential.
+        /// </summary>
+        /// <param name="name">User name.</param>
+        /// <param name="accessKey">Access key.</param>
+        /// <param name="secretKey">Secret key.</param>
         public void Remove(string name, string accessKey, string secretKey)
         {
             if (String.IsNullOrEmpty(accessKey)) throw new ArgumentNullException(nameof(accessKey));

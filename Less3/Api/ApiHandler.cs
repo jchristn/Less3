@@ -15,6 +15,9 @@ using Less3.S3Responses;
 
 namespace Less3.Api
 {
+    /// <summary>
+    /// API handler.
+    /// </summary>
     public class ApiHandler
     {
         #region Public-Members
@@ -38,6 +41,15 @@ namespace Less3.Api
 
         #region Constructors-and-Factories
 
+        /// <summary>
+        /// Instantiate the object.
+        /// </summary>
+        /// <param name="settings">Settings.</param>
+        /// <param name="logging">LoggingModule.</param>
+        /// <param name="credentials">CredentialManager.</param>
+        /// <param name="buckets">BucketManager.</param>
+        /// <param name="auth">AuthManager.</param>
+        /// <param name="users">UserManager.</param>
         public ApiHandler(
             Settings settings, 
             LoggingModule logging, 
@@ -71,6 +83,11 @@ namespace Less3.Api
 
         #region Service-Callbacks
 
+        /// <summary>
+        /// Service list buckets API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response ServiceListBuckets(S3Request req)
         {
             return _ServiceHandler.ListBuckets(req);
@@ -80,51 +97,101 @@ namespace Less3.Api
 
         #region Bucket-Callbacks
 
+        /// <summary>
+        /// Bucket delete API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response BucketDelete(S3Request req)
         {
             return _BucketHandler.Delete(req);
         }
 
+        /// <summary>
+        /// Bucket delete tags API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response BucketDeleteTags(S3Request req)
         {
             return _BucketHandler.DeleteTags(req);
         }
 
+        /// <summary>
+        /// Bucket exists API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response BucketExists(S3Request req)
         {
             return _BucketHandler.Exists(req);
         }
 
+        /// <summary>
+        /// Bucket read API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response BucketRead(S3Request req)
         {
             return _BucketHandler.Read(req);
         }
-         
+
+        /// <summary>
+        /// Bucket read tags API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response BucketReadTags(S3Request req)
         {
             return _BucketHandler.ReadTags(req);
         }
 
+        /// <summary>
+        /// Bucket read versions API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response BucketReadVersions(S3Request req)
         {
             return _BucketHandler.ReadVersions(req);
         }
 
+        /// <summary>
+        /// Bucket read versioning API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response BucketReadVersioning(S3Request req)
         {
             return _BucketHandler.ReadVersioning(req);
         }
 
+        /// <summary>
+        /// Bucket write API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response BucketWrite(S3Request req)
         {
             return _BucketHandler.Write(req);
         }
-         
+
+        /// <summary>
+        /// Bucket write tags API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response BucketWriteTags(S3Request req)
         {
             return _BucketHandler.WriteTags(req);
         }
 
+        /// <summary>
+        /// Bucket write versioning API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response BucketWriteVersioning(S3Request req)
         {  
             return _BucketHandler.WriteVersioning(req);
@@ -134,46 +201,91 @@ namespace Less3.Api
 
         #region Object-Callbacks
 
+        /// <summary>
+        /// Object delete API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response ObjectDelete(S3Request req)
         {
             return _ObjectHandler.Delete(req);
         }
 
+        /// <summary>
+        /// Object delete multiple API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response ObjectDeleteMultiple(S3Request req)
         {
             return _ObjectHandler.DeleteMultiple(req);
         }
 
+        /// <summary>
+        /// Object delete tags API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response ObjectDeleteTags(S3Request req)
         {
             return _ObjectHandler.DeleteTags(req);
         }
 
+        /// <summary>
+        /// Object exists API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response ObjectExists(S3Request req)
         {
             return _ObjectHandler.Exists(req);
         }
 
+        /// <summary>
+        /// Object read API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response ObjectRead(S3Request req)
         {
             return _ObjectHandler.Read(req);
         }
-         
+
+        /// <summary>
+        /// Object read range API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response ObjectReadRange(S3Request req)
         {
             return _ObjectHandler.ReadRange(req);
         }
-         
+
+        /// <summary>
+        /// Object read tags API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response ObjectReadTags(S3Request req)
         {
             return _ObjectHandler.ReadTags(req);
         }
 
+        /// <summary>
+        /// Object write API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response ObjectWrite(S3Request req)
         {
             return _ObjectHandler.Write(req);
         }
-           
+
+        /// <summary>
+        /// Object write tags API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response ObjectWriteTags(S3Request req)
         {
             return _ObjectHandler.WriteTags(req);

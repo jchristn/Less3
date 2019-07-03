@@ -14,6 +14,9 @@ using Less3.S3Responses;
 
 namespace Less3.Api
 {
+    /// <summary>
+    /// Service API callbacks.
+    /// </summary>
     public class ServiceHandler
     {
         #region Public-Members
@@ -33,6 +36,15 @@ namespace Less3.Api
 
         #region Constructors-and-Factories
 
+        /// <summary>
+        /// Instantiate the object.
+        /// </summary>
+        /// <param name="settings">Settings.</param>
+        /// <param name="logging">LoggingModule.</param>
+        /// <param name="credentials">CredentialManager.</param>
+        /// <param name="buckets">BucketManager.</param>
+        /// <param name="auth">AuthManager.</param>
+        /// <param name="users">UserManager.</param>
         public ServiceHandler(
             Settings settings,
             LoggingModule logging,
@@ -60,6 +72,11 @@ namespace Less3.Api
 
         #region Public-Methods
 
+        /// <summary>
+        /// List buckets API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
         public S3Response ListBuckets(S3Request req)
         { 
             if (String.IsNullOrEmpty(req.AccessKey))

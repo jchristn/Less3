@@ -2,7 +2,7 @@
   "version": 3,
   "targets": {
     ".NETCoreApp,Version=v2.2": {
-      "AWSSDK.Core/3.3.103.5": {
+      "AWSSDK.Core/3.3.103.7": {
         "type": "package",
         "compile": {
           "lib/netstandard2.0/AWSSDK.Core.dll": {}
@@ -11,10 +11,10 @@
           "lib/netstandard2.0/AWSSDK.Core.dll": {}
         }
       },
-      "AWSSDK.S3/3.3.102.22": {
+      "AWSSDK.S3/3.3.102.24": {
         "type": "package",
         "dependencies": {
-          "AWSSDK.Core": "[3.3.103.5, 3.4.0)"
+          "AWSSDK.Core": "[3.3.103.7, 3.4.0)"
         },
         "compile": {
           "lib/netstandard2.0/AWSSDK.S3.dll": {}
@@ -274,6 +274,21 @@
           "lib/netstandard2.0/RegexMatcher.dll": {}
         }
       },
+      "S3ServerInterface/1.5.0": {
+        "type": "package",
+        "dependencies": {
+          "AWSSDK.S3": "3.3.102.19",
+          "ChunkDecoder": "1.0.2",
+          "Newtonsoft.Json": "12.0.2",
+          "Watson": "2.1.1"
+        },
+        "compile": {
+          "lib/netstandard2.0/S3ServerInterface.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/S3ServerInterface.dll": {}
+        }
+      },
       "SqliteHelper/1.0.13": {
         "type": "package",
         "dependencies": {
@@ -348,15 +363,15 @@
     }
   },
   "libraries": {
-    "AWSSDK.Core/3.3.103.5": {
-      "sha512": "sm59YUQsoMdj1d6bkAkkvcY1i1d3IOrZ/ATdNoFuZqqNunQvGh6x9uHrT9RHlcnom47ywqbkx2GQQTvKvMj3rA==",
+    "AWSSDK.Core/3.3.103.7": {
+      "sha512": "z6PhL4LFJQaJIPdZZtDOZ0MtMUxopKSpDXVNzvdDIM16x3exJj8rITwfbTc9y7cjVsku0JlyUZMYi61VbS5B9Q==",
       "type": "package",
-      "path": "awssdk.core/3.3.103.5",
+      "path": "awssdk.core/3.3.103.7",
       "hasTools": true,
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "awssdk.core.3.3.103.5.nupkg.sha512",
+        "awssdk.core.3.3.103.7.nupkg.sha512",
         "awssdk.core.nuspec",
         "lib/MonoAndroid10/AWSSDK.Core.XML",
         "lib/MonoAndroid10/AWSSDK.Core.dll",
@@ -397,16 +412,16 @@
         "tools/account-management.ps1"
       ]
     },
-    "AWSSDK.S3/3.3.102.22": {
-      "sha512": "K6qrfc57nz6R8A2CxP7VKxsZcaLCp2TIhO33cRPP5BhMSfRIH5VAUrt69IcSKW9HP9IdoIteCE7soJx4DyBOJQ==",
+    "AWSSDK.S3/3.3.102.24": {
+      "sha512": "t6rLHnDUndjpjMM8cWS65VLkbZS+SVBo96XNAuEDWqn8ORAbQDCGAhJF3dSZMHBlOALhhtDHdPePP8CsLTQXxw==",
       "type": "package",
-      "path": "awssdk.s3/3.3.102.22",
+      "path": "awssdk.s3/3.3.102.24",
       "hasTools": true,
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "analyzers/dotnet/cs/AWSSDK.S3.CodeAnalysis.dll",
-        "awssdk.s3.3.3.102.22.nupkg.sha512",
+        "awssdk.s3.3.3.102.24.nupkg.sha512",
         "awssdk.s3.nuspec",
         "lib/MonoAndroid10/AWSSDK.S3.XML",
         "lib/MonoAndroid10/AWSSDK.S3.dll",
@@ -1041,6 +1056,19 @@
         "regexmatcher.nuspec"
       ]
     },
+    "S3ServerInterface/1.5.0": {
+      "sha512": "YNy6oXnzo5VPVdbjwcYqVEXUyf+rDa9TXazTTWW8j8nHVYXD0eHROlqJsr4Xbq1qEVu64EHrPusSA3+aNeoDzQ==",
+      "type": "package",
+      "path": "s3serverinterface/1.5.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net462/S3ServerInterface.dll",
+        "lib/netstandard2.0/S3ServerInterface.dll",
+        "s3serverinterface.1.5.0.nupkg.sha512",
+        "s3serverinterface.nuspec"
+      ]
+    },
     "SqliteHelper/1.0.13": {
       "sha512": "kiQYiyjXM3vWbZSXNRqNQIyIUAfMSoJMchTm40ymxQcIHW4mVJjgZpT8WLbCWGiotxCPLwTCK6vwVjbc3FGgXQ==",
       "type": "package",
@@ -1142,9 +1170,10 @@
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v2.2": [
-      "AWSSDK.S3 >= 3.3.102.22",
+      "AWSSDK.S3 >= 3.3.102.24",
       "Microsoft.NETCore.App >= 2.2.0",
       "Newtonsoft.Json >= 12.0.2",
+      "S3ServerInterface >= 1.5.0",
       "SqliteHelper >= 1.0.13",
       "SyslogLogging >= 1.0.11",
       "System.Data.SQLite >= 1.0.111",
@@ -1194,7 +1223,7 @@
         "dependencies": {
           "AWSSDK.S3": {
             "target": "Package",
-            "version": "[3.3.102.22, )"
+            "version": "[3.3.102.24, )"
           },
           "Microsoft.NETCore.App": {
             "suppressParent": "All",
@@ -1205,6 +1234,10 @@
           "Newtonsoft.Json": {
             "target": "Package",
             "version": "[12.0.2, )"
+          },
+          "S3ServerInterface": {
+            "target": "Package",
+            "version": "[1.5.0, )"
           },
           "SqliteHelper": {
             "target": "Package",

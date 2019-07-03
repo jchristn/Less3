@@ -10,6 +10,9 @@ using SyslogLogging;
 
 namespace Less3.Classes
 {
+    /// <summary>
+    /// Bucket manager.
+    /// </summary>
     public class BucketManager
     {
         #region Public-Members
@@ -31,6 +34,11 @@ namespace Less3.Classes
 
         #region Constructors-and-Factories
 
+        /// <summary>
+        /// Instantiate the object.
+        /// </summary>
+        /// <param name="settings">Settings.</param>
+        /// <param name="logging">LoggingModule.</param>
         public BucketManager(Settings settings, LoggingModule logging)
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
@@ -46,6 +54,9 @@ namespace Less3.Classes
 
         #region Public-Methods
 
+        /// <summary>
+        /// Load buckets from the filesystem.
+        /// </summary>
         public void Load()
         {
             lock (_BucketConfigLock)
@@ -56,6 +67,9 @@ namespace Less3.Classes
             InitializeBuckets();
         }
 
+        /// <summary>
+        /// Save buckets to the filesystem.
+        /// </summary>
         public void Save()
         {
             lock (_BucketConfigLock)
@@ -64,6 +78,11 @@ namespace Less3.Classes
             }
         }
          
+        /// <summary>
+        /// Add a bucket.
+        /// </summary>
+        /// <param name="bucket">BucketConfiguration.</param>
+        /// <returns>True if successful.</returns>
         public bool Add(BucketConfiguration bucket)
         {
             if (bucket == null) throw new ArgumentNullException(nameof(bucket));
@@ -103,6 +122,12 @@ namespace Less3.Classes
             return false;
         }
 
+        /// <summary>
+        /// Remove a bucket.
+        /// </summary>
+        /// <param name="bucket">BucketConfiguration.</param>
+        /// <param name="destroy">True to destroy the bucket data.</param>
+        /// <returns>True if successful.</returns>
         public bool Remove(BucketConfiguration bucket, bool destroy)
         {
             if (bucket == null) throw new ArgumentNullException(nameof(bucket));
@@ -146,6 +171,12 @@ namespace Less3.Classes
             return false;
         }
 
+        /// <summary>
+        /// Retrieve a bucket's configuration.
+        /// </summary>
+        /// <param name="bucketName">Bucket name.</param>
+        /// <param name="bucket">BucketConfiguration.</param>
+        /// <returns>True if successful.</returns>
         public bool Get(string bucketName, out BucketConfiguration bucket)
         {
             bucket = null;
@@ -164,6 +195,12 @@ namespace Less3.Classes
             }
         }
 
+        /// <summary>
+        /// Retrieve a bucket's client.
+        /// </summary>
+        /// <param name="bucketName">Bucket name.</param>
+        /// <param name="client">BucketClient.</param>
+        /// <returns>True if successful.</returns>
         public bool GetClient(string bucketName, out BucketClient client)
         {
             client = null;
@@ -178,6 +215,12 @@ namespace Less3.Classes
             }
         }
 
+        /// <summary>
+        /// Get all buckets associated with a user.
+        /// </summary>
+        /// <param name="user">User.</param>
+        /// <param name="buckets">List of BucketConfiguration.</param>
+        /// <returns>True if successful.</returns>
         public bool GetUserBuckets(string user, out List<BucketConfiguration> buckets)
         {
             buckets = null;

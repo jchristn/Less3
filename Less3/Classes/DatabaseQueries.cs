@@ -6,9 +6,12 @@ using SqliteWrapper;
 
 namespace Less3.Classes
 {
-    public static class DatabaseQueries
+    /// <summary>
+    /// Database queries.
+    /// </summary>
+    internal static class DatabaseQueries
     {
-        public static string CreateObjectTable()
+        internal static string CreateObjectTable()
         {
             string query =
                 "CREATE TABLE IF NOT EXISTS Objects " +
@@ -33,7 +36,7 @@ namespace Less3.Classes
             return query;
         }
 
-        public static string ObjectExists(string key)
+        internal static string ObjectExists(string key)
         {
             string query =
                 "SELECT * FROM Objects " +
@@ -43,7 +46,7 @@ namespace Less3.Classes
             return query;
         }
 
-        public static string VersionExists(string key, long version)
+        internal static string VersionExists(string key, long version)
         {
             string query =
                 "SELECT * FROM Objects " +
@@ -54,7 +57,7 @@ namespace Less3.Classes
             return query;
         }
 
-        public static string InsertObject(Obj obj)
+        internal static string InsertObject(Obj obj)
         {
             if (obj == null) throw new ArgumentNullException(nameof(obj));
 
@@ -95,8 +98,8 @@ namespace Less3.Classes
                 ")";
             return query;
         }
-         
-        public static string DeleteObject(string key, long version)
+
+        internal static string DeleteObject(string key, long version)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
@@ -106,7 +109,7 @@ namespace Less3.Classes
             return query;
         }
 
-        public static string MarkObjectDeleted(Obj obj)
+        internal static string MarkObjectDeleted(Obj obj)
         {
             if (obj == null) throw new ArgumentNullException(nameof(obj));
 
@@ -149,8 +152,8 @@ namespace Less3.Classes
                 ")";
             return query;
         }
-         
-        public static string UpdateRecord(string key, long version, Dictionary<string, object> vals)
+
+        internal static string UpdateRecord(string key, long version, Dictionary<string, object> vals)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key)); 
             if (vals == null || vals.Count < 1) throw new ArgumentNullException(nameof(vals));
@@ -188,12 +191,12 @@ namespace Less3.Classes
             return query;
         }
 
-        public static string GetObjectCount()
+        internal static string GetObjectCount()
         {
             return "SELECT COUNT(*) AS NumObjects, SUM(ContentLength) AS TotalBytes FROM Objects";
         }
 
-        public static string Enumerate(string prefix, long indexStart, int maxResults)
+        internal static string Enumerate(string prefix, long indexStart, int maxResults)
         {
             string query =
                 "SELECT * FROM " +
@@ -213,7 +216,7 @@ namespace Less3.Classes
             return query;
         }
 
-        public static string EnumerationVersions(string prefix, long indexStart, int maxResults)
+        internal static string EnumerationVersions(string prefix, long indexStart, int maxResults)
         {
             string query =
                 "SELECT * FROM " +
@@ -233,25 +236,25 @@ namespace Less3.Classes
             return query;
         }
 
-        private static string TimestampFormat = "yyyy-MM-ddTHH:mm:ss.ffffffZ";
+        internal static string TimestampFormat = "yyyy-MM-ddTHH:mm:ss.ffffffZ";
 
-        private static string Sanitize(string str)
+        internal static string Sanitize(string str)
         {
             return DatabaseClient.SanitizeString(str);
         }
 
-        private static string TimestampUtc()
+        internal static string TimestampUtc()
         {
             return DateTime.Now.ToUniversalTime().ToString(TimestampFormat);
         }
 
-        private static string TimestampUtc(DateTime? ts)
+        internal static string TimestampUtc(DateTime? ts)
         {
             if (ts == null) return null;
             return Convert.ToDateTime(ts).ToUniversalTime().ToString(TimestampFormat);
         }
 
-        private static string TimestampUtc(DateTime ts)
+        internal static string TimestampUtc(DateTime ts)
         {
             return ts.ToUniversalTime().ToString(TimestampFormat);
         }

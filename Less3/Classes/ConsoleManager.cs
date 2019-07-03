@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Less3.Classes
 {
+    /// <summary>
+    /// Console manager.
+    /// </summary>
     public class ConsoleManager
     {
         #region Public-Members
@@ -21,6 +24,10 @@ namespace Less3.Classes
 
         #region Constructors-and-Factories
 
+        /// <summary>
+        /// Instantiate the object.
+        /// </summary>
+        /// <param name="exitDelegate">Method to call when exiting the console.</param>
         public ConsoleManager(
             Func<bool> exitDelegate)
         {
@@ -35,6 +42,9 @@ namespace Less3.Classes
 
         #region Public-Methods
 
+        /// <summary>
+        /// Terminate the console.
+        /// </summary>
         public void Stop()
         {
             _Enabled = false;

@@ -7,6 +7,9 @@ using SyslogLogging;
 
 namespace Less3.Classes
 {
+    /// <summary>
+    /// Authentication manager.
+    /// </summary>
     public class AuthManager
     {
         #region Public-Members
@@ -25,11 +28,22 @@ namespace Less3.Classes
 
         #region Constructors-and-Factories
 
+        /// <summary>
+        /// Instantiate the object.
+        /// </summary>
         public AuthManager()
         {
 
         }
 
+        /// <summary>
+        /// Instantiate the object.
+        /// </summary>
+        /// <param name="settings">Settings.</param>
+        /// <param name="logging">LoggingModule.</param>
+        /// <param name="users">UserManager.</param>
+        /// <param name="credentials">CredentialManager.</param>
+        /// <param name="buckets">BucketManager.</param>
         public AuthManager(
             Settings settings, 
             LoggingModule logging, 

@@ -16,6 +16,9 @@ namespace Less3.Classes
     {
         #region Public-Members
 
+        /// <summary>
+        /// Buffer size to use when reading streams.
+        /// </summary>
         public long StreamReadBufferSize
         {
             get
@@ -29,6 +32,9 @@ namespace Less3.Classes
             }
         }
 
+        /// <summary>
+        /// Name of the bucket.
+        /// </summary>
         public string Name
         {
             get
@@ -54,11 +60,20 @@ namespace Less3.Classes
 
         #region Constructors-and-Factories
 
+        /// <summary>
+        /// Instantiate the object.
+        /// </summary>
         public BucketClient()
         {
 
         }
 
+        /// <summary>
+        /// Instantiate the object.
+        /// </summary>
+        /// <param name="settings">Settings.</param>
+        /// <param name="logging">LoggingModule.</param>
+        /// <param name="bucket">BucketConfiguration.</param>
         public BucketClient(Settings settings, LoggingModule logging, BucketConfiguration bucket)
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
@@ -89,6 +104,12 @@ namespace Less3.Classes
             GC.WaitForPendingFinalizers();
         }
 
+        /// <summary>
+        /// Add an object.
+        /// </summary>
+        /// <param name="obj">Object metadata.</param>
+        /// <param name="data">Data in byte array.</param>
+        /// <returns>True if successful.</returns>
         public bool Add(Obj obj, byte[] data)
         {
             if (obj == null) throw new ArgumentNullException(nameof(obj));
@@ -107,6 +128,12 @@ namespace Less3.Classes
             return Add(obj, ms);
         }
 
+        /// <summary>
+        /// Add an object.
+        /// </summary>
+        /// <param name="obj">Object metadata.</param>
+        /// <param name="stream">Stream containing data.</param>
+        /// <returns>True if successful.</returns>
         public bool Add(Obj obj, Stream stream)
         {
             if (obj == null) throw new ArgumentNullException(nameof(obj));
@@ -157,6 +184,12 @@ namespace Less3.Classes
             return true;
         }
 
+        /// <summary>
+        /// Get an object.
+        /// </summary>
+        /// <param name="key">Object's key.</param>
+        /// <param name="data">Object data.</param>
+        /// <returns>True if successful.</returns>
         public bool Get(string key, out byte[] data)
         {
             data = null;
@@ -169,6 +202,14 @@ namespace Less3.Classes
             return true;
         }
 
+        /// <summary>
+        /// Get an object.
+        /// </summary>
+        /// <param name="key">Object's key.</param>
+        /// <param name="startPosition">Starting position.</param>
+        /// <param name="length">Number of bytes to retrieve.</param>
+        /// <param name="data">Object data.</param>
+        /// <returns>True if successful.</returns>
         public bool Get(string key, long startPosition, long length, out byte[] data)
         {
             data = null;
@@ -190,6 +231,13 @@ namespace Less3.Classes
             return true;
         }
 
+        /// <summary>
+        /// Get an object.
+        /// </summary>
+        /// <param name="key">Object's key.</param>
+        /// <param name="contentLength">Content length.</param>
+        /// <param name="stream">Stream containing data.</param>
+        /// <returns>True if successful.</returns>
         public bool Get(string key, out long contentLength, out Stream stream)
         {
             contentLength = 0;
@@ -204,6 +252,14 @@ namespace Less3.Classes
             return Get(key, 0, contentLength, out stream);
         }
 
+        /// <summary>
+        /// Get an object.
+        /// </summary>
+        /// <param name="key">Object's key.</param>
+        /// <param name="startPosition">Start position.</param>
+        /// <param name="length">Number of bytes to read.</param>
+        /// <param name="stream">Stream containing data.</param>
+        /// <returns>True if successful.</returns>
         public bool Get(string key, long startPosition, long length, out Stream stream)
         {
             stream = null;
@@ -241,6 +297,11 @@ namespace Less3.Classes
             return true;
         }
 
+        /// <summary>
+        /// Get counts associated with the bucket.
+        /// </summary>
+        /// <param name="objects">Number of objects.</param>
+        /// <param name="bytes">Number of bytes.</param>
         public void GetCounts(out long objects, out long bytes)
         {
             objects = 0;
@@ -269,6 +330,12 @@ namespace Less3.Classes
             return;
         }
 
+        /// <summary>
+        /// Get object metadata.
+        /// </summary>
+        /// <param name="key">Object's key.</param>
+        /// <param name="obj">Object metadata.</param>
+        /// <returns>True if successful.</returns>
         public bool GetMetadata(string key, out Obj obj)
         {
             obj = null;
@@ -282,6 +349,13 @@ namespace Less3.Classes
             return true;
         }
 
+        /// <summary>
+        /// Get object metadata for a specific object version.
+        /// </summary>
+        /// <param name="key">Object's key.</param>
+        /// <param name="version">Object version.</param>
+        /// <param name="obj">Object metadata.</param>
+        /// <returns>True if successful.</returns>
         public bool GetMetadata(string key, long version, out Obj obj)
         {
             obj = null;
@@ -295,6 +369,11 @@ namespace Less3.Classes
             return true;
         }
 
+        /// <summary>
+        /// Check if an object exists.
+        /// </summary>
+        /// <param name="key">Object's key.</param>
+        /// <returns>True if exists.</returns>
         public bool Exists(string key)
         {
             Obj obj = null;
@@ -303,6 +382,12 @@ namespace Less3.Classes
             return false;
         }
 
+        /// <summary>
+        /// Check if a specific version of an object exists.
+        /// </summary>
+        /// <param name="key">Object's key.</param>
+        /// <param name="versionId">Object version.</param>
+        /// <returns>True if exists.</returns>
         public bool Exists(string key, long versionId)
         {
             Obj obj = null;
@@ -311,6 +396,11 @@ namespace Less3.Classes
             return false;
         }
 
+        /// <summary>
+        /// Delete an object.
+        /// </summary>
+        /// <param name="key">Object's key.</param>
+        /// <returns>True if successful.</returns>
         public bool Delete(string key)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
@@ -342,6 +432,12 @@ namespace Less3.Classes
             }
         }
 
+        /// <summary>
+        /// Delete an object version.
+        /// </summary>
+        /// <param name="key">Object's key.</param>
+        /// <param name="version">Object version.</param>
+        /// <returns>True if successful.</returns>
         public bool Delete(string key, long version)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
@@ -367,6 +463,13 @@ namespace Less3.Classes
             }
         }
 
+        /// <summary>
+        /// Enumerate a bucket.
+        /// </summary>
+        /// <param name="prefix">Prefix for enumerated objects.</param>
+        /// <param name="startIndex">Starting index.</param>
+        /// <param name="maxResults">Number of results to retrieve.</param>
+        /// <param name="objs">Object metadata.</param>
         public void Enumerate(string prefix, long startIndex, int maxResults, out List<Obj> objs)
         {
             objs = new List<Obj>();
@@ -382,6 +485,12 @@ namespace Less3.Classes
             }
         }
 
+        /// <summary>
+        /// Update an object's metadata.
+        /// </summary>
+        /// <param name="key">Object's key.</param>
+        /// <param name="version">Object version.</param>
+        /// <param name="vals">Dictionary containing key-value pairs of data to apply to the metadata.</param>
         public void Update(string key, long version, Dictionary<string, object> vals)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));

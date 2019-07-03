@@ -1,41 +1,41 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.2",
-    "signature": "2d1ddb13d79328395b0b7b4d7c3117ca630b35d6"
+    "signature": "44e35a4c4533c19027b97e4414152c7b3673ec24"
   },
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v2.2": {
       "Less3/1.0.0": {
         "dependencies": {
-          "AWSSDK.S3": "3.3.102.22",
+          "AWSSDK.S3": "3.3.102.24",
           "Newtonsoft.Json": "12.0.2",
+          "S3ServerInterface": "1.5.0",
           "SqliteHelper": "1.0.13",
           "SyslogLogging": "1.0.11",
           "System.Data.SQLite": "1.0.111",
-          "Watson": "2.1.1",
-          "S3ServerInterface": "1.4.15.0"
+          "Watson": "2.1.1"
         },
         "runtime": {
           "Less3.dll": {}
         }
       },
-      "AWSSDK.Core/3.3.103.5": {
+      "AWSSDK.Core/3.3.103.7": {
         "runtime": {
           "lib/netstandard2.0/AWSSDK.Core.dll": {
             "assemblyVersion": "3.3.0.0",
-            "fileVersion": "3.3.103.5"
+            "fileVersion": "3.3.103.7"
           }
         }
       },
-      "AWSSDK.S3/3.3.102.22": {
+      "AWSSDK.S3/3.3.102.24": {
         "dependencies": {
-          "AWSSDK.Core": "3.3.103.5"
+          "AWSSDK.Core": "3.3.103.7"
         },
         "runtime": {
           "lib/netstandard2.0/AWSSDK.S3.dll": {
             "assemblyVersion": "3.3.0.0",
-            "fileVersion": "3.3.102.22"
+            "fileVersion": "3.3.102.24"
           }
         }
       },
@@ -69,6 +69,20 @@
           "lib/netstandard2.0/RegexMatcher.dll": {
             "assemblyVersion": "1.0.2.0",
             "fileVersion": "1.0.2.0"
+          }
+        }
+      },
+      "S3ServerInterface/1.5.0": {
+        "dependencies": {
+          "AWSSDK.S3": "3.3.102.24",
+          "ChunkDecoder": "1.0.2",
+          "Newtonsoft.Json": "12.0.2",
+          "Watson": "2.1.1"
+        },
+        "runtime": {
+          "lib/netstandard2.0/S3ServerInterface.dll": {
+            "assemblyVersion": "1.5.0.0",
+            "fileVersion": "1.5.0.0"
           }
         }
       },
@@ -141,14 +155,6 @@
             "fileVersion": "2.1.1.0"
           }
         }
-      },
-      "S3ServerInterface/1.4.15.0": {
-        "runtime": {
-          "S3ServerInterface.dll": {
-            "assemblyVersion": "1.4.15.0",
-            "fileVersion": "1.4.15.0"
-          }
-        }
       }
     }
   },
@@ -158,19 +164,19 @@
       "serviceable": false,
       "sha512": ""
     },
-    "AWSSDK.Core/3.3.103.5": {
+    "AWSSDK.Core/3.3.103.7": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-sm59YUQsoMdj1d6bkAkkvcY1i1d3IOrZ/ATdNoFuZqqNunQvGh6x9uHrT9RHlcnom47ywqbkx2GQQTvKvMj3rA==",
-      "path": "awssdk.core/3.3.103.5",
-      "hashPath": "awssdk.core.3.3.103.5.nupkg.sha512"
+      "sha512": "sha512-z6PhL4LFJQaJIPdZZtDOZ0MtMUxopKSpDXVNzvdDIM16x3exJj8rITwfbTc9y7cjVsku0JlyUZMYi61VbS5B9Q==",
+      "path": "awssdk.core/3.3.103.7",
+      "hashPath": "awssdk.core.3.3.103.7.nupkg.sha512"
     },
-    "AWSSDK.S3/3.3.102.22": {
+    "AWSSDK.S3/3.3.102.24": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-K6qrfc57nz6R8A2CxP7VKxsZcaLCp2TIhO33cRPP5BhMSfRIH5VAUrt69IcSKW9HP9IdoIteCE7soJx4DyBOJQ==",
-      "path": "awssdk.s3/3.3.102.22",
-      "hashPath": "awssdk.s3.3.3.102.22.nupkg.sha512"
+      "sha512": "sha512-t6rLHnDUndjpjMM8cWS65VLkbZS+SVBo96XNAuEDWqn8ORAbQDCGAhJF3dSZMHBlOALhhtDHdPePP8CsLTQXxw==",
+      "path": "awssdk.s3/3.3.102.24",
+      "hashPath": "awssdk.s3.3.3.102.24.nupkg.sha512"
     },
     "ChunkDecoder/1.0.2": {
       "type": "package",
@@ -207,6 +213,13 @@
       "path": "regexmatcher/1.0.2",
       "hashPath": "regexmatcher.1.0.2.nupkg.sha512"
     },
+    "S3ServerInterface/1.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-YNy6oXnzo5VPVdbjwcYqVEXUyf+rDa9TXazTTWW8j8nHVYXD0eHROlqJsr4Xbq1qEVu64EHrPusSA3+aNeoDzQ==",
+      "path": "s3serverinterface/1.5.0",
+      "hashPath": "s3serverinterface.1.5.0.nupkg.sha512"
+    },
     "SqliteHelper/1.0.13": {
       "type": "package",
       "serviceable": true,
@@ -241,11 +254,6 @@
       "sha512": "sha512-grgr7uv83usprIc2XIi2m0yp9+E/bTdj0T1bW0i/p/yywoOL4G5hRfGgt7t2r9KOVoH7Kpy7rg8gNXT7ldpvpw==",
       "path": "watson/2.1.1",
       "hashPath": "watson.2.1.1.nupkg.sha512"
-    },
-    "S3ServerInterface/1.4.15.0": {
-      "type": "reference",
-      "serviceable": false,
-      "sha512": ""
     }
   }
 }

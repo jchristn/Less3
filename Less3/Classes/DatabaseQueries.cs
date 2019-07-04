@@ -11,6 +11,8 @@ namespace Less3.Classes
     /// </summary>
     internal static class DatabaseQueries
     {
+        #region Table-Creation
+
         internal static string CreateObjectTable()
         {
             string query =
@@ -35,6 +37,82 @@ namespace Less3.Classes
                 ")";
             return query;
         }
+
+        internal static string CreateTagsTable()
+        {
+            string query = 
+                "CREATE TABLE IF NOT EXISTS Tags " + 
+                "(" +
+                "  Id                INTEGER PRIMARY KEY, " +
+                "  ObjectKey         VARCHAR(64), " +
+                "  ObjectVersion     INTEGER, " +
+                "  Key               VARCHAR(256), " +
+                "  Value             VARCHAR(512) " +
+                ")";
+            return query;
+        }
+
+        #endregion
+
+        #region Tags-Queries
+
+        internal static string GetObjectTags(string key, long version)
+        {
+            string query =
+                "SELECT * FROM Tags WHERE " +
+                "  ObjectKey = '" + Sanitize(key) + "' " +
+                "  AND ObjectVersion = '" + version + "'";
+            return query;
+        }
+
+        internal static string DeleteObjectTags(string key, long version)
+        {
+            string query =
+                "DELETE FROM Tags WHERE " +
+                "  ObjectKey = '" + Sanitize(key) + "' " +
+                "  AND ObjectVersion = '" + version + "'";
+            return query;
+        }
+
+        internal static string InsertObjectTags(string key, long version, Dictionary<string, string> tags)
+        {
+            if (tags == null || tags.Count < 1) throw new ArgumentNullException(nameof(tags));
+
+            string query =
+                "INSERT INTO Tags " +
+                "( " +
+                "  ObjectKey, " +
+                "  ObjectVersion, " +
+                "  Key, " +
+                "  Value " +
+                ") " +
+                "VALUES ";
+
+            int added = 0;
+
+            foreach (KeyValuePair<string, string> curr in tags)
+            {
+                if (String.IsNullOrEmpty(curr.Key)) continue;
+
+                if (added > 0) query += ",";
+
+                query += 
+                    "( " +
+                    "  '" + Sanitize(key) + "', " +
+                    "  '" + version + "', " +
+                    "  '" + Sanitize(curr.Key) + "', " +
+                    "  '" + Sanitize(curr.Value) + "'" +
+                    ") ";
+
+                added++;
+            }
+
+            return query;
+        }
+
+        #endregion
+
+        #region Object-Queries
 
         internal static string ObjectExists(string key)
         {
@@ -235,6 +313,8 @@ namespace Less3.Classes
 
             return query;
         }
+
+        #endregion
 
         internal static string TimestampFormat = "yyyy-MM-ddTHH:mm:ss.ffffffZ";
 

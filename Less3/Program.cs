@@ -233,7 +233,8 @@ namespace Less3
         }
 
         static S3Response PreRequestHandler(S3Request req)
-        { 
+        {
+            while (req.RawUrl.Contains("\\\\")) req.RawUrl.Replace("\\\\", "\\");
             return null;
         }
 

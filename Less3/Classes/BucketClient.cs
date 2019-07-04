@@ -539,6 +539,9 @@ namespace Less3.Classes
 
             query = DatabaseQueries.CreateObjectTable();
             result = _Database.Query(query);
+
+            query = DatabaseQueries.CreateTagsTable();
+            result = _Database.Query(query);
         }
 
         #endregion

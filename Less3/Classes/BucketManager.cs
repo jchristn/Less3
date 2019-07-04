@@ -180,7 +180,7 @@ namespace Less3.Classes
         public bool Get(string bucketName, out BucketConfiguration bucket)
         {
             bucket = null;
-            if (bucketName == null) throw new ArgumentNullException(nameof(bucketName));
+            if (String.IsNullOrEmpty(bucketName)) throw new ArgumentNullException(nameof(bucketName));
 
             lock (_BucketConfigLock)
             {

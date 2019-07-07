@@ -303,7 +303,7 @@
           "lib/netstandard2.0/SqliteWrapper.dll": {}
         }
       },
-      "SyslogLogging/1.0.11": {
+      "SyslogLogging/1.0.12": {
         "type": "package",
         "compile": {
           "lib/netstandard2.0/LoggingModule.dll": {}
@@ -1082,16 +1082,16 @@
         "sqlitehelper.nuspec"
       ]
     },
-    "SyslogLogging/1.0.11": {
-      "sha512": "erCFL+vSl9Y7O7JUeLOxRQpC0c5VmDjtRSy10Coh3Bawfro+/jv+G0a2qvE0jU7A9cBfurC/nj/Ej+Q3pOBuOQ==",
+    "SyslogLogging/1.0.12": {
+      "sha512": "cBWaJZ7wZfRs82S1RCHUJGfhxJZTDBtNx5hw6t3+8e81GGmg34wXCQyKVbSbV1TYBRUHxhuxQBmKBzGfXVEGvg==",
       "type": "package",
-      "path": "sysloglogging/1.0.11",
+      "path": "sysloglogging/1.0.12",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "lib/net452/LoggingModule.dll",
         "lib/netstandard2.0/LoggingModule.dll",
-        "sysloglogging.1.0.11.nupkg.sha512",
+        "sysloglogging.1.0.12.nupkg.sha512",
         "sysloglogging.nuspec"
       ]
     },
@@ -1175,7 +1175,7 @@
       "Newtonsoft.Json >= 12.0.2",
       "S3ServerInterface >= 1.5.1",
       "SqliteHelper >= 1.0.13",
-      "SyslogLogging >= 1.0.11",
+      "SyslogLogging >= 1.0.12",
       "System.Data.SQLite >= 1.0.111",
       "Watson >= 2.1.2"
     ]
@@ -1205,15 +1205,7 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "https://api.nuget.org/v3/index.json": {},
-        "https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore-tooling/index.json": {},
-        "https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/index.json": {},
-        "https://dotnetfeed.blob.core.windows.net/aspnet-entityframeworkcore/index.json": {},
-        "https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json": {},
-        "https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json": {},
-        "https://dotnetfeed.blob.core.windows.net/dotnet-windowsdesktop/index.json": {},
-        "https://nuget.pkg.github.com/jchristn/index.json": {},
-        "https://nuget.pkg.github.com/kvpbase/index.json": {}
+        "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "netcoreapp2.2": {
@@ -1253,7 +1245,7 @@
           },
           "SyslogLogging": {
             "target": "Package",
-            "version": "[1.0.11, )"
+            "version": "[1.0.12, )"
           },
           "System.Data.SQLite": {
             "target": "Package",

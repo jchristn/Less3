@@ -23,7 +23,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Include="S3ServerInterface" Version="1.5.1" />
     <PackageReference Include="SqliteHelper" Version="1.0.13" />
-    <PackageReference Include="SyslogLogging" Version="1.0.11" />
+    <PackageReference Include="SyslogLogging" Version="1.0.12" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.111" />
     <PackageReference Include="Watson" Version="2.1.2" />
   </ItemGroup>

@@ -78,9 +78,9 @@ namespace Less3.Classes
             #endregion
 
             #region Initial-Settings
-             
+
             currSettings.EnableConsole = true;
-             
+
             currSettings.Files = new Settings.SettingsFiles();
             currSettings.Files.Users = "./Users.json";
             currSettings.Files.Credentials = "./Credentials.json";
@@ -205,9 +205,9 @@ namespace Less3.Classes
             obj3.LastUpdateUtc = ts;
             obj3.LastAccessUtc = ts;
 
-            bucket.Add(obj1, Encoding.UTF8.GetBytes(htmlFile));
-            bucket.Add(obj2, Encoding.UTF8.GetBytes(textFile));
-            bucket.Add(obj3, Encoding.UTF8.GetBytes(jsonFile));
+            bucket.AddObject(obj1, Encoding.UTF8.GetBytes(htmlFile));
+            bucket.AddObject(obj2, Encoding.UTF8.GetBytes(textFile));
+            bucket.AddObject(obj3, Encoding.UTF8.GetBytes(jsonFile));
  
             #endregion
 

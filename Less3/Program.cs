@@ -62,7 +62,7 @@ namespace Less3
             _Logging = new LoggingModule(
                 _Settings.Syslog.ServerIp,
                 _Settings.Syslog.ServerPort,
-                _Settings.EnableConsole,
+                _Settings.Syslog.ConsoleLogging,
                 (LoggingModule.Severity)_Settings.Syslog.MinimumLevel,
                 false,
                 true,
@@ -80,6 +80,8 @@ namespace Less3
             _Auth = new AuthManager(_Settings, _Logging, _Users, _Credentials, _Buckets);
 
             _Api = new ApiHandler(_Settings, _Logging, _Credentials, _Buckets, _Auth, _Users);
+
+            _Console = new ConsoleManager(_Settings, _Logging);
 
             _S3Server = new S3Server(
                 _Settings.Server.DnsHostname,
@@ -117,25 +119,23 @@ namespace Less3
 
             #endregion
 
-            #region Start-Console
+            #region Wait-for-Server-Thread
 
             if (_Settings.EnableConsole)
             {
-                _Console = new ConsoleManager(ExitApplication);
+                _Console.Worker();
             }
-
-            #endregion
-
-            #region Wait-for-Server-Thread
-
-            EventWaitHandle waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset, null);
-            bool waitHandleSignal = false;
-            do
-            { 
-                if (_Exiting) break; 
-                waitHandleSignal = waitHandle.WaitOne(1000);
+            else
+            {
+                EventWaitHandle waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset, null);
+                bool waitHandleSignal = false;
+                do
+                {
+                    if (_Exiting) break;
+                    waitHandleSignal = waitHandle.WaitOne(1000);
+                }
+                while (!waitHandleSignal);
             }
-            while (!waitHandleSignal);
 
             _Logging.Log(LoggingModule.Severity.Info, "Less3 exiting");
 

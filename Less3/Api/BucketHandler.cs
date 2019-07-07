@@ -151,12 +151,17 @@ namespace Less3.Api
                 return new S3Response(req, S3ServerInterface.ErrorCode.AccessDenied); 
             }
 
+            BucketClient client = null;
+            if (!_Buckets.GetClient(req.Bucket, out client))
+            {
+                _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler DeleteTags unable to retrieve client for bucket " + req.Bucket);
+                return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchBucket);
+            }
+
             if (bucket.PermittedAccessKeys.Contains(req.AccessKey) ||
                 bucket.Owner.Equals(user.Name))
             {
-                if (File.Exists(GetTagsFile(bucket.Name)))
-                    File.Delete(GetTagsFile(bucket.Name));
-
+                client.DeleteBucketTags(); 
                 return new S3Response(req, 204, "application/xml", null, null);
             }
             else
@@ -313,21 +318,32 @@ namespace Less3.Api
                 return new S3Response(req, S3ServerInterface.ErrorCode.AccessDenied); 
             }
 
+            BucketClient client = null;
+            if (!_Buckets.GetClient(req.Bucket, out client))
+            {
+                _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler ReadTags unable to retrieve client for bucket " + req.Bucket);
+                return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchBucket);
+            }
+
             if (bucket.PermittedAccessKeys.Contains(req.AccessKey) ||
                 bucket.Owner.Equals(user.Name))
-            { 
-                if (File.Exists(GetTagsFile(bucket.Name)))
+            {
+                Dictionary<string, string> storedTags = client.GetBucketTags(); 
+                Tagging tags = new Tagging();
+                tags.TagSet = new List<Tag>();
+
+                if (storedTags != null && storedTags.Count > 0)
                 {
-                    byte[] fileData = Common.ReadBinaryFile(GetTagsFile(bucket.Name));
-                    return new S3Response(req, 200, "application/xml", null, fileData);
+                    foreach (KeyValuePair<string, string> curr in storedTags)
+                    {
+                        Tag currTag = new Tag();
+                        currTag.Key = curr.Key;
+                        currTag.Value = curr.Value;
+                        tags.TagSet.Add(currTag);
+                    }
                 }
-                else
-                {
-                    Tagging tags = new Tagging();
-                    tags.TagSet = new List<Tag>();
-                    File.WriteAllBytes(GetTagsFile(bucket.Name), Encoding.UTF8.GetBytes(Common.SerializeXml(tags)));
-                    return new S3Response(req, 200, "application/xml", null, Encoding.UTF8.GetBytes(Common.SerializeXml(tags))); 
-                } 
+
+                return new S3Response(req, 200, "application/xml", null, Encoding.UTF8.GetBytes(Common.SerializeXml(tags)));  
             }
             else
             {
@@ -582,11 +598,29 @@ namespace Less3.Api
                 return new S3Response(req, S3ServerInterface.ErrorCode.AccessDenied); 
             }
 
+            BucketClient client = null;
+            if (!_Buckets.GetClient(req.Bucket, out client))
+            {
+                _Logging.Log(LoggingModule.Severity.Warn, "BucketHandler WriteTags unable to retrieve client for bucket " + req.Bucket);
+                return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchBucket);
+            }
+
             if (bucket.PermittedAccessKeys.Contains(req.AccessKey) ||
                 bucket.Owner.Equals(user.Name))
             {
-                if (File.Exists(GetTagsFile(bucket.Name))) File.Delete(GetTagsFile(bucket.Name));
-                File.WriteAllBytes(GetTagsFile(bucket.Name), Encoding.UTF8.GetBytes(Common.SerializeXml(reqBody)));
+                client.DeleteBucketTags();
+
+                Dictionary<string, string> tagSet = new Dictionary<string, string>();
+
+                if (reqBody.TagSet != null && reqBody.TagSet.Count > 0)
+                {
+                    foreach (Tag curr in reqBody.TagSet)
+                    {
+                        tagSet.Add(curr.Key, curr.Value);
+                    }
+                }
+
+                client.AddBucketTags(tagSet);
                 return new S3Response(req, 204, "text/plain", null, null); 
             }
             else
@@ -666,12 +700,7 @@ namespace Less3.Api
         {
             return dt.ToString("yyyy-MM-ddTHH:mm:ss.fffz");
         }
-         
-        private string GetTagsFile(string name)
-        {
-            return _Settings.Storage.Directory + name + "/Tags.xml";
-        }
-
+          
         private string BuildContinuationToken(long lastId)
         {
             return Common.StringToBase64(lastId.ToString());

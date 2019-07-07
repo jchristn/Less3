@@ -11,7 +11,7 @@ namespace Less3.Classes
     public class Settings
     {
         #region Public-Members-and-Nested-Classes
-         
+
         /// <summary>
         /// Enable or disable the console.
         /// </summary>

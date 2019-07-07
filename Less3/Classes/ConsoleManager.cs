@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
+using SyslogLogging;
 
 namespace Less3.Classes
 {
-    /// <summary>
-    /// Console manager.
-    /// </summary>
     public class ConsoleManager
     {
         #region Public-Members
@@ -17,38 +17,58 @@ namespace Less3.Classes
 
         #region Private-Members
 
-        private bool _Enabled = true;
-        private Func<bool> _ExitDelegate;
-
+        private bool _Enabled { get; set; }
+        private Settings _Settings { get; set; } 
+        private LoggingModule _Logging { get; set; }  
         #endregion
 
         #region Constructors-and-Factories
 
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        /// <param name="exitDelegate">Method to call when exiting the console.</param>
         public ConsoleManager(
-            Func<bool> exitDelegate)
+            Settings settings,
+            LoggingModule logging)
         {
-            if (exitDelegate == null) throw new ArgumentNullException(nameof(exitDelegate));
+            if (settings == null) throw new ArgumentNullException(nameof(settings));
+            if (logging == null) throw new ArgumentNullException(nameof(logging)); 
 
-            _ExitDelegate = exitDelegate;
+            _Enabled = true;
 
-            Task.Run(() => ConsoleTask());
+            _Settings = settings;
+            _Logging = logging; 
         }
 
         #endregion
 
         #region Public-Methods
 
-        /// <summary>
-        /// Terminate the console.
-        /// </summary>
-        public void Stop()
+        public void Worker()
         {
-            _Enabled = false;
-            return;
+            string userInput = "";
+
+            while (_Enabled)
+            {
+                Console.Write("Command (? for help) > ");
+                userInput = Console.ReadLine();
+
+                if (userInput == null) continue;
+                switch (userInput.ToLower().Trim())
+                {
+                    case "?":
+                        Menu();
+                        break;
+
+                    case "c":
+                    case "cls":
+                    case "clear":
+                        Console.Clear();
+                        break;
+
+                    case "q":
+                    case "quit":
+                        _Enabled = false;
+                        break; 
+                }
+            }
         }
 
         #endregion
@@ -57,38 +77,14 @@ namespace Less3.Classes
 
         private void Menu()
         {
-            Console.WriteLine("-- Available Commands --");
-            Console.WriteLine("   q         Quit");
-            Console.WriteLine("   ?         Help, this menu");
-            Console.WriteLine("   cls       Clear the screen");
+            Console.WriteLine(Common.Line(79, "-"));
+            Console.WriteLine("  ?                         help / this menu");
+            Console.WriteLine("  cls / c                   clear the console");
+            Console.WriteLine("  quit / q                  exit the application"); 
             Console.WriteLine("");
+            return;
         }
-
-        private void ConsoleTask()
-        {
-            while (_Enabled)
-            {
-                string userInput = Common.InputString("Command [? for help]:", null, false);
-
-                switch (userInput.ToLower())
-                {
-                    case "?":
-                        Menu();
-                        break;
-
-                    case "c":
-                    case "cls":
-                        Console.Clear();
-                        break;
-
-                    case "q":
-                        _Enabled = false;
-                        _ExitDelegate();
-                        break;
-                }
-            }
-        }
-
-        #endregion
+         
+        #endregion 
     }
 }

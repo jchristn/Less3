@@ -117,7 +117,7 @@ namespace Less3.Api
             if (!String.IsNullOrEmpty(versionIdStr)) versionId = Convert.ToInt64(versionIdStr);
 
             Obj obj = null;
-            if (!client.GetMetadata(req.Key, versionId, out obj))
+            if (!client.GetObjectMetadata(req.Key, versionId, out obj))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "ObjectHandler Delete unable to find metadata for " + req.Bucket + "/" + req.Key);
                 if (versionId == 1) return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchKey);
@@ -130,7 +130,7 @@ namespace Less3.Api
                 return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchKey);
             }
 
-            client.Delete(obj.Key, versionId);
+            client.DeleteObject(obj.Key, versionId);
             return new S3Response(req, 204, "text/plain", null, null);
         }
 
@@ -193,7 +193,7 @@ namespace Less3.Api
                 { 
                     long versionId = 1;  
                     if (!String.IsNullOrEmpty(curr.VersionId)) versionId = Convert.ToInt64(curr.VersionId);
-                    if (!client.Delete(curr.Key, versionId))
+                    if (!client.DeleteObject(curr.Key, versionId))
                     {
                         S3Responses.Error error = null; 
                         if (versionId > 1) error = new S3Responses.Error(S3Responses.ErrorCode.NoSuchVersion);
@@ -256,14 +256,14 @@ namespace Less3.Api
             if (!String.IsNullOrEmpty(versionIdStr)) versionId = Convert.ToInt64(versionIdStr);
 
             Obj obj = null;
-            if (!client.GetMetadata(req.Key, versionId, out obj))
+            if (!client.GetObjectMetadata(req.Key, versionId, out obj))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "ObjectHandler DeleteTags unable to find metadata for " + req.Bucket + "/" + req.Key);
                 if (versionId == 1) return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchKey);
                 else return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchVersion);
             }
 
-            if (File.Exists(GetTagsFile(bucket, obj))) File.Delete(GetTagsFile(bucket, obj));
+            client.DeleteObjectTags(req.Key, versionId);
             return new S3Response(req, 204, "text/plain", null, null);
         }
 
@@ -312,10 +312,10 @@ namespace Less3.Api
             long versionId = 1;
             if (!String.IsNullOrEmpty(versionIdStr)) versionId = Convert.ToInt64(versionIdStr);
 
-            if (client.Exists(req.Key, versionId))
+            if (client.ObjectExists(req.Key, versionId))
             {
                 Obj obj = null;
-                if (!client.GetMetadata(req.Key, versionId, out obj))
+                if (!client.GetObjectMetadata(req.Key, versionId, out obj))
                 {
                     _Logging.Log(LoggingModule.Severity.Warn, "ObjectHandler Exists unable to find metadata for " + req.Bucket + "/" + req.Key);
                     if (versionId == 1) return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchKey);
@@ -378,7 +378,7 @@ namespace Less3.Api
             if (!String.IsNullOrEmpty(versionIdStr)) versionId = Convert.ToInt64(versionIdStr);
 
             Obj obj = null; 
-            if (!client.GetMetadata(req.Key, versionId, out obj))
+            if (!client.GetObjectMetadata(req.Key, versionId, out obj))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "ObjectHandler Read unable to find metadata for " + req.Bucket + "/" + req.Key);
                 if (versionId == 1) return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchKey);
@@ -469,7 +469,7 @@ namespace Less3.Api
             if (!String.IsNullOrEmpty(versionIdStr)) versionId = Convert.ToInt64(versionIdStr);
 
             Obj obj = null; 
-            if (!client.GetMetadata(req.Key, versionId, out obj))
+            if (!client.GetObjectMetadata(req.Key, versionId, out obj))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "ObjectHandler ReadRange unable to find metadata for " + req.Bucket + "/" + req.Key);
                 if (versionId == 1) return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchKey);
@@ -532,7 +532,7 @@ namespace Less3.Api
             }
 
             Obj obj = null;
-            if (!client.GetMetadata(req.Key, versionId, out obj))
+            if (!client.GetObjectMetadata(req.Key, versionId, out obj))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "ObjectHandler ReadTags unable to find metadata for " + req.Bucket + "/" + req.Key + " version " + versionId);
                 if (versionId == 1) return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchKey);
@@ -542,18 +542,20 @@ namespace Less3.Api
             if (bucket.PermittedAccessKeys.Contains(req.AccessKey) ||
                 bucket.Owner.Equals(user.Name))
             {
-                if (File.Exists(GetTagsFile(bucket, obj)))
+                Dictionary<string, string> storedTags = client.GetObjectTags(req.Key, versionId);
+                Tagging tags = new Tagging();
+                tags.TagSet = new List<Tag>();
+                if (storedTags != null && storedTags.Count > 0)
                 {
-                    byte[] fileData = Common.ReadBinaryFile(GetTagsFile(bucket, obj));
-                    return new S3Response(req, 200, "application/xml", null, fileData);
-                }
-                else
-                {
-                    Tagging tags = new Tagging();
-                    tags.TagSet = new List<Tag>();
-                    File.WriteAllBytes(GetTagsFile(bucket, obj), Encoding.UTF8.GetBytes(Common.SerializeXml(tags)));
-                    return new S3Response(req, 200, "application/xml", null, Encoding.UTF8.GetBytes(Common.SerializeXml(tags)));
-                }
+                    foreach (KeyValuePair<string, string> curr in storedTags)
+                    {
+                        Tag currTag = new Tag();
+                        currTag.Key = curr.Key;
+                        currTag.Value = curr.Value;
+                        tags.TagSet.Add(currTag);
+                    }
+                } 
+                return new S3Response(req, 200, "application/xml", null, Encoding.UTF8.GetBytes(Common.SerializeXml(tags)));
             }
             else
             {
@@ -592,7 +594,7 @@ namespace Less3.Api
             }
              
             Obj obj = null;
-            if (client.GetMetadata(req.Key, out obj))
+            if (client.GetObjectMetadata(req.Key, out obj))
             { 
                 if (!bucket.EnableVersioning)
                 { 
@@ -623,7 +625,7 @@ namespace Less3.Api
                     obj.Md5 = Common.Md5(req.Data);
                     obj.Owner = user.Name;
 
-                    if (!client.Add(obj, req.DataStream))
+                    if (!client.AddObject(obj, req.DataStream))
                     { 
                         _Logging.Log(LoggingModule.Severity.Warn, "ObjectHandler Write unable to write database entry for " + req.Bucket + "/" + req.Key);
                         return new S3Response(req, S3ServerInterface.ErrorCode.InternalError);
@@ -648,7 +650,7 @@ namespace Less3.Api
                     obj.Md5 = Common.Md5(req.Data);
                     obj.Owner = user.Name;
 
-                    if (!client.Add(obj, req.DataStream))
+                    if (!client.AddObject(obj, req.DataStream))
                     { 
                         _Logging.Log(LoggingModule.Severity.Warn, "ObjectHandler Write unable to write database entry for " + req.Bucket + "/" + req.Key);
                         return new S3Response(req, S3ServerInterface.ErrorCode.InternalError);
@@ -718,7 +720,7 @@ namespace Less3.Api
             }
 
             Obj obj = null;
-            if (!client.GetMetadata(req.Key, versionId, out obj))
+            if (!client.GetObjectMetadata(req.Key, versionId, out obj))
             {
                 _Logging.Log(LoggingModule.Severity.Warn, "ObjectHandler WriteTags unable to find metadata for " + req.Bucket + "/" + req.Key + " version " + versionId);
                 if (versionId == 1) return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchKey);
@@ -727,9 +729,19 @@ namespace Less3.Api
 
             if (bucket.PermittedAccessKeys.Contains(req.AccessKey) ||
                 bucket.Owner.Equals(user.Name))
-            { 
-                if (File.Exists(GetTagsFile(bucket, obj))) File.Delete(GetTagsFile(bucket, obj)); 
-                File.WriteAllBytes(GetTagsFile(bucket, obj), Encoding.UTF8.GetBytes(Common.SerializeXml(reqBody)));
+            {
+                client.DeleteObjectTags(req.Key, versionId);
+
+                Dictionary<string, string> tags = new Dictionary<string, string>();
+                if (reqBody.TagSet != null && reqBody.TagSet.Count > 0)
+                {
+                    foreach (Tag curr in reqBody.TagSet)
+                    {
+                        tags.Add(curr.Key, curr.Value);
+                    }
+                }
+
+                client.AddObjectTags(req.Key, versionId, tags);
                 return new S3Response(req, 204, "text/plain", null, null); 
             }
             else
@@ -752,12 +764,7 @@ namespace Less3.Api
         {
             return bucket.ObjectsDirectory + obj.BlobFilename;
         }
-
-        private string GetTagsFile(BucketConfiguration bucket, Obj obj)
-        {
-            return bucket.ObjectsDirectory + obj.BlobFilename + ".Tags.xml";
-        }
-
+         
         private string TimestampFormat = "yyyy-MM-ddTHH:mm:ss.ffffffZ";
 
         private string TimestampUtc(DateTime? ts)

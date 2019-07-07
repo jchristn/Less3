@@ -56,6 +56,15 @@ namespace Less3.Classes
 
         #region Tags-Queries
 
+        internal static string GetBucketTags()
+        {
+            string query =
+                "SELECT * FROM Tags WHERE " +
+                "  ObjectKey IS NULL " +
+                "  AND ObjectVersion IS NULL";
+            return query;
+        }
+            
         internal static string GetObjectTags(string key, long version)
         {
             string query =
@@ -65,12 +74,57 @@ namespace Less3.Classes
             return query;
         }
 
+        internal static string DeleteBucketTags()
+        {
+            string query =
+                "DELETE FROM Tags WHERE " +
+                "  ObjectKey IS NULL " +
+                "  AND ObjectVersion IS NULL";
+            return query;
+        }
+
         internal static string DeleteObjectTags(string key, long version)
         {
             string query =
                 "DELETE FROM Tags WHERE " +
                 "  ObjectKey = '" + Sanitize(key) + "' " +
                 "  AND ObjectVersion = '" + version + "'";
+            return query;
+        }
+
+        internal static string InsertBucketTags(Dictionary<string, string> tags)
+        {
+            if (tags == null || tags.Count < 1) throw new ArgumentNullException(nameof(tags));
+
+            string query =
+                "INSERT INTO Tags " +
+                "( " +
+                "  ObjectKey, " +
+                "  ObjectVersion, " +
+                "  Key, " +
+                "  Value " +
+                ") " +
+                "VALUES ";
+
+            int added = 0;
+
+            foreach (KeyValuePair<string, string> curr in tags)
+            {
+                if (String.IsNullOrEmpty(curr.Key)) continue;
+
+                if (added > 0) query += ",";
+
+                query +=
+                    "( " +
+                    "  null, " +
+                    "  null, " +
+                    "  '" + Sanitize(curr.Key) + "', " +
+                    "  '" + Sanitize(curr.Value) + "'" +
+                    ") ";
+
+                added++;
+            }
+
             return query;
         }
 

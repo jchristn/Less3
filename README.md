@@ -51,6 +51,8 @@ $ dotnet less3.dll
 
 Less3 was designed to be consumed using either the AWS SDK or direct RESTful integration in accordance with Amazon's official documentation (https://docs.aws.amazon.com/AmazonS3/latest/API/Welcome.html).  Should you encounter a discrepancy between how Less3 operates and how AWS S3 operates, please file an issue.
  
+I tested Less3 using the AWS SDK for C#, a live account on S3, CloudBerry Explorer for S3 (see https://www.cloudberrylab.com/explorer/windows/amazon-s3.aspx), and S3 Browser (see http://s3browser.com/).  If you have or recommend other tools, please file an issue here and let me know!
+
 ## Supported APIs
 
 Please refer to the compatibility matrix found in 'assets' for a full list of supported APIs and caveats.
@@ -86,11 +88,7 @@ The following APIs are supported with Less3:
 There are several minor differences between how S3 and less3 handle certain aspects of API requests.  However, these should be inconsequential from the perspective of the developer (for instance, version IDs are numbers internally within less3 rather than strings).  
 
 Should you find any incompatibilities or behavioral issues with the APIs listed above that are considered 'supported', please file an issue here along with details on the expected behavior.  I've tried to mimic the behavior of S3 while building out the API logic.  A link to the supporting documentation will also be helpful to aid me in righting the wrong :)
-
-## Compatibility and Testing
-
-I tested Less3 using the AWS SDK for C#, a live account on S3, CloudBerry Explorer for S3, and S3 Browser.  If you have or recommend other tools, please file an issue here and let me know!
-
+ 
 ## Authentication and Authorization
 
 As of release v1.0.x, only primitive authentication and authorization supported, i.e. you cannot specify specific privileges to assign to access keys.

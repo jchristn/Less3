@@ -73,7 +73,7 @@
             },
             "SyslogLogging": {
               "target": "Package",
-              "version": "[1.0.11, )"
+              "version": "[1.0.12, )"
             },
             "System.Data.SQLite": {
               "target": "Package",

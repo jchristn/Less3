@@ -429,8 +429,6 @@ namespace Less3.Api
             long startPosition = 0;
             long endPosition = 0;
             ParseRangeHeader(rangeHeader, out startPosition, out endPosition);
-            long readLen = endPosition - startPosition;
-            if (readLen < 1) return new S3Response(req, S3ServerInterface.ErrorCode.InvalidRange);
 
             BucketConfiguration bucket = null;
             if (!_Buckets.Get(req.Bucket, out bucket))
@@ -480,7 +478,22 @@ namespace Less3.Api
             {
                 respHeaders.Add("x-amz-delete-marker", "true");
                 return new S3Response(req, S3ServerInterface.ErrorCode.NoSuchKey);
-            } 
+            }
+
+
+            long readLen = endPosition - startPosition;
+            if (endPosition > 0)
+            {
+                if (readLen < 1)
+                {
+                    _Logging.Log(LoggingModule.Severity.Warn, "ObjectHandler ReadRange invalid range supplied, start " + startPosition + " end " + endPosition);
+                    return new S3Response(req, S3ServerInterface.ErrorCode.InvalidRange);
+                }
+            }
+            else
+            {
+                endPosition = obj.ContentLength;
+            }
 
             if (endPosition > obj.ContentLength)
             {
@@ -785,8 +798,12 @@ namespace Less3.Api
             if (header.StartsWith("bytes=")) header = header.Substring(6);
             string[] vals = header.Split('-');
             if (vals.Length != 2) throw new ArgumentException("Invalid range header: " + header);
-            start = Convert.ToInt64(vals[0]);
-            end = Convert.ToInt64(vals[1]); 
+
+            start = 0;
+            end = 0;
+
+            if (!String.IsNullOrEmpty(vals[0])) start = Convert.ToInt64(vals[0]);
+            if (!String.IsNullOrEmpty(vals[1])) end = Convert.ToInt64(vals[1]); 
         }
          
         #endregion

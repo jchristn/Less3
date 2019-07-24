@@ -1,0 +1,39 @@
+<html>
+   <head>
+      <title>&lt;3 :: Less3 :: S3-Compatible Object Storage</title>
+      <style>
+          body {
+            font-family: arial;
+          }
+          h3 {
+            background-color: #e5e7ea;
+            color: #333333; 
+            padding: 16px;
+            border: 16px;
+          }
+          p {
+            color: #333333; 
+            padding: 4px;
+            border: 4px;
+          }
+          a {
+            background-color: #4cc468;
+            color: white;
+            padding: 4px;
+            border: 4px;
+         text-decoration: none; 
+          }
+          li {
+            padding: 6px;
+            border: 6px;
+          }
+      </style>
+   </head>
+   <body>
+      <h3>&lt;3 :: Less3</h3>
+      <p>Congratulations, your Less3 node is running!</p>
+      <p>
+        <a href='http://github.com/jchristn/less3' target='_blank'>SDKs and Source Code</a>
+      </p>
+   </body>
+</html>

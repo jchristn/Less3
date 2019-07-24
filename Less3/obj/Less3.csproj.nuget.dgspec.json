@@ -51,7 +51,7 @@
           "dependencies": {
             "AWSSDK.S3": {
               "target": "Package",
-              "version": "[3.3.103, )"
+              "version": "[3.3.104.2, )"
             },
             "Microsoft.NETCore.App": {
               "suppressParent": "All",
@@ -65,7 +65,7 @@
             },
             "S3ServerInterface": {
               "target": "Package",
-              "version": "[1.5.1, )"
+              "version": "[1.5.1.1, )"
             },
             "SqliteHelper": {
               "target": "Package",

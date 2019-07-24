@@ -1026,7 +1026,16 @@ namespace Less3
                 using (StreamWriter writer = new StreamWriter(stream, Encoding.UTF8))
                 {
                     xml.Serialize(writer, obj);
-                    string ret = Encoding.UTF8.GetString(stream.ToArray(), 0, (int)stream.Length);
+                    byte[] bytes = stream.ToArray(); 
+                    string ret = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
+
+                    // remove preamble if exists
+                    string byteOrderMarkUtf8 = Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble());
+                    if (ret.StartsWith(byteOrderMarkUtf8, StringComparison.Ordinal))
+                    {
+                        ret = ret.Remove(0, byteOrderMarkUtf8.Length);
+                    } 
+
                     return ret;
                 }
             } 

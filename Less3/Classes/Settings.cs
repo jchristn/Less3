@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using SyslogLogging;
 
 namespace Less3.Classes
@@ -188,6 +189,35 @@ namespace Less3.Classes
             }
 
             return ret;
+        }
+
+        #endregion
+
+        #region Public-Methods
+
+        public void Validate()
+        {
+            if (Files == null) throw new ArgumentException("System.json parameter 'Files' must not be null.");
+            if (Server == null) throw new ArgumentException("System.json parameter 'Server' must not be null.");
+            if (Storage == null) throw new ArgumentException("System.json parameter 'Storage' must not be null.");
+            if (Syslog == null) throw new ArgumentException("System.json parameter 'Syslog' must not be null.");
+
+            if (String.IsNullOrEmpty(Files.Users)) throw new ArgumentException("System.json parameter 'Files.Users' must not be null.");
+            if (String.IsNullOrEmpty(Files.Credentials)) throw new ArgumentException("System.json parameter 'Files.Credentials' must not be null.");
+            if (String.IsNullOrEmpty(Files.Buckets)) throw new ArgumentException("System.json parameter 'Files.Buckets' must not be null.");
+
+            if (String.IsNullOrEmpty(Server.DnsHostname)) throw new ArgumentException("System.json parameter 'Server.DnsHostname' must not be null.");
+            if (String.IsNullOrEmpty(Server.HeaderApiKey)) throw new ArgumentException("System.json parameter 'Server.HeaderApiKey' must not be null.");
+            if (String.IsNullOrEmpty(Server.AdminApiKey)) throw new ArgumentException("System.json parameter 'Server.AdminApiKey' must not be null.");
+            if (Server.ListenerPort < 0 || Server.ListenerPort > 65535) throw new ArgumentException("System.json parameter 'Server.ListenerPort' must be within the range 0-65535.");
+
+            IPAddress tempIp;
+            if (IPAddress.TryParse(Server.DnsHostname, out tempIp)) throw new ArgumentException("System.json parameter 'Server.DnsHostname' must be a hostname, not an IP address.");
+
+            if (String.IsNullOrEmpty(Storage.Directory)) throw new ArgumentException("System.json parameter 'Storage.Directory' must not be null.");
+
+            if (String.IsNullOrEmpty(Syslog.ServerIp)) throw new ArgumentException("System.json parameter 'Syslog.ServerIp' must not be null.");
+            if (Syslog.ServerPort < 0 || Syslog.ServerPort > 65535) throw new ArgumentException("System.json parameter 'Syslog.ServerPort' must be within the range 0-65535."); 
         }
 
         #endregion

@@ -52,6 +52,7 @@ namespace Less3
             }
 
             _Settings = Settings.FromFile("System.json");
+            _Settings.Validate();
 
             Welcome(); 
 
@@ -173,7 +174,7 @@ namespace Less3
 
             return ret;
         }
-         
+
         static string DefaultPage(string link)
         {
             string html =
@@ -225,6 +226,55 @@ namespace Less3
             return html;
         }
 
+        static string HostnameRequired()
+        {
+            string html =
+                "<html>" + Environment.NewLine +
+                "   <head>" + Environment.NewLine +
+                "      <title>&lt;3 :: Less3 :: S3-Compatible Object Storage</title>" + Environment.NewLine +
+                "      <style>" + Environment.NewLine +
+                "          body {" + Environment.NewLine +
+                "            font-family: arial;" + Environment.NewLine +
+                "          }" + Environment.NewLine +
+                "          pre {" + Environment.NewLine +
+                "            background-color: #e5e7ea;" + Environment.NewLine +
+                "            color: #333333; " + Environment.NewLine +
+                "          }" + Environment.NewLine +
+                "          h3 {" + Environment.NewLine +
+                "            color: #333333; " + Environment.NewLine +
+                "            padding: 4px;" + Environment.NewLine +
+                "            border: 4px;" + Environment.NewLine +
+                "          }" + Environment.NewLine +
+                "          p {" + Environment.NewLine +
+                "            color: #333333; " + Environment.NewLine +
+                "            padding: 4px;" + Environment.NewLine +
+                "            border: 4px;" + Environment.NewLine +
+                "          }" + Environment.NewLine +
+                "          a {" + Environment.NewLine +
+                "            background-color: #4cc468;" + Environment.NewLine +
+                "            color: white;" + Environment.NewLine +
+                "            padding: 4px;" + Environment.NewLine +
+                "            border: 4px;" + Environment.NewLine +
+                "         text-decoration: none; " + Environment.NewLine +
+                "          }" + Environment.NewLine +
+                "          li {" + Environment.NewLine +
+                "            padding: 6px;" + Environment.NewLine +
+                "            border: 6px;" + Environment.NewLine +
+                "          }" + Environment.NewLine +
+                "      </style>" + Environment.NewLine +
+                "   </head>" + Environment.NewLine +
+                "   <body>" + Environment.NewLine +
+                "      <pre>" + Environment.NewLine +
+                WebUtility.HtmlEncode(Logo()) +
+                "      </pre>" + Environment.NewLine +
+                "      <h3>Bad Request</h3>" + Environment.NewLine +
+                "      <p>Less3 must be accessed using a hostname, not an IP address.</p>" + Environment.NewLine +
+                "   </body>" + Environment.NewLine +
+                "</html>";
+
+            return html;
+        }
+
         static bool ExitApplication()
         {
             _Logging.Log(LoggingModule.Severity.Info, "Less3 exiting due to console request");
@@ -234,8 +284,62 @@ namespace Less3
 
         static S3Response PreRequestHandler(S3Request req)
         {
+            S3Response resp = null;
+
             while (req.RawUrl.Contains("\\\\")) req.RawUrl.Replace("\\\\", "\\");
-            return null;
+
+            #region Favicon-and-Robots
+
+            if (req.RawUrlEntries.Count == 1)
+            {
+                if (req.RawUrlEntries[0].Equals("favicon.ico"))
+                {
+                    byte[] favicon = Common.ReadBinaryFile("assets/favicon.ico");
+                    resp = new S3Response(req, 200, "image/x-icon", null, favicon);
+                    return resp;
+                }
+                else if (req.RawUrlEntries[0].Equals("robots.txt"))
+                {
+                    resp = new S3Response(req, 200, "text/plain", null, Encoding.UTF8.GetBytes("User-Agent: *\r\nDisallow:\r\n"));
+                    return resp;
+                }
+            }
+
+            #endregion
+
+            #region Check-for-IP-Address
+
+            if (req.Headers.ContainsKey("Host"))
+            {
+                string val = req.Headers["Host"]; 
+                if (val.Contains(":")) val = val.Substring(0, val.LastIndexOf(":"));   
+                IPAddress ipAddress;
+                if (IPAddress.TryParse(val, out ipAddress))
+                {
+                    resp = new S3Response(req, 400, "text/html", null, Encoding.UTF8.GetBytes(HostnameRequired()));
+                    return resp;
+                }
+            }
+
+            #endregion
+
+            #region Unauthenticated-Requests
+
+            if (!req.Headers.ContainsKey("Authorization"))
+            { 
+                if (req.Method == WatsonWebserver.HttpMethod.GET)
+                {
+                    if (req.RawUrlEntries == null || req.RawUrlEntries.Count < 1)
+                    {
+                        resp = new S3Response(req, 200, "text/html", null, Encoding.UTF8.GetBytes(DefaultPage("https://github.com/jchristn/less3")));
+                        return resp;
+                    } 
+                } 
+            }
+
+            #endregion
+
+            return resp;
         }
 
         static bool PostRequestHandler(S3Request req, S3Response resp)

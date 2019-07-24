@@ -8,3 +8,4 @@ C:\Code\KVPbase\Less3\Less3\obj\Release\netcoreapp2.2\Less3.AssemblyInfoInputs.c
 C:\Code\KVPbase\Less3\Less3\obj\Release\netcoreapp2.2\Less3.AssemblyInfo.cs
 C:\Code\KVPbase\Less3\Less3\obj\Release\netcoreapp2.2\Less3.dll
 C:\Code\KVPbase\Less3\Less3\obj\Release\netcoreapp2.2\Less3.pdb
+C:\Code\KVPbase\Less3\Less3\obj\Release\netcoreapp2.2\Less3.csprojAssemblyReference.cache

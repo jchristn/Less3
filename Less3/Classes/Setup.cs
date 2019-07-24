@@ -64,16 +64,12 @@ namespace Less3.Classes
             Console.WriteLine("");
             Console.WriteLine("<3 :: Less3 :: S3-Compatible Object Storage");
             Console.WriteLine("");
-            //          1         2         3         4         5         6         7
-            // 12345678901234567890123456789012345678901234567890123456789012345678901234567890
-            Console.WriteLine("Thank you for using Less3!  We'll put together a basic system configuration");
+            //                          1         2         3         4         5         6         7
+            //                 12345678901234567890123456789012345678901234567890123456789012345678901234567890
+            Console.WriteLine("Thank you for using Less3!  We're putting together a basic system configuration");
             Console.WriteLine("so you can be up and running quickly.  You'll want to modify the System.json");
             Console.WriteLine("file after to ensure a more secure operating environment.");
-            Console.WriteLine("");
-            Console.WriteLine("Press ENTER to get started.");
-            Console.WriteLine("");
-            Console.WriteLine(Common.Line(79, "-"));
-            Console.ReadLine();
+            Console.WriteLine(""); 
 
             #endregion
 
@@ -214,20 +210,12 @@ namespace Less3.Classes
             #region Wrap-Up
 
             //                          1         2         3         4         5         6         7
-            //                 12345678901234567890123456789012345678901234567890123456789012345678901234567890
-
+            //                 12345678901234567890123456789012345678901234567890123456789012345678901234567890 
             Console.WriteLine("");
             Console.WriteLine("All finished!");
             Console.WriteLine("");
             Console.WriteLine("If you ever want to return to this setup wizard, just re-run the application");
             Console.WriteLine("from the terminal with the 'setup' argument.");
-            Console.WriteLine("");
-
-            Console.WriteLine("Press ENTER to start.");
-            Console.WriteLine("");
-            Console.ReadLine();
-
-            Console.WriteLine(Common.Line(79, "-"));
             Console.WriteLine("");
             Console.WriteLine("We created a bucket containing a few sample files for you so that you can see");
             Console.WriteLine("your node in action.  Access these files in the 'default' bucket using the");
@@ -242,9 +230,9 @@ namespace Less3.Classes
             Console.WriteLine("  Bucket name : default (public read enabled!)");
             Console.WriteLine("  S3 endpoint : http://" + currSettings.Server.DnsHostname + ":" + currSettings.Server.ListenerPort);
             Console.WriteLine("");
-            Console.WriteLine("IMPORTANT NOTE: you MUST use a hostname for the listener IP address, and within");
-            Console.WriteLine("your S3 client, you MUST enforce path-bucket style (i.e. the bucket may not be");
-            Console.WriteLine("in the hostname.");
+            Console.WriteLine("IMPORTANT: be sure to supply a hostname in the System.json Server.DnsHostname");
+            Console.WriteLine("field if you wish to allow access from other machines.  Your node is currently");
+            Console.WriteLine("only accessible via localhost.  Do not use an IP address for this value.");
             Console.WriteLine("");
 
             #endregion

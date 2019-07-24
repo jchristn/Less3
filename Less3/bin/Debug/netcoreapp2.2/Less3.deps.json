@@ -1,16 +1,16 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.2",
-    "signature": "7342f43e9054fcedec47302a548d5ba5fe74482e"
+    "signature": "54bb1b4859325a23f6e1c6c8a785bed2e0d9aea6"
   },
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v2.2": {
       "Less3/1.0.0": {
         "dependencies": {
-          "AWSSDK.S3": "3.3.103",
+          "AWSSDK.S3": "3.3.104.2",
           "Newtonsoft.Json": "12.0.2",
-          "S3ServerInterface": "1.5.1",
+          "S3ServerInterface": "1.5.1.1",
           "SqliteHelper": "1.0.13",
           "SyslogLogging": "1.0.12",
           "System.Data.SQLite": "1.0.111",
@@ -20,22 +20,22 @@
           "Less3.dll": {}
         }
       },
-      "AWSSDK.Core/3.3.103.7": {
+      "AWSSDK.Core/3.3.103.14": {
         "runtime": {
           "lib/netstandard2.0/AWSSDK.Core.dll": {
             "assemblyVersion": "3.3.0.0",
-            "fileVersion": "3.3.103.7"
+            "fileVersion": "3.3.103.14"
           }
         }
       },
-      "AWSSDK.S3/3.3.103": {
+      "AWSSDK.S3/3.3.104.2": {
         "dependencies": {
-          "AWSSDK.Core": "3.3.103.7"
+          "AWSSDK.Core": "3.3.103.14"
         },
         "runtime": {
           "lib/netstandard2.0/AWSSDK.S3.dll": {
             "assemblyVersion": "3.3.0.0",
-            "fileVersion": "3.3.103.0"
+            "fileVersion": "3.3.104.2"
           }
         }
       },
@@ -72,17 +72,17 @@
           }
         }
       },
-      "S3ServerInterface/1.5.1": {
+      "S3ServerInterface/1.5.1.1": {
         "dependencies": {
-          "AWSSDK.S3": "3.3.103",
+          "AWSSDK.S3": "3.3.104.2",
           "ChunkDecoder": "1.0.2",
           "Newtonsoft.Json": "12.0.2",
           "Watson": "2.1.2"
         },
         "runtime": {
           "lib/netstandard2.0/S3ServerInterface.dll": {
-            "assemblyVersion": "1.5.1.0",
-            "fileVersion": "1.5.1.0"
+            "assemblyVersion": "1.5.1.1",
+            "fileVersion": "1.5.1.1"
           }
         }
       },
@@ -164,19 +164,19 @@
       "serviceable": false,
       "sha512": ""
     },
-    "AWSSDK.Core/3.3.103.7": {
+    "AWSSDK.Core/3.3.103.14": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-z6PhL4LFJQaJIPdZZtDOZ0MtMUxopKSpDXVNzvdDIM16x3exJj8rITwfbTc9y7cjVsku0JlyUZMYi61VbS5B9Q==",
-      "path": "awssdk.core/3.3.103.7",
-      "hashPath": "awssdk.core.3.3.103.7.nupkg.sha512"
+      "sha512": "sha512-DF3vu7FUAiQxIP3Z09Z1McUdZ6lYvrdoQCuygHU2zXLa0tDLi1Pr5HsddSgFoPxLnv+ypAyc9AnuxhShQIwP6g==",
+      "path": "awssdk.core/3.3.103.14",
+      "hashPath": "awssdk.core.3.3.103.14.nupkg.sha512"
     },
-    "AWSSDK.S3/3.3.103": {
+    "AWSSDK.S3/3.3.104.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-oPRCC0qtY5uI7JJk9msUPF68a/V3uOIpU3+opEDwgV0Tsodj8mI5TvLuaEeabdSTQjLiD68T1+C3BKaHnrXSTw==",
-      "path": "awssdk.s3/3.3.103",
-      "hashPath": "awssdk.s3.3.3.103.nupkg.sha512"
+      "sha512": "sha512-4isWbzDQd1mN5ZqA/AjJ8hR/doS96zsaw1P3L8tJIRA1VxPuA9NAxaBwk0oaSH7hTE74OxQyBm7ZEyYI6hQxIA==",
+      "path": "awssdk.s3/3.3.104.2",
+      "hashPath": "awssdk.s3.3.3.104.2.nupkg.sha512"
     },
     "ChunkDecoder/1.0.2": {
       "type": "package",
@@ -213,12 +213,12 @@
       "path": "regexmatcher/1.0.2",
       "hashPath": "regexmatcher.1.0.2.nupkg.sha512"
     },
-    "S3ServerInterface/1.5.1": {
+    "S3ServerInterface/1.5.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-WtgbLmlUYSGZqHag+qnQFv+iIjgQmtAS/lXv69Pq3vVJud3kX+1KjBmclsTTgNNFztJ8fO1h0od7x5Dm0Ng68w==",
-      "path": "s3serverinterface/1.5.1",
-      "hashPath": "s3serverinterface.1.5.1.nupkg.sha512"
+      "sha512": "sha512-h3sCZenUPYHSqdaYCPGBxFnDVYtU60ehIG/CvhEp8+sRDEsCSku8k/vGKxEvTXDsSFs9iHgrNSnAcQqz/YFoHg==",
+      "path": "s3serverinterface/1.5.1.1",
+      "hashPath": "s3serverinterface.1.5.1.1.nupkg.sha512"
     },
     "SqliteHelper/1.0.13": {
       "type": "package",

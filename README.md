@@ -17,6 +17,7 @@ Core use cases for Less3:
 ## New in This Version
 
 v1.0.x
+
 - Initial release; please see supported APIs below.
 
 ## Help and Feedback

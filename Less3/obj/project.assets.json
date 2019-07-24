@@ -2,7 +2,7 @@
   "version": 3,
   "targets": {
     ".NETCoreApp,Version=v2.2": {
-      "AWSSDK.Core/3.3.103.7": {
+      "AWSSDK.Core/3.3.103.14": {
         "type": "package",
         "compile": {
           "lib/netstandard2.0/AWSSDK.Core.dll": {}
@@ -11,10 +11,10 @@
           "lib/netstandard2.0/AWSSDK.Core.dll": {}
         }
       },
-      "AWSSDK.S3/3.3.103": {
+      "AWSSDK.S3/3.3.104.2": {
         "type": "package",
         "dependencies": {
-          "AWSSDK.Core": "[3.3.103.7, 3.4.0)"
+          "AWSSDK.Core": "[3.3.103.14, 3.4.0)"
         },
         "compile": {
           "lib/netstandard2.0/AWSSDK.S3.dll": {}
@@ -274,7 +274,7 @@
           "lib/netstandard2.0/RegexMatcher.dll": {}
         }
       },
-      "S3ServerInterface/1.5.1": {
+      "S3ServerInterface/1.5.1.1": {
         "type": "package",
         "dependencies": {
           "AWSSDK.S3": "3.3.103",
@@ -363,15 +363,15 @@
     }
   },
   "libraries": {
-    "AWSSDK.Core/3.3.103.7": {
-      "sha512": "z6PhL4LFJQaJIPdZZtDOZ0MtMUxopKSpDXVNzvdDIM16x3exJj8rITwfbTc9y7cjVsku0JlyUZMYi61VbS5B9Q==",
+    "AWSSDK.Core/3.3.103.14": {
+      "sha512": "DF3vu7FUAiQxIP3Z09Z1McUdZ6lYvrdoQCuygHU2zXLa0tDLi1Pr5HsddSgFoPxLnv+ypAyc9AnuxhShQIwP6g==",
       "type": "package",
-      "path": "awssdk.core/3.3.103.7",
+      "path": "awssdk.core/3.3.103.14",
       "hasTools": true,
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "awssdk.core.3.3.103.7.nupkg.sha512",
+        "awssdk.core.3.3.103.14.nupkg.sha512",
         "awssdk.core.nuspec",
         "lib/MonoAndroid10/AWSSDK.Core.XML",
         "lib/MonoAndroid10/AWSSDK.Core.dll",
@@ -412,16 +412,16 @@
         "tools/account-management.ps1"
       ]
     },
-    "AWSSDK.S3/3.3.103": {
-      "sha512": "oPRCC0qtY5uI7JJk9msUPF68a/V3uOIpU3+opEDwgV0Tsodj8mI5TvLuaEeabdSTQjLiD68T1+C3BKaHnrXSTw==",
+    "AWSSDK.S3/3.3.104.2": {
+      "sha512": "4isWbzDQd1mN5ZqA/AjJ8hR/doS96zsaw1P3L8tJIRA1VxPuA9NAxaBwk0oaSH7hTE74OxQyBm7ZEyYI6hQxIA==",
       "type": "package",
-      "path": "awssdk.s3/3.3.103",
+      "path": "awssdk.s3/3.3.104.2",
       "hasTools": true,
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "analyzers/dotnet/cs/AWSSDK.S3.CodeAnalysis.dll",
-        "awssdk.s3.3.3.103.nupkg.sha512",
+        "awssdk.s3.3.3.104.2.nupkg.sha512",
         "awssdk.s3.nuspec",
         "lib/MonoAndroid10/AWSSDK.S3.XML",
         "lib/MonoAndroid10/AWSSDK.S3.dll",
@@ -1056,16 +1056,16 @@
         "regexmatcher.nuspec"
       ]
     },
-    "S3ServerInterface/1.5.1": {
-      "sha512": "WtgbLmlUYSGZqHag+qnQFv+iIjgQmtAS/lXv69Pq3vVJud3kX+1KjBmclsTTgNNFztJ8fO1h0od7x5Dm0Ng68w==",
+    "S3ServerInterface/1.5.1.1": {
+      "sha512": "h3sCZenUPYHSqdaYCPGBxFnDVYtU60ehIG/CvhEp8+sRDEsCSku8k/vGKxEvTXDsSFs9iHgrNSnAcQqz/YFoHg==",
       "type": "package",
-      "path": "s3serverinterface/1.5.1",
+      "path": "s3serverinterface/1.5.1.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "lib/net462/S3ServerInterface.dll",
         "lib/netstandard2.0/S3ServerInterface.dll",
-        "s3serverinterface.1.5.1.nupkg.sha512",
+        "s3serverinterface.1.5.1.1.nupkg.sha512",
         "s3serverinterface.nuspec"
       ]
     },
@@ -1170,10 +1170,10 @@
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v2.2": [
-      "AWSSDK.S3 >= 3.3.103",
+      "AWSSDK.S3 >= 3.3.104.2",
       "Microsoft.NETCore.App >= 2.2.0",
       "Newtonsoft.Json >= 12.0.2",
-      "S3ServerInterface >= 1.5.1",
+      "S3ServerInterface >= 1.5.1.1",
       "SqliteHelper >= 1.0.13",
       "SyslogLogging >= 1.0.12",
       "System.Data.SQLite >= 1.0.111",
@@ -1231,7 +1231,7 @@
         "dependencies": {
           "AWSSDK.S3": {
             "target": "Package",
-            "version": "[3.3.103, )"
+            "version": "[3.3.104.2, )"
           },
           "Microsoft.NETCore.App": {
             "suppressParent": "All",
@@ -1245,7 +1245,7 @@
           },
           "S3ServerInterface": {
             "target": "Package",
-            "version": "[1.5.1, )"
+            "version": "[1.5.1.1, )"
           },
           "SqliteHelper": {
             "target": "Package",

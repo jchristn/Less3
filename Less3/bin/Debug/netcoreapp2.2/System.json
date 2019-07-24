@@ -1,0 +1,27 @@
+{
+  "EnableConsole": true,
+  "Files": {
+    "Users": "./Users.json",
+    "Credentials": "./Credentials.json",
+    "Buckets": "./Buckets.json"
+  },
+  "Server": {
+    "DnsHostname": "localhost",
+    "ListenerPort": 8000,
+    "Ssl": false,
+    "HeaderApiKey": "x-api-key",
+    "AdminApiKey": "less3admin"
+  },
+  "Storage": {
+    "Directory": "./Storage/"
+  },
+  "Syslog": {
+    "ServerIp": "127.0.0.1",
+    "ServerPort": 514,
+    "Header": "less3",
+    "MinimumLevel": 1,
+    "LogHttpRequests": false,
+    "LogHttpResponses": false,
+    "ConsoleLogging": true
+  }
+}

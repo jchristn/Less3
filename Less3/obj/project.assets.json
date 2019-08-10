@@ -1207,13 +1207,13 @@
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
-    "version": "1.0.0",
+    "version": "1.0.1",
     "restore": {
-      "projectUniqueName": "C:\\code\\kvpbase\\less3\\Less3\\Less3.csproj",
+      "projectUniqueName": "C:\\Code\\KVPbase\\Less3\\Less3\\Less3.csproj",
       "projectName": "Less3",
-      "projectPath": "C:\\code\\kvpbase\\less3\\Less3\\Less3.csproj",
+      "projectPath": "C:\\Code\\KVPbase\\Less3\\Less3\\Less3.csproj",
       "packagesPath": "C:\\Users\\joelc\\.nuget\\packages\\",
-      "outputPath": "C:\\code\\kvpbase\\less3\\Less3\\obj\\",
+      "outputPath": "C:\\Code\\KVPbase\\Less3\\Less3\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"

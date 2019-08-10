@@ -157,13 +157,28 @@ namespace Less3
             FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
             string version = fvi.FileVersion;
 
-            string msg = 
-                Logo() + 
-                Environment.NewLine +
-                "  <3 :: Less3 :: S3-Compatible Object Storage :: v" + version + Environment.NewLine +
-                Environment.NewLine;
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.WriteLine(Logo()); 
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+            Console.Write("  <3");
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine(" Less3 | S3-Compatible Object Storage | v" + version);
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.WriteLine("");
 
-            Console.WriteLine(msg); 
+            if (_Settings.Server.DnsHostname.Equals("localhost") || _Settings.Server.DnsHostname.Equals("127.0.0.1"))
+            {
+                //                          1         2         3         4         5         6         7         8
+                //                 12345678901234567890123456789012345678901234567890123456789012345678901234567890
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("");
+                Console.WriteLine("WARNING: Less3 started on '" + _Settings.Server.DnsHostname + "'");
+                Console.WriteLine("Less3 can only service requests from the local machine.  If you wish to service");
+                Console.WriteLine("external requests, specify an IP address or DNS-resolvable hostname.");
+                Console.WriteLine(""); 
+            }
+
+            Console.ForegroundColor = ConsoleColor.Gray;
         }
 
         static string Logo()

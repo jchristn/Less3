@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using XmlToPox;
 
 namespace Less3
 {
@@ -1008,6 +1009,13 @@ namespace Less3
         {
             if (String.IsNullOrEmpty(xml)) throw new ArgumentNullException(nameof(xml));
 
+            // remove preamble if exists
+            string byteOrderMarkUtf8 = Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble());
+            while (xml.StartsWith(byteOrderMarkUtf8, StringComparison.Ordinal))
+            {
+                xml = xml.Remove(0, byteOrderMarkUtf8.Length);
+            }
+
             XmlSerializer xmls = new XmlSerializer(typeof(T));
             using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(xml)))
             {
@@ -1031,7 +1039,7 @@ namespace Less3
 
                     // remove preamble if exists
                     string byteOrderMarkUtf8 = Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble());
-                    if (ret.StartsWith(byteOrderMarkUtf8, StringComparison.Ordinal))
+                    while (ret.StartsWith(byteOrderMarkUtf8, StringComparison.Ordinal))
                     {
                         ret = ret.Remove(0, byteOrderMarkUtf8.Length);
                     } 
@@ -1178,6 +1186,20 @@ namespace Less3
             }
 
             return ret;
+        }
+
+        public static string BytesToHexString(byte[] ba)
+        {
+            return BitConverter.ToString(ba).Replace("-", "");
+        }
+
+        public static byte[] HexStringToBytes(String hex)
+        {
+            int NumberChars = hex.Length;
+            byte[] bytes = new byte[NumberChars / 2];
+            for (int i = 0; i < NumberChars; i += 2)
+                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+            return bytes;
         }
 
         #endregion 

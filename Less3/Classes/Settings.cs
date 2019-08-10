@@ -36,7 +36,12 @@ namespace Less3.Classes
         /// <summary>
         /// Logging settings.
         /// </summary>
-        public SettingsSyslog Syslog; 
+        public SettingsSyslog Syslog;
+
+        /// <summary>
+        /// Debug settings.
+        /// </summary>
+        public SettingsDebug Debug;
 
         /// <summary>
         /// Files settings.
@@ -44,19 +49,9 @@ namespace Less3.Classes
         public class SettingsFiles
         {
             /// <summary>
-            /// File containing users.
+            /// File containing configuration database.
             /// </summary>
-            public string Users;
-
-            /// <summary>
-            /// File containing credentials.
-            /// </summary>
-            public string Credentials;
-
-            /// <summary>
-            /// File containing buckets.
-            /// </summary>
-            public string Buckets;
+            public string ConfigDatabase; 
         }
 
         /// <summary>
@@ -142,6 +137,22 @@ namespace Less3.Classes
             public bool ConsoleLogging;
         }
           
+        /// <summary>
+        /// Debug settings.
+        /// </summary>
+        public class SettingsDebug
+        {
+            /// <summary>
+            /// Enable or disable database debugging.
+            /// </summary>
+            public bool Database;
+
+            /// <summary>
+            /// Enable or disable authentication.
+            /// </summary>
+            public bool Authentication;
+        }
+
         #endregion
 
         #region Constructors-and-Factories
@@ -195,16 +206,18 @@ namespace Less3.Classes
 
         #region Public-Methods
 
+        /// <summary>
+        /// Validate settings.
+        /// </summary>
         public void Validate()
         {
             if (Files == null) throw new ArgumentException("System.json parameter 'Files' must not be null.");
             if (Server == null) throw new ArgumentException("System.json parameter 'Server' must not be null.");
             if (Storage == null) throw new ArgumentException("System.json parameter 'Storage' must not be null.");
             if (Syslog == null) throw new ArgumentException("System.json parameter 'Syslog' must not be null.");
+            if (Debug == null) throw new ArgumentException("System.json parameter 'Debug' must not be null.");
 
-            if (String.IsNullOrEmpty(Files.Users)) throw new ArgumentException("System.json parameter 'Files.Users' must not be null.");
-            if (String.IsNullOrEmpty(Files.Credentials)) throw new ArgumentException("System.json parameter 'Files.Credentials' must not be null.");
-            if (String.IsNullOrEmpty(Files.Buckets)) throw new ArgumentException("System.json parameter 'Files.Buckets' must not be null.");
+            if (String.IsNullOrEmpty(Files.ConfigDatabase)) throw new ArgumentException("System.json parameter 'Files.ConfigDatabase' must not be null."); 
 
             if (String.IsNullOrEmpty(Server.DnsHostname)) throw new ArgumentException("System.json parameter 'Server.DnsHostname' must not be null.");
             if (String.IsNullOrEmpty(Server.HeaderApiKey)) throw new ArgumentException("System.json parameter 'Server.HeaderApiKey' must not be null.");

@@ -1,12 +1,12 @@
+C:\Code\KVPbase\Less3\Less3\obj\Debug\netcoreapp2.2\Less3.csproj.CoreCompileInputs.cache
+C:\Code\KVPbase\Less3\Less3\obj\Debug\netcoreapp2.2\Less3.AssemblyInfoInputs.cache
+C:\Code\KVPbase\Less3\Less3\obj\Debug\netcoreapp2.2\Less3.AssemblyInfo.cs
+C:\Code\KVPbase\Less3\Less3\bin\Debug\netcoreapp2.2\Assets\favicon.ico
 C:\Code\KVPbase\Less3\Less3\bin\Debug\netcoreapp2.2\Less3.deps.json
 C:\Code\KVPbase\Less3\Less3\bin\Debug\netcoreapp2.2\Less3.runtimeconfig.json
 C:\Code\KVPbase\Less3\Less3\bin\Debug\netcoreapp2.2\Less3.runtimeconfig.dev.json
 C:\Code\KVPbase\Less3\Less3\bin\Debug\netcoreapp2.2\Less3.dll
 C:\Code\KVPbase\Less3\Less3\bin\Debug\netcoreapp2.2\Less3.pdb
-C:\Code\KVPbase\Less3\Less3\obj\Debug\netcoreapp2.2\Less3.csproj.CoreCompileInputs.cache
-C:\Code\KVPbase\Less3\Less3\obj\Debug\netcoreapp2.2\Less3.AssemblyInfoInputs.cache
-C:\Code\KVPbase\Less3\Less3\obj\Debug\netcoreapp2.2\Less3.AssemblyInfo.cs
+C:\Code\KVPbase\Less3\Less3\obj\Debug\netcoreapp2.2\Less3.csprojAssemblyReference.cache
 C:\Code\KVPbase\Less3\Less3\obj\Debug\netcoreapp2.2\Less3.dll
 C:\Code\KVPbase\Less3\Less3\obj\Debug\netcoreapp2.2\Less3.pdb
-C:\Code\KVPbase\Less3\Less3\obj\Debug\netcoreapp2.2\Less3.csprojAssemblyReference.cache
-C:\Code\KVPbase\Less3\Less3\bin\Debug\netcoreapp2.2\Assets\favicon.ico

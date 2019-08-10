@@ -2,7 +2,7 @@
   "version": 3,
   "targets": {
     ".NETCoreApp,Version=v2.2": {
-      "AWSSDK.Core/3.3.103.14": {
+      "AWSSDK.Core/3.3.103.17": {
         "type": "package",
         "compile": {
           "lib/netstandard2.0/AWSSDK.Core.dll": {}
@@ -11,10 +11,10 @@
           "lib/netstandard2.0/AWSSDK.Core.dll": {}
         }
       },
-      "AWSSDK.S3/3.3.104.2": {
+      "AWSSDK.S3/3.3.104.5": {
         "type": "package",
         "dependencies": {
-          "AWSSDK.Core": "[3.3.103.14, 3.4.0)"
+          "AWSSDK.Core": "[3.3.103.17, 3.4.0)"
         },
         "compile": {
           "lib/netstandard2.0/AWSSDK.S3.dll": {}
@@ -274,7 +274,7 @@
           "lib/netstandard2.0/RegexMatcher.dll": {}
         }
       },
-      "S3ServerInterface/1.5.1.1": {
+      "S3ServerInterface/1.5.1.3": {
         "type": "package",
         "dependencies": {
           "AWSSDK.S3": "3.3.103",
@@ -303,7 +303,7 @@
           "lib/netstandard2.0/SqliteWrapper.dll": {}
         }
       },
-      "SyslogLogging/1.0.12": {
+      "SyslogLogging/1.1.0": {
         "type": "package",
         "compile": {
           "lib/netstandard2.0/LoggingModule.dll": {}
@@ -359,19 +359,28 @@
         "runtime": {
           "lib/netstandard2.0/WatsonWebserver.dll": {}
         }
+      },
+      "XmlToPox/1.0.2": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/XmlToPox.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/XmlToPox.dll": {}
+        }
       }
     }
   },
   "libraries": {
-    "AWSSDK.Core/3.3.103.14": {
-      "sha512": "DF3vu7FUAiQxIP3Z09Z1McUdZ6lYvrdoQCuygHU2zXLa0tDLi1Pr5HsddSgFoPxLnv+ypAyc9AnuxhShQIwP6g==",
+    "AWSSDK.Core/3.3.103.17": {
+      "sha512": "LQK8pAi37B12Sik/sNqFo1tq3hkN9H/E4V9eHWKybqBlXvOIKEI9NIlfOCVy71QJvafP6wf6MCId+433PNhfIg==",
       "type": "package",
-      "path": "awssdk.core/3.3.103.14",
+      "path": "awssdk.core/3.3.103.17",
       "hasTools": true,
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "awssdk.core.3.3.103.14.nupkg.sha512",
+        "awssdk.core.3.3.103.17.nupkg.sha512",
         "awssdk.core.nuspec",
         "lib/MonoAndroid10/AWSSDK.Core.XML",
         "lib/MonoAndroid10/AWSSDK.Core.dll",
@@ -412,16 +421,16 @@
         "tools/account-management.ps1"
       ]
     },
-    "AWSSDK.S3/3.3.104.2": {
-      "sha512": "4isWbzDQd1mN5ZqA/AjJ8hR/doS96zsaw1P3L8tJIRA1VxPuA9NAxaBwk0oaSH7hTE74OxQyBm7ZEyYI6hQxIA==",
+    "AWSSDK.S3/3.3.104.5": {
+      "sha512": "519mu3pwQL2IlvOavLN6NvjsJlkbirBuOmLTE2rxta1ptTCEbkQlujhzx55RgCqBIBK2l+w1+/ZMBW2ORg9gkQ==",
       "type": "package",
-      "path": "awssdk.s3/3.3.104.2",
+      "path": "awssdk.s3/3.3.104.5",
       "hasTools": true,
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "analyzers/dotnet/cs/AWSSDK.S3.CodeAnalysis.dll",
-        "awssdk.s3.3.3.104.2.nupkg.sha512",
+        "awssdk.s3.3.3.104.5.nupkg.sha512",
         "awssdk.s3.nuspec",
         "lib/MonoAndroid10/AWSSDK.S3.XML",
         "lib/MonoAndroid10/AWSSDK.S3.dll",
@@ -1056,16 +1065,16 @@
         "regexmatcher.nuspec"
       ]
     },
-    "S3ServerInterface/1.5.1.1": {
-      "sha512": "h3sCZenUPYHSqdaYCPGBxFnDVYtU60ehIG/CvhEp8+sRDEsCSku8k/vGKxEvTXDsSFs9iHgrNSnAcQqz/YFoHg==",
+    "S3ServerInterface/1.5.1.3": {
+      "sha512": "YBjz7zBXFJUrrPxF7FCl2UEXoA9SYITjGH1xg0+LcuWjppy2m/P6JWzLsWuqE7Ek1AqKxuxH7or227pF/F8KDQ==",
       "type": "package",
-      "path": "s3serverinterface/1.5.1.1",
+      "path": "s3serverinterface/1.5.1.3",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "lib/net462/S3ServerInterface.dll",
         "lib/netstandard2.0/S3ServerInterface.dll",
-        "s3serverinterface.1.5.1.1.nupkg.sha512",
+        "s3serverinterface.1.5.1.3.nupkg.sha512",
         "s3serverinterface.nuspec"
       ]
     },
@@ -1082,16 +1091,16 @@
         "sqlitehelper.nuspec"
       ]
     },
-    "SyslogLogging/1.0.12": {
-      "sha512": "cBWaJZ7wZfRs82S1RCHUJGfhxJZTDBtNx5hw6t3+8e81GGmg34wXCQyKVbSbV1TYBRUHxhuxQBmKBzGfXVEGvg==",
+    "SyslogLogging/1.1.0": {
+      "sha512": "H4YnuGbSAVdx6lgRPGJP4YmsGyVKS53aXmVvKSDecmmg5iJreFF0xgZ1oiDPHujzrv4VsWwhBP2PoiV73YZyiA==",
       "type": "package",
-      "path": "sysloglogging/1.0.12",
+      "path": "sysloglogging/1.1.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "lib/net452/LoggingModule.dll",
         "lib/netstandard2.0/LoggingModule.dll",
-        "sysloglogging.1.0.12.nupkg.sha512",
+        "sysloglogging.1.1.0.nupkg.sha512",
         "sysloglogging.nuspec"
       ]
     },
@@ -1166,18 +1175,31 @@
         "watson.2.1.2.nupkg.sha512",
         "watson.nuspec"
       ]
+    },
+    "XmlToPox/1.0.2": {
+      "sha512": "cxi7GPPYKyaWURg91FPm1r269D/Y8gCayEuh/+fd8F2GRdJkR2C1flDy29LW+uMte2jAZHiDs7zTEKILj0GdXQ==",
+      "type": "package",
+      "path": "xmltopox/1.0.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net452/XmlToPox.dll",
+        "lib/netstandard2.0/XmlToPox.dll",
+        "xmltopox.1.0.2.nupkg.sha512",
+        "xmltopox.nuspec"
+      ]
     }
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v2.2": [
-      "AWSSDK.S3 >= 3.3.104.2",
+      "AWSSDK.S3 >= 3.3.104.5",
       "Microsoft.NETCore.App >= 2.2.0",
       "Newtonsoft.Json >= 12.0.2",
-      "S3ServerInterface >= 1.5.1.1",
+      "S3ServerInterface >= 1.5.1.3",
       "SqliteHelper >= 1.0.13",
-      "SyslogLogging >= 1.0.12",
-      "System.Data.SQLite >= 1.0.111",
-      "Watson >= 2.1.2"
+      "SyslogLogging >= 1.1.0",
+      "Watson >= 2.1.2",
+      "XmlToPox >= 1.0.2"
     ]
   },
   "packageFolders": {
@@ -1187,11 +1209,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Code\\KVPbase\\Less3\\Less3\\Less3.csproj",
+      "projectUniqueName": "C:\\code\\kvpbase\\less3\\Less3\\Less3.csproj",
       "projectName": "Less3",
-      "projectPath": "C:\\Code\\KVPbase\\Less3\\Less3\\Less3.csproj",
+      "projectPath": "C:\\code\\kvpbase\\less3\\Less3\\Less3.csproj",
       "packagesPath": "C:\\Users\\joelc\\.nuget\\packages\\",
-      "outputPath": "C:\\Code\\KVPbase\\Less3\\Less3\\obj\\",
+      "outputPath": "C:\\code\\kvpbase\\less3\\Less3\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
@@ -1206,12 +1228,6 @@
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {},
-        "https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore-tooling/index.json": {},
-        "https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/index.json": {},
-        "https://dotnetfeed.blob.core.windows.net/aspnet-entityframeworkcore/index.json": {},
-        "https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json": {},
-        "https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json": {},
-        "https://dotnetfeed.blob.core.windows.net/dotnet-windowsdesktop/index.json": {},
         "https://nuget.pkg.github.com/jchristn/index.json": {},
         "https://nuget.pkg.github.com/kvpbase/index.json": {}
       },
@@ -1231,7 +1247,7 @@
         "dependencies": {
           "AWSSDK.S3": {
             "target": "Package",
-            "version": "[3.3.104.2, )"
+            "version": "[3.3.104.5, )"
           },
           "Microsoft.NETCore.App": {
             "suppressParent": "All",
@@ -1245,7 +1261,7 @@
           },
           "S3ServerInterface": {
             "target": "Package",
-            "version": "[1.5.1.1, )"
+            "version": "[1.5.1.3, )"
           },
           "SqliteHelper": {
             "target": "Package",
@@ -1253,15 +1269,15 @@
           },
           "SyslogLogging": {
             "target": "Package",
-            "version": "[1.0.12, )"
-          },
-          "System.Data.SQLite": {
-            "target": "Package",
-            "version": "[1.0.111, )"
+            "version": "[1.1.0, )"
           },
           "Watson": {
             "target": "Package",
             "version": "[2.1.2, )"
+          },
+          "XmlToPox": {
+            "target": "Package",
+            "version": "[1.0.2, )"
           }
         },
         "imports": [

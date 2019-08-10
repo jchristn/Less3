@@ -10,10 +10,9 @@ using S3ServerInterface;
 
 using SyslogLogging;
 
-using Less3.Classes;
-using Less3.S3Responses;
+using Less3.Classes; 
 
-namespace Less3.Api
+namespace Less3.Api.S3
 {
     /// <summary>
     /// API handler.
@@ -28,10 +27,9 @@ namespace Less3.Api
 
         private Settings _Settings;
         private LoggingModule _Logging;
-        private CredentialManager _Credentials;
+        private ConfigManager _Config;
         private BucketManager _Buckets;
-        private AuthManager _Auth;
-        private UserManager _Users;
+        private AuthManager _Auth; 
 
         private ServiceHandler _ServiceHandler;
         private BucketHandler _BucketHandler;
@@ -45,36 +43,32 @@ namespace Less3.Api
         /// Instantiate the object.
         /// </summary>
         /// <param name="settings">Settings.</param>
-        /// <param name="logging">LoggingModule.</param>
-        /// <param name="credentials">CredentialManager.</param>
+        /// <param name="logging">LoggingModule.</param> 
+        /// <param name="config">ConfigManager.</param>
         /// <param name="buckets">BucketManager.</param>
-        /// <param name="auth">AuthManager.</param>
-        /// <param name="users">UserManager.</param>
+        /// <param name="auth">AuthManager.</param> 
         public ApiHandler(
             Settings settings, 
-            LoggingModule logging, 
-            CredentialManager credentials,
+            LoggingModule logging,  
+            ConfigManager config,
             BucketManager buckets,
-            AuthManager auth,
-            UserManager users)
+            AuthManager auth)
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
             if (logging == null) throw new ArgumentNullException(nameof(logging));
-            if (credentials == null) throw new ArgumentNullException(nameof(credentials));
+            if (config == null) throw new ArgumentNullException(nameof(config));
             if (buckets == null) throw new ArgumentNullException(nameof(buckets));
-            if (auth == null) throw new ArgumentNullException(nameof(auth));
-            if (users == null) throw new ArgumentNullException(nameof(users));
+            if (auth == null) throw new ArgumentNullException(nameof(auth)); 
 
             _Settings = settings;
             _Logging = logging;
-            _Credentials = credentials;
+            _Config = config;
             _Buckets = buckets;
-            _Auth = auth;
-            _Users = users;
+            _Auth = auth; 
 
-            _ServiceHandler = new ServiceHandler(_Settings, _Logging, _Credentials, _Buckets, _Auth, _Users);
-            _BucketHandler = new BucketHandler(_Settings, _Logging, _Credentials, _Buckets, _Auth, _Users);
-            _ObjectHandler = new ObjectHandler(_Settings, _Logging, _Credentials, _Buckets, _Auth, _Users);
+            _ServiceHandler = new ServiceHandler(_Settings, _Logging, _Config, _Buckets, _Auth);
+            _BucketHandler = new BucketHandler(_Settings, _Logging, _Config, _Buckets, _Auth);
+            _ObjectHandler = new ObjectHandler(_Settings, _Logging, _Config, _Buckets, _Auth);
         }
 
         #endregion
@@ -138,6 +132,16 @@ namespace Less3.Api
         }
 
         /// <summary>
+        /// Bucket read ACL API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
+        public S3Response BucketReadAcl(S3Request req)
+        {
+            return _BucketHandler.ReadAcl(req);
+        }
+
+        /// <summary>
         /// Bucket read tags API callback.
         /// </summary>
         /// <param name="req">S3Request.</param>
@@ -175,6 +179,16 @@ namespace Less3.Api
         public S3Response BucketWrite(S3Request req)
         {
             return _BucketHandler.Write(req);
+        }
+
+        /// <summary>
+        /// Bucket write ACL API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
+        public S3Response BucketWriteAcl(S3Request req)
+        {
+            return _BucketHandler.WriteAcl(req);
         }
 
         /// <summary>
@@ -252,6 +266,16 @@ namespace Less3.Api
         }
 
         /// <summary>
+        /// Object read ACL API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
+        public S3Response ObjectReadAcl(S3Request req)
+        {
+            return _ObjectHandler.ReadAcl(req);
+        }
+
+        /// <summary>
         /// Object read range API callback.
         /// </summary>
         /// <param name="req">S3Request.</param>
@@ -279,6 +303,16 @@ namespace Less3.Api
         public S3Response ObjectWrite(S3Request req)
         {
             return _ObjectHandler.Write(req);
+        }
+
+        /// <summary>
+        /// Object write ACL API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
+        public S3Response ObjectWriteAcl(S3Request req)
+        {
+            return _ObjectHandler.WriteAcl(req);
         }
 
         /// <summary>

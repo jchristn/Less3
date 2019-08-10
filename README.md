@@ -10,9 +10,10 @@ Less3 is an S3-compatible object storage platform that you can run anywhere.
 
 Core use cases for Less3:
 
-- Local object storage - S3-compliant storage on your laptop, virtual machine, container, or bare metal
-- Development and test - local devtest against S3 compatible storage
-- Remote storage - deploy S3 compliant storage in environments where you must control data placement
+- Local object storage - S3-compatible storage on your laptop, virtual machine, container, or bare metal
+- Private cloud object storage - use your existing private cloud hardware to create an S3-compatible storage pool
+- Development and test - local devtest against S3-compatible storage
+- Remote storage - deploy S3-compatible storage in environments where you must control data placement
 
 ## New in This Version
 
@@ -22,20 +23,15 @@ v1.0.x
 
 ## Help and Feedback
 
-First things first - do you need help or have feedback?  Contact me at joel dot christner at gmail dot com or file an issue here. 
+First things first - do you need help or have feedback?  Please file an issue here. 
 
 ## Initial Setup
 
-The binaries for Less3 can be created by compiling from source.  Executing the binary will create a series of JSON files containing the configuration for your node, including:
-
-- System.json - system configuration
-- Buckets.json - list of buckets exposed by less3
-- Users.json - list of users
-- Credentials.json - list of access keys
+The binaries for Less3 can be created by compiling from source.  Executing the binary will create a system configuration in the ```system.json``` file along with the configuration database ```less3.db```. 
 
 The ```Server.DnsHostname``` MUST be set to a hostname.  You cannot use IP addresses (parsing will fail).  Incoming HTTP requests must have a HOST header value that matches the value in ```Server.DnsHostname```.  If it does not match, you will receive a ```400/Bad Request```.
 
-If you use ```*``` or ```+``` for the ```Server.DnsHostname```, Less3 must be executed using administrative privileges.
+If you use ```*```, ```+```, or ```0.0.0.0``` for the ```Server.DnsHostname```, Less3 must be executed using administrative privileges (this is required by the underlying operating system).
 
 To get started, clone Less3, build, publish, and run!
 
@@ -64,23 +60,27 @@ The following APIs are supported with Less3:
 
 - Bucket APIs
   - Write
+  - WriteAcl
   - WriteTags
   - WriteVersioning (no MFA delete support)
   - Delete
   - DeleteTags
   - Exists
   - Read (list objects v2)
+  - ReadAcl
   - ReadVersions
   - ReadTags
 
 - Object APIs
   - Write
+  - WriteAcl
   - WriteTags
   - Delete
   - DeleteMultiple
   - DeleteTags
   - Exists
   - Read
+  - ReadAcl
   - ReadRange
   - ReadTags
 
@@ -89,11 +89,11 @@ The following APIs are supported with Less3:
 There are several minor differences between how S3 and less3 handle certain aspects of API requests.  However, these should be inconsequential from the perspective of the developer (for instance, version IDs are numbers internally within less3 rather than strings).  
 
 Should you find any incompatibilities or behavioral issues with the APIs listed above that are considered 'supported', please file an issue here along with details on the expected behavior.  I've tried to mimic the behavior of S3 while building out the API logic.  A link to the supporting documentation will also be helpful to aid me in righting the wrong :)
- 
-## Authentication and Authorization
 
-As of release v1.0.x, only primitive authentication and authorization supported, i.e. you cannot specify specific privileges to assign to access keys.
-  
+## Administrative APIs
+
+Please refer to the 'wiki' for helpful notes including how to use the administrative APIs.
+
 ## Open Source Packages 
 
 Less3 is built using a series of open-source packages, including:

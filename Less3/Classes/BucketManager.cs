@@ -23,13 +23,11 @@ namespace Less3.Classes
 
         private Settings _Settings;
         private LoggingModule _Logging;
+        private ConfigManager _Config;
 
         private readonly object _BucketsLock = new object();
         private List<BucketClient> _Buckets = new List<BucketClient>();
-
-        private readonly object _BucketConfigLock = new object();
-        private List<BucketConfiguration> _BucketConfigs = new List<BucketConfiguration>();
-
+         
         #endregion
 
         #region Constructors-and-Factories
@@ -39,44 +37,22 @@ namespace Less3.Classes
         /// </summary>
         /// <param name="settings">Settings.</param>
         /// <param name="logging">LoggingModule.</param>
-        public BucketManager(Settings settings, LoggingModule logging)
+        public BucketManager(Settings settings, LoggingModule logging, ConfigManager config)
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
             if (logging == null) throw new ArgumentNullException(nameof(logging));
+            if (config == null) throw new ArgumentNullException(nameof(config));
 
             _Settings = settings;
             _Logging = logging;
+            _Config = config;
 
-            Load();
+            InitializeBuckets();
         }
 
         #endregion
 
         #region Public-Methods
-
-        /// <summary>
-        /// Load buckets from the filesystem.
-        /// </summary>
-        public void Load()
-        {
-            lock (_BucketConfigLock)
-            {
-                _BucketConfigs = Common.DeserializeJson<List<BucketConfiguration>>(Common.ReadTextFile(_Settings.Files.Buckets));
-            }
-
-            InitializeBuckets();
-        }
-
-        /// <summary>
-        /// Save buckets to the filesystem.
-        /// </summary>
-        public void Save()
-        {
-            lock (_BucketConfigLock)
-            {
-                Common.WriteFile(_Settings.Files.Buckets, Encoding.UTF8.GetBytes(Common.SerializeJson(_BucketConfigs, true)));
-            }
-        }
          
         /// <summary>
         /// Add a bucket.
@@ -87,39 +63,20 @@ namespace Less3.Classes
         {
             if (bucket == null) throw new ArgumentNullException(nameof(bucket));
 
-            bool added = false;
-
-            lock (_BucketConfigLock)
+            bool success = _Config.AddBucket(bucket);
+            if (success)
             {
-                bool exists = _BucketConfigs.Exists(c => c.Name.Equals(bucket.Name));
-                if (!exists)
-                {
-                    _BucketConfigs.Add(bucket);
-                    BucketClient client = new BucketClient(_Settings, _Logging, bucket);
+                BucketClient client = new BucketClient(_Settings, _Logging, bucket);
 
-                    lock (_BucketsLock)
-                    {
-                        _Buckets.Add(client);
-                    }
-
-                    added = true;
-                }
-                else
+                lock (_BucketsLock)
                 {
-                    return false;
+                    _Buckets.Add(client);
                 }
-            }
-            
-            if (added)
-            {
-                Save();
+
                 InitializeBucket(bucket);
-                _Logging.Log(LoggingModule.Severity.Info, "BucketManager Add added bucket with name " + bucket.Name + " with owner " + bucket.Owner);
-                return true;
             }
 
-            _Logging.Log(LoggingModule.Severity.Warn, "BucketManager Add bucket with name " + bucket.Name + " already exists");
-            return false;
+            return success; 
         }
 
         /// <summary>
@@ -134,41 +91,46 @@ namespace Less3.Classes
 
             bool removed = false;
 
-            lock (_BucketConfigLock)
+            if (_Config.BucketExists(bucket.Name))
             {
-                bool exists = _BucketConfigs.Exists(c => c.Name.Equals(bucket.Name));
-                if (exists)
+                BucketClient client = null;
+                if (GetClient(bucket.Name, out client))
                 {
-                    _BucketConfigs.Remove(bucket);
-
-                    BucketClient client = null;
-                    if (GetClient(bucket.Name, out client))
+                    lock (_BucketsLock)
                     {
-                        lock (_BucketsLock)
-                        {
-                            List<BucketClient> clients = _Buckets.Where(b => !b.Name.Equals(bucket.Name)).ToList();
-                            _Buckets = new List<BucketClient>(clients);
-                            client.Dispose();
-                            client = null;
-                        }
+                        List<BucketClient> clients = _Buckets.Where(b => !b.Name.Equals(bucket.Name)).ToList();
+                        _Buckets = new List<BucketClient>(clients);
+                        client.Dispose();
+                        client = null;
                     }
-
-                    removed = true;
                 }
+
+                removed = true;
+
+                _Config.DeleteBucket(bucket.GUID);
             }
 
             if (removed)
             {
-                Save();
-                if (!Destroy(bucket))
-                    _Logging.Log(LoggingModule.Severity.Warn, "BucketManager Remove issues encountered removing data for bucket " + bucket.Name + ", cleanup required");
+                if (destroy)
+                {
+                    if (!Destroy(bucket))
+                        _Logging.Warn("BucketManager Remove issues encountered removing data for bucket " + bucket.Name + ", cleanup required");
+                    else
+                        _Logging.Log(LoggingModule.Severity.Info, "BucketManager Remove removed bucket with name " + bucket.Name + " with owner " + bucket.OwnerGUID);
+                }
                 else
-                    _Logging.Log(LoggingModule.Severity.Info, "BucketManager Remove removed bucket with name " + bucket.Name + " with owner " + bucket.Owner);
+                {
+                    _Logging.Log(LoggingModule.Severity.Info, "BucketManager Remove removed bucket with name " + bucket.Name + " with owner " + bucket.OwnerGUID);
+                }
+
                 return true;
             }
-
-            _Logging.Log(LoggingModule.Severity.Warn, "BucketManager Remove bucket with name " + bucket.Name + " not found");
-            return false;
+            else
+            {
+                _Logging.Warn("BucketManager Remove bucket with name " + bucket.Name + " not found");
+                return false;
+            }
         }
 
         /// <summary>
@@ -182,19 +144,17 @@ namespace Less3.Classes
             bucket = null;
             if (String.IsNullOrEmpty(bucketName)) throw new ArgumentNullException(nameof(bucketName));
 
-            lock (_BucketConfigLock)
+            if (!_Config.GetBucketByName(bucketName, out bucket))
             {
-                bool exists = _BucketConfigs.Exists(c => c.Name.Equals(bucketName));
-                if (exists)
-                {
-                    bucket = _BucketConfigs.First(c => c.Name.Equals(bucketName));
-                    return true;
-                }
-
+                _Logging.Warn("BucketManager Get unable to find bucket with name " + bucketName);
                 return false;
             }
+            else
+            {
+                return true;
+            }
         }
-
+         
         /// <summary>
         /// Retrieve a bucket's client.
         /// </summary>
@@ -218,20 +178,14 @@ namespace Less3.Classes
         /// <summary>
         /// Get all buckets associated with a user.
         /// </summary>
-        /// <param name="user">User.</param>
-        /// <param name="buckets">List of BucketConfiguration.</param>
-        /// <returns>True if successful.</returns>
-        public bool GetUserBuckets(string user, out List<BucketConfiguration> buckets)
+        /// <param name="userGuid">User GUID.</param>
+        /// <param name="buckets">List of BucketConfiguration.</param> 
+        public void GetUserBuckets(string userGuid, out List<BucketConfiguration> buckets)
         {
             buckets = null;
-            if (String.IsNullOrEmpty(user)) throw new ArgumentNullException(nameof(user));
+            if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
 
-            lock (_BucketConfigLock)
-            { 
-                List<BucketConfiguration> configs = _BucketConfigs.Where(b => b.Owner.Equals(user)).ToList();
-                buckets = configs;
-                return true;
-            }
+            _Config.GetBucketsByUser(userGuid, out buckets);
         }
 
         #endregion
@@ -240,12 +194,15 @@ namespace Less3.Classes
 
         private void InitializeBuckets()
         {
-            lock (_BucketConfigLock)
+            List<BucketConfiguration> buckets = null;
+            _Config.GetBuckets(out buckets);
+
+            if (buckets == null || buckets.Count < 1)
+                throw new Exception("No buckets configured.");
+
+            foreach (BucketConfiguration curr in buckets)
             {
-                foreach (BucketConfiguration curr in _BucketConfigs)
-                {
-                    InitializeBucket(curr);
-                }
+                InitializeBucket(curr);
             }
         }
 
@@ -271,7 +228,7 @@ namespace Less3.Classes
             }
             catch (Exception)
             {
-                _Logging.Log(LoggingModule.Severity.Warn, "Destroy bucket " + bucket.Name + " failed");
+                _Logging.Warn("Destroy bucket " + bucket.Name + " failed");
             }
 
             #endregion

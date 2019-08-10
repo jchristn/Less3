@@ -1,41 +1,41 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.2",
-    "signature": "54bb1b4859325a23f6e1c6c8a785bed2e0d9aea6"
+    "signature": "3b332ff198bc0d817d309151dea368e4b167de5e"
   },
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v2.2": {
       "Less3/1.0.0": {
         "dependencies": {
-          "AWSSDK.S3": "3.3.104.2",
+          "AWSSDK.S3": "3.3.104.5",
           "Newtonsoft.Json": "12.0.2",
-          "S3ServerInterface": "1.5.1.1",
+          "S3ServerInterface": "1.5.1.3",
           "SqliteHelper": "1.0.13",
-          "SyslogLogging": "1.0.12",
-          "System.Data.SQLite": "1.0.111",
-          "Watson": "2.1.2"
+          "SyslogLogging": "1.1.0",
+          "Watson": "2.1.2",
+          "XmlToPox": "1.0.2"
         },
         "runtime": {
           "Less3.dll": {}
         }
       },
-      "AWSSDK.Core/3.3.103.14": {
+      "AWSSDK.Core/3.3.103.17": {
         "runtime": {
           "lib/netstandard2.0/AWSSDK.Core.dll": {
             "assemblyVersion": "3.3.0.0",
-            "fileVersion": "3.3.103.14"
+            "fileVersion": "3.3.103.17"
           }
         }
       },
-      "AWSSDK.S3/3.3.104.2": {
+      "AWSSDK.S3/3.3.104.5": {
         "dependencies": {
-          "AWSSDK.Core": "3.3.103.14"
+          "AWSSDK.Core": "3.3.103.17"
         },
         "runtime": {
           "lib/netstandard2.0/AWSSDK.S3.dll": {
             "assemblyVersion": "3.3.0.0",
-            "fileVersion": "3.3.104.2"
+            "fileVersion": "3.3.104.5"
           }
         }
       },
@@ -72,17 +72,17 @@
           }
         }
       },
-      "S3ServerInterface/1.5.1.1": {
+      "S3ServerInterface/1.5.1.3": {
         "dependencies": {
-          "AWSSDK.S3": "3.3.104.2",
+          "AWSSDK.S3": "3.3.104.5",
           "ChunkDecoder": "1.0.2",
           "Newtonsoft.Json": "12.0.2",
           "Watson": "2.1.2"
         },
         "runtime": {
           "lib/netstandard2.0/S3ServerInterface.dll": {
-            "assemblyVersion": "1.5.1.1",
-            "fileVersion": "1.5.1.1"
+            "assemblyVersion": "1.5.1.3",
+            "fileVersion": "1.5.1.3"
           }
         }
       },
@@ -99,11 +99,11 @@
           }
         }
       },
-      "SyslogLogging/1.0.12": {
+      "SyslogLogging/1.1.0": {
         "runtime": {
           "lib/netstandard2.0/LoggingModule.dll": {
-            "assemblyVersion": "1.0.12.0",
-            "fileVersion": "1.0.12.0"
+            "assemblyVersion": "1.1.0.0",
+            "fileVersion": "1.1.0.0"
           }
         }
       },
@@ -155,6 +155,14 @@
             "fileVersion": "2.1.2.0"
           }
         }
+      },
+      "XmlToPox/1.0.2": {
+        "runtime": {
+          "lib/netstandard2.0/XmlToPox.dll": {
+            "assemblyVersion": "1.0.2.0",
+            "fileVersion": "1.0.2.0"
+          }
+        }
       }
     }
   },
@@ -164,19 +172,19 @@
       "serviceable": false,
       "sha512": ""
     },
-    "AWSSDK.Core/3.3.103.14": {
+    "AWSSDK.Core/3.3.103.17": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-DF3vu7FUAiQxIP3Z09Z1McUdZ6lYvrdoQCuygHU2zXLa0tDLi1Pr5HsddSgFoPxLnv+ypAyc9AnuxhShQIwP6g==",
-      "path": "awssdk.core/3.3.103.14",
-      "hashPath": "awssdk.core.3.3.103.14.nupkg.sha512"
+      "sha512": "sha512-LQK8pAi37B12Sik/sNqFo1tq3hkN9H/E4V9eHWKybqBlXvOIKEI9NIlfOCVy71QJvafP6wf6MCId+433PNhfIg==",
+      "path": "awssdk.core/3.3.103.17",
+      "hashPath": "awssdk.core.3.3.103.17.nupkg.sha512"
     },
-    "AWSSDK.S3/3.3.104.2": {
+    "AWSSDK.S3/3.3.104.5": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-4isWbzDQd1mN5ZqA/AjJ8hR/doS96zsaw1P3L8tJIRA1VxPuA9NAxaBwk0oaSH7hTE74OxQyBm7ZEyYI6hQxIA==",
-      "path": "awssdk.s3/3.3.104.2",
-      "hashPath": "awssdk.s3.3.3.104.2.nupkg.sha512"
+      "sha512": "sha512-519mu3pwQL2IlvOavLN6NvjsJlkbirBuOmLTE2rxta1ptTCEbkQlujhzx55RgCqBIBK2l+w1+/ZMBW2ORg9gkQ==",
+      "path": "awssdk.s3/3.3.104.5",
+      "hashPath": "awssdk.s3.3.3.104.5.nupkg.sha512"
     },
     "ChunkDecoder/1.0.2": {
       "type": "package",
@@ -213,12 +221,12 @@
       "path": "regexmatcher/1.0.2",
       "hashPath": "regexmatcher.1.0.2.nupkg.sha512"
     },
-    "S3ServerInterface/1.5.1.1": {
+    "S3ServerInterface/1.5.1.3": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-h3sCZenUPYHSqdaYCPGBxFnDVYtU60ehIG/CvhEp8+sRDEsCSku8k/vGKxEvTXDsSFs9iHgrNSnAcQqz/YFoHg==",
-      "path": "s3serverinterface/1.5.1.1",
-      "hashPath": "s3serverinterface.1.5.1.1.nupkg.sha512"
+      "sha512": "sha512-YBjz7zBXFJUrrPxF7FCl2UEXoA9SYITjGH1xg0+LcuWjppy2m/P6JWzLsWuqE7Ek1AqKxuxH7or227pF/F8KDQ==",
+      "path": "s3serverinterface/1.5.1.3",
+      "hashPath": "s3serverinterface.1.5.1.3.nupkg.sha512"
     },
     "SqliteHelper/1.0.13": {
       "type": "package",
@@ -227,12 +235,12 @@
       "path": "sqlitehelper/1.0.13",
       "hashPath": "sqlitehelper.1.0.13.nupkg.sha512"
     },
-    "SyslogLogging/1.0.12": {
+    "SyslogLogging/1.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-cBWaJZ7wZfRs82S1RCHUJGfhxJZTDBtNx5hw6t3+8e81GGmg34wXCQyKVbSbV1TYBRUHxhuxQBmKBzGfXVEGvg==",
-      "path": "sysloglogging/1.0.12",
-      "hashPath": "sysloglogging.1.0.12.nupkg.sha512"
+      "sha512": "sha512-H4YnuGbSAVdx6lgRPGJP4YmsGyVKS53aXmVvKSDecmmg5iJreFF0xgZ1oiDPHujzrv4VsWwhBP2PoiV73YZyiA==",
+      "path": "sysloglogging/1.1.0",
+      "hashPath": "sysloglogging.1.1.0.nupkg.sha512"
     },
     "System.Data.SQLite/1.0.111": {
       "type": "package",
@@ -254,6 +262,13 @@
       "sha512": "sha512-C07+jvPPdR3qQdG9vO9p/3l4/Js8OAtxmpJt0F2mfjScRGdkmLge+yWijfqdBaGDPdmz1nAe09jNYkKBYiBSlw==",
       "path": "watson/2.1.2",
       "hashPath": "watson.2.1.2.nupkg.sha512"
+    },
+    "XmlToPox/1.0.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-cxi7GPPYKyaWURg91FPm1r269D/Y8gCayEuh/+fd8F2GRdJkR2C1flDy29LW+uMte2jAZHiDs7zTEKILj0GdXQ==",
+      "path": "xmltopox/1.0.2",
+      "hashPath": "xmltopox.1.0.2.nupkg.sha512"
     }
   }
 }

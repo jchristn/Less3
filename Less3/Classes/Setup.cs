@@ -69,7 +69,13 @@ namespace Less3.Classes
             Console.WriteLine("Thank you for using Less3!  We're putting together a basic system configuration");
             Console.WriteLine("so you can be up and running quickly.  You'll want to modify the System.json");
             Console.WriteLine("file after to ensure a more secure operating environment.");
-            Console.WriteLine(""); 
+            Console.WriteLine("");
+
+            #endregion
+
+            #region Temporary-Instances
+
+            LoggingModule logging = new LoggingModule("127.0.0.1", 514, false, LoggingModule.Severity.Alert, false, false, false, false, false, false);
 
             #endregion
 
@@ -78,9 +84,7 @@ namespace Less3.Classes
             currSettings.EnableConsole = true;
 
             currSettings.Files = new Settings.SettingsFiles();
-            currSettings.Files.Users = "./Users.json";
-            currSettings.Files.Credentials = "./Credentials.json";
-            currSettings.Files.Buckets = "./Buckets.json";
+            currSettings.Files.ConfigDatabase = "./Less3.db";
 
             currSettings.Server = new Settings.SettingsServer();
             currSettings.Server.DnsHostname = "localhost";
@@ -101,66 +105,52 @@ namespace Less3.Classes
             currSettings.Syslog.LogHttpRequests = false;
             currSettings.Syslog.LogHttpResponses = false;
             currSettings.Syslog.MinimumLevel = 1;
-             
+
+            currSettings.Debug = new Settings.SettingsDebug();
+            currSettings.Debug.Database = false;
+            currSettings.Debug.Authentication = false;
+
             if (!Common.WriteFile("System.json", Common.SerializeJson(currSettings, true), false))
             {
                 Common.ExitApplication("setup", "Unable to write System.json", -1);
                 return;
             }
-
-            #endregion
-            
-            #region Create-Directories
-
-            currSettings.Storage.Directory = "./Storage/";   
-            Directory.CreateDirectory(currSettings.Storage.Directory);  
+             
+            if (!Directory.Exists(currSettings.Storage.Directory))
+                Directory.CreateDirectory(currSettings.Storage.Directory);
 
             #endregion
 
-            #region Create-First-User
+            #region Create-Configuration-Database
 
-            List<User> users = new List<User>();
-            User user1 = new User("default");
-            users.Add(user1);
-            Common.WriteFile(currSettings.Files.Users, Encoding.UTF8.GetBytes(Common.SerializeJson(users, true)));
+            ConfigManager config = new ConfigManager(currSettings, logging);
 
-            #endregion
+            string userGuid = Guid.NewGuid().ToString();
+            config.AddUser(new User(userGuid, "default", "default@default.com"));
+            config.AddCredential(userGuid, "My first access key", "default", "default");
 
-            #region Create-First-Credential
-
-            List<Credential> creds = new List<Credential>();
-            List<RequestType> permissions = new List<RequestType>();
-            permissions.Add(RequestType.Admin);
-
-            Credential cred = new Credential("default", "My first credentials", "default", "default", permissions);
-            creds.Add(cred);
-            Common.WriteFile(currSettings.Files.Credentials, Encoding.UTF8.GetBytes(Common.SerializeJson(creds, true)));
-
-            #endregion
-
-            #region Create-First-Bucket
-
-            List<BucketConfiguration> buckets = new List<BucketConfiguration>();
             BucketConfiguration bucketConfig = new BucketConfiguration(
-                "default", 
                 "default",
-                currSettings.Storage.Directory + "default/default.db", 
-                currSettings.Storage.Directory + "default/Objects/",
-                new List<string>());
+                userGuid,
+                currSettings.Storage.Directory + "default/default.db",
+                currSettings.Storage.Directory + "default/Objects/");
             bucketConfig.EnablePublicRead = true;
             bucketConfig.EnablePublicWrite = false;
             bucketConfig.EnableVersioning = false;
-            buckets.Add(bucketConfig);
-            Common.WriteFile(currSettings.Files.Buckets, Encoding.UTF8.GetBytes(Common.SerializeJson(buckets, true)));
+
+            config.AddBucket(bucketConfig);
+
+            #endregion
+
+            #region Write-Sample-Objects
+
+            BucketClient bucket = new BucketClient(currSettings, logging, bucketConfig);
+
+            DateTime ts = DateTime.Now.ToUniversalTime();
 
             string htmlFile = SampleHtmlFile("http://github.com/jchristn/less3");
             string textFile = SampleTextFile("http://github.com/jchristn/less3");
             string jsonFile = SampleJsonFile("http://github.com/jchristn/less3");
-
-            LoggingModule logging = new LoggingModule("127.0.0.1", 514, true, LoggingModule.Severity.Debug, false, false, false, false, false, false);
-            BucketClient bucket = new BucketClient(currSettings, logging, bucketConfig);
-
-            DateTime ts = DateTime.Now.ToUniversalTime();
 
             Obj obj1 = new Obj();
             obj1.Owner = "default";
@@ -182,7 +172,7 @@ namespace Less3.Classes
             obj2.ContentLength = htmlFile.Length;
             obj2.ContentType = "text/plain";
             obj2.Key = "hello.txt";
-            obj2.Md5 = Common.Md5(Encoding.UTF8.GetBytes(textFile)); 
+            obj2.Md5 = Common.Md5(Encoding.UTF8.GetBytes(textFile));
             obj2.Version = 1;
             obj2.CreatedUtc = ts;
             obj2.LastUpdateUtc = ts;
@@ -195,7 +185,7 @@ namespace Less3.Classes
             obj3.ContentLength = htmlFile.Length;
             obj3.ContentType = "application/json";
             obj3.Key = "hello.json";
-            obj3.Md5 = Common.Md5(Encoding.UTF8.GetBytes(jsonFile)); 
+            obj3.Md5 = Common.Md5(Encoding.UTF8.GetBytes(jsonFile));
             obj3.Version = 1;
             obj3.CreatedUtc = ts;
             obj3.LastUpdateUtc = ts;
@@ -204,8 +194,8 @@ namespace Less3.Classes
             bucket.AddObject(obj1, Encoding.UTF8.GetBytes(htmlFile));
             bucket.AddObject(obj2, Encoding.UTF8.GetBytes(textFile));
             bucket.AddObject(obj3, Encoding.UTF8.GetBytes(jsonFile));
- 
-            #endregion
+
+            #endregion 
 
             #region Wrap-Up
 

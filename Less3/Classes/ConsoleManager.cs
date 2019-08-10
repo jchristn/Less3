@@ -9,6 +9,9 @@ using SyslogLogging;
 
 namespace Less3.Classes
 {
+    /// <summary>
+    /// Console for less3.
+    /// </summary>
     public class ConsoleManager
     {
         #region Public-Members
@@ -24,6 +27,11 @@ namespace Less3.Classes
 
         #region Constructors-and-Factories
 
+        /// <summary>
+        /// Instantiate the object.
+        /// </summary>
+        /// <param name="settings">Settings.</param>
+        /// <param name="logging">LoggingModule.</param>
         public ConsoleManager(
             Settings settings,
             LoggingModule logging)
@@ -41,6 +49,9 @@ namespace Less3.Classes
 
         #region Public-Methods
 
+        /// <summary>
+        /// Console worker method.
+        /// </summary>
         public void Worker()
         {
             string userInput = "";

@@ -7,6 +7,8 @@ using System.Text;
 using SqliteWrapper;
 using SyslogLogging;
 
+using Less3.Database.Bucket;
+
 namespace Less3.Classes
 {
     /// <summary>
@@ -85,7 +87,7 @@ namespace Less3.Classes
             _BucketConfiguration = bucket;
 
             if (!Directory.Exists(_BucketConfiguration.ObjectsDirectory)) Directory.CreateDirectory(_BucketConfiguration.ObjectsDirectory);
-            _Database = new DatabaseClient(_BucketConfiguration.DatabaseFilename, _BucketConfiguration.DatabaseDebug);
+            _Database = new DatabaseClient(_BucketConfiguration.DatabaseFilename, _Settings.Debug.Database);
 
             InitializeDatabase();
         }
@@ -143,7 +145,7 @@ namespace Less3.Classes
             {
                 if (!_BucketConfiguration.EnableVersioning)
                 {
-                    _Logging.Log(LoggingModule.Severity.Warn, "BucketClient Add versioning disabled and object " + _BucketConfiguration.Name + "/" + obj.Key + " already exists");
+                    _Logging.Warn("BucketClient Add versioning disabled and object " + _BucketConfiguration.Name + "/" + obj.Key + " already exists");
                     return false;
                 }
                 
@@ -154,20 +156,10 @@ namespace Less3.Classes
                 obj.Version = 1;
             }
 
-            DateTime ts = DateTime.Now.ToUniversalTime();
-            obj.CreatedUtc = ts;
-            obj.LastAccessUtc = ts;
-            obj.LastUpdateUtc = ts;
-            obj.ExpirationUtc = null;
-            obj.BlobFilename = Guid.NewGuid().ToString();
-            
-            string query = DatabaseQueries.InsertObject(obj);
-            DataTable result = _Database.Query(query);
-            
             int bytesRead = 0;
             long bytesRemaining = obj.ContentLength;
             byte[] buffer = new byte[_StreamReadBufferSize];
-            
+
             using (FileStream fs = new FileStream(_BucketConfiguration.ObjectsDirectory + obj.BlobFilename, FileMode.Create))
             {
                 while (bytesRemaining > 0)
@@ -179,7 +171,20 @@ namespace Less3.Classes
                         bytesRemaining -= bytesRead;
                     }
                 }
+
+                // calculate MD5
+                fs.Seek(0, SeekOrigin.Begin);
+                obj.Md5 = Common.Md5(fs);
             }
+
+            DateTime ts = DateTime.Now.ToUniversalTime();
+            obj.CreatedUtc = ts;
+            obj.LastAccessUtc = ts;
+            obj.LastUpdateUtc = ts;
+            obj.ExpirationUtc = null; 
+            
+            string query = DatabaseQueries.InsertObject(obj);
+            DataTable result = _Database.Query(query);
             
             return true;
         }
@@ -386,13 +391,13 @@ namespace Less3.Classes
         /// Check if a specific version of an object exists.
         /// </summary>
         /// <param name="key">Object's key.</param>
-        /// <param name="versionId">Object version.</param>
+        /// <param name="version">Object version.</param>
         /// <returns>True if exists.</returns>
-        public bool ObjectExists(string key, long versionId)
+        public bool ObjectExists(string key, long version)
         {
             Obj obj = null;
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-            if (GetObjectMetadata(key, versionId, out obj)) return true;
+            if (GetObjectMetadata(key, version, out obj)) return true;
             return false;
         }
 
@@ -408,7 +413,7 @@ namespace Less3.Classes
             Obj obj = null;
             if (!GetObjectMetadata(key, out obj))
             {
-                _Logging.Log(LoggingModule.Severity.Debug, "Delete unable to find key " + _BucketConfiguration.Name + "/" + key);
+                _Logging.Debug("Delete unable to find key " + _BucketConfiguration.Name + "/" + key);
                 return false;
             }
              
@@ -523,17 +528,17 @@ namespace Less3.Classes
         /// <param name="key">Object's key.</param>
         /// <param name="version">Object version.</param>
         /// <param name="tags">Tags.</param>
-        public void AddObjectTags(string key, long versionId, Dictionary<string, string> tags)
+        public void AddObjectTags(string key, long version, Dictionary<string, string> tags)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-            if (versionId < 1) throw new ArgumentException("Version ID must be one or greater.");
+            if (version < 1) throw new ArgumentException("Version ID must be one or greater.");
 
-            string query = DatabaseQueries.DeleteObjectTags(key, versionId);
+            string query = DatabaseQueries.DeleteObjectTags(key, version);
             DataTable result = _Database.Query(query);
 
             if (tags != null && tags.Count > 0)
             {
-                query = DatabaseQueries.InsertObjectTags(key, versionId, tags);
+                query = DatabaseQueries.InsertObjectTags(key, version, tags);
                 result = _Database.Query(query);
             }
         }
@@ -621,13 +626,287 @@ namespace Less3.Classes
         /// </summary>
         /// <param name="key">Object's key.</param>
         /// <param name="version">Object version.</param>
-        public void DeleteObjectTags(string key, long versionId)
+        public void DeleteObjectTags(string key, long version)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-            if (versionId < 1) throw new ArgumentException("Version ID must be one or greater.");
+            if (version < 1) throw new ArgumentException("Version ID must be one or greater.");
 
-            string query = DatabaseQueries.DeleteObjectTags(key, versionId);
+            string query = DatabaseQueries.DeleteObjectTags(key, version);
             DataTable result = _Database.Query(query);
+        }
+        
+        /// <summary>
+        /// Check if a group ACL exists for an object.
+        /// </summary>
+        /// <param name="groupName">Group name.</param>
+        /// <param name="objectKey">Object key.</param>
+        /// <param name="versionId">Object version ID.</param>
+        /// <returns>True if exists.</returns>
+        public bool ObjectGroupAclExists(string groupName, string objectKey, long versionId)
+        {
+            if (String.IsNullOrEmpty(groupName)) throw new ArgumentNullException(nameof(groupName));
+            if (String.IsNullOrEmpty(objectKey)) throw new ArgumentNullException(nameof(objectKey));
+
+            string query = DatabaseQueries.ObjectGroupAclExists(groupName, objectKey, versionId);
+            DataTable result = _Database.Query(query);
+            if (result != null && result.Rows.Count > 0) return true;
+            return false;
+        }
+
+        /// <summary>
+        /// Check if a user ACL exists for an object.
+        /// </summary>
+        /// <param name="userGuid">User GUID.</param>
+        /// <param name="objectKey">Object key.</param>
+        /// <param name="versionId">Object version ID.</param>
+        /// <returns>True if exists.</returns>
+        public bool ObjectUserAclExists(string userGuid, string objectKey, long versionId)
+        {
+            if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
+            if (String.IsNullOrEmpty(objectKey)) throw new ArgumentNullException(nameof(objectKey));
+
+            string query = DatabaseQueries.ObjectUserAclExists(userGuid, objectKey, versionId);
+            DataTable result = _Database.Query(query);
+            if (result != null && result.Rows.Count > 0) return true;
+            return false;
+        }
+
+        /// <summary>
+        /// Check if a group ACL exists for the bucket.
+        /// </summary>
+        /// <param name="groupName">Group name.</param>
+        /// <returns>True if exists.</returns>
+        public bool BucketGroupAclExists(string groupName)
+        {
+            if (String.IsNullOrEmpty(groupName)) throw new ArgumentNullException(nameof(groupName));
+
+            string query = DatabaseQueries.BucketGroupAclExists(groupName);
+            DataTable result = _Database.Query(query);
+            if (result != null && result.Rows.Count > 0) return true;
+            return false;
+        }
+
+        /// <summary>
+        /// Check if a user ACL exists for the bucket.
+        /// </summary>
+        /// <param name="userGuid">User GUID.</param>
+        /// <returns>True if exists.</returns>
+        public bool BucketUserAclExists(string userGuid)
+        {
+            if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
+
+            string query = DatabaseQueries.BucketUserAclExists(userGuid);
+            DataTable result = _Database.Query(query);
+            if (result != null && result.Rows.Count > 0) return true;
+            return false;
+        }
+
+        /// <summary>
+        /// Retrieve ACLs for the bucket.
+        /// </summary>
+        /// <param name="acls">ACLs.</param>
+        public void GetBucketAcl(out List<BucketAcl> acls)
+        {
+            acls = new List<BucketAcl>();
+            string query = DatabaseQueries.GetBucketAcl();
+            DataTable result = _Database.Query(query);
+
+            if (result != null && result.Rows.Count > 0)
+            {
+                foreach (DataRow row in result.Rows)
+                {
+                    acls.Add(BucketAcl.FromDataRow(row));
+                }
+            }
+            return;
+        }
+
+        /// <summary>
+        /// Retrieve ACLs for an object.
+        /// </summary>
+        /// <param name="key">Object key.</param>
+        /// <param name="version">Object version ID.</param>
+        /// <param name="acls">ACLs.</param>
+        public void GetObjectAcl(string key, long version, out List<ObjectAcl> acls)
+        {
+            acls = new List<ObjectAcl>();
+            string query = DatabaseQueries.GetObjectAcl(key, version);
+            DataTable result = _Database.Query(query);
+
+            if (result != null && result.Rows.Count > 0)
+            {
+                foreach (DataRow row in result.Rows)
+                {
+                    acls.Add(ObjectAcl.FromDataRow(row));
+                }
+            }
+
+            return;
+        }
+
+        /// <summary>
+        /// Add an ACL to the bucket.
+        /// </summary>
+        /// <param name="acl">ACL.</param>
+        public void AddBucketAcl(BucketAcl acl)
+        {
+            if (acl == null) throw new ArgumentNullException(nameof(acl));
+
+            string query = null;
+            DataTable result = null;
+
+            string perm = null;
+            if (acl.PermitRead) perm = "PermitRead";
+            else if (acl.PermitWrite) perm = "PermitWrite";
+            else if (acl.PermitReadAcp) perm = "PermitReadAcp";
+            else if (acl.PermitWriteAcp) perm = "PermitWriteAcp";
+            else if (acl.FullControl) perm = "FullControl";
+
+            if (String.IsNullOrEmpty(perm)) throw new ArgumentException("Unknown permission specified in ACL.");
+
+            if (!String.IsNullOrEmpty(acl.UserGUID))
+            {
+                #region User-ACL
+
+                if (BucketUserAclExists(acl.UserGUID))
+                {
+                    _Logging.Debug("BucketClient AddBucketAcl ACL already exists for user " + acl.UserGUID + ", updating");
+                    query = DatabaseQueries.UpdateBucketUserAcl(acl.UserGUID, perm); 
+                    result = _Database.Query(query);
+                    return;
+                }
+                else
+                {
+                    query = DatabaseQueries.InsertBucketAcl(acl); 
+                    result = _Database.Query(query);
+                    return;
+                }
+
+                #endregion
+            }
+            else if (!String.IsNullOrEmpty(acl.UserGroup))
+            {
+                #region Group-ACL
+
+                if (BucketGroupAclExists(acl.UserGroup))
+                {
+                    _Logging.Debug("BucketClient AddBucketAcl ACL already exists for group " + acl.UserGroup + ", updating");
+                    query = DatabaseQueries.UpdateBucketGroupAcl(acl.UserGroup, perm);
+                    result = _Database.Query(query);
+                    return;
+                }
+                else
+                {
+                    query = DatabaseQueries.InsertBucketAcl(acl);
+                    result = _Database.Query(query);
+                    return;
+                }
+
+                #endregion
+            }
+            else
+            {
+                throw new ArgumentException("No user GUID or user group specified.");
+            }
+        }
+
+        /// <summary>
+        /// Add an ACL to an object.
+        /// </summary>
+        /// <param name="acl">ACL.</param>
+        public void AddObjectAcl(ObjectAcl acl)
+        {
+            if (acl == null) throw new ArgumentNullException(nameof(acl));
+             
+            string perm = null;
+            if (acl.PermitRead) perm = "PermitRead";
+            else if (acl.PermitWrite) perm = "PermitWrite";
+            else if (acl.PermitReadAcp) perm = "PermitReadAcp";
+            else if (acl.PermitWriteAcp) perm = "PermitWriteAcp";
+            else if (acl.FullControl) perm = "FullControl";
+
+            if (String.IsNullOrEmpty(perm)) throw new ArgumentException("Unknown permission specified in ACL.");
+
+            string query = null;
+            DataTable result = null;
+
+            if (!String.IsNullOrEmpty(acl.UserGUID))
+            {
+                #region User-ACL
+
+                if (ObjectUserAclExists(acl.UserGUID, acl.ObjectKey, acl.ObjectVersion))
+                {
+                    _Logging.Debug("BucketClient AddObjectAcl ACL already exists for user " + acl.UserGUID + " object " + _BucketConfiguration.Name + "/" + acl.ObjectKey + " version " + acl.ObjectVersion);
+                    query = DatabaseQueries.UpdateObjectUserAcl(acl.UserGUID, acl.ObjectKey, acl.ObjectVersion, perm);
+                    result = _Database.Query(query);
+                    return;
+                }
+                else
+                {
+                    query = DatabaseQueries.InsertObjectAcl(acl);
+                    result = _Database.Query(query);
+                    return;
+                }
+
+                #endregion
+            }
+            else if (!String.IsNullOrEmpty(acl.UserGroup))
+            {
+                #region Group-ACL
+
+                if (ObjectGroupAclExists(acl.UserGroup, acl.ObjectKey, acl.ObjectVersion))
+                {
+                    _Logging.Debug("BucketClient AddObjectAcl ACL already exists for group " + acl.UserGroup + " object " + _BucketConfiguration.Name + "/" + acl.ObjectKey + " version " + acl.ObjectVersion);
+                    query = DatabaseQueries.UpdateObjectGroupAcl(acl.UserGroup, acl.ObjectKey, acl.ObjectVersion, perm);
+                    result = _Database.Query(query);
+                    return;
+                }
+                else
+                {
+                    query = DatabaseQueries.InsertObjectAcl(acl);
+                    result = _Database.Query(query);
+                    return;
+                }
+
+                #endregion
+            }
+            else
+            {
+                throw new ArgumentException("No user GUID or user group specified.");
+            }
+        }
+
+        /// <summary>
+        /// Delete the bucket ACL.
+        /// </summary>
+        public void DeleteBucketAcl()
+        {
+            string query = DatabaseQueries.DeleteBucketAcl();
+            DataTable result = _Database.Query(query);
+            return;
+        }
+
+        /// <summary>
+        /// Delete the object ACL.
+        /// </summary>
+        /// <param name="key">Object key.</param>
+        /// <param name="version">Object version ID.</param>
+        public void DeleteObjectAcl(string key, long version)
+        { 
+            string query = DatabaseQueries.DeleteObjectAcl(key, version); 
+            DataTable result = _Database.Query(query);  
+            return;
+        }
+
+        /// <summary>
+        /// Delete the object ACL.
+        /// </summary>
+        /// <param name="key">Object key.</param>
+        public void DeleteObjectAcl(string key)
+        {
+            string query = DatabaseQueries.DeleteObjectAcl(key);
+            DataTable result = _Database.Query(query);
+            return;
         }
 
         #endregion
@@ -650,7 +929,7 @@ namespace Less3.Classes
                 }
                 catch (Exception e)
                 {
-                    _Logging.Log(LoggingModule.Severity.Warn, "BucketClient Dispose exception disposing bucket " + Name);
+                    _Logging.Warn("BucketClient Dispose exception disposing bucket " + Name);
                     _Logging.LogException("BucketClient", "Dispose", e);
                 }
             }
@@ -669,7 +948,16 @@ namespace Less3.Classes
             query = DatabaseQueries.CreateObjectTable();
             result = _Database.Query(query);
 
-            query = DatabaseQueries.CreateTagsTable();
+            query = DatabaseQueries.CreateBucketTagsTable();
+            result = _Database.Query(query);
+
+            query = DatabaseQueries.CreateObjectTagsTable();
+            result = _Database.Query(query);
+
+            query = DatabaseQueries.CreateBucketAclTable();
+            result = _Database.Query(query);
+
+            query = DatabaseQueries.CreateObjectAclTable();
             result = _Database.Query(query);
         }
 

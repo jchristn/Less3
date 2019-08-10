@@ -12,8 +12,10 @@ using Amazon.S3.Model;
 
 using S3ServerInterface; 
 using SyslogLogging;
+using WatsonWebserver;
 
-using Less3.Api;
+using Less3.Api.Admin;
+using Less3.Api.S3; 
 using Less3.Classes;
 
 namespace Less3
@@ -25,10 +27,10 @@ namespace Less3
     {
         static Settings _Settings;
         static LoggingModule _Logging;
-        static UserManager _Users;
-        static CredentialManager _Credentials;
+        static ConfigManager _Config;
         static BucketManager _Buckets;
-        static ApiHandler _Api;
+        static ApiHandler _ApiHandler;
+        static AdminApiHandler _AdminApiHandler;
         static AuthManager _Auth;
         static S3Server _S3Server;
         static ConsoleManager _Console;
@@ -72,15 +74,15 @@ namespace Less3
                 false,
                 false);
 
-            _Credentials = new CredentialManager(_Settings, _Logging);
+            _Config = new ConfigManager(_Settings, _Logging);
 
-            _Buckets = new BucketManager(_Settings, _Logging);
+            _Buckets = new BucketManager(_Settings, _Logging, _Config);
 
-            _Users = new UserManager(_Settings, _Logging);
+            _Auth = new AuthManager(_Settings, _Logging, _Config, _Buckets);
 
-            _Auth = new AuthManager(_Settings, _Logging, _Users, _Credentials, _Buckets);
+            _ApiHandler = new ApiHandler(_Settings, _Logging, _Config, _Buckets, _Auth);
 
-            _Api = new ApiHandler(_Settings, _Logging, _Credentials, _Buckets, _Auth, _Users);
+            _AdminApiHandler = new AdminApiHandler(_Settings, _Logging, _Config, _Buckets, _Auth);
 
             _Console = new ConsoleManager(_Settings, _Logging);
 
@@ -95,28 +97,32 @@ namespace Less3
 
             _S3Server.PostRequestHandler = PostRequestHandler;
 
-            _S3Server.Service.ListBuckets = _Api.ServiceListBuckets;
+            _S3Server.Service.ListBuckets = _ApiHandler.ServiceListBuckets;
 
-            _S3Server.Bucket.Delete = _Api.BucketDelete;
-            _S3Server.Bucket.DeleteTags = _Api.BucketDeleteTags;
-            _S3Server.Bucket.Exists = _Api.BucketExists;
-            _S3Server.Bucket.Read = _Api.BucketRead; 
-            _S3Server.Bucket.ReadTags = _Api.BucketReadTags;
-            _S3Server.Bucket.ReadVersions = _Api.BucketReadVersions;
-            _S3Server.Bucket.ReadVersioning = _Api.BucketReadVersioning;
-            _S3Server.Bucket.Write = _Api.BucketWrite; 
-            _S3Server.Bucket.WriteTags = _Api.BucketWriteTags;
-            _S3Server.Bucket.WriteVersioning = _Api.BucketWriteVersioning;
+            _S3Server.Bucket.Delete = _ApiHandler.BucketDelete; 
+            _S3Server.Bucket.DeleteTags = _ApiHandler.BucketDeleteTags;
+            _S3Server.Bucket.Exists = _ApiHandler.BucketExists;
+            _S3Server.Bucket.Read = _ApiHandler.BucketRead;
+            _S3Server.Bucket.ReadAcl = _ApiHandler.BucketReadAcl;
+            _S3Server.Bucket.ReadTags = _ApiHandler.BucketReadTags;
+            _S3Server.Bucket.ReadVersions = _ApiHandler.BucketReadVersions;
+            _S3Server.Bucket.ReadVersioning = _ApiHandler.BucketReadVersioning;
+            _S3Server.Bucket.Write = _ApiHandler.BucketWrite;
+            _S3Server.Bucket.WriteAcl = _ApiHandler.BucketWriteAcl;
+            _S3Server.Bucket.WriteTags = _ApiHandler.BucketWriteTags;
+            _S3Server.Bucket.WriteVersioning = _ApiHandler.BucketWriteVersioning;
 
-            _S3Server.Object.Delete = _Api.ObjectDelete;
-            _S3Server.Object.DeleteMultiple = _Api.ObjectDeleteMultiple;
-            _S3Server.Object.DeleteTags = _Api.ObjectDeleteTags;
-            _S3Server.Object.Exists = _Api.ObjectExists;
-            _S3Server.Object.Read = _Api.ObjectRead; 
-            _S3Server.Object.ReadRange = _Api.ObjectReadRange; 
-            _S3Server.Object.ReadTags = _Api.ObjectReadTags;
-            _S3Server.Object.Write = _Api.ObjectWrite; 
-            _S3Server.Object.WriteTags = _Api.ObjectWriteTags;
+            _S3Server.Object.Delete = _ApiHandler.ObjectDelete; 
+            _S3Server.Object.DeleteMultiple = _ApiHandler.ObjectDeleteMultiple;
+            _S3Server.Object.DeleteTags = _ApiHandler.ObjectDeleteTags;
+            _S3Server.Object.Exists = _ApiHandler.ObjectExists;
+            _S3Server.Object.Read = _ApiHandler.ObjectRead;
+            _S3Server.Object.ReadAcl = _ApiHandler.ObjectReadAcl;
+            _S3Server.Object.ReadRange = _ApiHandler.ObjectReadRange; 
+            _S3Server.Object.ReadTags = _ApiHandler.ObjectReadTags;
+            _S3Server.Object.Write = _ApiHandler.ObjectWrite;
+            _S3Server.Object.WriteAcl = _ApiHandler.ObjectWriteAcl;
+            _S3Server.Object.WriteTags = _ApiHandler.ObjectWriteTags;
 
             #endregion
 
@@ -339,6 +345,36 @@ namespace Less3
 
             #endregion
 
+            #region Admin-Requests
+
+            if (req.RawUrlEntries.Count >= 2 && req.RawUrlEntries[0].Equals("admin"))
+            {
+                if (req.Headers.ContainsKey(_Settings.Server.HeaderApiKey))
+                {
+                    if (!req.Headers[_Settings.Server.HeaderApiKey].Equals(_Settings.Server.AdminApiKey))
+                    {
+                        _Logging.Warn("PreRequestHandler invalid admin API key supplied: " + _Settings.Server.AdminApiKey +
+                            " from " + req.SourceIp + ":" + req.SourcePort + " " + req.Method.ToString() + " " + req.RawUrl);
+                        resp = new S3Response(req, 401, "text/plain", null, null);
+                        return resp;
+                    }
+
+                    resp = new S3Response(req, 400, "text/plain", null, null);
+
+                    switch (req.Method)
+                    {
+                        case HttpMethod.GET:
+                        case HttpMethod.PUT:
+                        case HttpMethod.POST:
+                        case HttpMethod.DELETE:
+                            resp = _AdminApiHandler.Process(req);
+                            break;
+                    } 
+                }
+            }
+
+            #endregion
+
             return resp;
         }
 
@@ -346,14 +382,14 @@ namespace Less3
         {
             TimeSpan span = resp.TimestampUtc - req.TimestampUtc;
             int ms = (int)span.TotalMilliseconds;
-            _Logging.Log(LoggingModule.Severity.Debug, req.SourceIp + ":" + req.SourcePort + " " + req.Method.ToString() + " " + req.RawUrl + " " + resp.StatusCode + " [" + ms + "ms]");
+            _Logging.Debug(req.SourceIp + ":" + req.SourcePort + " " + req.Method.ToString() + " " + req.RawUrl + " " + resp.StatusCode + " [" + ms + "ms]");
              
             return true;
         }
 
         static S3Response DefaultRequestHandler(S3Request req)
         {
-            Error error = new Error(ErrorCode.InvalidRequest);
+            S3ServerInterface.S3Objects.Error error = new S3ServerInterface.S3Objects.Error(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
             return new S3Response(req, error);
         }
     }

@@ -27,12 +27,18 @@ namespace Less3.Classes
         BucketExists,
         [EnumMember(Value = "BucketRead")]
         BucketRead,
+        [EnumMember(Value = "BucketReadAcl")]
+        BucketReadAcl,
         [EnumMember(Value = "BucketReadTags")]
         BucketReadTags,
         [EnumMember(Value = "BucketReadVersioning")]
         BucketReadVersioning,
+        [EnumMember(Value = "BucketReadVersions")]
+        BucketReadVersions,
         [EnumMember(Value = "BucketWrite")]
         BucketWrite,
+        [EnumMember(Value = "BucketWriteAcl")]
+        BucketWriteAcl,
         [EnumMember(Value = "BucketWriteTags")]
         BucketWriteTags,
         [EnumMember(Value = "BucketWriteVersioning")]

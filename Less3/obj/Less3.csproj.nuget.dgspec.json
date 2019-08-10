@@ -51,7 +51,7 @@
           "dependencies": {
             "AWSSDK.S3": {
               "target": "Package",
-              "version": "[3.3.104.2, )"
+              "version": "[3.3.104.3, )"
             },
             "Microsoft.NETCore.App": {
               "suppressParent": "All",
@@ -74,10 +74,6 @@
             "SyslogLogging": {
               "target": "Package",
               "version": "[1.0.12, )"
-            },
-            "System.Data.SQLite": {
-              "target": "Package",
-              "version": "[1.0.111, )"
             },
             "Watson": {
               "target": "Package",

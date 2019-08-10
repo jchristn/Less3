@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyCopyrightAttribute("(c)2019 Joel Christner")]
 [assembly: System.Reflection.AssemblyDescriptionAttribute("<3 Less3 is S3-compatible object storage that you can run on your laptop, server," +
-    " whereever!")]
+    " or anywhere you like.")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
 [assembly: System.Reflection.AssemblyProductAttribute("Less3")]

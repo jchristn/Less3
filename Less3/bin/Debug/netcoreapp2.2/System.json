@@ -23,5 +23,9 @@
     "LogHttpRequests": false,
     "LogHttpResponses": false,
     "ConsoleLogging": true
+  },
+  "Debug": {
+    "Database": false,
+    "Authentication": true
   }
 }

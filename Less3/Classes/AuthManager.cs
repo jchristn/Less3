@@ -1231,7 +1231,32 @@ namespace Less3.Classes
         private void Log(LoggingModule.Severity sev, string msg)
         {
             if (_Settings.Debug.Authentication)
-                _Logging.Log(sev, msg);
+            {
+                switch (sev)
+                {
+                    case LoggingModule.Severity.Debug:
+                        _Logging.Debug(msg);
+                        break;
+                    case LoggingModule.Severity.Info:
+                        _Logging.Info(msg);
+                        break;
+                    case LoggingModule.Severity.Warn:
+                        _Logging.Warn(msg);
+                        break;
+                    case LoggingModule.Severity.Alert:
+                        _Logging.Alert(msg);
+                        break;
+                    case LoggingModule.Severity.Critical:
+                        _Logging.Critical(msg);
+                        break;
+                    case LoggingModule.Severity.Error:
+                        _Logging.Error(msg);
+                        break;
+                    case LoggingModule.Severity.Emergency:
+                        _Logging.Emergency(msg);
+                        break;
+                }
+            }
         }
 
         #endregion

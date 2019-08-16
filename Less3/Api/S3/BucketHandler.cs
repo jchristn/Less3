@@ -119,7 +119,7 @@ namespace Less3.Api.S3
                 return new S3Response(req, ErrorCode.BucketNotEmpty);
             }
 
-            _Logging.Log(LoggingModule.Severity.Info, "BucketHandler Delete deleting bucket " + req.Bucket);
+            _Logging.Info("BucketHandler Delete deleting bucket " + req.Bucket);
             _Buckets.Remove(bucket, true);
             return new S3Response(req, 204, "application/xml", null, null); 
         }
@@ -717,7 +717,7 @@ namespace Less3.Api.S3
                 }
                 catch (Exception e)
                 {
-                    _Logging.LogException("BucketHandler", "Write", e);
+                    _Logging.Exception("BucketHandler", "Write", e);
                     return new S3Response(req, ErrorCode.InvalidRequest);
                 }
             }
@@ -846,7 +846,7 @@ namespace Less3.Api.S3
                 }
                 catch (Exception e)
                 {
-                    _Logging.LogException("BucketHandler", "WriteAcl", e);
+                    _Logging.Exception("BucketHandler", "WriteAcl", e);
                     return new S3Response(req, ErrorCode.InvalidRequest);
                 }
             }
@@ -972,7 +972,7 @@ namespace Less3.Api.S3
                 }
                 catch (Exception e)
                 {
-                    _Logging.LogException("BucketHandler", "WriteTags", e);
+                    _Logging.Exception("BucketHandler", "WriteTags", e);
                     return new S3Response(req, ErrorCode.InvalidRequest);
                 }
             }
@@ -1041,7 +1041,7 @@ namespace Less3.Api.S3
                 }
                 catch (Exception e)
                 {
-                    _Logging.LogException("BucketHandler", "WriteVersioning", e);
+                    _Logging.Exception("BucketHandler", "WriteVersioning", e);
                     return new S3Response(req, ErrorCode.InvalidRequest);
                 }
             }

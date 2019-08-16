@@ -117,11 +117,11 @@ namespace Less3.Classes
                     if (!Destroy(bucket))
                         _Logging.Warn("BucketManager Remove issues encountered removing data for bucket " + bucket.Name + ", cleanup required");
                     else
-                        _Logging.Log(LoggingModule.Severity.Info, "BucketManager Remove removed bucket with name " + bucket.Name + " with owner " + bucket.OwnerGUID);
+                        _Logging.Info("BucketManager Remove removed bucket with name " + bucket.Name + " with owner " + bucket.OwnerGUID);
                 }
                 else
                 {
-                    _Logging.Log(LoggingModule.Severity.Info, "BucketManager Remove removed bucket with name " + bucket.Name + " with owner " + bucket.OwnerGUID);
+                    _Logging.Info("BucketManager Remove removed bucket with name " + bucket.Name + " with owner " + bucket.OwnerGUID);
                 }
 
                 return true;
@@ -297,7 +297,7 @@ namespace Less3.Classes
 
             #endregion
 
-            _Logging.Log(LoggingModule.Severity.Info, "Destroy bucket " + bucket.Name + ": " +
+            _Logging.Info("Destroy bucket " + bucket.Name + ": " +
                 "db files [" + databaseDelete + "] " +
                 "obj files [" + objectFilesDelete + "] " +
                 "obj dir [" + objectsDirectoryDelete + "] " +

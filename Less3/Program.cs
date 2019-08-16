@@ -144,7 +144,7 @@ namespace Less3
                 while (!waitHandleSignal);
             }
 
-            _Logging.Log(LoggingModule.Severity.Info, "Less3 exiting");
+            _Logging.Info("Less3 exiting");
 
             #endregion
         }
@@ -298,7 +298,7 @@ namespace Less3
 
         static bool ExitApplication()
         {
-            _Logging.Log(LoggingModule.Severity.Info, "Less3 exiting due to console request");
+            _Logging.Info("Less3 exiting due to console request");
             _Exiting = true; 
             return true;
         }

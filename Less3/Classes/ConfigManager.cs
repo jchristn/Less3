@@ -687,7 +687,7 @@ namespace Less3.Classes
                 }
                 catch (Exception e)
                 {
-                    _Logging.LogException("ConfigManager", "Dispose", e);
+                    _Logging.Exception("ConfigManager", "Dispose", e);
                 }
             }
 

@@ -149,7 +149,7 @@ namespace Less3.Api.S3
                 }
                 catch (Exception e)
                 {
-                    _Logging.LogException("ObjectHandler", "DeleteMultiple", e);
+                    _Logging.Exception("ObjectHandler", "DeleteMultiple", e);
                     return new S3Response(req, ErrorCode.InvalidRequest);
                 }
             }
@@ -963,7 +963,7 @@ namespace Less3.Api.S3
                 }
                 catch (Exception e)
                 {
-                    _Logging.LogException("ObjectHandler", "WriteAcl", e); 
+                    _Logging.Exception("ObjectHandler", "WriteAcl", e); 
                     return new S3Response(req, ErrorCode.InvalidRequest);
                 }
             }
@@ -1103,7 +1103,7 @@ namespace Less3.Api.S3
                 }
                 catch (Exception e)
                 {
-                    _Logging.LogException("ObjectHandler", "WriteTags", e);
+                    _Logging.Exception("ObjectHandler", "WriteTags", e);
                     return new S3Response(req, ErrorCode.InvalidRequest);
                 }
             }

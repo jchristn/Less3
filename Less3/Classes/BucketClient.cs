@@ -422,14 +422,14 @@ namespace Less3.Classes
 
             if (_BucketConfiguration.EnableVersioning)
             {
-                _Logging.Log(LoggingModule.Severity.Info, "Delete marking key " + _BucketConfiguration.Name + "/" + key + " as deleted");
+                _Logging.Info("Delete marking key " + _BucketConfiguration.Name + "/" + key + " as deleted");
                 query = DatabaseQueries.MarkObjectDeleted(obj);
                 result = _Database.Query(query);
                 return true;
             }
             else
             {
-                _Logging.Log(LoggingModule.Severity.Info, "Delete deleting key " + _BucketConfiguration.Name + "/" + key);
+                _Logging.Info("Delete deleting key " + _BucketConfiguration.Name + "/" + key);
                 query = DatabaseQueries.DeleteObject(obj.Key, obj.Version); 
                 result = _Database.Query(query);
                 File.Delete(_BucketConfiguration.ObjectsDirectory + obj.BlobFilename);
@@ -930,7 +930,7 @@ namespace Less3.Classes
                 catch (Exception e)
                 {
                     _Logging.Warn("BucketClient Dispose exception disposing bucket " + Name);
-                    _Logging.LogException("BucketClient", "Dispose", e);
+                    _Logging.Exception("BucketClient", "Dispose", e);
                 }
             }
 

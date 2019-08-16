@@ -89,10 +89,10 @@ namespace Less3.Classes
             currSettings.Server = new Settings.SettingsServer();
             currSettings.Server.DnsHostname = "localhost";
             currSettings.Server.ListenerPort = 8000;
-            currSettings.Server.Ssl = false;
-
+            currSettings.Server.Ssl = false; 
             currSettings.Server.HeaderApiKey = "x-api-key"; 
-            currSettings.Server.AdminApiKey = "less3admin";   
+            currSettings.Server.AdminApiKey = "less3admin";
+            currSettings.Server.RegionString = "us-west-1";
              
             currSettings.Storage = new Settings.SettingsStorage(); 
             currSettings.Storage.Directory = "./Storage/";

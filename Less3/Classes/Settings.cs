@@ -83,6 +83,11 @@ namespace Less3.Classes
             /// Admin API key.
             /// </summary>
             public string AdminApiKey;
+
+            /// <summary>
+            /// Region string to supply on location inquiry.
+            /// </summary>
+            public string RegionString;
         }
          
         /// <summary>

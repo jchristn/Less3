@@ -2,7 +2,7 @@
   "version": 3,
   "targets": {
     ".NETCoreApp,Version=v2.2": {
-      "AWSSDK.Core/3.3.103.28": {
+      "AWSSDK.Core/3.3.103.29": {
         "type": "package",
         "compile": {
           "lib/netstandard2.0/AWSSDK.Core.dll": {}
@@ -11,10 +11,10 @@
           "lib/netstandard2.0/AWSSDK.Core.dll": {}
         }
       },
-      "AWSSDK.S3/3.3.104.16": {
+      "AWSSDK.S3/3.3.104.17": {
         "type": "package",
         "dependencies": {
-          "AWSSDK.Core": "[3.3.103.28, 3.4.0)"
+          "AWSSDK.Core": "[3.3.103.29, 3.4.0)"
         },
         "compile": {
           "lib/netstandard2.0/AWSSDK.S3.dll": {}
@@ -274,7 +274,7 @@
           "lib/netstandard2.0/RegexMatcher.dll": {}
         }
       },
-      "S3ServerInterface/1.5.1.5": {
+      "S3ServerInterface/1.5.1.6": {
         "type": "package",
         "dependencies": {
           "AWSSDK.S3": "3.3.103",
@@ -372,15 +372,15 @@
     }
   },
   "libraries": {
-    "AWSSDK.Core/3.3.103.28": {
-      "sha512": "ZwDOYwXr/UeNMpBIx0mi8dEfr4TphHOxeVLyLMRZP5+s9/sNVGluRtJZolOjvbPrd9k0w58FJzkRlyxEjOWUPA==",
+    "AWSSDK.Core/3.3.103.29": {
+      "sha512": "2rvyBaL2QyqVmNWGRpJWQYNG+vtv0bHq1XtVdKzm/bUuq6Aa4eTVvuIHLcT12GNx4ZA/lPNrmN0kd3joAZIGOA==",
       "type": "package",
-      "path": "awssdk.core/3.3.103.28",
+      "path": "awssdk.core/3.3.103.29",
       "hasTools": true,
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "awssdk.core.3.3.103.28.nupkg.sha512",
+        "awssdk.core.3.3.103.29.nupkg.sha512",
         "awssdk.core.nuspec",
         "lib/MonoAndroid10/AWSSDK.Core.XML",
         "lib/MonoAndroid10/AWSSDK.Core.dll",
@@ -421,16 +421,16 @@
         "tools/account-management.ps1"
       ]
     },
-    "AWSSDK.S3/3.3.104.16": {
-      "sha512": "tZImmdonhDf5AHzHAeOevk2HFcd5JJ2QtHCKsRIQ8xa8VHP1LC+v1KcJFZvCRBWCVQFpKReTjm0G9CxpgNeiGw==",
+    "AWSSDK.S3/3.3.104.17": {
+      "sha512": "fvPiseR2HC8P9J1caKRCQ1bLLxMU57mX0sj899jg1XrBBDcPRUcyt9n8ibmrhloQdCEgvX2wqywCqv/fDETMKg==",
       "type": "package",
-      "path": "awssdk.s3/3.3.104.16",
+      "path": "awssdk.s3/3.3.104.17",
       "hasTools": true,
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "analyzers/dotnet/cs/AWSSDK.S3.CodeAnalysis.dll",
-        "awssdk.s3.3.3.104.16.nupkg.sha512",
+        "awssdk.s3.3.3.104.17.nupkg.sha512",
         "awssdk.s3.nuspec",
         "lib/MonoAndroid10/AWSSDK.S3.XML",
         "lib/MonoAndroid10/AWSSDK.S3.dll",
@@ -1066,16 +1066,16 @@
         "regexmatcher.nuspec"
       ]
     },
-    "S3ServerInterface/1.5.1.5": {
-      "sha512": "osQib5LJJEoQJuarXmwK8wkn+7RqNPsllG5mepPL0csEvVA44kHxK7KEMAzCjHWHeDXznh5lAuid25Xc65DbDA==",
+    "S3ServerInterface/1.5.1.6": {
+      "sha512": "95yNV8SiU9jVWKUY5ZbSStCIkCqNhhdKxMDySpOxySM4+xXzyyM2RAKCNWACrmJBdEJu6xtRC7XoPRGOIDd12g==",
       "type": "package",
-      "path": "s3serverinterface/1.5.1.5",
+      "path": "s3serverinterface/1.5.1.6",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "lib/net462/S3ServerInterface.dll",
         "lib/netstandard2.0/S3ServerInterface.dll",
-        "s3serverinterface.1.5.1.5.nupkg.sha512",
+        "s3serverinterface.1.5.1.6.nupkg.sha512",
         "s3serverinterface.nuspec"
       ]
     },
@@ -1193,10 +1193,10 @@
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v2.2": [
-      "AWSSDK.S3 >= 3.3.104.16",
+      "AWSSDK.S3 >= 3.3.104.17",
       "Microsoft.NETCore.App >= 2.2.0",
       "Newtonsoft.Json >= 12.0.2",
-      "S3ServerInterface >= 1.5.1.5",
+      "S3ServerInterface >= 1.5.1.6",
       "SqliteHelper >= 1.0.13",
       "SyslogLogging >= 1.2.0",
       "Watson >= 2.1.6",
@@ -1208,13 +1208,13 @@
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
-    "version": "1.0.2",
+    "version": "1.0.3",
     "restore": {
-      "projectUniqueName": "C:\\code\\kvpbase\\less3\\Less3\\Less3.csproj",
+      "projectUniqueName": "C:\\Code\\KVPbase\\Less3\\Less3\\Less3.csproj",
       "projectName": "Less3",
-      "projectPath": "C:\\code\\kvpbase\\less3\\Less3\\Less3.csproj",
+      "projectPath": "C:\\Code\\KVPbase\\Less3\\Less3\\Less3.csproj",
       "packagesPath": "C:\\Users\\joelc\\.nuget\\packages\\",
-      "outputPath": "C:\\code\\kvpbase\\less3\\Less3\\obj\\",
+      "outputPath": "C:\\Code\\KVPbase\\Less3\\Less3\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
@@ -1248,7 +1248,7 @@
         "dependencies": {
           "AWSSDK.S3": {
             "target": "Package",
-            "version": "[3.3.104.16, )"
+            "version": "[3.3.104.17, )"
           },
           "Microsoft.NETCore.App": {
             "suppressParent": "All",
@@ -1262,7 +1262,7 @@
           },
           "S3ServerInterface": {
             "target": "Package",
-            "version": "[1.5.1.5, )"
+            "version": "[1.5.1.6, )"
           },
           "SqliteHelper": {
             "target": "Package",

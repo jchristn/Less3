@@ -104,6 +104,7 @@ namespace Less3
             _S3Server.Bucket.Exists = _ApiHandler.BucketExists;
             _S3Server.Bucket.Read = _ApiHandler.BucketRead;
             _S3Server.Bucket.ReadAcl = _ApiHandler.BucketReadAcl;
+            _S3Server.Bucket.ReadLocation = _ApiHandler.BucketReadLocation;
             _S3Server.Bucket.ReadTags = _ApiHandler.BucketReadTags;
             _S3Server.Bucket.ReadVersions = _ApiHandler.BucketReadVersions;
             _S3Server.Bucket.ReadVersioning = _ApiHandler.BucketReadVersioning;

@@ -1,16 +1,16 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.2",
-    "signature": "115ff4f470c90dfa4d8c0b98183c64b4a439e631"
+    "signature": "37ac0a41e4a91d5d6d06c550afe7d8ca4ef82dc0"
   },
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v2.2": {
-      "Less3/1.0.2": {
+      "Less3/1.0.3": {
         "dependencies": {
-          "AWSSDK.S3": "3.3.104.16",
+          "AWSSDK.S3": "3.3.104.17",
           "Newtonsoft.Json": "12.0.2",
-          "S3ServerInterface": "1.5.1.5",
+          "S3ServerInterface": "1.5.1.6",
           "SqliteHelper": "1.0.13",
           "SyslogLogging": "1.2.0",
           "Watson": "2.1.6",
@@ -20,22 +20,22 @@
           "Less3.dll": {}
         }
       },
-      "AWSSDK.Core/3.3.103.28": {
+      "AWSSDK.Core/3.3.103.29": {
         "runtime": {
           "lib/netstandard2.0/AWSSDK.Core.dll": {
             "assemblyVersion": "3.3.0.0",
-            "fileVersion": "3.3.103.28"
+            "fileVersion": "3.3.103.29"
           }
         }
       },
-      "AWSSDK.S3/3.3.104.16": {
+      "AWSSDK.S3/3.3.104.17": {
         "dependencies": {
-          "AWSSDK.Core": "3.3.103.28"
+          "AWSSDK.Core": "3.3.103.29"
         },
         "runtime": {
           "lib/netstandard2.0/AWSSDK.S3.dll": {
             "assemblyVersion": "3.3.0.0",
-            "fileVersion": "3.3.104.16"
+            "fileVersion": "3.3.104.17"
           }
         }
       },
@@ -72,17 +72,17 @@
           }
         }
       },
-      "S3ServerInterface/1.5.1.5": {
+      "S3ServerInterface/1.5.1.6": {
         "dependencies": {
-          "AWSSDK.S3": "3.3.104.16",
+          "AWSSDK.S3": "3.3.104.17",
           "ChunkDecoder": "1.0.3",
           "Newtonsoft.Json": "12.0.2",
           "Watson": "2.1.6"
         },
         "runtime": {
           "lib/netstandard2.0/S3ServerInterface.dll": {
-            "assemblyVersion": "1.5.1.5",
-            "fileVersion": "1.5.1.5"
+            "assemblyVersion": "1.5.1.6",
+            "fileVersion": "1.5.1.6"
           }
         }
       },
@@ -167,24 +167,24 @@
     }
   },
   "libraries": {
-    "Less3/1.0.2": {
+    "Less3/1.0.3": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "AWSSDK.Core/3.3.103.28": {
+    "AWSSDK.Core/3.3.103.29": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-ZwDOYwXr/UeNMpBIx0mi8dEfr4TphHOxeVLyLMRZP5+s9/sNVGluRtJZolOjvbPrd9k0w58FJzkRlyxEjOWUPA==",
-      "path": "awssdk.core/3.3.103.28",
-      "hashPath": "awssdk.core.3.3.103.28.nupkg.sha512"
+      "sha512": "sha512-2rvyBaL2QyqVmNWGRpJWQYNG+vtv0bHq1XtVdKzm/bUuq6Aa4eTVvuIHLcT12GNx4ZA/lPNrmN0kd3joAZIGOA==",
+      "path": "awssdk.core/3.3.103.29",
+      "hashPath": "awssdk.core.3.3.103.29.nupkg.sha512"
     },
-    "AWSSDK.S3/3.3.104.16": {
+    "AWSSDK.S3/3.3.104.17": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-tZImmdonhDf5AHzHAeOevk2HFcd5JJ2QtHCKsRIQ8xa8VHP1LC+v1KcJFZvCRBWCVQFpKReTjm0G9CxpgNeiGw==",
-      "path": "awssdk.s3/3.3.104.16",
-      "hashPath": "awssdk.s3.3.3.104.16.nupkg.sha512"
+      "sha512": "sha512-fvPiseR2HC8P9J1caKRCQ1bLLxMU57mX0sj899jg1XrBBDcPRUcyt9n8ibmrhloQdCEgvX2wqywCqv/fDETMKg==",
+      "path": "awssdk.s3/3.3.104.17",
+      "hashPath": "awssdk.s3.3.3.104.17.nupkg.sha512"
     },
     "ChunkDecoder/1.0.3": {
       "type": "package",
@@ -221,12 +221,12 @@
       "path": "regexmatcher/1.0.2",
       "hashPath": "regexmatcher.1.0.2.nupkg.sha512"
     },
-    "S3ServerInterface/1.5.1.5": {
+    "S3ServerInterface/1.5.1.6": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-osQib5LJJEoQJuarXmwK8wkn+7RqNPsllG5mepPL0csEvVA44kHxK7KEMAzCjHWHeDXznh5lAuid25Xc65DbDA==",
-      "path": "s3serverinterface/1.5.1.5",
-      "hashPath": "s3serverinterface.1.5.1.5.nupkg.sha512"
+      "sha512": "sha512-95yNV8SiU9jVWKUY5ZbSStCIkCqNhhdKxMDySpOxySM4+xXzyyM2RAKCNWACrmJBdEJu6xtRC7XoPRGOIDd12g==",
+      "path": "s3serverinterface/1.5.1.6",
+      "hashPath": "s3serverinterface.1.5.1.6.nupkg.sha512"
     },
     "SqliteHelper/1.0.13": {
       "type": "package",

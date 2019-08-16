@@ -303,6 +303,18 @@ namespace Less3.Api.S3
         }
 
         /// <summary>
+        /// Bucket read location API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
+        public S3Response ReadLocation(S3Request req)
+        {
+            LocationConstraint resp = new LocationConstraint();
+            resp.Text = _Settings.Server.RegionString;
+            return new S3Response(req, 200, "application/xml", null, Encoding.UTF8.GetBytes(Common.SerializeXml(resp)));
+        }
+
+        /// <summary>
         /// Bucket read ACL API callback.
         /// </summary>
         /// <param name="req">S3Request.</param>

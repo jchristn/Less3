@@ -122,6 +122,16 @@ namespace Less3.Api.S3
         }
 
         /// <summary>
+        /// Bucket read location API callback.
+        /// </summary>
+        /// <param name="req">S3Request.</param>
+        /// <returns>S3Response.</returns>
+        public S3Response BucketReadLocation(S3Request req)
+        {
+            return _BucketHandler.ReadLocation(req);
+        }
+
+        /// <summary>
         /// Bucket read API callback.
         /// </summary>
         /// <param name="req">S3Request.</param>

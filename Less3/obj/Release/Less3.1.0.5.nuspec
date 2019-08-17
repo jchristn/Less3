@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>Less3</id>
-    <version>1.0.4</version>
+    <version>1.0.5</version>
     <authors>Joel Christner</authors>
     <owners>Joel Christner</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
@@ -10,7 +10,7 @@
     <projectUrl>https://github.com/jchristn/less3</projectUrl>
     <iconUrl>https://raw.githubusercontent.com/jchristn/less3/master/assets/icon.ico</iconUrl>
     <description>&lt;3 Less3 is S3-compatible object storage that you can run on your laptop, server, or anywhere you like.</description>
-    <releaseNotes>Fix serializer for Cyberduck compatibility</releaseNotes>
+    <releaseNotes>Dependency update for bugfix</releaseNotes>
     <copyright>(c)2019 Joel Christner</copyright>
     <tags>S3 storage blob object storage rest restful</tags>
     <repository type="Github" url="https://github.com/jchristn/less3" />
@@ -27,7 +27,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="C:\Code\KVPbase\Less3\Less3\bin\Debug\netcoreapp2.2\Less3.runtimeconfig.json" target="lib\netcoreapp2.2\Less3.runtimeconfig.json" />
-    <file src="C:\Code\KVPbase\Less3\Less3\bin\Debug\netcoreapp2.2\Less3.dll" target="lib\netcoreapp2.2\Less3.dll" />
+    <file src="C:\Code\KVPbase\Less3\Less3\bin\Release\netcoreapp2.2\Less3.runtimeconfig.json" target="lib\netcoreapp2.2\Less3.runtimeconfig.json" />
+    <file src="C:\Code\KVPbase\Less3\Less3\bin\Release\netcoreapp2.2\Less3.dll" target="lib\netcoreapp2.2\Less3.dll" />
   </files>
 </package>

@@ -274,7 +274,7 @@
           "lib/netstandard2.0/RegexMatcher.dll": {}
         }
       },
-      "S3ServerInterface/1.5.1.6": {
+      "S3ServerInterface/1.5.1.7": {
         "type": "package",
         "dependencies": {
           "AWSSDK.S3": "3.3.103",
@@ -1066,16 +1066,16 @@
         "regexmatcher.nuspec"
       ]
     },
-    "S3ServerInterface/1.5.1.6": {
-      "sha512": "95yNV8SiU9jVWKUY5ZbSStCIkCqNhhdKxMDySpOxySM4+xXzyyM2RAKCNWACrmJBdEJu6xtRC7XoPRGOIDd12g==",
+    "S3ServerInterface/1.5.1.7": {
+      "sha512": "dE283ChNUb6q7UM9FaZ6/QaZmEdwXw5VG5ztfdYzcxPwN2U9ZxRrkmaVK8hdaK2fs9NomLW8Xgkz6p3U53Vnag==",
       "type": "package",
-      "path": "s3serverinterface/1.5.1.6",
+      "path": "s3serverinterface/1.5.1.7",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "lib/net462/S3ServerInterface.dll",
         "lib/netstandard2.0/S3ServerInterface.dll",
-        "s3serverinterface.1.5.1.6.nupkg.sha512",
+        "s3serverinterface.1.5.1.7.nupkg.sha512",
         "s3serverinterface.nuspec"
       ]
     },
@@ -1196,7 +1196,7 @@
       "AWSSDK.S3 >= 3.3.104.17",
       "Microsoft.NETCore.App >= 2.2.0",
       "Newtonsoft.Json >= 12.0.2",
-      "S3ServerInterface >= 1.5.1.6",
+      "S3ServerInterface >= 1.5.1.7",
       "SqliteHelper >= 1.0.13",
       "SyslogLogging >= 1.2.0",
       "Watson >= 2.1.6",
@@ -1208,7 +1208,7 @@
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
-    "version": "1.0.4",
+    "version": "1.0.5",
     "restore": {
       "projectUniqueName": "C:\\Code\\KVPbase\\Less3\\Less3\\Less3.csproj",
       "projectName": "Less3",
@@ -1262,7 +1262,7 @@
           },
           "S3ServerInterface": {
             "target": "Package",
-            "version": "[1.5.1.6, )"
+            "version": "[1.5.1.7, )"
           },
           "SqliteHelper": {
             "target": "Package",

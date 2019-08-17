@@ -1,16 +1,16 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.2",
-    "signature": "37ac0a41e4a91d5d6d06c550afe7d8ca4ef82dc0"
+    "signature": "73ea77f1e7de0398242e42f4c2e6cb208a86ac09"
   },
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v2.2": {
-      "Less3/1.0.4": {
+      "Less3/1.0.5": {
         "dependencies": {
           "AWSSDK.S3": "3.3.104.17",
           "Newtonsoft.Json": "12.0.2",
-          "S3ServerInterface": "1.5.1.6",
+          "S3ServerInterface": "1.5.1.7",
           "SqliteHelper": "1.0.13",
           "SyslogLogging": "1.2.0",
           "Watson": "2.1.6",
@@ -72,7 +72,7 @@
           }
         }
       },
-      "S3ServerInterface/1.5.1.6": {
+      "S3ServerInterface/1.5.1.7": {
         "dependencies": {
           "AWSSDK.S3": "3.3.104.17",
           "ChunkDecoder": "1.0.3",
@@ -81,8 +81,8 @@
         },
         "runtime": {
           "lib/netstandard2.0/S3ServerInterface.dll": {
-            "assemblyVersion": "1.5.1.6",
-            "fileVersion": "1.5.1.6"
+            "assemblyVersion": "1.5.1.7",
+            "fileVersion": "1.5.1.7"
           }
         }
       },
@@ -167,7 +167,7 @@
     }
   },
   "libraries": {
-    "Less3/1.0.4": {
+    "Less3/1.0.5": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -221,12 +221,12 @@
       "path": "regexmatcher/1.0.2",
       "hashPath": "regexmatcher.1.0.2.nupkg.sha512"
     },
-    "S3ServerInterface/1.5.1.6": {
+    "S3ServerInterface/1.5.1.7": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-95yNV8SiU9jVWKUY5ZbSStCIkCqNhhdKxMDySpOxySM4+xXzyyM2RAKCNWACrmJBdEJu6xtRC7XoPRGOIDd12g==",
-      "path": "s3serverinterface/1.5.1.6",
-      "hashPath": "s3serverinterface.1.5.1.6.nupkg.sha512"
+      "sha512": "sha512-dE283ChNUb6q7UM9FaZ6/QaZmEdwXw5VG5ztfdYzcxPwN2U9ZxRrkmaVK8hdaK2fs9NomLW8Xgkz6p3U53Vnag==",
+      "path": "s3serverinterface/1.5.1.7",
+      "hashPath": "s3serverinterface.1.5.1.7.nupkg.sha512"
     },
     "SqliteHelper/1.0.13": {
       "type": "package",

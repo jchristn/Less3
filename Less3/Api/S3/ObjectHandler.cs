@@ -231,8 +231,9 @@ namespace Less3.Api.S3
                     }
                 }
             }
-
-            return new S3Response(req, 200, "application/xml", null, Encoding.UTF8.GetBytes(Common.SerializeXml(resp)));
+            
+            return new S3Response(req, 200, "application/xml", null, 
+                Encoding.UTF8.GetBytes(Common.SerializeXml<DeleteResult>(resp, false)));
         }
 
         /// <summary>
@@ -615,7 +616,8 @@ namespace Less3.Api.S3
                 }
             }
              
-            return new S3Response(req, 200, "application/xml", null, Encoding.UTF8.GetBytes(Common.SerializeXml(ret)));
+            return new S3Response(req, 200, "application/xml", null, 
+                Encoding.UTF8.GetBytes(Common.SerializeXml<AccessControlPolicy>(ret, false)));
         }
 
         /// <summary>
@@ -778,7 +780,8 @@ namespace Less3.Api.S3
                     tags.TagSet.Add(currTag);
                 }
             } 
-            return new S3Response(req, 200, "application/xml", null, Encoding.UTF8.GetBytes(Common.SerializeXml(tags))); 
+            return new S3Response(req, 200, "application/xml", null, 
+                Encoding.UTF8.GetBytes(Common.SerializeXml<Tagging>(tags, false))); 
         }
 
         /// <summary>

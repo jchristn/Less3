@@ -299,7 +299,8 @@ namespace Less3.Api.S3
                 resp.Contents.Add(c);
             }
 
-            return new S3Response(req, 200, "application/xml", null, Encoding.UTF8.GetBytes(Common.SerializeXml(resp)));
+            return new S3Response(req, 200, "application/xml", null, 
+                Encoding.UTF8.GetBytes(Common.SerializeXml<ListBucketResult>(resp, false)));
         }
 
         /// <summary>
@@ -311,7 +312,8 @@ namespace Less3.Api.S3
         {
             LocationConstraint resp = new LocationConstraint();
             resp.Text = _Settings.Server.RegionString;
-            return new S3Response(req, 200, "application/xml", null, Encoding.UTF8.GetBytes(Common.SerializeXml(resp)));
+            return new S3Response(req, 200, "application/xml", null, 
+                Encoding.UTF8.GetBytes(Common.SerializeXml<LocationConstraint>(resp, false)));
         }
 
         /// <summary>
@@ -490,7 +492,8 @@ namespace Less3.Api.S3
                 }
             }
              
-            return new S3Response(req, 200, "application/xml", null, Encoding.UTF8.GetBytes(Common.SerializeXml(ret)));
+            return new S3Response(req, 200, "application/xml", null, 
+                Encoding.UTF8.GetBytes(Common.SerializeXml<AccessControlPolicy>(ret, false)));
         }
 
         /// <summary>
@@ -546,7 +549,8 @@ namespace Less3.Api.S3
                 }
             }
 
-            return new S3Response(req, 200, "application/xml", null, Encoding.UTF8.GetBytes(Common.SerializeXml(tags)));   
+            return new S3Response(req, 200, "application/xml", null, 
+                Encoding.UTF8.GetBytes(Common.SerializeXml<Tagging>(tags, false)));   
         }
 
         /// <summary>
@@ -655,7 +659,8 @@ namespace Less3.Api.S3
                 }
             }
 
-            return new S3Response(req, 200, "application/xml", null, Encoding.UTF8.GetBytes(Common.SerializeXml(resp))); 
+            return new S3Response(req, 200, "application/xml", null, 
+                Encoding.UTF8.GetBytes(Common.SerializeXml<ListVersionsResult>(resp, false))); 
         }
 
         /// <summary>
@@ -704,11 +709,13 @@ namespace Less3.Api.S3
             {
                 ret.Status = "Enabled";
                 ret.MfaDelete = "Disabled";
-                return new S3Response(req, 200, "application/xml", null, Encoding.UTF8.GetBytes(Common.SerializeXml(ret)));
+                return new S3Response(req, 200, "application/xml", null, 
+                    Encoding.UTF8.GetBytes(Common.SerializeXml<VersioningConfiguration>(ret, false)));
             }
             else
             { 
-                return new S3Response(req, 200, "application/xml", null, Encoding.UTF8.GetBytes(Common.SerializeXml(ret)));
+                return new S3Response(req, 200, "application/xml", null, 
+                    Encoding.UTF8.GetBytes(Common.SerializeXml<VersioningConfiguration>(ret, false)));
             } 
         }
 

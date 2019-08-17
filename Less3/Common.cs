@@ -11,6 +11,7 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using System.Xml.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -1023,10 +1024,11 @@ namespace Less3
             }
         }
 
-        public static string SerializeXml(object obj)
+        public static string SerializeXml<T>(object obj, bool pretty)
         {
             if (obj == null) throw new ArgumentNullException(nameof(obj));
 
+            /*
             XmlSerializer xml = new XmlSerializer(obj.GetType());
 
             using (MemoryStream stream = new MemoryStream())
@@ -1047,6 +1049,50 @@ namespace Less3
                     return ret;
                 }
             } 
+            */
+
+            XmlSerializer xmls = new XmlSerializer(typeof(T));
+            using (MemoryStream ms = new MemoryStream())
+            {
+                XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+                XmlWriterSettings settings = new XmlWriterSettings();
+
+                if (pretty)
+                {
+                    settings.Encoding = Encoding.UTF8;
+                    settings.Indent = true;
+                    settings.NewLineChars = "\n";
+                    settings.NewLineHandling = NewLineHandling.None;
+                    settings.NewLineOnAttributes = false;
+                    settings.ConformanceLevel = ConformanceLevel.Document;
+                    // settings.OmitXmlDeclaration = true;
+                }
+                else
+                {
+                    settings.Encoding = Encoding.UTF8;
+                    settings.Indent = false;
+                    settings.NewLineHandling = NewLineHandling.None;
+                    settings.NewLineOnAttributes = false;
+                    settings.ConformanceLevel = ConformanceLevel.Document;
+                    // settings.OmitXmlDeclaration = true;
+                }
+
+                using (XmlWriter writer = XmlTextWriter.Create(ms, settings))
+                {
+                    xmls.Serialize(writer, obj, ns);
+                }
+
+                string xml = Encoding.UTF8.GetString(ms.ToArray());
+
+                // remove preamble if exists
+                string byteOrderMarkUtf8 = Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble());
+                while (xml.StartsWith(byteOrderMarkUtf8, StringComparison.Ordinal))
+                {
+                    xml = xml.Remove(0, byteOrderMarkUtf8.Length);
+                }
+
+                return xml;
+            }
         }
 
         #endregion

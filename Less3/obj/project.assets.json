@@ -1208,7 +1208,7 @@
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
-    "version": "1.0.3",
+    "version": "1.0.4",
     "restore": {
       "projectUniqueName": "C:\\Code\\KVPbase\\Less3\\Less3\\Less3.csproj",
       "projectName": "Less3",

@@ -114,7 +114,8 @@ namespace Less3.Api.S3
                 resp.Buckets.Bucket.Add(b);
             }
               
-            return new S3Response(req, 200, "application/xml", null, Encoding.UTF8.GetBytes(Common.SerializeXml(resp))); 
+            return new S3Response(req, 200, "application/xml", null, 
+                Encoding.UTF8.GetBytes(Common.SerializeXml<ListAllMyBucketsResult>(resp, false))); 
         }
 
         #endregion

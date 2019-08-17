@@ -15,9 +15,9 @@
     <RepositoryUrl>https://github.com/jchristn/less3</RepositoryUrl>
     <RepositoryType>Github</RepositoryType>
     <PackageTags>S3 storage blob object storage rest restful</PackageTags>
-    <PackageReleaseNotes>Added bucket GET location API.</PackageReleaseNotes>
+    <PackageReleaseNotes>Fix serializer for Cyberduck compatibility</PackageReleaseNotes>
     <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
-    <Version>1.0.3</Version>
+    <Version>1.0.4</Version>
   </PropertyGroup>
 
   <ItemGroup>

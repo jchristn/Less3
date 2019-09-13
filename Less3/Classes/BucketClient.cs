@@ -14,14 +14,11 @@ namespace Less3.Classes
     /// <summary>
     /// Bucket client.  All object construction, authentication, and authorization must occur prior to using bucket methods.
     /// </summary>
-    public class BucketClient : IDisposable
+    internal class BucketClient : IDisposable
     {
-        #region Public-Members
+        #region Internal-Members
 
-        /// <summary>
-        /// Buffer size to use when reading streams.
-        /// </summary>
-        public long StreamReadBufferSize
+        internal long StreamReadBufferSize
         {
             get
             {
@@ -33,11 +30,7 @@ namespace Less3.Classes
                 _StreamReadBufferSize = value;
             }
         }
-
-        /// <summary>
-        /// Name of the bucket.
-        /// </summary>
-        public string Name
+        internal string Name
         {
             get
             {
@@ -48,8 +41,6 @@ namespace Less3.Classes
         #endregion
 
         #region Private-Members
-
-        private bool _Disposed = false;
 
         private Settings _Settings;
         private LoggingModule _Logging;
@@ -62,21 +53,12 @@ namespace Less3.Classes
 
         #region Constructors-and-Factories
 
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        public BucketClient()
+        internal BucketClient()
         {
 
         }
 
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        /// <param name="settings">Settings.</param>
-        /// <param name="logging">LoggingModule.</param>
-        /// <param name="bucket">BucketConfiguration.</param>
-        public BucketClient(Settings settings, LoggingModule logging, BucketConfiguration bucket)
+        internal BucketClient(Settings settings, LoggingModule logging, BucketConfiguration bucket)
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
             if (logging == null) throw new ArgumentNullException(nameof(logging));
@@ -96,23 +78,20 @@ namespace Less3.Classes
 
         #region Public-Methods
 
-        /// <summary>
-        /// Tear down the client and dispose of background workers.
-        /// </summary>
         public void Dispose()
         {
-            Dispose(true);
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
+            if (_Database != null)
+            {
+                _Database.Dispose();
+                _Database = null;
+            }
         }
 
-        /// <summary>
-        /// Add an object.
-        /// </summary>
-        /// <param name="obj">Object metadata.</param>
-        /// <param name="data">Data in byte array.</param>
-        /// <returns>True if successful.</returns>
-        public bool AddObject(Obj obj, byte[] data)
+        #endregion
+
+        #region Internal-Methods
+
+        internal bool AddObject(Obj obj, byte[] data)
         {
             if (obj == null) throw new ArgumentNullException(nameof(obj));
              
@@ -130,16 +109,10 @@ namespace Less3.Classes
             return AddObject(obj, ms);
         }
 
-        /// <summary>
-        /// Add an object.
-        /// </summary>
-        /// <param name="obj">Object metadata.</param>
-        /// <param name="stream">Stream containing data.</param>
-        /// <returns>True if successful.</returns>
-        public bool AddObject(Obj obj, Stream stream)
+        internal bool AddObject(Obj obj, Stream stream)
         {
             if (obj == null) throw new ArgumentNullException(nameof(obj));
-             
+
             Obj test = null;
             if (GetObjectMetadata(obj.Key, out test))
             {
@@ -148,7 +121,7 @@ namespace Less3.Classes
                     _Logging.Warn("BucketClient Add versioning disabled and object " + _BucketConfiguration.Name + "/" + obj.Key + " already exists");
                     return false;
                 }
-                
+
                 obj.Version = (test.Version + 1);
             }
             else
@@ -181,21 +154,47 @@ namespace Less3.Classes
             obj.CreatedUtc = ts;
             obj.LastAccessUtc = ts;
             obj.LastUpdateUtc = ts;
-            obj.ExpirationUtc = null; 
-            
+            obj.ExpirationUtc = null;
+
             string query = DatabaseQueries.InsertObject(obj);
             DataTable result = _Database.Query(query);
-            
+
             return true;
         }
 
-        /// <summary>
-        /// Get an object.
-        /// </summary>
-        /// <param name="key">Object's key.</param>
-        /// <param name="data">Object data.</param>
-        /// <returns>True if successful.</returns>
-        public bool GetObject(string key, out byte[] data)
+        internal bool AddObjectMetadata(Obj obj)
+        {
+            if (obj == null) throw new ArgumentNullException(nameof(obj));
+
+            Obj test = null;
+            if (GetObjectMetadata(obj.Key, out test))
+            {
+                if (!_BucketConfiguration.EnableVersioning)
+                {
+                    _Logging.Warn("BucketClient Add versioning disabled and object " + _BucketConfiguration.Name + "/" + obj.Key + " already exists");
+                    return false;
+                }
+
+                obj.Version = (test.Version + 1);
+            }
+            else
+            {
+                obj.Version = 1;
+            }
+             
+            DateTime ts = DateTime.Now.ToUniversalTime();
+            obj.CreatedUtc = ts;
+            obj.LastAccessUtc = ts;
+            obj.LastUpdateUtc = ts;
+            obj.ExpirationUtc = null;
+
+            string query = DatabaseQueries.InsertObject(obj);
+            DataTable result = _Database.Query(query);
+
+            return true;
+        }
+
+        internal bool GetObject(string key, out byte[] data)
         {
             data = null;
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
@@ -206,44 +205,8 @@ namespace Less3.Classes
             data = Common.ReadBinaryFile(_BucketConfiguration.ObjectsDirectory + obj.BlobFilename);
             return true;
         }
-
-        /// <summary>
-        /// Get an object.
-        /// </summary>
-        /// <param name="key">Object's key.</param>
-        /// <param name="startPosition">Starting position.</param>
-        /// <param name="length">Number of bytes to retrieve.</param>
-        /// <param name="data">Object data.</param>
-        /// <returns>True if successful.</returns>
-        public bool GetObject(string key, long startPosition, long length, out byte[] data)
-        {
-            data = null;
-            if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-            if (startPosition < 0) throw new ArgumentNullException(nameof(startPosition));
-            if (length < 0) throw new ArgumentNullException(nameof(length));
-
-            Obj obj = null;
-            if (!GetObjectMetadata(key, out obj)) return false;
-            FileInfo fi = new FileInfo(_BucketConfiguration.ObjectsDirectory + obj.BlobFilename);
-            long fileLength = fi.Length;
-            if (startPosition > fileLength || startPosition + length > fileLength) return false;
-
-            Stream stream = null;
-            if (!GetObject(key, startPosition, length, out stream)) return false;
-
-            MemoryStream ms = (MemoryStream)stream;
-            if (ms != null) data = ms.ToArray();
-            return true;
-        }
-
-        /// <summary>
-        /// Get an object.
-        /// </summary>
-        /// <param name="key">Object's key.</param>
-        /// <param name="contentLength">Content length.</param>
-        /// <param name="stream">Stream containing data.</param>
-        /// <returns>True if successful.</returns>
-        public bool GetObject(string key, out long contentLength, out Stream stream)
+         
+        internal bool GetObject(string key, out long contentLength, out Stream stream)
         {
             contentLength = 0;
             stream = null;
@@ -257,15 +220,7 @@ namespace Less3.Classes
             return GetObject(key, 0, contentLength, out stream);
         }
 
-        /// <summary>
-        /// Get an object.
-        /// </summary>
-        /// <param name="key">Object's key.</param>
-        /// <param name="startPosition">Start position.</param>
-        /// <param name="length">Number of bytes to read.</param>
-        /// <param name="stream">Stream containing data.</param>
-        /// <returns>True if successful.</returns>
-        public bool GetObject(string key, long startPosition, long length, out Stream stream)
+        internal bool GetObject(string key, long startPosition, long length, out Stream stream)
         {
             stream = null;
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
@@ -278,6 +233,7 @@ namespace Less3.Classes
             long fileLength = fi.Length;
             if (startPosition > fileLength || startPosition + length > fileLength) return false;
 
+            /*
             stream = new MemoryStream();
             int bytesRead = 0;
             long bytesRemaining = length;
@@ -299,15 +255,14 @@ namespace Less3.Classes
             }
 
             stream.Seek(0, SeekOrigin.Begin);
+            */
+
+            stream = new FileStream(_BucketConfiguration.ObjectsDirectory + obj.BlobFilename, FileMode.Open);
+            stream.Seek(startPosition, SeekOrigin.Begin);
             return true;
         }
 
-        /// <summary>
-        /// Get counts associated with the bucket.
-        /// </summary>
-        /// <param name="objects">Number of objects.</param>
-        /// <param name="bytes">Number of bytes.</param>
-        public void GetCounts(out long objects, out long bytes)
+        internal void GetCounts(out long objects, out long bytes)
         {
             objects = 0;
             bytes = 0;
@@ -335,13 +290,7 @@ namespace Less3.Classes
             return;
         }
 
-        /// <summary>
-        /// Get object metadata.
-        /// </summary>
-        /// <param name="key">Object's key.</param>
-        /// <param name="obj">Object metadata.</param>
-        /// <returns>True if successful.</returns>
-        public bool GetObjectMetadata(string key, out Obj obj)
+        internal bool GetObjectMetadata(string key, out Obj obj)
         {
             obj = null;
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
@@ -354,14 +303,7 @@ namespace Less3.Classes
             return true;
         }
 
-        /// <summary>
-        /// Get object metadata for a specific object version.
-        /// </summary>
-        /// <param name="key">Object's key.</param>
-        /// <param name="version">Object version.</param>
-        /// <param name="obj">Object metadata.</param>
-        /// <returns>True if successful.</returns>
-        public bool GetObjectMetadata(string key, long version, out Obj obj)
+        internal bool GetObjectMetadata(string key, long version, out Obj obj)
         {
             obj = null;
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
@@ -374,12 +316,7 @@ namespace Less3.Classes
             return true;
         }
 
-        /// <summary>
-        /// Check if an object exists.
-        /// </summary>
-        /// <param name="key">Object's key.</param>
-        /// <returns>True if exists.</returns>
-        public bool ObjectExists(string key)
+        internal bool ObjectExists(string key)
         {
             Obj obj = null;
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
@@ -387,13 +324,7 @@ namespace Less3.Classes
             return false;
         }
 
-        /// <summary>
-        /// Check if a specific version of an object exists.
-        /// </summary>
-        /// <param name="key">Object's key.</param>
-        /// <param name="version">Object version.</param>
-        /// <returns>True if exists.</returns>
-        public bool ObjectExists(string key, long version)
+        internal bool ObjectExists(string key, long version)
         {
             Obj obj = null;
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
@@ -401,12 +332,7 @@ namespace Less3.Classes
             return false;
         }
 
-        /// <summary>
-        /// Delete an object.
-        /// </summary>
-        /// <param name="key">Object's key.</param>
-        /// <returns>True if successful.</returns>
-        public bool DeleteObject(string key)
+        internal bool DeleteObject(string key)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
@@ -437,19 +363,13 @@ namespace Less3.Classes
             }
         }
 
-        /// <summary>
-        /// Delete an object version.
-        /// </summary>
-        /// <param name="key">Object's key.</param>
-        /// <param name="version">Object version.</param>
-        /// <returns>True if successful.</returns>
-        public bool DeleteObject(string key, long version)
+        internal bool DeleteObject(string key, long version)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
             Obj obj = null;
             if (!GetObjectMetadata(key, version, out obj)) return false;
-        
+
             string query = null;
             DataTable result = null;
 
@@ -468,14 +388,31 @@ namespace Less3.Classes
             }
         }
 
-        /// <summary>
-        /// Enumerate a bucket.
-        /// </summary>
-        /// <param name="prefix">Prefix for enumerated objects.</param>
-        /// <param name="startIndex">Starting index.</param>
-        /// <param name="maxResults">Number of results to retrieve.</param>
-        /// <param name="objs">Object metadata.</param>
-        public void Enumerate(string prefix, long startIndex, int maxResults, out List<Obj> objs)
+        internal bool DeleteObjectMetadata(string key, long version)
+        {
+            if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
+
+            Obj obj = null;
+            if (!GetObjectMetadata(key, version, out obj)) return false;
+
+            string query = null;
+            DataTable result = null;
+
+            if (_BucketConfiguration.EnableVersioning)
+            {
+                query = DatabaseQueries.MarkObjectDeleted(obj);
+                result = _Database.Query(query);
+                return true;
+            }
+            else
+            {
+                query = DatabaseQueries.DeleteObject(obj.Key, obj.Version);
+                result = _Database.Query(query);
+                return true;
+            }
+        }
+
+        internal void Enumerate(string prefix, long startIndex, int maxResults, out List<Obj> objs)
         {
             objs = new List<Obj>();
             string query = DatabaseQueries.Enumerate(prefix, startIndex, maxResults);
@@ -490,13 +427,7 @@ namespace Less3.Classes
             }
         }
 
-        /// <summary>
-        /// Update an object's metadata.
-        /// </summary>
-        /// <param name="key">Object's key.</param>
-        /// <param name="version">Object version.</param>
-        /// <param name="vals">Dictionary containing key-value pairs of data to apply to the metadata.</param>
-        public void UpdateObject(string key, long version, Dictionary<string, object> vals)
+        internal void UpdateObject(string key, long version, Dictionary<string, object> vals)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
             if (vals == null || vals.Count < 1) throw new ArgumentException("At least one value must be supplied.");
@@ -506,11 +437,7 @@ namespace Less3.Classes
             return;
         }
 
-        /// <summary>
-        /// Add tags to the bucket.
-        /// </summary>
-        /// <param name="tags">Tags.</param>
-        public void AddBucketTags(Dictionary<string, string> tags)
+        internal void AddBucketTags(Dictionary<string, string> tags)
         {
             string query = DatabaseQueries.DeleteBucketTags();
             DataTable result = _Database.Query(query);
@@ -522,13 +449,7 @@ namespace Less3.Classes
             }
         }
 
-        /// <summary>
-        /// Add tags to an object.
-        /// </summary>
-        /// <param name="key">Object's key.</param>
-        /// <param name="version">Object version.</param>
-        /// <param name="tags">Tags.</param>
-        public void AddObjectTags(string key, long version, Dictionary<string, string> tags)
+        internal void AddObjectTags(string key, long version, Dictionary<string, string> tags)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
             if (version < 1) throw new ArgumentException("Version ID must be one or greater.");
@@ -543,11 +464,7 @@ namespace Less3.Classes
             }
         }
 
-        /// <summary>
-        /// Get bucket tags.
-        /// </summary>
-        /// <returns>Dictionary.</returns>
-        public Dictionary<string, string> GetBucketTags()
+        internal Dictionary<string, string> GetBucketTags()
         {
             string query = DatabaseQueries.GetBucketTags();
             DataTable result = _Database.Query(query);
@@ -575,13 +492,7 @@ namespace Less3.Classes
             return ret;
         }
 
-        /// <summary>
-        /// Get object tags.
-        /// </summary>
-        /// <param name="key">Object's key.</param>
-        /// <param name="version">Object version.</param>
-        /// <returns>Dictionary.</returns>
-        public Dictionary<string, string> GetObjectTags(string key, long versionId)
+        internal Dictionary<string, string> GetObjectTags(string key, long versionId)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
             if (versionId < 1) throw new ArgumentException("Version ID must be one or greater.");
@@ -612,21 +523,13 @@ namespace Less3.Classes
             return ret;
         }
 
-        /// <summary>
-        /// Delete bucket tags.
-        /// </summary>
-        public void DeleteBucketTags()
+        internal void DeleteBucketTags()
         {
             string query = DatabaseQueries.DeleteBucketTags();
             DataTable result = _Database.Query(query);
         }
 
-        /// <summary>
-        /// Delete object tags.
-        /// </summary>
-        /// <param name="key">Object's key.</param>
-        /// <param name="version">Object version.</param>
-        public void DeleteObjectTags(string key, long version)
+        internal void DeleteObjectTags(string key, long version)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
             if (version < 1) throw new ArgumentException("Version ID must be one or greater.");
@@ -635,14 +538,7 @@ namespace Less3.Classes
             DataTable result = _Database.Query(query);
         }
         
-        /// <summary>
-        /// Check if a group ACL exists for an object.
-        /// </summary>
-        /// <param name="groupName">Group name.</param>
-        /// <param name="objectKey">Object key.</param>
-        /// <param name="versionId">Object version ID.</param>
-        /// <returns>True if exists.</returns>
-        public bool ObjectGroupAclExists(string groupName, string objectKey, long versionId)
+        internal bool ObjectGroupAclExists(string groupName, string objectKey, long versionId)
         {
             if (String.IsNullOrEmpty(groupName)) throw new ArgumentNullException(nameof(groupName));
             if (String.IsNullOrEmpty(objectKey)) throw new ArgumentNullException(nameof(objectKey));
@@ -653,14 +549,7 @@ namespace Less3.Classes
             return false;
         }
 
-        /// <summary>
-        /// Check if a user ACL exists for an object.
-        /// </summary>
-        /// <param name="userGuid">User GUID.</param>
-        /// <param name="objectKey">Object key.</param>
-        /// <param name="versionId">Object version ID.</param>
-        /// <returns>True if exists.</returns>
-        public bool ObjectUserAclExists(string userGuid, string objectKey, long versionId)
+        internal bool ObjectUserAclExists(string userGuid, string objectKey, long versionId)
         {
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
             if (String.IsNullOrEmpty(objectKey)) throw new ArgumentNullException(nameof(objectKey));
@@ -671,12 +560,7 @@ namespace Less3.Classes
             return false;
         }
 
-        /// <summary>
-        /// Check if a group ACL exists for the bucket.
-        /// </summary>
-        /// <param name="groupName">Group name.</param>
-        /// <returns>True if exists.</returns>
-        public bool BucketGroupAclExists(string groupName)
+        internal bool BucketGroupAclExists(string groupName)
         {
             if (String.IsNullOrEmpty(groupName)) throw new ArgumentNullException(nameof(groupName));
 
@@ -686,12 +570,7 @@ namespace Less3.Classes
             return false;
         }
 
-        /// <summary>
-        /// Check if a user ACL exists for the bucket.
-        /// </summary>
-        /// <param name="userGuid">User GUID.</param>
-        /// <returns>True if exists.</returns>
-        public bool BucketUserAclExists(string userGuid)
+        internal bool BucketUserAclExists(string userGuid)
         {
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
 
@@ -701,11 +580,7 @@ namespace Less3.Classes
             return false;
         }
 
-        /// <summary>
-        /// Retrieve ACLs for the bucket.
-        /// </summary>
-        /// <param name="acls">ACLs.</param>
-        public void GetBucketAcl(out List<BucketAcl> acls)
+        internal void GetBucketAcl(out List<BucketAcl> acls)
         {
             acls = new List<BucketAcl>();
             string query = DatabaseQueries.GetBucketAcl();
@@ -721,13 +596,7 @@ namespace Less3.Classes
             return;
         }
 
-        /// <summary>
-        /// Retrieve ACLs for an object.
-        /// </summary>
-        /// <param name="key">Object key.</param>
-        /// <param name="version">Object version ID.</param>
-        /// <param name="acls">ACLs.</param>
-        public void GetObjectAcl(string key, long version, out List<ObjectAcl> acls)
+        internal void GetObjectAcl(string key, long version, out List<ObjectAcl> acls)
         {
             acls = new List<ObjectAcl>();
             string query = DatabaseQueries.GetObjectAcl(key, version);
@@ -744,11 +613,7 @@ namespace Less3.Classes
             return;
         }
 
-        /// <summary>
-        /// Add an ACL to the bucket.
-        /// </summary>
-        /// <param name="acl">ACL.</param>
-        public void AddBucketAcl(BucketAcl acl)
+        internal void AddBucketAcl(BucketAcl acl)
         {
             if (acl == null) throw new ArgumentNullException(nameof(acl));
 
@@ -810,11 +675,7 @@ namespace Less3.Classes
             }
         }
 
-        /// <summary>
-        /// Add an ACL to an object.
-        /// </summary>
-        /// <param name="acl">ACL.</param>
-        public void AddObjectAcl(ObjectAcl acl)
+        internal void AddObjectAcl(ObjectAcl acl)
         {
             if (acl == null) throw new ArgumentNullException(nameof(acl));
              
@@ -876,33 +737,21 @@ namespace Less3.Classes
             }
         }
 
-        /// <summary>
-        /// Delete the bucket ACL.
-        /// </summary>
-        public void DeleteBucketAcl()
+        internal void DeleteBucketAcl()
         {
             string query = DatabaseQueries.DeleteBucketAcl();
             DataTable result = _Database.Query(query);
             return;
         }
 
-        /// <summary>
-        /// Delete the object ACL.
-        /// </summary>
-        /// <param name="key">Object key.</param>
-        /// <param name="version">Object version ID.</param>
-        public void DeleteObjectAcl(string key, long version)
+        internal void DeleteObjectAcl(string key, long version)
         { 
             string query = DatabaseQueries.DeleteObjectAcl(key, version); 
             DataTable result = _Database.Query(query);  
             return;
         }
 
-        /// <summary>
-        /// Delete the object ACL.
-        /// </summary>
-        /// <param name="key">Object key.</param>
-        public void DeleteObjectAcl(string key)
+        internal void DeleteObjectAcl(string key)
         {
             string query = DatabaseQueries.DeleteObjectAcl(key);
             DataTable result = _Database.Query(query);
@@ -912,34 +761,7 @@ namespace Less3.Classes
         #endregion
 
         #region Private-Methods
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_Disposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                try
-                {
-                    _Database.Dispose();
-                    _Database = null;
-                }
-                catch (Exception e)
-                {
-                    _Logging.Warn("BucketClient Dispose exception disposing bucket " + Name);
-                    _Logging.Exception("BucketClient", "Dispose", e);
-                }
-            }
-
-            _Disposed = true;
-
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-        }
-
+         
         private void InitializeDatabase()
         {
             string query = null;

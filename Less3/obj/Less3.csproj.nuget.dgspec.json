@@ -1,24 +1,26 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Code\\KVPbase\\Less3\\Less3\\Less3.csproj": {}
+    "C:\\Code\\KVPbase\\Less3-1.1\\Less3\\Less3.csproj": {}
   },
   "projects": {
-    "C:\\Code\\KVPbase\\Less3\\Less3\\Less3.csproj": {
-      "version": "1.0.0",
+    "C:\\Code\\KVPbase\\Less3-1.1\\Less3\\Less3.csproj": {
+      "version": "1.1.0",
       "restore": {
-        "projectUniqueName": "C:\\Code\\KVPbase\\Less3\\Less3\\Less3.csproj",
+        "projectUniqueName": "C:\\Code\\KVPbase\\Less3-1.1\\Less3\\Less3.csproj",
         "projectName": "Less3",
-        "projectPath": "C:\\Code\\KVPbase\\Less3\\Less3\\Less3.csproj",
+        "projectPath": "C:\\Code\\KVPbase\\Less3-1.1\\Less3\\Less3.csproj",
         "packagesPath": "C:\\Users\\joelc\\.nuget\\packages\\",
-        "outputPath": "C:\\Code\\KVPbase\\Less3\\Less3\\obj\\",
+        "outputPath": "C:\\Code\\KVPbase\\Less3-1.1\\Less3\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
+          "C:\\Microsoft\\Xamarin\\NuGet\\",
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
         ],
         "configFilePaths": [
           "C:\\Users\\joelc\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
         ],
         "originalTargetFrameworks": [
           "netcoreapp2.2"
@@ -26,12 +28,6 @@
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {},
-          "https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore-tooling/index.json": {},
-          "https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/index.json": {},
-          "https://dotnetfeed.blob.core.windows.net/aspnet-entityframeworkcore/index.json": {},
-          "https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json": {},
-          "https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json": {},
-          "https://dotnetfeed.blob.core.windows.net/dotnet-windowsdesktop/index.json": {},
           "https://nuget.pkg.github.com/jchristn/index.json": {},
           "https://nuget.pkg.github.com/kvpbase/index.json": {}
         },
@@ -51,7 +47,7 @@
           "dependencies": {
             "AWSSDK.S3": {
               "target": "Package",
-              "version": "[3.3.104.3, )"
+              "version": "[3.3.104.25, )"
             },
             "Microsoft.NETCore.App": {
               "suppressParent": "All",
@@ -65,7 +61,7 @@
             },
             "S3ServerInterface": {
               "target": "Package",
-              "version": "[1.5.1.1, )"
+              "version": "[2.0.1.1, )"
             },
             "SqliteHelper": {
               "target": "Package",
@@ -73,11 +69,15 @@
             },
             "SyslogLogging": {
               "target": "Package",
-              "version": "[1.0.12, )"
+              "version": "[1.2.0, )"
             },
             "Watson": {
               "target": "Package",
-              "version": "[2.1.2, )"
+              "version": "[3.0.1, )"
+            },
+            "XmlToPox": {
+              "target": "Package",
+              "version": "[1.0.2, )"
             }
           },
           "imports": [

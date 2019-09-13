@@ -2,7 +2,7 @@
   "version": 3,
   "targets": {
     ".NETCoreApp,Version=v2.2": {
-      "AWSSDK.Core/3.3.103.29": {
+      "AWSSDK.Core/3.3.103.37": {
         "type": "package",
         "compile": {
           "lib/netstandard2.0/AWSSDK.Core.dll": {}
@@ -11,25 +11,16 @@
           "lib/netstandard2.0/AWSSDK.Core.dll": {}
         }
       },
-      "AWSSDK.S3/3.3.104.17": {
+      "AWSSDK.S3/3.3.104.25": {
         "type": "package",
         "dependencies": {
-          "AWSSDK.Core": "[3.3.103.29, 3.4.0)"
+          "AWSSDK.Core": "[3.3.103.37, 3.4.0)"
         },
         "compile": {
           "lib/netstandard2.0/AWSSDK.S3.dll": {}
         },
         "runtime": {
           "lib/netstandard2.0/AWSSDK.S3.dll": {}
-        }
-      },
-      "ChunkDecoder/1.0.3": {
-        "type": "package",
-        "compile": {
-          "lib/netstandard2.0/ChunkDecoder.dll": {}
-        },
-        "runtime": {
-          "lib/netstandard2.0/ChunkDecoder.dll": {}
         }
       },
       "IpMatcher/1.0.1": {
@@ -274,13 +265,12 @@
           "lib/netstandard2.0/RegexMatcher.dll": {}
         }
       },
-      "S3ServerInterface/1.5.1.9": {
+      "S3ServerInterface/2.0.1.1": {
         "type": "package",
         "dependencies": {
-          "AWSSDK.S3": "3.3.103",
-          "ChunkDecoder": "1.0.2",
+          "AWSSDK.S3": "3.3.104.24",
           "Newtonsoft.Json": "12.0.2",
-          "Watson": "2.1.2"
+          "Watson": "3.0.1"
         },
         "compile": {
           "lib/netstandard2.0/S3ServerInterface.dll": {}
@@ -345,10 +335,9 @@
           }
         }
       },
-      "Watson/2.1.6": {
+      "Watson/3.0.1": {
         "type": "package",
         "dependencies": {
-          "ChunkDecoder": "1.0.3",
           "IpMatcher": "1.0.1",
           "Newtonsoft.Json": "12.0.2",
           "RegexMatcher": "1.0.2"
@@ -372,15 +361,15 @@
     }
   },
   "libraries": {
-    "AWSSDK.Core/3.3.103.29": {
-      "sha512": "2rvyBaL2QyqVmNWGRpJWQYNG+vtv0bHq1XtVdKzm/bUuq6Aa4eTVvuIHLcT12GNx4ZA/lPNrmN0kd3joAZIGOA==",
+    "AWSSDK.Core/3.3.103.37": {
+      "sha512": "7erW4wudVKO3YpLYnlfvpbHhH7pCOw7AE1EfIKlXKMiaKEOE9jieGKfVXbyPv9Vz93fo71EvWqxdTdPxtdjaCA==",
       "type": "package",
-      "path": "awssdk.core/3.3.103.29",
+      "path": "awssdk.core/3.3.103.37",
       "hasTools": true,
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "awssdk.core.3.3.103.29.nupkg.sha512",
+        "awssdk.core.3.3.103.37.nupkg.sha512",
         "awssdk.core.nuspec",
         "lib/MonoAndroid10/AWSSDK.Core.XML",
         "lib/MonoAndroid10/AWSSDK.Core.dll",
@@ -421,16 +410,16 @@
         "tools/account-management.ps1"
       ]
     },
-    "AWSSDK.S3/3.3.104.17": {
-      "sha512": "fvPiseR2HC8P9J1caKRCQ1bLLxMU57mX0sj899jg1XrBBDcPRUcyt9n8ibmrhloQdCEgvX2wqywCqv/fDETMKg==",
+    "AWSSDK.S3/3.3.104.25": {
+      "sha512": "BjIFN0ZDMhIJPAsy59wE1cMAUUCOdC58zP3oZRI6yU/DvFsfVVB2KCXXqNKpFPst6PzwvRCUMxQoC2WafYH91Q==",
       "type": "package",
-      "path": "awssdk.s3/3.3.104.17",
+      "path": "awssdk.s3/3.3.104.25",
       "hasTools": true,
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "analyzers/dotnet/cs/AWSSDK.S3.CodeAnalysis.dll",
-        "awssdk.s3.3.3.104.17.nupkg.sha512",
+        "awssdk.s3.3.3.104.25.nupkg.sha512",
         "awssdk.s3.nuspec",
         "lib/MonoAndroid10/AWSSDK.S3.XML",
         "lib/MonoAndroid10/AWSSDK.S3.dll",
@@ -459,19 +448,6 @@
         "lib/uap/AWSSDK.S3.pdb",
         "tools/install.ps1",
         "tools/uninstall.ps1"
-      ]
-    },
-    "ChunkDecoder/1.0.3": {
-      "sha512": "asHFIIEKA1osWR52HC62b96dYOrdphZb70v/6anI4m20Hpb4Pp9yLTmlwn39aNPcyezPBt1AtxUKhf81BVo0Xw==",
-      "type": "package",
-      "path": "chunkdecoder/1.0.3",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "chunkdecoder.1.0.3.nupkg.sha512",
-        "chunkdecoder.nuspec",
-        "lib/net462/ChunkDecoder.dll",
-        "lib/netstandard2.0/ChunkDecoder.dll"
       ]
     },
     "IpMatcher/1.0.1": {
@@ -1066,16 +1042,17 @@
         "regexmatcher.nuspec"
       ]
     },
-    "S3ServerInterface/1.5.1.9": {
-      "sha512": "Em30evIyAxqEGX9F/fp6K6RPXbZQEIEqeChkOL1FzNtNRO5AYv6Jzwwwsb4Ye25axbyVhGQ4vT+AjyySlWAKug==",
+    "S3ServerInterface/2.0.1.1": {
+      "sha512": "4h634o8ueFT1zb3v/8qM447mcPEBpsbhRc8UStEZ+JFtCKKEW5aGMJ+GxiNdg+6PYlAwScfuRY2A7O8AiNCNCA==",
       "type": "package",
-      "path": "s3serverinterface/1.5.1.9",
+      "path": "s3serverinterface/2.0.1.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
+        "LICENSE.md",
         "lib/net462/S3ServerInterface.dll",
         "lib/netstandard2.0/S3ServerInterface.dll",
-        "s3serverinterface.1.5.1.9.nupkg.sha512",
+        "s3serverinterface.2.0.1.1.nupkg.sha512",
         "s3serverinterface.nuspec"
       ]
     },
@@ -1164,16 +1141,16 @@
         "system.data.sqlite.core.nuspec"
       ]
     },
-    "Watson/2.1.6": {
-      "sha512": "BiS8ABVqmRgda9eNG8IDELKgeX48k6OLg0KmBlbi6udjPGtxLEcoW+kA0Z3qSkF8y63OiW404uZVkvleafI2IA==",
+    "Watson/3.0.1": {
+      "sha512": "3Vwz9H/XsRJJFoEUK6hOCH/T6vWqstCOs5Oh2G0ms0XTUtpLvTo4lDFW70+D5cPXsSswaIpOSqtVAOahwoMn4A==",
       "type": "package",
-      "path": "watson/2.1.6",
+      "path": "watson/3.0.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "lib/net462/WatsonWebserver.dll",
         "lib/netstandard2.0/WatsonWebserver.dll",
-        "watson.2.1.6.nupkg.sha512",
+        "watson.3.0.1.nupkg.sha512",
         "watson.nuspec"
       ]
     },
@@ -1193,35 +1170,38 @@
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v2.2": [
-      "AWSSDK.S3 >= 3.3.104.17",
+      "AWSSDK.S3 >= 3.3.104.25",
       "Microsoft.NETCore.App >= 2.2.0",
       "Newtonsoft.Json >= 12.0.2",
-      "S3ServerInterface >= 1.5.1.9",
+      "S3ServerInterface >= 2.0.1.1",
       "SqliteHelper >= 1.0.13",
       "SyslogLogging >= 1.2.0",
-      "Watson >= 2.1.6",
+      "Watson >= 3.0.1",
       "XmlToPox >= 1.0.2"
     ]
   },
   "packageFolders": {
     "C:\\Users\\joelc\\.nuget\\packages\\": {},
+    "C:\\Microsoft\\Xamarin\\NuGet\\": {},
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
-    "version": "1.0.7",
+    "version": "1.1.0",
     "restore": {
-      "projectUniqueName": "C:\\Code\\KVPbase\\Less3\\Less3\\Less3.csproj",
+      "projectUniqueName": "C:\\Code\\KVPbase\\Less3-1.1\\Less3\\Less3.csproj",
       "projectName": "Less3",
-      "projectPath": "C:\\Code\\KVPbase\\Less3\\Less3\\Less3.csproj",
+      "projectPath": "C:\\Code\\KVPbase\\Less3-1.1\\Less3\\Less3.csproj",
       "packagesPath": "C:\\Users\\joelc\\.nuget\\packages\\",
-      "outputPath": "C:\\Code\\KVPbase\\Less3\\Less3\\obj\\",
+      "outputPath": "C:\\Code\\KVPbase\\Less3-1.1\\Less3\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
+        "C:\\Microsoft\\Xamarin\\NuGet\\",
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
       ],
       "configFilePaths": [
         "C:\\Users\\joelc\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
       ],
       "originalTargetFrameworks": [
         "netcoreapp2.2"
@@ -1248,7 +1228,7 @@
         "dependencies": {
           "AWSSDK.S3": {
             "target": "Package",
-            "version": "[3.3.104.17, )"
+            "version": "[3.3.104.25, )"
           },
           "Microsoft.NETCore.App": {
             "suppressParent": "All",
@@ -1262,7 +1242,7 @@
           },
           "S3ServerInterface": {
             "target": "Package",
-            "version": "[1.5.1.9, )"
+            "version": "[2.0.1.1, )"
           },
           "SqliteHelper": {
             "target": "Package",
@@ -1274,7 +1254,7 @@
           },
           "Watson": {
             "target": "Package",
-            "version": "[2.1.6, )"
+            "version": "[3.0.1, )"
           },
           "XmlToPox": {
             "target": "Package",

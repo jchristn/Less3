@@ -9,59 +9,20 @@ namespace Less3.Classes
     /// <summary>
     /// Bucket configuration.
     /// </summary>
-    public class BucketConfiguration
+    internal class BucketConfiguration
     {
-        #region Public-Members
+        #region Internal-Members
 
-        /// <summary>
-        /// ID (database row).
-        /// </summary>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Bucket unique identifier.
-        /// </summary>
-        public string GUID { get; set; }
-
-        /// <summary>
-        /// Bucket owner GUID.
-        /// </summary>
-        public string OwnerGUID { get; set; }
-
-        /// <summary>
-        /// Name of the bucket.
-        /// </summary>
-        public string Name { get; set; } 
-
-        /// <summary>
-        /// Full path and filename to the bucket database.
-        /// </summary>
-        public string DatabaseFilename { get; set; }
-         
-        /// <summary>
-        /// Full path where objects should be stored.
-        /// </summary>
-        public string ObjectsDirectory { get; set; }
-
-        /// <summary>
-        /// Enable or disable object versioning.
-        /// </summary>
-        public bool EnableVersioning { get; set; } 
-
-        /// <summary>
-        /// Enable or disable public write.
-        /// </summary>
-        public bool EnablePublicWrite { get; set; }
-
-        /// <summary>
-        /// Enable or disable public read.
-        /// </summary>
-        public bool EnablePublicRead { get; set; }
-         
-        /// <summary>
-        /// Creation timestamp.
-        /// </summary>
-        public DateTime CreatedUtc { get; set; }
+        internal int Id { get; set; }
+        internal string GUID { get; set; }
+        internal string OwnerGUID { get; set; }
+        internal string Name { get; set; } 
+        internal string DatabaseFilename { get; set; }
+        internal string ObjectsDirectory { get; set; }
+        internal bool EnableVersioning { get; set; } 
+        internal bool EnablePublicWrite { get; set; }
+        internal bool EnablePublicRead { get; set; }
+        internal DateTime CreatedUtc { get; set; }
 
         #endregion
 
@@ -71,23 +32,12 @@ namespace Less3.Classes
 
         #region Constructors-and-Factories
 
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        public BucketConfiguration()
+        internal BucketConfiguration()
         {
 
         }
 
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        /// <param name="name">Bucket name.</param>
-        /// <param name="owner">Bucket owner.</param>
-        /// <param name="databaseFilename">Database filename and path.</param>
-        /// <param name="objectsDirectory">Directory where objects should be stored.</param>
-        /// <param name="permittedAccessKeys">Permitted access keys.</param>
-        public BucketConfiguration(
+        internal BucketConfiguration(
             string name,
             string owner,
             string databaseFilename,
@@ -106,15 +56,7 @@ namespace Less3.Classes
             CreatedUtc = DateTime.Now.ToUniversalTime();
         }
 
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        /// <param name="guid">GUID.</param>
-        /// <param name="name">Bucket name.</param>
-        /// <param name="owner">Bucket owner.</param>
-        /// <param name="databaseFilename">Database filename and path.</param>
-        /// <param name="objectsDirectory">Directory where objects should be stored.</param> 
-        public BucketConfiguration(
+        internal BucketConfiguration(
             string guid,
             string name,
             string owner,
@@ -135,12 +77,7 @@ namespace Less3.Classes
             CreatedUtc = DateTime.Now.ToUniversalTime();
         }
 
-        /// <summary>
-        /// Create an instance from a DataRow.
-        /// </summary>
-        /// <param name="row">DataRow.</param>
-        /// <returns>BucketConfiguration.</returns>
-        public static BucketConfiguration FromDataRow(DataRow row)
+        internal static BucketConfiguration FromDataRow(DataRow row)
         {
             if (row == null) throw new ArgumentNullException(nameof(row));
 

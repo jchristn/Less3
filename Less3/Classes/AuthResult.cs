@@ -12,7 +12,7 @@ namespace Less3.Classes
     /// Authentication result.
     /// </summary>
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum AuthResult
+    internal enum AuthResult
     {
         [EnumMember(Value = "AdminAuthorized")]
         AdminAuthorized,

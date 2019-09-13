@@ -13,7 +13,7 @@ namespace Less3.Classes
     /// Type of API request.
     /// </summary>
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum RequestType
+    internal enum RequestType
     {
         [EnumMember(Value = "Admin")]
         Admin,

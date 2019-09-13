@@ -10,7 +10,7 @@ namespace Less3.Classes
     /// <summary>
     /// Authentication manager.
     /// </summary>
-    public class AuthManager
+    internal class AuthManager
     {
         #region Public-Members
 
@@ -27,23 +27,12 @@ namespace Less3.Classes
 
         #region Constructors-and-Factories
 
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        public AuthManager()
+        internal AuthManager()
         {
 
         }
 
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        /// <param name="settings">Settings.</param>
-        /// <param name="logging">LoggingModule.</param>
-        /// <param name="users">UserManager.</param>
-        /// <param name="credentials">CredentialManager.</param>
-        /// <param name="buckets">BucketManager.</param>
-        public AuthManager(
+        internal AuthManager(
             Settings settings, 
             LoggingModule logging, 
             ConfigManager config, 
@@ -62,16 +51,9 @@ namespace Less3.Classes
 
         #endregion
 
-        #region Public-Methods
+        #region Internal-Methods
         
-        /// <summary>
-        /// Authenticate the operation.  This should not be used to authorize access to the requested resource but rather to authenticate the user.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <param name="cred">Credential.</param>
-        /// <param name="user">User.</param>
-        /// <returns>True if authenticated and the requested operation is supported for this user.</returns>
-        public bool Authenticate(
+        internal bool Authenticate(
             S3Request req, 
             out User user, 
             out Credential cred)
@@ -87,16 +69,7 @@ namespace Less3.Classes
             return true;
         }
 
-        /// <summary>
-        /// Authorize an administrative request.  
-        /// Should be performed after authentication (if necessary) and dictate whether or not the API can be accessed by the requestor.
-        /// Use for: admin APIs
-        /// </summary>
-        /// <param name="reqType">RequestType.</param>
-        /// <param name="req">S3Request.</param> 
-        /// <param name="result">AuthResult.</param>
-        /// <returns>True if authorized.</returns>
-        public bool AuthorizeAdminRequest(
+        internal bool AuthorizeAdminRequest(
             RequestType reqType,
             S3Request req,
             out AuthResult result)
@@ -139,18 +112,7 @@ namespace Less3.Classes
             }
         }
 
-        /// <summary>
-        /// Authorize a service request.  
-        /// Should be performed after authentication (if necessary) and dictate whether or not the API can be accessed by the requestor.
-        /// Use for: ListBuckets
-        /// </summary>
-        /// <param name="reqType">RequestType.</param>
-        /// <param name="req">S3Request.</param>
-        /// <param name="user">User.</param>
-        /// <param name="cred">Credential.</param> 
-        /// <param name="result">AuthResult.</param>
-        /// <returns>True if authorized.</returns>
-        public bool AuthorizeServiceRequest(
+        internal bool AuthorizeServiceRequest(
             RequestType reqType,
             S3Request req,
             User user,
@@ -209,19 +171,7 @@ namespace Less3.Classes
             }
         }
 
-        /// <summary>
-        /// Authorize a bucket request.  
-        /// Should be performed after authentication (if necessary) and dictate whether or not the API can be accessed by the requestor.
-        /// Use for: 
-        ///   BucketWrite
-        /// </summary>
-        /// <param name="reqType">RequestType.</param>
-        /// <param name="req">S3Request.</param>
-        /// <param name="user">User.</param>
-        /// <param name="cred">Credential.</param>
-        /// <param name="result">AuthResult.</param>
-        /// <returns>True if authorized.</returns>
-        public bool AuthorizeBucketRequest(
+        internal bool AuthorizeBucketRequest(
             RequestType reqType,
             S3Request req,
             User user,
@@ -281,30 +231,7 @@ namespace Less3.Classes
             }
         }
 
-        /// <summary>
-        /// Authorize a bucket request.  
-        /// Should be performed after authentication (if necessary) and dictate whether or not the API can be accessed by the requestor.
-        /// Use for:
-        ///   BucketDelete
-        ///   BucketDeleteTags
-        ///   BucketExists
-        ///   BucketRead
-        ///   BucketReadAcl
-        ///   BucketReadVersioning
-        ///   BucketReadVersions
-        ///   BucketWriteAcl
-        ///   BucketWriteTags
-        ///   BucketWriteVersioning 
-        /// </summary>
-        /// <param name="reqType">RequestType.</param>
-        /// <param name="req">S3Request.</param>
-        /// <param name="user">User.</param>
-        /// <param name="cred">Credential.</param>
-        /// <param name="bucket">BucketConfiguration.</param>
-        /// <param name="client">BucketClient.</param>
-        /// <param name="result">AuthResult.</param>
-        /// <returns>True if authorized.</returns>
-        public bool AuthorizeBucketRequest(
+        internal bool AuthorizeBucketRequest(
             RequestType reqType,
             S3Request req,
             User user,
@@ -565,22 +492,7 @@ namespace Less3.Classes
             }
         }
 
-        /// <summary>
-        /// Authorize an object request.  
-        /// Should be performed after authentication (if necessary) and dictate whether or not the API can be accessed by the requestor.
-        /// Use for:
-        ///   ObjectWrite
-        /// </summary>
-        /// <param name="reqType">RequestType.</param>
-        /// <param name="req">S3Request.</param>
-        /// <param name="user">User.</param>
-        /// <param name="cred">Credential.</param>
-        /// <param name="bucket">BucketConfiguration.</param>
-        /// <param name="client">BucketClient.</param>
-        /// <param name="obj">Obj.</param>
-        /// <param name="result">AuthResult.</param>
-        /// <returns>True if authorized.</returns>
-        public bool AuthorizeObjectRequest(
+        internal bool AuthorizeObjectRequest(
             RequestType reqType,
             S3Request req,
             User user,
@@ -732,35 +644,7 @@ namespace Less3.Classes
             }
         }
 
-        /// <summary>
-        /// Authorize an object request.  
-        /// Should be performed after authentication (if necessary) and dictate whether or not the API can be accessed by the requestor.
-        /// Use for:
-        ///   ObjectDelete
-        ///   ObjectDeleteMultiple
-        ///   ObjectDeleteTags
-        ///   ObjectExists
-        ///   ObjectRead
-        ///   ObjectReadAcl
-        ///   ObjectReadLegalHold
-        ///   ObjectReadRange
-        ///   ObjectReadRetention
-        ///   ObjectReadTags
-        ///   ObjectWriteAcl
-        ///   ObjectWriteLegalHold
-        ///   ObjectWriteRetention
-        ///   ObjectWriteTags 
-        /// </summary>
-        /// <param name="reqType">RequestType.</param>
-        /// <param name="req">S3Request.</param>
-        /// <param name="user">User.</param>
-        /// <param name="cred">Credential.</param>
-        /// <param name="bucket">BucketConfiguration.</param>
-        /// <param name="client">BucketClient.</param>
-        /// <param name="obj">Obj.</param>
-        /// <param name="result">AuthResult.</param>
-        /// <returns>True if authorized.</returns>
-        public bool AuthorizeObjectRequest(
+        internal bool AuthorizeObjectRequest(
             RequestType reqType,
             S3Request req,
             User user,

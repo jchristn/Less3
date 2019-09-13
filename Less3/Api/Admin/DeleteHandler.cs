@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 using S3ServerInterface;
 using SyslogLogging;
@@ -31,15 +33,7 @@ namespace Less3.Api.Admin
 
         #region Constructors-and-Factories
 
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        /// <param name="settings">Settings.</param>
-        /// <param name="logging">LoggingModule.</param> 
-        /// <param name="config">ConfigManager.</param>
-        /// <param name="buckets">BucketManager.</param>
-        /// <param name="auth">AuthManager.</param> 
-        public DeleteHandler(
+        internal DeleteHandler(
             Settings settings,
             LoggingModule logging,
             ConfigManager config,
@@ -61,74 +55,106 @@ namespace Less3.Api.Admin
 
         #endregion
 
-        #region Public-Methods
+        #region Internal-Methods
 
-        /// <summary>
-        /// Process the API request.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response Process(S3Request req)
+        internal async Task Process(S3Request req, S3Response resp)
         {
-            S3Response resp = new S3Response(req, 400, "text/plain", null, null);
-
             if (req.RawUrlEntries[1].Equals("buckets"))
             {
-                return DeleteBuckets(req);
+                await DeleteBuckets(req, resp);
+                return;
             }
             else if (req.RawUrlEntries[1].Equals("users"))
             {
-                return DeleteUsers(req);
+                await DeleteUsers(req, resp);
+                return;
             }
             else if (req.RawUrlEntries[1].Equals("credentials"))
             {
-                return DeleteCredentials(req);
+                await DeleteCredentials(req, resp);
+                return;
             }
 
-            return resp;
+            await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
         }
 
         #endregion
 
         #region Private-Methods
 
-        private S3Response DeleteBuckets(S3Request req)
+        private async Task DeleteBuckets(S3Request req, S3Response resp)
         {
-            S3Response resp = new S3Response(req, 400, "text/plain", null, null); 
-            if (req.RawUrlEntries.Count != 3) return resp;
+            if (req.RawUrlEntries.Count != 3)
+            {
+                await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+                return;
+            }
 
             BucketConfiguration config = null;
             if (!_Config.GetBucketByName(req.RawUrlEntries[2], out config))
-                return new S3Response(req, 404, "text/plain", null, null);
-
+            {
+                resp.StatusCode = 404;
+                resp.ContentType = "text/plain";
+                await resp.Send();
+                return;
+            }
+                
             _Config.DeleteBucket(config.GUID);
-            return new S3Response(req, 204, "text/plain", null, null);
+
+            resp.StatusCode = 204;
+            resp.ContentType = "text/plain";
+            await resp.Send();
+            return;
         }
 
-        private S3Response DeleteUsers(S3Request req)
+        private async Task DeleteUsers(S3Request req, S3Response resp)
         {
-            S3Response resp = new S3Response(req, 400, "text/plain", null, null);
-            if (req.RawUrlEntries.Count != 3) return resp;
+            if (req.RawUrlEntries.Count != 3)
+            {
+                await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+                return;
+            }
 
             User user = null;
             if (!_Config.GetUserByName(req.RawUrlEntries[2], out user))
-                return new S3Response(req, 404, "text/plain", null, null);
+            {
+                resp.StatusCode = 404;
+                resp.ContentType = "text/plain";
+                await resp.Send();
+                return;
+            }
 
             _Config.DeleteUser(user.GUID);
-            return new S3Response(req, 204, "text/plain", null, null);
+
+            resp.StatusCode = 204;
+            resp.ContentType = "text/plain";
+            await resp.Send();
+            return;
         }
 
-        private S3Response DeleteCredentials(S3Request req)
+        private async Task DeleteCredentials(S3Request req, S3Response resp)
         {
-            S3Response resp = new S3Response(req, 400, "text/plain", null, null);
-            if (req.RawUrlEntries.Count != 3) return resp;
+            if (req.RawUrlEntries.Count != 3)
+            {
+                await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+                return;
+            }
 
             Credential cred = null;
             if (!_Config.GetCredentialByAccessKey(req.RawUrlEntries[2], out cred))
-                return new S3Response(req, 404, "text/plain", null, null);
+            {
+                resp.StatusCode = 404;
+                resp.ContentType = "text/plain";
+                await resp.Send();
+                return;
+            }
 
             _Config.DeleteCredential(cred.GUID);
-            return new S3Response(req, 204, "text/plain", null, null);
+
+            resp.StatusCode = 204;
+            resp.ContentType = "text/plain";
+            await resp.Send();
+            return;
         }
 
         #endregion

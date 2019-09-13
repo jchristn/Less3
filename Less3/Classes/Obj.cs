@@ -8,89 +8,26 @@ namespace Less3.Classes
     /// <summary>
     /// Object stored in Less3.
     /// </summary>
-    public class Obj
+    internal class Obj
     {
-        #region Public-Members
+        #region Internal-Members
 
-        /// <summary>
-        /// ID (database row).
-        /// </summary>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Owner.
-        /// </summary>
-        public string Owner { get; set; }
-
-        /// <summary>
-        /// Author.
-        /// </summary>
-        public string Author { get; set; }
-
-        /// <summary>
-        /// Object key.
-        /// </summary>
-        public string Key { get; set; }
-
-        /// <summary>
-        /// Content type of the object.
-        /// </summary>
-        public string ContentType { get; set; }
-
-        /// <summary>
-        /// Number of bytes.
-        /// </summary>
-        public long ContentLength { get; set; }
-
-        /// <summary>
-        /// Version of the object.
-        /// </summary>
-        public long Version { get; set; }
-
-        /// <summary>
-        /// Object etag (MD5).
-        /// </summary>
-        public string Etag { get; set; }
-
-        /// <summary>
-        /// Retention type.
-        /// </summary>
-        public string RetentionType { get; set; }
-
-        /// <summary>
-        /// BLOB filename on disk.
-        /// </summary>
-        public string BlobFilename { get; set; }
-
-        /// <summary>
-        /// Delete marker.
-        /// </summary>
-        public int DeleteMarker { get; set; }
-
-        /// <summary>
-        /// Object MD5.
-        /// </summary>
-        public string Md5 { get; set; } 
-
-        /// <summary>
-        /// Timestamp for when the object was created, in UTC time.
-        /// </summary>
-        public DateTime CreatedUtc { get; set; }
-
-        /// <summary>
-        /// Timestamp for when the object was last updated, in UTC time.
-        /// </summary>
-        public DateTime LastUpdateUtc { get; set; }
-
-        /// <summary>
-        /// Timestamp for when the object was last accessed, in UTC time.
-        /// </summary>
-        public DateTime LastAccessUtc { get; set; }
-
-        /// <summary>
-        /// Timestamp for when the object will expire, in UTC time.
-        /// </summary>
-        public DateTime? ExpirationUtc = null;
+        internal int Id { get; set; }
+        internal string Owner { get; set; }
+        internal string Author { get; set; }
+        internal string Key { get; set; }
+        internal string ContentType { get; set; }
+        internal long ContentLength { get; set; }
+        internal long Version { get; set; }
+        internal string Etag { get; set; }
+        internal string RetentionType { get; set; }
+        internal string BlobFilename { get; set; }
+        internal int DeleteMarker { get; set; }
+        internal string Md5 { get; set; } 
+        internal DateTime CreatedUtc { get; set; }
+        internal DateTime LastUpdateUtc { get; set; }
+        internal DateTime LastAccessUtc { get; set; }
+        internal DateTime? ExpirationUtc = null;
 
         #endregion
 
@@ -99,21 +36,13 @@ namespace Less3.Classes
         #endregion
 
         #region Constructors-and-Factories
-
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        public Obj()
+         
+        internal Obj()
         {
 
         }
 
-        /// <summary>
-        /// Create an instance from a DataRow.
-        /// </summary>
-        /// <param name="row">DataRow.</param>
-        /// <returns>Obj.</returns>
-        public static Obj FromDataRow(DataRow row)
+        internal static Obj FromDataRow(DataRow row)
         {
             if (row == null) throw new ArgumentNullException(nameof(row));
 

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Amazon;
 using Amazon.S3;
@@ -35,15 +37,7 @@ namespace Less3.Api.S3
 
         #region Constructors-and-Factories
 
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        /// <param name="settings">Settings.</param>
-        /// <param name="logging">LoggingModule.</param> 
-        /// <param name="config">ConfigManager.</param>
-        /// <param name="buckets">BucketManager.</param>
-        /// <param name="auth">AuthManager.</param> 
-        public ServiceHandler(
+        internal ServiceHandler(
             Settings settings,
             LoggingModule logging, 
             ConfigManager config,
@@ -65,19 +59,17 @@ namespace Less3.Api.S3
 
         #endregion
 
-        #region Public-Methods
+        #region Internal-Methods
+         
+        internal async Task ListBuckets(S3Request req, S3Response resp)
+        {
+            string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
 
-        /// <summary>
-        /// List buckets API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response ListBuckets(S3Request req)
-        { 
             if (String.IsNullOrEmpty(req.AccessKey))
             {
-                _Logging.Warn("ServiceHandler ListBuckets no access key supplied");
-                return new S3Response(req, ErrorCode.AccessDenied); 
+                _Logging.Warn(header + "ListBuckets no access key supplied");
+                await resp.Send(ErrorCode.AccessDenied);
+                return;
             }
 
             User user = null;
@@ -91,31 +83,33 @@ namespace Less3.Api.S3
                 cred,
                 out authResult))
             {
-                _Logging.Warn("ServiceHandler ListBuckets authentication or authorization failed");
-                return new S3Response(req, ErrorCode.AccessDenied); 
+                _Logging.Warn(header + "ListBuckets authentication or authorization failed");
+                await resp.Send(ErrorCode.AccessDenied);
+                return;
             }
 
             List<BucketConfiguration> buckets = null;
             _Buckets.GetUserBuckets(user.GUID, out buckets);
 
-            ListAllMyBucketsResult resp = new ListAllMyBucketsResult();
-            resp.Owner = new S3ServerInterface.S3Objects.Owner();
-            resp.Owner.DisplayName = user.Name;
-            resp.Owner.ID = user.Name;
+            ListAllMyBucketsResult listBucketsResult = new ListAllMyBucketsResult();
+            listBucketsResult.Owner = new S3ServerInterface.S3Objects.Owner();
+            listBucketsResult.Owner.DisplayName = user.Name;
+            listBucketsResult.Owner.ID = user.Name;
 
-            resp.Buckets = new Buckets();
-            resp.Buckets.Bucket = new List<Bucket>();
+            listBucketsResult.Buckets = new Buckets();
+            listBucketsResult.Buckets.Bucket = new List<Bucket>();
 
             foreach (BucketConfiguration curr in buckets)
             {
                 Bucket b = new Bucket();
                 b.Name = curr.Name;
                 b.CreationDate = curr.CreatedUtc;
-                resp.Buckets.Bucket.Add(b);
+                listBucketsResult.Buckets.Bucket.Add(b);
             }
-              
-            return new S3Response(req, 200, "application/xml", null, 
-                Encoding.UTF8.GetBytes(Common.SerializeXml<ListAllMyBucketsResult>(resp, false))); 
+             
+            resp.StatusCode = 200;
+            resp.ContentType = "application/xml";
+            await resp.Send(Common.SerializeXml<ListAllMyBucketsResult>(listBucketsResult, false));
         }
 
         #endregion

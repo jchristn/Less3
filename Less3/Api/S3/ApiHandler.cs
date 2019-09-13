@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Amazon;
 using Amazon.S3;
@@ -17,7 +19,7 @@ namespace Less3.Api.S3
     /// <summary>
     /// API handler.
     /// </summary>
-    public class ApiHandler
+    internal class ApiHandler
     {
         #region Public-Members
 
@@ -38,16 +40,8 @@ namespace Less3.Api.S3
         #endregion
 
         #region Constructors-and-Factories
-
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        /// <param name="settings">Settings.</param>
-        /// <param name="logging">LoggingModule.</param> 
-        /// <param name="config">ConfigManager.</param>
-        /// <param name="buckets">BucketManager.</param>
-        /// <param name="auth">AuthManager.</param> 
-        public ApiHandler(
+         
+        internal ApiHandler(
             Settings settings, 
             LoggingModule logging,  
             ConfigManager config,
@@ -73,266 +67,141 @@ namespace Less3.Api.S3
 
         #endregion
 
-        #region Public-Methods
+        #region Internal-Methods
 
         #region Service-Callbacks
 
-        /// <summary>
-        /// Service list buckets API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response ServiceListBuckets(S3Request req)
+        internal async Task ServiceListBuckets(S3Request req, S3Response resp)
         {
-            return _ServiceHandler.ListBuckets(req);
+            await _ServiceHandler.ListBuckets(req, resp);
         }
 
         #endregion
 
         #region Bucket-Callbacks
 
-        /// <summary>
-        /// Bucket delete API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response BucketDelete(S3Request req)
+        internal async Task BucketDelete(S3Request req, S3Response resp)
         {
-            return _BucketHandler.Delete(req);
+            await _BucketHandler.Delete(req, resp); 
         }
 
-        /// <summary>
-        /// Bucket delete tags API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response BucketDeleteTags(S3Request req)
+        internal async Task BucketDeleteTags(S3Request req, S3Response resp)
         {
-            return _BucketHandler.DeleteTags(req);
+            await _BucketHandler.DeleteTags(req, resp);
         }
 
-        /// <summary>
-        /// Bucket exists API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response BucketExists(S3Request req)
+        internal async Task BucketExists(S3Request req, S3Response resp)
         {
-            return _BucketHandler.Exists(req);
+            await _BucketHandler.Exists(req, resp);
         }
 
-        /// <summary>
-        /// Bucket read location API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response BucketReadLocation(S3Request req)
+        internal async Task BucketReadLocation(S3Request req, S3Response resp)
         {
-            return _BucketHandler.ReadLocation(req);
+            await _BucketHandler.ReadLocation(req, resp);
         }
 
-        /// <summary>
-        /// Bucket read API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response BucketRead(S3Request req)
+        internal async Task BucketRead(S3Request req, S3Response resp)
         {
-            return _BucketHandler.Read(req);
+            await _BucketHandler.Read(req, resp);
         }
 
-        /// <summary>
-        /// Bucket read ACL API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response BucketReadAcl(S3Request req)
+        internal async Task BucketReadAcl(S3Request req, S3Response resp)
         {
-            return _BucketHandler.ReadAcl(req);
+            await _BucketHandler.ReadAcl(req, resp);
         }
 
-        /// <summary>
-        /// Bucket read tags API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response BucketReadTags(S3Request req)
+        internal async Task BucketReadTags(S3Request req, S3Response resp)
         {
-            return _BucketHandler.ReadTags(req);
+            await _BucketHandler.ReadTags(req, resp);
         }
 
-        /// <summary>
-        /// Bucket read versions API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response BucketReadVersions(S3Request req)
+        internal async Task BucketReadVersions(S3Request req, S3Response resp)
         {
-            return _BucketHandler.ReadVersions(req);
+            await _BucketHandler.ReadVersions(req, resp);
         }
 
-        /// <summary>
-        /// Bucket read versioning API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response BucketReadVersioning(S3Request req)
+        internal async Task BucketReadVersioning(S3Request req, S3Response resp)
         {
-            return _BucketHandler.ReadVersioning(req);
+            await _BucketHandler.ReadVersioning(req, resp);
         }
 
-        /// <summary>
-        /// Bucket write API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response BucketWrite(S3Request req)
+        internal async Task BucketWrite(S3Request req, S3Response resp)
         {
-            return _BucketHandler.Write(req);
+            await _BucketHandler.Write(req, resp);
         }
 
-        /// <summary>
-        /// Bucket write ACL API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response BucketWriteAcl(S3Request req)
+        internal async Task BucketWriteAcl(S3Request req, S3Response resp)
         {
-            return _BucketHandler.WriteAcl(req);
+            await _BucketHandler.WriteAcl(req, resp);
         }
 
-        /// <summary>
-        /// Bucket write tags API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response BucketWriteTags(S3Request req)
+        internal async Task BucketWriteTags(S3Request req, S3Response resp)
         {
-            return _BucketHandler.WriteTags(req);
+            await _BucketHandler.WriteTags(req, resp);
         }
 
-        /// <summary>
-        /// Bucket write versioning API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response BucketWriteVersioning(S3Request req)
+        internal async Task BucketWriteVersioning(S3Request req, S3Response resp)
         {  
-            return _BucketHandler.WriteVersioning(req);
+            await _BucketHandler.WriteVersioning(req, resp);
         }
 
         #endregion
 
         #region Object-Callbacks
 
-        /// <summary>
-        /// Object delete API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response ObjectDelete(S3Request req)
+        internal async Task ObjectDelete(S3Request req, S3Response resp)
         {
-            return _ObjectHandler.Delete(req);
+            await _ObjectHandler.Delete(req, resp);
         }
 
-        /// <summary>
-        /// Object delete multiple API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response ObjectDeleteMultiple(S3Request req)
+        internal async Task ObjectDeleteMultiple(S3Request req, S3Response resp)
         {
-            return _ObjectHandler.DeleteMultiple(req);
+            await _ObjectHandler.DeleteMultiple(req, resp);
         }
 
-        /// <summary>
-        /// Object delete tags API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response ObjectDeleteTags(S3Request req)
+        internal async Task ObjectDeleteTags(S3Request req, S3Response resp)
         {
-            return _ObjectHandler.DeleteTags(req);
+            await _ObjectHandler.DeleteTags(req, resp);
         }
 
-        /// <summary>
-        /// Object exists API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response ObjectExists(S3Request req)
+        internal async Task ObjectExists(S3Request req, S3Response resp)
         {
-            return _ObjectHandler.Exists(req);
+            await _ObjectHandler.Exists(req, resp);
         }
 
-        /// <summary>
-        /// Object read API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response ObjectRead(S3Request req)
+        internal async Task ObjectRead(S3Request req, S3Response resp)
         {
-            return _ObjectHandler.Read(req);
+            await _ObjectHandler.Read(req, resp);
         }
 
-        /// <summary>
-        /// Object read ACL API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response ObjectReadAcl(S3Request req)
+        internal async Task ObjectReadAcl(S3Request req, S3Response resp)
         {
-            return _ObjectHandler.ReadAcl(req);
+            await _ObjectHandler.ReadAcl(req, resp);
         }
 
-        /// <summary>
-        /// Object read range API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response ObjectReadRange(S3Request req)
+        internal async Task ObjectReadRange(S3Request req, S3Response resp)
         {
-            return _ObjectHandler.ReadRange(req);
+            await _ObjectHandler.ReadRange(req, resp);
         }
 
-        /// <summary>
-        /// Object read tags API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response ObjectReadTags(S3Request req)
+        internal async Task ObjectReadTags(S3Request req, S3Response resp)
         {
-            return _ObjectHandler.ReadTags(req);
+            await _ObjectHandler.ReadTags(req, resp);
         }
 
-        /// <summary>
-        /// Object write API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response ObjectWrite(S3Request req)
+        internal async Task ObjectWrite(S3Request req, S3Response resp)
         {
-            return _ObjectHandler.Write(req);
+            await _ObjectHandler.Write(req, resp);
         }
 
-        /// <summary>
-        /// Object write ACL API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response ObjectWriteAcl(S3Request req)
+        internal async Task ObjectWriteAcl(S3Request req, S3Response resp)
         {
-            return _ObjectHandler.WriteAcl(req);
+            await _ObjectHandler.WriteAcl(req, resp);
         }
 
-        /// <summary>
-        /// Object write tags API callback.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response ObjectWriteTags(S3Request req)
+        internal async Task ObjectWriteTags(S3Request req, S3Response resp)
         {
-            return _ObjectHandler.WriteTags(req);
+            await _ObjectHandler.WriteTags(req, resp);
         }
 
         #endregion

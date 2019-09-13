@@ -10,7 +10,7 @@ namespace Less3.Classes
     /// <summary>
     /// Setup workflow.
     /// </summary>
-    public class Setup
+    internal class Setup
     {
         #region Public-Members
 
@@ -21,11 +21,8 @@ namespace Less3.Classes
         #endregion
 
         #region Constructors-and-Factories
-
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        public Setup()
+         
+        internal Setup()
         {
             RunSetup();
         }
@@ -96,14 +93,14 @@ namespace Less3.Classes
              
             currSettings.Storage = new Settings.SettingsStorage(); 
             currSettings.Storage.Directory = "./Storage/";
+            currSettings.Storage.TempDirectory = "./Temp/";
              
             currSettings.Syslog = new Settings.SettingsSyslog();
             currSettings.Syslog.ConsoleLogging = true;
             currSettings.Syslog.Header = "less3";
             currSettings.Syslog.ServerIp = "127.0.0.1";
             currSettings.Syslog.ServerPort = 514;
-            currSettings.Syslog.LogHttpRequests = false;
-            currSettings.Syslog.LogHttpResponses = false;
+            currSettings.Syslog.LogHttpRequests = false; 
             currSettings.Syslog.MinimumLevel = 1;
 
             currSettings.Debug = new Settings.SettingsDebug();
@@ -115,9 +112,12 @@ namespace Less3.Classes
                 Common.ExitApplication("setup", "Unable to write System.json", -1);
                 return;
             }
-             
+
             if (!Directory.Exists(currSettings.Storage.Directory))
                 Directory.CreateDirectory(currSettings.Storage.Directory);
+
+            if (!Directory.Exists(currSettings.Storage.TempDirectory))
+                Directory.CreateDirectory(currSettings.Storage.TempDirectory);
 
             #endregion
 

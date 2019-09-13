@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Amazon;
 using Amazon.S3;
@@ -39,15 +41,7 @@ namespace Less3.Api.Admin
 
         #region Constructors-and-Factories
 
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        /// <param name="settings">Settings.</param>
-        /// <param name="logging">LoggingModule.</param> 
-        /// <param name="config">ConfigManager.</param>
-        /// <param name="buckets">BucketManager.</param>
-        /// <param name="auth">AuthManager.</param> 
-        public AdminApiHandler(
+        internal AdminApiHandler(
             Settings settings, 
             LoggingModule logging,  
             ConfigManager config,
@@ -73,31 +67,25 @@ namespace Less3.Api.Admin
 
         #endregion
 
-        #region Public-Methods
+        #region Internal-Methods
 
-        /// <summary>
-        /// Process administrative API requests.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response Process(S3Request req)
+        internal async Task Process(S3Request req, S3Response resp)
         {
-            S3Response resp = new S3Response(req, 400, "text/plain", null, null);
-
             switch (req.Method)
             {
                 case HttpMethod.GET:
-                    resp = _GetHandler.Process(req);
-                    return resp; 
+                    await _GetHandler.Process(req, resp);
+                    return;
                 case HttpMethod.POST:
-                    resp = _PostHandler.Process(req);
-                    return resp;
+                    await _PostHandler.Process(req, resp);
+                    return;
                 case HttpMethod.DELETE:
-                    resp = _DeleteHandler.Process(req);
-                    return resp;
+                    await _DeleteHandler.Process(req, resp);
+                    return;
             }
 
-            return resp;
+            await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+            return;
         }
 
         #endregion

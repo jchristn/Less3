@@ -12,7 +12,7 @@ namespace Less3.Classes
     /// <summary>
     /// Console for less3.
     /// </summary>
-    public class ConsoleManager
+    internal class ConsoleManager
     {
         #region Public-Members
 
@@ -23,16 +23,12 @@ namespace Less3.Classes
         private bool _Enabled { get; set; }
         private Settings _Settings { get; set; } 
         private LoggingModule _Logging { get; set; }  
+
         #endregion
 
         #region Constructors-and-Factories
 
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        /// <param name="settings">Settings.</param>
-        /// <param name="logging">LoggingModule.</param>
-        public ConsoleManager(
+        internal ConsoleManager(
             Settings settings,
             LoggingModule logging)
         {
@@ -49,10 +45,7 @@ namespace Less3.Classes
 
         #region Public-Methods
 
-        /// <summary>
-        /// Console worker method.
-        /// </summary>
-        public void Worker()
+        internal void Worker()
         {
             string userInput = "";
 

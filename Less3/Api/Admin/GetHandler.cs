@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 using S3ServerInterface;
 using SyslogLogging;
@@ -13,7 +15,7 @@ namespace Less3.Api.Admin
     /// <summary>
     /// Admin API GET handler.
     /// </summary>
-    public class GetHandler
+    internal class GetHandler
     {
         #region Public-Members
 
@@ -31,15 +33,7 @@ namespace Less3.Api.Admin
 
         #region Constructors-and-Factories
 
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        /// <param name="settings">Settings.</param>
-        /// <param name="logging">LoggingModule.</param> 
-        /// <param name="config">ConfigManager.</param>
-        /// <param name="buckets">BucketManager.</param>
-        /// <param name="auth">AuthManager.</param> 
-        public GetHandler(
+        internal GetHandler(
             Settings settings,
             LoggingModule logging,
             ConfigManager config,
@@ -61,100 +55,126 @@ namespace Less3.Api.Admin
 
         #endregion
 
-        #region Public-Methods
-
-        /// <summary>
-        /// Process the API request.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response Process(S3Request req)
-        {
-            S3Response resp = new S3Response(req, 400, "text/plain", null, null); 
-
+        #region Internal-Methods
+         
+        internal async Task Process(S3Request req, S3Response resp)
+        { 
             if (req.RawUrlEntries[1].Equals("buckets"))
             {
-                return GetBuckets(req);
+                await GetBuckets(req, resp);
+                return;
             }
             else if (req.RawUrlEntries[1].Equals("users"))
             {
-                return GetUsers(req);
+                await GetUsers(req, resp);
+                return;
             }
             else if (req.RawUrlEntries[1].Equals("credentials"))
             {
-                return GetCredentials(req);
+                await GetCredentials(req, resp);
+                return;
             }
 
-            return resp;
+            await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
         }
 
         #endregion
 
         #region Private-Methods
 
-        private S3Response GetBuckets(S3Request req)
+        private async Task GetBuckets(S3Request req, S3Response resp)
         {
             if (req.RawUrlEntries.Count >= 3)
             { 
                 BucketConfiguration config = null;
                 if (!_Buckets.Get(req.RawUrlEntries[2], out config))
                 {
-                    return new S3Response(req, 404, "text/plain", null, null);
+                    resp.StatusCode = 404;
+                    resp.ContentType = "text/plain";
+                    await resp.Send();
+                    return;
                 }
                 else
                 {
-                    return new S3Response(req, 200, "application/json", null, Encoding.UTF8.GetBytes(Common.SerializeJson(config, true)));
+                    resp.StatusCode = 200;
+                    resp.ContentType = "application/json";
+                    await resp.Send(Common.SerializeJson(config, true));
+                    return;
                 }
             }
             else
             {
                 List<BucketConfiguration> configs = null;
                 _Config.GetBuckets(out configs);
-                return new S3Response(req, 200, "application/json", null, Encoding.UTF8.GetBytes(Common.SerializeJson(configs, true)));
+
+                resp.StatusCode = 200;
+                resp.ContentType = "application/json";
+                await resp.Send(Common.SerializeJson(configs, true));
+                return;
             }
         }
 
-        private S3Response GetUsers(S3Request req)
+        private async Task GetUsers(S3Request req, S3Response resp)
         {
             if (req.RawUrlEntries.Count >= 3)
             {
                 User user = null;
                 if (!_Config.GetUserByName(req.RawUrlEntries[2], out user))
                 {
-                    return new S3Response(req, 404, "text/plain", null, null);
+                    resp.StatusCode = 404;
+                    resp.ContentType = "text/plain";
+                    await resp.Send();
+                    return;
                 }
                 else
                 {
-                    return new S3Response(req, 200, "application/json", null, Encoding.UTF8.GetBytes(Common.SerializeJson(user, true)));
+                    resp.StatusCode = 200;
+                    resp.ContentType = "application/json";
+                    await resp.Send(Common.SerializeJson(user, true));
+                    return;
                 }
             }
             else
             {
                 List<User> users = null;
                 _Config.GetUsers(out users);
-                return new S3Response(req, 200, "application/json", null, Encoding.UTF8.GetBytes(Common.SerializeJson(users, true)));
+
+                resp.StatusCode = 200;
+                resp.ContentType = "application/json";
+                await resp.Send(Common.SerializeJson(users, true));
+                return;
             }
         }
 
-        private S3Response GetCredentials(S3Request req)
+        private async Task GetCredentials(S3Request req, S3Response resp)
         {
             if (req.RawUrlEntries.Count >= 3)
             {
                 Credential cred = null;
                 if (!_Config.GetCredentialByAccessKey(req.RawUrlEntries[2], out cred))
                 {
-                    return new S3Response(req, 404, "text/plain", null, null);
+                    resp.StatusCode = 404;
+                    resp.ContentType = "text/plain";
+                    await resp.Send();
+                    return;
                 }
                 else
                 {
-                    return new S3Response(req, 200, "application/json", null, Encoding.UTF8.GetBytes(Common.SerializeJson(cred, true)));
+                    resp.StatusCode = 200;
+                    resp.ContentType = "application/json";
+                    await resp.Send(Common.SerializeJson(cred, true));
+                    return;
                 }
             }
             else
             {
                 List<Credential> creds = null;
                 _Config.GetCredentials(out creds);
-                return new S3Response(req, 200, "application/json", null, Encoding.UTF8.GetBytes(Common.SerializeJson(creds, true)));
+
+                resp.StatusCode = 200;
+                resp.ContentType = "application/json";
+                await resp.Send(Common.SerializeJson(creds, true));
+                return;
             }
         }
 

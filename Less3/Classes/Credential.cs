@@ -8,39 +8,16 @@ namespace Less3.Classes
     /// <summary>
     /// Credential.
     /// </summary>
-    public class Credential
+    internal class Credential
     {
-        #region Public-Members
+        #region Internal-Members
 
-        /// <summary>
-        /// ID (database row).
-        /// </summary>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Credential GUID.
-        /// </summary>
-        public string GUID { get; set; }
-
-        /// <summary>
-        /// User GUID.
-        /// </summary>
-        public string UserGUID { get; set; }
-
-        /// <summary>
-        /// Name of the credential or description.
-        /// </summary>
-        public string Description { get; set; }
-
-        /// <summary>
-        /// Access key.
-        /// </summary>
-        public string AccessKey { get; set; }
-
-        /// <summary>
-        /// Secret key.
-        /// </summary>
-        public string SecretKey { get; set; }
+        internal int Id { get; set; }
+        internal string GUID { get; set; }
+        internal string UserGUID { get; set; }
+        internal string Description { get; set; }
+        internal string AccessKey { get; set; }
+        internal string SecretKey { get; set; }
          
         #endregion
 
@@ -50,22 +27,12 @@ namespace Less3.Classes
 
         #region Constructors-and-Factories
 
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        public Credential()
+        internal Credential()
         {
 
         }
 
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        /// <param name="userGuid">User GUID.</param>
-        /// <param name="description">Name of the credential or description.</param>
-        /// <param name="accessKey">Access key.</param>
-        /// <param name="secretKey">Secret key.</param> 
-        public Credential(string userGuid, string description, string accessKey, string secretKey)
+        internal Credential(string userGuid, string description, string accessKey, string secretKey)
         {
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
             if (String.IsNullOrEmpty(accessKey)) throw new ArgumentNullException(nameof(accessKey));
@@ -78,15 +45,7 @@ namespace Less3.Classes
             SecretKey = secretKey;
         }
 
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        /// <param name="guid">GUID.</param>
-        /// <param name="userGuid">User GUID.</param>
-        /// <param name="description">Name of the credential or description.</param>
-        /// <param name="accessKey">Access key.</param>
-        /// <param name="secretKey">Secret key.</param> 
-        public Credential(string guid, string userGuid, string description, string accessKey, string secretKey)
+        internal Credential(string guid, string userGuid, string description, string accessKey, string secretKey)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
@@ -100,12 +59,7 @@ namespace Less3.Classes
             SecretKey = secretKey;
         }
 
-        /// <summary>
-        /// Create an instance from a DataRow.
-        /// </summary>
-        /// <param name="row">DataRow.</param>
-        /// <returns>Credential.</returns>
-        public static Credential FromDataRow(DataRow row)
+        internal static Credential FromDataRow(DataRow row)
         {
             if (row == null) throw new ArgumentNullException(nameof(row));
 

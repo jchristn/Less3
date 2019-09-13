@@ -13,16 +13,14 @@ namespace Less3.Classes
     /// <summary>
     /// Configuration manager.
     /// </summary>
-    public class ConfigManager : IDisposable
+    internal class ConfigManager : IDisposable
     {
         #region Public-Members
 
         #endregion
 
         #region Private-Members
-
-        private bool _Disposed = false;
-
+         
         private Settings _Settings;
         private LoggingModule _Logging;
         private DatabaseClient _Database;
@@ -30,13 +28,8 @@ namespace Less3.Classes
         #endregion
 
         #region Constructors-and-Factories
-
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        /// <param name="settings">Settings.</param>
-        /// <param name="logging">LoggingModule.</param>
-        public ConfigManager(Settings settings, LoggingModule logging)
+         
+        internal ConfigManager(Settings settings, LoggingModule logging)
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
             if (logging == null) throw new ArgumentNullException(nameof(logging));
@@ -56,20 +49,18 @@ namespace Less3.Classes
         /// </summary>
         public void Dispose()
         {
-            Dispose(true);
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
+            if (_Database != null)
+            {
+                _Database.Dispose();
+                _Database = null;
+            }
         }
 
         #endregion
 
-        #region Public-User-Methods
+        #region Internal-User-Methods
 
-        /// <summary>
-        /// Retrieve a list of configured users.
-        /// </summary>
-        /// <param name="users">Users.</param>
-        public void GetUsers(out List<User> users)
+        internal void GetUsers(out List<User> users)
         {
             users = new List<User>();
             string query = DatabaseQueries.GetUsers();
@@ -86,12 +77,7 @@ namespace Less3.Classes
             return;
         }
 
-        /// <summary>
-        /// Check if a user exists by GUID.
-        /// </summary>
-        /// <param name="guid">User GUID.</param>
-        /// <returns>True if exists.</returns>
-        public bool UserGuidExists(string guid)
+        internal bool UserGuidExists(string guid)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
 
@@ -102,12 +88,7 @@ namespace Less3.Classes
             return false;
         }
 
-        /// <summary>
-        /// Check if a user exists by email address.
-        /// </summary>
-        /// <param name="email">Email address.</param>
-        /// <returns>True if exists.</returns>
-        public bool UserEmailExists(string email)
+        internal bool UserEmailExists(string email)
         {
             if (String.IsNullOrEmpty(email)) throw new ArgumentNullException(nameof(email));
 
@@ -118,13 +99,7 @@ namespace Less3.Classes
             return false;
         }
 
-        /// <summary>
-        /// Retrieve a user by GUID.
-        /// </summary>
-        /// <param name="guid">User GUID.</param>
-        /// <param name="user">User.</param>
-        /// <returns>True if successful.</returns>
-        public bool GetUserByGuid(string guid, out User user)
+        internal bool GetUserByGuid(string guid, out User user)
         {
             user = null;
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
@@ -141,13 +116,7 @@ namespace Less3.Classes
             return false;
         }
 
-        /// <summary>
-        /// Retrieve a user by name.
-        /// </summary>
-        /// <param name="name">User name.</param>
-        /// <param name="user">User.</param>
-        /// <returns>True if successful.</returns>
-        public bool GetUserByName(string name, out User user)
+        internal bool GetUserByName(string name, out User user)
         {
             user = null;
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
@@ -164,13 +133,7 @@ namespace Less3.Classes
             return false;
         }
 
-        /// <summary>
-        /// Retrieve a user by email address.
-        /// </summary>
-        /// <param name="email">Email address.</param>
-        /// <param name="user">User.</param>
-        /// <returns>True if successful.</returns>
-        public bool GetUserByEmail(string email, out User user)
+        internal bool GetUserByEmail(string email, out User user)
         {
             user = null;
             if (String.IsNullOrEmpty(email)) throw new ArgumentNullException(nameof(email));
@@ -187,13 +150,7 @@ namespace Less3.Classes
             return false;
         }
 
-        /// <summary>
-        /// Retrieve a user by access key.
-        /// </summary>
-        /// <param name="accessKey">Access key.</param>
-        /// <param name="user">User.</param>
-        /// <returns>True if successful.</returns>
-        public bool GetUserByAccessKey(string accessKey, out User user)
+        internal bool GetUserByAccessKey(string accessKey, out User user)
         {
             user = null;
             if (String.IsNullOrEmpty(accessKey)) throw new ArgumentNullException(nameof(accessKey));
@@ -214,14 +171,7 @@ namespace Less3.Classes
             return true;
         }
 
-        /// <summary>
-        /// Add a user.
-        /// </summary>
-        /// <param name="guid">User GUID.</param>
-        /// <param name="name">User name.</param>
-        /// <param name="email">Email address.</param>
-        /// <returns>True if successful.</returns>
-        public bool AddUser(string guid, string name, string email)
+        internal bool AddUser(string guid, string name, string email)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
@@ -231,12 +181,7 @@ namespace Less3.Classes
             return AddUser(user);
         }
 
-        /// <summary>
-        /// Add a user.
-        /// </summary>
-        /// <param name="user">User.</param>
-        /// <returns>True if successful.</returns>
-        public bool AddUser(User user)
+        internal bool AddUser(User user)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             User tempUser = null;
@@ -258,11 +203,7 @@ namespace Less3.Classes
             return true;
         }
 
-        /// <summary>
-        /// Delete a user.
-        /// </summary>
-        /// <param name="guid">User GUID.</param>
-        public void DeleteUser(string guid)
+        internal void DeleteUser(string guid)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid)); 
               
@@ -271,13 +212,7 @@ namespace Less3.Classes
             return;
         }
 
-        /// <summary>
-        /// Set a value on a user account.
-        /// </summary>
-        /// <param name="guid">User GUID.</param>
-        /// <param name="field">Field to set.</param>
-        /// <param name="val">Value to set in the field.</param>
-        public void SetUserValue(string guid, string field, string val)
+        internal void SetUserValue(string guid, string field, string val)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
             if (String.IsNullOrEmpty(field)) throw new ArgumentNullException(nameof(field));
@@ -293,13 +228,9 @@ namespace Less3.Classes
 
         #endregion
 
-        #region Public-Credential-Methods
+        #region Internal-Credential-Methods
 
-        /// <summary>
-        /// Retrieve a list of credentials.
-        /// </summary>
-        /// <param name="creds">Credentials.</param>
-        public void GetCredentials(out List<Credential> creds)
+        internal void GetCredentials(out List<Credential> creds)
         {
             creds = new List<Credential>();
             string query = DatabaseQueries.GetCredentials();
@@ -316,12 +247,7 @@ namespace Less3.Classes
             return;
         }
 
-        /// <summary>
-        /// Check if a credential exists by GUID.
-        /// </summary>
-        /// <param name="guid">Credential GUID.</param>
-        /// <returns>True if exists.</returns>
-        public bool CredentialGuidExists(string guid)
+        internal bool CredentialGuidExists(string guid)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
 
@@ -332,13 +258,7 @@ namespace Less3.Classes
             return false;
         }
 
-        /// <summary>
-        /// Retrieve credential by GUID.
-        /// </summary>
-        /// <param name="guid">Credential GUID.</param>
-        /// <param name="cred">Credential.</param>
-        /// <returns>True if successful.</returns>
-        public bool GetCredentialByGuid(string guid, out Credential cred)
+        internal bool GetCredentialByGuid(string guid, out Credential cred)
         {
             cred = null;
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
@@ -355,13 +275,7 @@ namespace Less3.Classes
             return false;
         }
 
-        /// <summary>
-        /// Retrieve credentials by user.
-        /// </summary>
-        /// <param name="userGuid">User GUID.</param>
-        /// <param name="creds">Credentials.</param>
-        /// <returns>True if successful.</returns>
-        public bool GetCredentialsByUser(string userGuid, out List<Credential> creds)
+        internal bool GetCredentialsByUser(string userGuid, out List<Credential> creds)
         {
             creds = new List<Credential>();
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
@@ -382,13 +296,7 @@ namespace Less3.Classes
             return false;
         }
 
-        /// <summary>
-        /// Retrieve credentials by access key.
-        /// </summary>
-        /// <param name="accessKey">Access key.</param>
-        /// <param name="cred">Credential.</param>
-        /// <returns>True if successful.</returns>
-        public bool GetCredentialByAccessKey(string accessKey, out Credential cred)
+        internal bool GetCredentialByAccessKey(string accessKey, out Credential cred)
         {
             cred = null;
             if (String.IsNullOrEmpty(accessKey)) throw new ArgumentNullException(nameof(accessKey));
@@ -405,15 +313,7 @@ namespace Less3.Classes
             return false;
         }
 
-        /// <summary>
-        /// Add credentials.
-        /// </summary>
-        /// <param name="userGuid">User GUID.</param>
-        /// <param name="description">Description of the credentials.</param>
-        /// <param name="accessKey">Access key.</param>
-        /// <param name="secretKey">Secret key.</param>
-        /// <returns>True if successful.</returns>
-        public bool AddCredential(string userGuid, string description, string accessKey, string secretKey)
+        internal bool AddCredential(string userGuid, string description, string accessKey, string secretKey)
         {
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
             if (String.IsNullOrEmpty(accessKey)) throw new ArgumentNullException(nameof(accessKey));
@@ -423,12 +323,7 @@ namespace Less3.Classes
             return AddCredential(cred);
         }
 
-        /// <summary>
-        /// Add credentials.
-        /// </summary>
-        /// <param name="cred">Credential.</param>
-        /// <returns>True if successful.</returns>
-        public bool AddCredential(Credential cred)
+        internal bool AddCredential(Credential cred)
         {
             if (cred == null) throw new ArgumentNullException(nameof(cred));
 
@@ -450,11 +345,7 @@ namespace Less3.Classes
             return true;
         }
 
-        /// <summary>
-        /// Delete credentials.
-        /// </summary>
-        /// <param name="guid">Credential GUID.</param>
-        public void DeleteCredential(string guid)
+        internal void DeleteCredential(string guid)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
 
@@ -463,13 +354,7 @@ namespace Less3.Classes
             return;
         }
 
-        /// <summary>
-        /// Set values for a credential.
-        /// </summary>
-        /// <param name="guid">Credential GUID.</param>
-        /// <param name="field">Field to set.</param>
-        /// <param name="val">Value to set.</param>
-        public void SetCredentialValue(string guid, string field, string val)
+        internal void SetCredentialValue(string guid, string field, string val)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
             if (String.IsNullOrEmpty(field)) throw new ArgumentNullException(nameof(field));
@@ -485,13 +370,9 @@ namespace Less3.Classes
 
         #endregion
 
-        #region Public-Bucket-Methods
+        #region Internal-Bucket-Methods
 
-        /// <summary>
-        /// Retrieve buckets.
-        /// </summary>
-        /// <param name="buckets">Buckets.</param>
-        public void GetBuckets(out List<BucketConfiguration> buckets)
+        internal void GetBuckets(out List<BucketConfiguration> buckets)
         {
             buckets = new List<BucketConfiguration>();
             string query = DatabaseQueries.GetBuckets();
@@ -508,12 +389,7 @@ namespace Less3.Classes
             return;
         }
 
-        /// <summary>
-        /// Check if a bucket exists.
-        /// </summary>
-        /// <param name="name">Name of the bucket.</param>
-        /// <returns>True if exists.</returns>
-        public bool BucketExists(string name)
+        internal bool BucketExists(string name)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
@@ -524,12 +400,7 @@ namespace Less3.Classes
             return false;
         }
 
-        /// <summary>
-        /// Get buckets by user GUID.
-        /// </summary>
-        /// <param name="userGuid">User GUID.</param>
-        /// <param name="buckets">Buckets.</param>
-        public void GetBucketsByUser(string userGuid, out List<BucketConfiguration> buckets)
+        internal void GetBucketsByUser(string userGuid, out List<BucketConfiguration> buckets)
         {
             buckets = new List<BucketConfiguration>();
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
@@ -548,13 +419,7 @@ namespace Less3.Classes
             return;
         }
 
-        /// <summary>
-        /// Get bucket by GUID.
-        /// </summary>
-        /// <param name="guid">Bucket GUID.</param>
-        /// <param name="bucket">Bucket.</param>
-        /// <returns>True if successful.</returns>
-        public bool GetBucketByGuid(string guid, out BucketConfiguration bucket)
+        internal bool GetBucketByGuid(string guid, out BucketConfiguration bucket)
         {
             bucket = null;
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
@@ -571,13 +436,7 @@ namespace Less3.Classes
             return false;
         }
 
-        /// <summary>
-        /// Get bucket by name.
-        /// </summary>
-        /// <param name="name">Bucket name.</param>
-        /// <param name="bucket">Bucket.</param>
-        /// <returns>True if successful.</returns>
-        public bool GetBucketByName(string name, out BucketConfiguration bucket)
+        internal bool GetBucketByName(string name, out BucketConfiguration bucket)
         {
             bucket = null;
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
@@ -594,13 +453,7 @@ namespace Less3.Classes
             return false;
         }
 
-        /// <summary>
-        /// Add a bucket.
-        /// </summary>
-        /// <param name="userGuid">Owning user GUID.</param>
-        /// <param name="name">Bucket name.</param>
-        /// <returns>True if successful.</returns>
-        public bool AddBucket(string userGuid, string name)
+        internal bool AddBucket(string userGuid, string name)
         {
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
@@ -614,12 +467,7 @@ namespace Less3.Classes
             return AddBucket(bucket);
         }
 
-        /// <summary>
-        /// Add a bucket.
-        /// </summary>
-        /// <param name="bucket">Bucket.</param>
-        /// <returns>True if successful.</returns>
-        public bool AddBucket(BucketConfiguration bucket)
+        internal bool AddBucket(BucketConfiguration bucket)
         {
             if (bucket == null) throw new ArgumentNullException(nameof(bucket));
 
@@ -634,11 +482,7 @@ namespace Less3.Classes
             return true;
         }
 
-        /// <summary>
-        /// Delete a bucket.
-        /// </summary>
-        /// <param name="guid">Bucket GUID.</param>
-        public void DeleteBucket(string guid)
+        internal void DeleteBucket(string guid)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
 
@@ -647,13 +491,7 @@ namespace Less3.Classes
             return;
         }
 
-        /// <summary>
-        /// Set value for a bucket.
-        /// </summary>
-        /// <param name="guid">Bucket GUID.</param>
-        /// <param name="field">Field to set.</param>
-        /// <param name="val">Value to set.</param>
-        public void SetBucketValue(string guid, string field, string val)
+        internal void SetBucketValue(string guid, string field, string val)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
             if (String.IsNullOrEmpty(field)) throw new ArgumentNullException(nameof(field));
@@ -670,33 +508,7 @@ namespace Less3.Classes
         #endregion
 
         #region Private-Methods
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_Disposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                try
-                {
-                    _Database.Dispose();
-                    _Database = null;
-                }
-                catch (Exception e)
-                {
-                    _Logging.Exception("ConfigManager", "Dispose", e);
-                }
-            }
-
-            _Disposed = true;
-
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-        }
-
+         
         private void InitializeDatabase()
         {
             _Database = new DatabaseClient(_Settings.Files.ConfigDatabase, _Settings.Debug.Database);

@@ -8,29 +8,14 @@ namespace Less3.Classes
     /// <summary>
     /// User object.
     /// </summary>
-    public class User
+    internal class User
     {
-        #region Public-Members
+        #region Internal-Members
 
-        /// <summary>
-        /// ID (database row).
-        /// </summary>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// User GUID.
-        /// </summary>
-        public string GUID { get; set; }
-
-        /// <summary>
-        /// User name.
-        /// </summary>
-        public string Name { get; set; }
-
-        /// <summary>
-        /// User email.
-        /// </summary>
-        public string Email { get; set; }
+        internal int Id { get; set; }
+        internal string GUID { get; set; }
+        internal string Name { get; set; }
+        internal string Email { get; set; }
 
         #endregion
 
@@ -40,20 +25,12 @@ namespace Less3.Classes
 
         #region Constructors-and-Factories
 
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        public User()
+        internal User()
         {
 
         }
 
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        /// <param name="name">User name.</param>
-        /// <param name="email">User email.</param>
-        public User(string name, string email)
+        internal User(string name, string email)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
             if (String.IsNullOrEmpty(email)) throw new ArgumentNullException(nameof(email));
@@ -63,13 +40,7 @@ namespace Less3.Classes
             Email = email;
         }
 
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        /// <param name="guid">User GUID.</param>
-        /// <param name="name">User name.</param>
-        /// <param name="email">User email.</param>
-        public User(string guid, string name, string email)
+        internal User(string guid, string name, string email)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
@@ -80,12 +51,7 @@ namespace Less3.Classes
             Email = email;
         }
 
-        /// <summary>
-        /// Create an instance from a DataRow.
-        /// </summary>
-        /// <param name="row">DataRow.</param>
-        /// <returns>User.</returns>
-        public static User FromDataRow(DataRow row)
+        internal static User FromDataRow(DataRow row)
         {
             if (row == null) throw new ArgumentNullException(nameof(row));
 

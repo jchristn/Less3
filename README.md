@@ -17,14 +17,11 @@ Core use cases for Less3:
 
 ## New in This Version
 
-v1.0.x
+v1.1.0
 
-- Added bucket location API
-- Changed serializer to remove pretty print for Cyberduck compatibility (S3 Java SDK compatibility)
-- Added ACL APIs
-- Authentication header support for both v2 and v4
-- Chunked transfer support
-- Initial release; please see supported APIs below.
+- Dependency update with performance improvements, better async behavior
+- Better support for chunked transfer-encoding
+- Bugfixes
 
 ## Help and Feedback
 
@@ -109,4 +106,4 @@ Less3 is built using a series of open-source packages, including:
 
 ## Version History
 
-Notes from previous versions (starting with v1.0.x) will be moved here.
+Refer to CHANGELOG.md for details.

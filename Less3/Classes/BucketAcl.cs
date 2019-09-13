@@ -8,54 +8,19 @@ namespace Less3.Classes
     /// <summary>
     /// Access control list entry for a bucket.
     /// </summary>
-    public class BucketAcl
+    internal class BucketAcl
     {
-        #region Public-Members
+        #region Internal-Members
 
-        /// <summary>
-        /// ID (database row).
-        /// </summary>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// The group to which this entry applies.
-        /// </summary>
-        public string UserGroup { get; set; }
-
-        /// <summary>
-        /// The user GUID to which this entry applies.
-        /// </summary>
-        public string UserGUID { get; set; }
-        
-        /// <summary>
-        /// The user GUID of the user that issued this permission.
-        /// </summary>
-        public string IssuedByUserGUID { get; set; }
-        
-        /// <summary>
-        /// Enable read.
-        /// </summary>
-        public bool PermitRead { get; set; }
-
-        /// <summary>
-        /// Enable write.
-        /// </summary>
-        public bool PermitWrite { get; set; }
-
-        /// <summary>
-        /// Enable access control read.
-        /// </summary>
-        public bool PermitReadAcp { get; set; }
-
-        /// <summary>
-        /// Enable access control write.
-        /// </summary>
-        public bool PermitWriteAcp { get; set; }
-
-        /// <summary>
-        /// Enable full control.
-        /// </summary>
-        public bool FullControl { get; set; }
+        internal int Id { get; set; }
+        internal string UserGroup { get; set; }
+        internal string UserGUID { get; set; }
+        internal string IssuedByUserGUID { get; set; }
+        internal bool PermitRead { get; set; }
+        internal bool PermitWrite { get; set; }
+        internal bool PermitReadAcp { get; set; }
+        internal bool PermitWriteAcp { get; set; }
+        internal bool FullControl { get; set; }
 
         #endregion
 
@@ -64,27 +29,13 @@ namespace Less3.Classes
         #endregion
 
         #region Constructors-and-Factories
-
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        public BucketAcl()
+         
+        internal BucketAcl()
         {
 
         }
 
-        /// <summary>
-        /// Create a group ACL for a bucket.
-        /// </summary>
-        /// <param name="groupName">Group name.</param>
-        /// <param name="issuedByUserGuid">Issuing user GUID.</param>
-        /// <param name="permitRead">Permit read.</param>
-        /// <param name="permitWrite">Permit write.</param>
-        /// <param name="permitReadAcp">Permit ACL read.</param>
-        /// <param name="permitWriteAcp">Permit ACL write.</param>
-        /// <param name="fullControl">Full control.</param>
-        /// <returns>BucketAcl.</returns>
-        public static BucketAcl BucketGroupAcl(
+        internal static BucketAcl BucketGroupAcl(
             string groupName, 
             string issuedByUserGuid, 
             bool permitRead,
@@ -111,18 +62,7 @@ namespace Less3.Classes
             return ret;
         }
 
-        /// <summary>
-        /// Create a user ACL for a bucket.
-        /// </summary>
-        /// <param name="userGuid">User GUID to which this ACL applies.</param>
-        /// <param name="issuedByUserGuid">Issuing user GUID.</param>
-        /// <param name="permitRead">Permit read.</param>
-        /// <param name="permitWrite">Permit write.</param>
-        /// <param name="permitReadAcp">Permit ACL read.</param>
-        /// <param name="permitWriteAcp">Permit ACL write.</param>
-        /// <param name="fullControl">Full control.</param>
-        /// <returns>BucketAcl.</returns>
-        public static BucketAcl BucketUserAcl(
+        internal static BucketAcl BucketUserAcl(
             string userGuid, 
             string issuedByUserGuid,
             bool permitRead,
@@ -148,13 +88,8 @@ namespace Less3.Classes
 
             return ret;
         }
-         
-        /// <summary>
-        /// Create an instance from a DataRow.
-        /// </summary>
-        /// <param name="row">DataRow.</param>
-        /// <returns>Acl.</returns>
-        public static BucketAcl FromDataRow(DataRow row)
+          
+        internal static BucketAcl FromDataRow(DataRow row)
         {
             if (row == null) throw new ArgumentNullException(nameof(row));
              
@@ -194,10 +129,6 @@ namespace Less3.Classes
 
         #region Public-Methods
 
-        /// <summary>
-        /// Create a human-readable string of the object.
-        /// </summary>
-        /// <returns>String.</returns>
         public override string ToString()
         {
             string

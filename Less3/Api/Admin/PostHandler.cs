@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 using S3ServerInterface;
 using SyslogLogging;
@@ -13,7 +15,7 @@ namespace Less3.Api.Admin
     /// <summary>
     /// Admin API POST handler.
     /// </summary>
-    public class PostHandler
+    internal class PostHandler
     {
         #region Public-Members
 
@@ -30,16 +32,8 @@ namespace Less3.Api.Admin
         #endregion
 
         #region Constructors-and-Factories
-
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        /// <param name="settings">Settings.</param>
-        /// <param name="logging">LoggingModule.</param> 
-        /// <param name="config">ConfigManager.</param>
-        /// <param name="buckets">BucketManager.</param>
-        /// <param name="auth">AuthManager.</param> 
-        public PostHandler(
+        
+        internal PostHandler(
             Settings settings,
             LoggingModule logging,
             ConfigManager config,
@@ -61,110 +55,143 @@ namespace Less3.Api.Admin
 
         #endregion
 
-        #region Public-Methods
+        #region Internal-Methods
 
-        /// <summary>
-        /// Process the API request.
-        /// </summary>
-        /// <param name="req">S3Request.</param>
-        /// <returns>S3Response.</returns>
-        public S3Response Process(S3Request req)
-        {
-            S3Response resp = new S3Response(req, 400, "text/plain", null, null);
-
+        internal async Task Process(S3Request req, S3Response resp)
+        { 
             if (req.RawUrlEntries[1].Equals("buckets"))
             {
-                return PostBuckets(req);
+                await PostBuckets(req, resp);
+                return;
             }
             else if (req.RawUrlEntries[1].Equals("users"))
             {
-                return PostUsers(req);
+                await PostUsers(req, resp);
+                return;
             }
             else if (req.RawUrlEntries[1].Equals("credentials"))
             {
-                return PostCredentials(req);
+                await PostCredentials(req, resp);
+                return;
             }
 
-            return resp;
+            await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
         }
 
         #endregion
 
         #region Private-Methods
 
-        private S3Response PostBuckets(S3Request req)
+        private async Task PostBuckets(S3Request req, S3Response resp)
         {
-            S3Response resp = new S3Response(req, 400, "text/plain", null, null);
-            if (req.RawUrlEntries.Count != 2) return resp;
+            if (req.RawUrlEntries.Count != 2)
+            {
+                await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+                return;
+            }
 
+            byte[] data = null;
             BucketConfiguration config = null;
 
             try
             {
-                req.Data = Common.StreamToBytes(req.DataStream);
-                config = Common.DeserializeJson<BucketConfiguration>(req.Data);
+                data = Common.StreamToBytes(req.Data);
+                config = Common.DeserializeJson<BucketConfiguration>(data);
             }
             catch (Exception)
             {
-                return resp;
+                await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+                return;
             }
 
             BucketConfiguration tempConfig = null;
             if (_Config.GetBucketByName(config.Name, out tempConfig))
-                return new S3Response(req, 409, "text/plain", null, null);
+            {
+                await resp.Send(S3ServerInterface.S3Objects.ErrorCode.BucketAlreadyExists);
+                return;
+            }
 
             _Config.AddBucket(config);
-            return new S3Response(req, 204, "text/plain", null, null);
+
+            resp.StatusCode = 204;
+            resp.ContentType = "text/plain";
+            await resp.Send();
         }
 
-        private S3Response PostUsers(S3Request req)
+        private async Task PostUsers(S3Request req, S3Response resp)
         {
-            S3Response resp = new S3Response(req, 400, "text/plain", null, null);
-            if (req.RawUrlEntries.Count != 2) return resp;
+            if (req.RawUrlEntries.Count != 2)
+            {
+                await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+                return;
+            }
 
+            byte[] data = null;
             User user = null;
 
             try
             {
-                req.Data = Common.StreamToBytes(req.DataStream);
-                user = Common.DeserializeJson<User>(req.Data);
+                data = Common.StreamToBytes(req.Data);
+                user = Common.DeserializeJson<User>(data);
             }
             catch (Exception)
             {
-                return resp;
+                await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+                return;
             }
 
             User tempUser = null;
             if (_Config.GetUserByName(user.Name, out tempUser))
-                return new S3Response(req, 409, "text/plain", null, null);
+            {
+                resp.StatusCode = 409;
+                resp.ContentType = "text/plain";
+                await resp.Send();
+                return;
+            }
 
             _Config.AddUser(user);
-            return new S3Response(req, 204, "text/plain", null, null);
+
+            resp.StatusCode = 204;
+            resp.ContentType = "text/plain";
+            await resp.Send();
         }
 
-        private S3Response PostCredentials(S3Request req)
+        private async Task PostCredentials(S3Request req, S3Response resp)
         {
-            S3Response resp = new S3Response(req, 400, "text/plain", null, null);
-            if (req.RawUrlEntries.Count != 2) return resp;
+            if (req.RawUrlEntries.Count != 2)
+            {
+                await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+                return;
+            }
 
+            byte[] data = null;
             Credential cred = null;
 
             try
             {
-                req.Data = Common.StreamToBytes(req.DataStream);
-                cred = Common.DeserializeJson<Credential>(req.Data);
+                data = Common.StreamToBytes(req.Data);
+                cred = Common.DeserializeJson<Credential>(data);
             }
             catch (Exception)
             {
-                return resp;
+                await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+                return;
             }
 
             Credential tempCred = null;
             if (_Config.GetCredentialByAccessKey(cred.AccessKey, out tempCred))
-                return new S3Response(req, 409, "text/plain", null, null);
+            {
+                resp.StatusCode = 409;
+                resp.ContentType = "text/plain";
+                await resp.Send();
+                return;
+            }
 
             _Config.AddCredential(cred);
-            return new S3Response(req, 204, "text/plain", null, null);
+
+            resp.StatusCode = 204;
+            resp.ContentType = "text/plain";
+            await resp.Send();
         }
 
         #endregion

@@ -90,12 +90,11 @@ namespace Less3
                 _Settings.Server.DnsHostname,
                 _Settings.Server.ListenerPort,
                 _Settings.Server.Ssl,
-                PreRequestHandler,
                 DefaultRequestHandler);
+
+            _S3Server.PreRequestHandler = PreRequestHandler;
             
             _S3Server.ConsoleDebug.Exceptions = true; 
-
-            _S3Server.PostRequestHandler = PostRequestHandler;
 
             _S3Server.Service.ListBuckets = _ApiHandler.ServiceListBuckets;
 
@@ -174,8 +173,8 @@ namespace Less3
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("");
                 Console.WriteLine("WARNING: Less3 started on '" + _Settings.Server.DnsHostname + "'");
-                Console.WriteLine("Less3 can only service requests from the local machine.  If you wish to service");
-                Console.WriteLine("external requests, specify an IP address or DNS-resolvable hostname.");
+                Console.WriteLine("Less3 can only service requests from the local machine.  If you wish to serve");
+                Console.WriteLine("external requests, specify a DNS-resolvable hostname.");
                 Console.WriteLine(""); 
             }
 
@@ -304,11 +303,20 @@ namespace Less3
             return true;
         }
 
-        static S3Response PreRequestHandler(S3Request req)
+        static async Task<bool> PreRequestHandler(S3Request req, S3Response resp)
         {
-            S3Response resp = null;
+            string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
 
             while (req.RawUrl.Contains("\\\\")) req.RawUrl.Replace("\\\\", "\\");
+
+            #region Enumerate
+
+            if (_Settings.Syslog.LogHttpRequests)
+            {
+                _Logging.Debug(Environment.NewLine + req.ToString());
+            }
+
+            #endregion
 
             #region Favicon-and-Robots
 
@@ -317,13 +325,17 @@ namespace Less3
                 if (req.RawUrlEntries[0].Equals("favicon.ico"))
                 {
                     byte[] favicon = Common.ReadBinaryFile("assets/favicon.ico");
-                    resp = new S3Response(req, 200, "image/x-icon", null, favicon);
-                    return resp;
+                    resp.ContentType = "image/x-icon";
+                    resp.StatusCode = 200;
+                    await resp.Send(favicon);
+                    return false;
                 }
                 else if (req.RawUrlEntries[0].Equals("robots.txt"))
                 {
-                    resp = new S3Response(req, 200, "text/plain", null, Encoding.UTF8.GetBytes("User-Agent: *\r\nDisallow:\r\n"));
-                    return resp;
+                    resp.ContentType = "text/plain";
+                    resp.StatusCode = 200;
+                    await resp.Send("User-Agent: *\r\nDisallow:\r\n");
+                    return false;
                 }
             }
 
@@ -338,8 +350,10 @@ namespace Less3
                 IPAddress ipAddress;
                 if (IPAddress.TryParse(val, out ipAddress))
                 {
-                    resp = new S3Response(req, 400, "text/html", null, Encoding.UTF8.GetBytes(HostnameRequired()));
-                    return resp;
+                    resp.StatusCode = 400;
+                    resp.ContentType = "text/html";
+                    await resp.Send(HostnameRequired());
+                    return true;
                 }
             }
 
@@ -353,8 +367,10 @@ namespace Less3
                 {
                     if (req.RawUrlEntries == null || req.RawUrlEntries.Count < 1)
                     {
-                        resp = new S3Response(req, 200, "text/html", null, Encoding.UTF8.GetBytes(DefaultPage("https://github.com/jchristn/less3")));
-                        return resp;
+                        resp.StatusCode = 200;
+                        resp.ContentType = "text/html";
+                        await resp.Send(DefaultPage("https://github.com/jchristn/less3"));
+                        return true;
                     } 
                 } 
             }
@@ -369,13 +385,13 @@ namespace Less3
                 {
                     if (!req.Headers[_Settings.Server.HeaderApiKey].Equals(_Settings.Server.AdminApiKey))
                     {
-                        _Logging.Warn("PreRequestHandler invalid admin API key supplied: " + _Settings.Server.AdminApiKey +
-                            " from " + req.SourceIp + ":" + req.SourcePort + " " + req.Method.ToString() + " " + req.RawUrl);
-                        resp = new S3Response(req, 401, "text/plain", null, null);
-                        return resp;
+                        _Logging.Warn(header + "invalid admin API key supplied: " + _Settings.Server.AdminApiKey +
+                            " " + req.Method.ToString() + " " + req.RawUrl);
+                        resp.StatusCode = 401;
+                        req.ContentType = "text/plain";
+                        await resp.Send();
+                        return true;
                     }
-
-                    resp = new S3Response(req, 400, "text/plain", null, null);
 
                     switch (req.Method)
                     {
@@ -383,30 +399,20 @@ namespace Less3
                         case HttpMethod.PUT:
                         case HttpMethod.POST:
                         case HttpMethod.DELETE:
-                            resp = _AdminApiHandler.Process(req);
-                            break;
+                            await _AdminApiHandler.Process(req, resp);
+                            return true;
                     } 
                 }
             }
 
             #endregion
 
-            return resp;
+            return false;
         }
-
-        static bool PostRequestHandler(S3Request req, S3Response resp)
+         
+        static async Task DefaultRequestHandler(S3Request req, S3Response resp)
         {
-            TimeSpan span = resp.TimestampUtc - req.TimestampUtc;
-            int ms = (int)span.TotalMilliseconds;
-            _Logging.Debug(req.SourceIp + ":" + req.SourcePort + " " + req.Method.ToString() + " " + req.RawUrl + " " + resp.StatusCode + " [" + ms + "ms]");
-             
-            return true;
-        }
-
-        static S3Response DefaultRequestHandler(S3Request req)
-        {
-            S3ServerInterface.S3Objects.Error error = new S3ServerInterface.S3Objects.Error(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
-            return new S3Response(req, error);
+            await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
         }
     }
 }

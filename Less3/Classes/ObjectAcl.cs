@@ -8,64 +8,21 @@ namespace Less3.Classes
     /// <summary>
     /// Access control list entry for an object.
     /// </summary>
-    public class ObjectAcl
+    internal class ObjectAcl
     {
-        #region Public-Members
+        #region Internal-Members
 
-        /// <summary>
-        /// ID (database row).
-        /// </summary>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// The group to which this entry applies.
-        /// </summary>
-        public string UserGroup { get; set; }
-
-        /// <summary>
-        /// The user GUID to which this entry applies.
-        /// </summary>
-        public string UserGUID { get; set; }
-        
-        /// <summary>
-        /// The user GUID of the user that issued this permission.
-        /// </summary>
-        public string IssuedByUserGUID { get; set; }
-
-        /// <summary>
-        /// The object key to which this entry applies.
-        /// </summary>
-        public string ObjectKey { get; set; }
-
-        /// <summary>
-        /// The object key's version to which this entry applies.
-        /// </summary>
-        public long ObjectVersion { get; set; }
-
-        /// <summary>
-        /// Enable read.
-        /// </summary>
-        public bool PermitRead { get; set; }
-
-        /// <summary>
-        /// Enable write.
-        /// </summary>
-        public bool PermitWrite { get; set; }
-
-        /// <summary>
-        /// Enable access control read.
-        /// </summary>
-        public bool PermitReadAcp { get; set; }
-
-        /// <summary>
-        /// Enable access control write.
-        /// </summary>
-        public bool PermitWriteAcp { get; set; }
-
-        /// <summary>
-        /// Enable full control.
-        /// </summary>
-        public bool FullControl { get; set; }
+        internal int Id { get; set; }
+        internal string UserGroup { get; set; }
+        internal string UserGUID { get; set; }
+        internal string IssuedByUserGUID { get; set; }
+        internal string ObjectKey { get; set; }
+        internal long ObjectVersion { get; set; }
+        internal bool PermitRead { get; set; }
+        internal bool PermitWrite { get; set; }
+        internal bool PermitReadAcp { get; set; }
+        internal bool PermitWriteAcp { get; set; }
+        internal bool FullControl { get; set; }
 
         #endregion
 
@@ -74,29 +31,13 @@ namespace Less3.Classes
         #endregion
 
         #region Constructors-and-Factories
-
-        /// <summary>
-        /// Instantiate the object.
-        /// </summary>
-        public ObjectAcl()
+         
+        internal ObjectAcl()
         {
 
         }
-
-        /// <summary>
-        /// Create a group ACL for an object.
-        /// </summary>
-        /// <param name="groupName">Group name.</param>
-        /// <param name="issuedByUserGuid">Issuing user GUID.</param>
-        /// <param name="objectKey">Object key.</param>
-        /// <param name="versionId">Version ID of the object.</param>
-        /// <param name="permitRead">Permit read.</param>
-        /// <param name="permitWrite">Permit write.</param>
-        /// <param name="permitReadAcp">Permit ACL read.</param>
-        /// <param name="permitWriteAcp">Permit ACL write.</param>
-        /// <param name="fullControl">Full control.</param>
-        /// <returns>ObjectAcl.</returns>
-        public static ObjectAcl ObjectGroupAcl(
+         
+        internal static ObjectAcl ObjectGroupAcl(
             string groupName, 
             string issuedByUserGuid, 
             string objectKey, 
@@ -128,21 +69,8 @@ namespace Less3.Classes
 
             return ret;
         }
-
-        /// <summary>
-        /// Create a user ACL for an object.
-        /// </summary>
-        /// <param name="userGuid">User GUID to which this ACL applies.</param>
-        /// <param name="issuedByUserGuid">Issuing user GUID.</param>
-        /// <param name="objectKey">Object key.</param>
-        /// <param name="versionId">Version ID of the object.</param>
-        /// <param name="permitRead">Permit read.</param>
-        /// <param name="permitWrite">Permit write.</param>
-        /// <param name="permitReadAcp">Permit ACL read.</param>
-        /// <param name="permitWriteAcp">Permit ACL write.</param>
-        /// <param name="fullControl">Full control.</param>
-        /// <returns>ObjectAcl.</returns>
-        public static ObjectAcl ObjectUserAcl(
+         
+        internal static ObjectAcl ObjectUserAcl(
             string userGuid, 
             string issuedByUserGuid, 
             string objectKey, 
@@ -174,13 +102,8 @@ namespace Less3.Classes
 
             return ret;
         }
-         
-        /// <summary>
-        /// Create an instance from a DataRow.
-        /// </summary>
-        /// <param name="row">DataRow.</param>
-        /// <returns>Acl.</returns>
-        public static ObjectAcl FromDataRow(DataRow row)
+          
+        internal static ObjectAcl FromDataRow(DataRow row)
         {
             if (row == null) throw new ArgumentNullException(nameof(row));
              

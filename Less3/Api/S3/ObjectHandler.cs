@@ -67,6 +67,7 @@ namespace Less3.Api.S3
         internal async Task Delete(S3Request req, S3Response resp)
         {
             string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            resp.Chunked = false;
 
             Dictionary<string, string> respHeaders = new Dictionary<string, string>();
 
@@ -149,6 +150,7 @@ namespace Less3.Api.S3
         internal async Task DeleteMultiple(S3Request req, S3Response resp)
         {
             string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            resp.Chunked = false;
 
             byte[] data = null;
             DeleteMultiple reqBody = null;
@@ -257,6 +259,7 @@ namespace Less3.Api.S3
         internal async Task DeleteTags(S3Request req, S3Response resp)
         {
             string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            resp.Chunked = false;
 
             BucketConfiguration bucket = null;
             if (!_Buckets.Get(req.Bucket, out bucket))
@@ -330,6 +333,7 @@ namespace Less3.Api.S3
         internal async Task Exists(S3Request req, S3Response resp)
         {
             string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            resp.Chunked = false;
 
             BucketConfiguration bucket = null;
             if (!_Buckets.Get(req.Bucket, out bucket))
@@ -528,6 +532,7 @@ namespace Less3.Api.S3
         internal async Task ReadAcl(S3Request req, S3Response resp)
         {
             string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            resp.Chunked = false;
 
             BucketConfiguration bucket = null;
             if (!_Buckets.Get(req.Bucket, out bucket))
@@ -736,7 +741,7 @@ namespace Less3.Api.S3
 
         internal async Task ReadRange(S3Request req, S3Response resp)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            string header = "[" + req.SourceIp + ":" + req.SourcePort + "] "; 
 
             Dictionary<string, string> respHeaders = new Dictionary<string, string>();
 
@@ -894,6 +899,7 @@ namespace Less3.Api.S3
         internal async Task ReadTags(S3Request req, S3Response resp)
         {
             string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            resp.Chunked = false;
 
             BucketConfiguration bucket = null;
             if (!_Buckets.Get(req.Bucket, out bucket))
@@ -1223,6 +1229,7 @@ namespace Less3.Api.S3
         internal async Task WriteAcl(S3Request req, S3Response resp)
         {
             string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            resp.Chunked = false;
 
             byte[] data = null;
             AccessControlPolicy reqBody = null;
@@ -1384,6 +1391,7 @@ namespace Less3.Api.S3
         internal async Task WriteTags(S3Request req, S3Response resp)
         {
             string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            resp.Chunked = false;
 
             byte[] data = null;
             Tagging reqBody = null;

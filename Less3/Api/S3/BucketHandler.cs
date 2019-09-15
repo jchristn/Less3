@@ -67,6 +67,7 @@ namespace Less3.Api.S3
         internal async Task Delete(S3Request req, S3Response resp)
         {
             string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            resp.Chunked = false;
 
             BucketConfiguration bucket = null;
             if (!_Buckets.Get(req.Bucket, out bucket))
@@ -126,6 +127,7 @@ namespace Less3.Api.S3
         internal async Task DeleteTags(S3Request req, S3Response resp)
         {
             string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            resp.Chunked = false;
 
             BucketConfiguration bucket = null;
             if (!_Buckets.Get(req.Bucket, out bucket))
@@ -172,6 +174,7 @@ namespace Less3.Api.S3
         internal async Task Exists(S3Request req, S3Response resp)
         {
             string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            resp.Chunked = false;
 
             BucketConfiguration bucket = null;
             if (!_Buckets.Get(req.Bucket, out bucket))
@@ -216,6 +219,7 @@ namespace Less3.Api.S3
         internal async Task Read(S3Request req, S3Response resp)
         {
             string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            resp.Chunked = false;
 
             string continuationToken = req.RetrieveHeaderValue("continuation-token");
             long startIndex = 0;
@@ -308,6 +312,7 @@ namespace Less3.Api.S3
         internal async Task ReadLocation(S3Request req, S3Response resp)
         {
             string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            resp.Chunked = false;
 
             LocationConstraint loc = new LocationConstraint();
             loc.Text = _Settings.Server.RegionString;
@@ -322,6 +327,7 @@ namespace Less3.Api.S3
         internal async Task ReadAcl(S3Request req, S3Response resp)
         {
             string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            resp.Chunked = false;
 
             BucketConfiguration bucket = null;
             if (!_Buckets.Get(req.Bucket, out bucket))
@@ -504,6 +510,7 @@ namespace Less3.Api.S3
         internal async Task ReadTags(S3Request req, S3Response resp)
         {
             string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            resp.Chunked = false;
 
             BucketConfiguration bucket = null;
             if (!_Buckets.Get(req.Bucket, out bucket))
@@ -563,6 +570,7 @@ namespace Less3.Api.S3
         internal async Task ReadVersions(S3Request req, S3Response resp)
         {
             string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            resp.Chunked = false;
             if (req.MaxKeys < 1 || req.MaxKeys > 1000) req.MaxKeys = 1000;
              
             BucketConfiguration bucket = null;
@@ -671,6 +679,7 @@ namespace Less3.Api.S3
         internal async Task ReadVersioning(S3Request req, S3Response resp)
         {
             string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            resp.Chunked = false;
 
             BucketConfiguration bucket = null;
             if (!_Buckets.Get(req.Bucket, out bucket))
@@ -725,6 +734,7 @@ namespace Less3.Api.S3
         internal async Task Write(S3Request req, S3Response resp)
         {
             string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            resp.Chunked = false;
 
             byte[] data = null;
             S3Bucket reqBody = null;
@@ -860,6 +870,7 @@ namespace Less3.Api.S3
         internal async Task WriteAcl(S3Request req, S3Response resp)
         {
             string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            resp.Chunked = false;
 
             byte[] data = null;
             AccessControlPolicy reqBody = null;
@@ -993,6 +1004,7 @@ namespace Less3.Api.S3
         internal async Task WriteTags(S3Request req, S3Response resp)
         {
             string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            resp.Chunked = false;
 
             byte[] data = null;
             Tagging reqBody = null;
@@ -1069,6 +1081,7 @@ namespace Less3.Api.S3
         internal async Task WriteVersioning(S3Request req, S3Response resp)
         {
             string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            resp.Chunked = false;
 
             byte[] data = null;
             VersioningConfiguration reqBody = null;

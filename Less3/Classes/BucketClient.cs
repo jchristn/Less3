@@ -69,7 +69,9 @@ namespace Less3.Classes
             _BucketConfiguration = bucket;
 
             if (!Directory.Exists(_BucketConfiguration.ObjectsDirectory)) Directory.CreateDirectory(_BucketConfiguration.ObjectsDirectory);
-            _Database = new DatabaseClient(_BucketConfiguration.DatabaseFilename, _Settings.Debug.Database);
+            _Database = new DatabaseClient(_BucketConfiguration.DatabaseFilename);
+            _Database.LogQueries = _Settings.Debug.DatabaseQueries;
+            _Database.LogResults = _Settings.Debug.DatabaseResults;
 
             InitializeDatabase();
         }

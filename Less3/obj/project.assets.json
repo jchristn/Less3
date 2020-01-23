@@ -2,7 +2,7 @@
   "version": 3,
   "targets": {
     ".NETCoreApp,Version=v2.2": {
-      "AWSSDK.Core/3.3.103.37": {
+      "AWSSDK.Core/3.3.104.19": {
         "type": "package",
         "compile": {
           "lib/netstandard2.0/AWSSDK.Core.dll": {}
@@ -11,10 +11,10 @@
           "lib/netstandard2.0/AWSSDK.Core.dll": {}
         }
       },
-      "AWSSDK.S3/3.3.104.25": {
+      "AWSSDK.S3/3.3.110.17": {
         "type": "package",
         "dependencies": {
-          "AWSSDK.Core": "[3.3.103.37, 3.4.0)"
+          "AWSSDK.Core": "[3.3.104.19, 3.4.0)"
         },
         "compile": {
           "lib/netstandard2.0/AWSSDK.S3.dll": {}
@@ -32,7 +32,7 @@
           "lib/netstandard2.0/IpMatcher.dll": {}
         }
       },
-      "Microsoft.CSharp/4.5.0": {
+      "Microsoft.CSharp/4.7.0": {
         "type": "package",
         "compile": {
           "ref/netcoreapp2.0/_._": {}
@@ -247,7 +247,7 @@
           "build/netstandard2.0/NETStandard.Library.targets": {}
         }
       },
-      "Newtonsoft.Json/12.0.2": {
+      "Newtonsoft.Json/12.0.3": {
         "type": "package",
         "compile": {
           "lib/netstandard2.0/Newtonsoft.Json.dll": {}
@@ -265,12 +265,12 @@
           "lib/netstandard2.0/RegexMatcher.dll": {}
         }
       },
-      "S3ServerInterface/2.0.1.1": {
+      "S3ServerInterface/2.0.1.14": {
         "type": "package",
         "dependencies": {
-          "AWSSDK.S3": "3.3.104.24",
+          "AWSSDK.S3": "3.3.105",
           "Newtonsoft.Json": "12.0.2",
-          "Watson": "3.0.1"
+          "Watson": "3.0.4"
         },
         "compile": {
           "lib/netstandard2.0/S3ServerInterface.dll": {}
@@ -279,12 +279,12 @@
           "lib/netstandard2.0/S3ServerInterface.dll": {}
         }
       },
-      "SqliteHelper/1.0.13": {
+      "SqliteHelper/1.1.0": {
         "type": "package",
         "dependencies": {
-          "Microsoft.CSharp": "4.5.0",
-          "System.Data.SQLite": "1.0.111",
-          "System.Data.SQLite.Core": "1.0.111"
+          "Microsoft.CSharp": "4.7.0",
+          "System.Data.SQLite": "1.0.112",
+          "System.Data.SQLite.Core": "1.0.112"
         },
         "compile": {
           "lib/netstandard2.0/SqliteWrapper.dll": {}
@@ -293,7 +293,7 @@
           "lib/netstandard2.0/SqliteWrapper.dll": {}
         }
       },
-      "SyslogLogging/1.2.0": {
+      "SyslogLogging/1.3.2": {
         "type": "package",
         "compile": {
           "lib/netstandard2.0/LoggingModule.dll": {}
@@ -302,13 +302,13 @@
           "lib/netstandard2.0/LoggingModule.dll": {}
         }
       },
-      "System.Data.SQLite/1.0.111": {
+      "System.Data.SQLite/1.0.112": {
         "type": "package",
         "dependencies": {
-          "System.Data.SQLite.Core": "1.0.111"
+          "System.Data.SQLite.Core": "1.0.112"
         }
       },
-      "System.Data.SQLite.Core/1.0.111": {
+      "System.Data.SQLite.Core/1.0.112": {
         "type": "package",
         "compile": {
           "lib/netstandard2.0/System.Data.SQLite.dll": {}
@@ -335,7 +335,7 @@
           }
         }
       },
-      "Watson/3.0.1": {
+      "Watson/3.0.6": {
         "type": "package",
         "dependencies": {
           "IpMatcher": "1.0.1",
@@ -361,15 +361,15 @@
     }
   },
   "libraries": {
-    "AWSSDK.Core/3.3.103.37": {
-      "sha512": "7erW4wudVKO3YpLYnlfvpbHhH7pCOw7AE1EfIKlXKMiaKEOE9jieGKfVXbyPv9Vz93fo71EvWqxdTdPxtdjaCA==",
+    "AWSSDK.Core/3.3.104.19": {
+      "sha512": "4qFyRGdgN4NNrlXmQmZ2giroUsrASkJ0n2cH6Qwp8cX02GMHvGFMgkizgu5D+7CdOkpu3dIjGZA2rqAl7JhsgA==",
       "type": "package",
-      "path": "awssdk.core/3.3.103.37",
+      "path": "awssdk.core/3.3.104.19",
       "hasTools": true,
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "awssdk.core.3.3.103.37.nupkg.sha512",
+        "awssdk.core.3.3.104.19.nupkg.sha512",
         "awssdk.core.nuspec",
         "lib/MonoAndroid10/AWSSDK.Core.XML",
         "lib/MonoAndroid10/AWSSDK.Core.dll",
@@ -410,16 +410,16 @@
         "tools/account-management.ps1"
       ]
     },
-    "AWSSDK.S3/3.3.104.25": {
-      "sha512": "BjIFN0ZDMhIJPAsy59wE1cMAUUCOdC58zP3oZRI6yU/DvFsfVVB2KCXXqNKpFPst6PzwvRCUMxQoC2WafYH91Q==",
+    "AWSSDK.S3/3.3.110.17": {
+      "sha512": "9kkUvnTAI6Qoc/hA89Qz4OPVur9Oc8PKSMcnAPo8LTVfSsybUOSEr03FI7DekOqkdBxcNjlGcYzumwrAjpGv6Q==",
       "type": "package",
-      "path": "awssdk.s3/3.3.104.25",
+      "path": "awssdk.s3/3.3.110.17",
       "hasTools": true,
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "analyzers/dotnet/cs/AWSSDK.S3.CodeAnalysis.dll",
-        "awssdk.s3.3.3.104.25.nupkg.sha512",
+        "awssdk.s3.3.3.110.17.nupkg.sha512",
         "awssdk.s3.nuspec",
         "lib/MonoAndroid10/AWSSDK.S3.XML",
         "lib/MonoAndroid10/AWSSDK.S3.dll",
@@ -451,22 +451,21 @@
       ]
     },
     "IpMatcher/1.0.1": {
-      "sha512": "ASdqz1wygrLi6biivalAsxORk24DI5ZMyfgyRazsEqqXsVSDqzEBUt9IqxVdGhY6le2P0TX3eQqUzaokNXCpog==",
+      "sha512": "uj4yFtK2myFRbqpxB+QKvGvMw9fLXHyvyypdQdd3JKDG6C1HvSSemPugf/N+tvtH3swHQPj5JM45s5+1SOdziQ==",
       "type": "package",
       "path": "ipmatcher/1.0.1",
       "files": [
         ".nupkg.metadata",
-        ".signature.p7s",
         "ipmatcher.1.0.1.nupkg.sha512",
         "ipmatcher.nuspec",
         "lib/net452/IpMatcher.dll",
         "lib/netstandard2.0/IpMatcher.dll"
       ]
     },
-    "Microsoft.CSharp/4.5.0": {
-      "sha512": "kaj6Wb4qoMuH3HySFJhxwQfe8R/sJsNJnANrvv8WdFPMoNbKY5htfNscv+LHCu5ipz+49m2e+WQXpLXr9XYemQ==",
+    "Microsoft.CSharp/4.7.0": {
+      "sha512": "pTj+D3uJWyN3My70i2Hqo+OXixq3Os2D1nJ2x92FFo6sk8fYS1m1WLNTs0Dc1uPaViH0YvEEwvzddQ7y4rhXmA==",
       "type": "package",
-      "path": "microsoft.csharp/4.5.0",
+      "path": "microsoft.csharp/4.7.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -479,6 +478,7 @@
         "lib/netcoreapp2.0/_._",
         "lib/netstandard1.3/Microsoft.CSharp.dll",
         "lib/netstandard2.0/Microsoft.CSharp.dll",
+        "lib/netstandard2.0/Microsoft.CSharp.xml",
         "lib/portable-net45+win8+wp8+wpa81/_._",
         "lib/uap10.0.16299/_._",
         "lib/win8/_._",
@@ -488,7 +488,7 @@
         "lib/xamarinmac20/_._",
         "lib/xamarintvos10/_._",
         "lib/xamarinwatchos10/_._",
-        "microsoft.csharp.4.5.0.nupkg.sha512",
+        "microsoft.csharp.4.7.0.nupkg.sha512",
         "microsoft.csharp.nuspec",
         "ref/MonoAndroid10/_._",
         "ref/MonoTouch10/_._",
@@ -999,10 +999,10 @@
         "netstandard.library.nuspec"
       ]
     },
-    "Newtonsoft.Json/12.0.2": {
-      "sha512": "mtweBXPWhp1CMQATtBT7ZfMZrbZBTKfjGwz6Y75NwGjx/GztDaUnfw8GK9KZ2T4fDIqKJyDjc9Rxlw5+G2FcVA==",
+    "Newtonsoft.Json/12.0.3": {
+      "sha512": "6mgjfnRB4jKMlzHSl+VD+oUc1IebOZabkbyWj2RiTgWwYPPuaK1H97G1sHqGwPlS5npiF5Q0OrxN1wni2n5QWg==",
       "type": "package",
-      "path": "newtonsoft.json/12.0.2",
+      "path": "newtonsoft.json/12.0.3",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -1025,78 +1025,83 @@
         "lib/portable-net40+sl5+win8+wp8+wpa81/Newtonsoft.Json.xml",
         "lib/portable-net45+win8+wp8+wpa81/Newtonsoft.Json.dll",
         "lib/portable-net45+win8+wp8+wpa81/Newtonsoft.Json.xml",
-        "newtonsoft.json.12.0.2.nupkg.sha512",
-        "newtonsoft.json.nuspec"
+        "newtonsoft.json.12.0.3.nupkg.sha512",
+        "newtonsoft.json.nuspec",
+        "packageIcon.png"
       ]
     },
     "RegexMatcher/1.0.2": {
-      "sha512": "gbNpAHo+3HjiX4YSirmR7ujsURje2pk3moWmb64aB2SXfa75BUFf0ffDld6zJ5KmubO9ST+86O/bejBU5y4eWg==",
+      "sha512": "t+gA+bsDoISfPP80GfkC9CrR0GC9+lzoSAF+T9YZAdiy8lL1DcBHdwIYEpgPNJkVmPglM+RWFokXnuZ1MypBvQ==",
       "type": "package",
       "path": "regexmatcher/1.0.2",
       "files": [
         ".nupkg.metadata",
-        ".signature.p7s",
         "lib/net462/RegexMatcher.dll",
         "lib/netstandard2.0/RegexMatcher.dll",
         "regexmatcher.1.0.2.nupkg.sha512",
         "regexmatcher.nuspec"
       ]
     },
-    "S3ServerInterface/2.0.1.1": {
-      "sha512": "4h634o8ueFT1zb3v/8qM447mcPEBpsbhRc8UStEZ+JFtCKKEW5aGMJ+GxiNdg+6PYlAwScfuRY2A7O8AiNCNCA==",
+    "S3ServerInterface/2.0.1.14": {
+      "sha512": "2McetYu9egVDgaZhV8zIb5pHXePl9CVgJ3PhXlfkUT6QanUClyI8B8kwZ8frLD8BbzHdXSMF3UPC2KjvH+YvVQ==",
       "type": "package",
-      "path": "s3serverinterface/2.0.1.1",
+      "path": "s3serverinterface/2.0.1.14",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "LICENSE.md",
         "lib/net462/S3ServerInterface.dll",
         "lib/netstandard2.0/S3ServerInterface.dll",
-        "s3serverinterface.2.0.1.1.nupkg.sha512",
+        "lib/netstandard2.0/S3ServerInterface.xml",
+        "s3serverinterface.2.0.1.14.nupkg.sha512",
         "s3serverinterface.nuspec"
       ]
     },
-    "SqliteHelper/1.0.13": {
-      "sha512": "kiQYiyjXM3vWbZSXNRqNQIyIUAfMSoJMchTm40ymxQcIHW4mVJjgZpT8WLbCWGiotxCPLwTCK6vwVjbc3FGgXQ==",
+    "SqliteHelper/1.1.0": {
+      "sha512": "ylkrUh7/EAjSCnizNQ5xkYI9UsLVxifRRCzhDLBB36+Ibi+PyXQnOt4zuwRZyhvok8capS6RYLlo1nLgEPs+nQ==",
       "type": "package",
-      "path": "sqlitehelper/1.0.13",
+      "path": "sqlitehelper/1.1.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
+        "LICENSE.md",
         "lib/net452/SqliteWrapper.dll",
         "lib/netstandard2.0/SqliteWrapper.dll",
-        "sqlitehelper.1.0.13.nupkg.sha512",
+        "lib/netstandard2.0/SqliteWrapper.xml",
+        "sqlitehelper.1.1.0.nupkg.sha512",
         "sqlitehelper.nuspec"
       ]
     },
-    "SyslogLogging/1.2.0": {
-      "sha512": "tJ6pHIwcV/NMe3JsBfFWOvh3GLoYfR6bmZm6FLcu+K4VEeFlzAijlK+KbZ9kflzWeumPr4pq1lpuVrYllBbJdg==",
+    "SyslogLogging/1.3.2": {
+      "sha512": "XtIeGSHiZVvpqPLzVtY6ZsFuZpOQi3+bWvRs6s2/kIYX/ZXV+BHFj1ElZFKbfYZaNhZQMvpuc9y3aKtctR4QcA==",
       "type": "package",
-      "path": "sysloglogging/1.2.0",
+      "path": "sysloglogging/1.3.2",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
+        "LICENSE.md",
         "lib/net452/LoggingModule.dll",
         "lib/netstandard2.0/LoggingModule.dll",
-        "sysloglogging.1.2.0.nupkg.sha512",
+        "lib/netstandard2.0/LoggingModule.xml",
+        "sysloglogging.1.3.2.nupkg.sha512",
         "sysloglogging.nuspec"
       ]
     },
-    "System.Data.SQLite/1.0.111": {
-      "sha512": "Erg05KGL/sntCBd2ApJGK1A5e1CjyBRlizAXWjrHCH5mvH/V/je1iOZ+2B3NHXDhQZuwi5Zp4KCIm4w1YAALyQ==",
+    "System.Data.SQLite/1.0.112": {
+      "sha512": "QsYUir0pcx+1DfhhbpCsIJN8nWmHTT4Z/s85q6Un5AbVEPCP6RA0EA9cgzwQ1l5wZ8SQ0jUq747FxPmwJs7ycQ==",
       "type": "package",
-      "path": "system.data.sqlite/1.0.111",
+      "path": "system.data.sqlite/1.0.112",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "system.data.sqlite.1.0.111.nupkg.sha512",
+        "system.data.sqlite.1.0.112.nupkg.sha512",
         "system.data.sqlite.nuspec"
       ]
     },
-    "System.Data.SQLite.Core/1.0.111": {
-      "sha512": "HfCHIp+Pyvoy81BPmH/9FTTe8HSf4A6LibGDmTT5O4NZVo6g9LitcxHEx31F20dglPhTPb1smuFc2j5CC/7uBw==",
+    "System.Data.SQLite.Core/1.0.112": {
+      "sha512": "3wA9v/K2ncZWsWfEBTiQppsi2014IJMXsZ1md3pk5bEXAJyuTthSrHF4bIWm5MG+C5g5XLhA2H7XfnSq1PXCeQ==",
       "type": "package",
-      "path": "system.data.sqlite.core/1.0.111",
+      "path": "system.data.sqlite.core/1.0.112",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -1137,20 +1142,22 @@
         "runtimes/osx-x64/native/netstandard2.0/SQLite.Interop.dll",
         "runtimes/win-x64/native/netstandard2.0/SQLite.Interop.dll",
         "runtimes/win-x86/native/netstandard2.0/SQLite.Interop.dll",
-        "system.data.sqlite.core.1.0.111.nupkg.sha512",
+        "system.data.sqlite.core.1.0.112.nupkg.sha512",
         "system.data.sqlite.core.nuspec"
       ]
     },
-    "Watson/3.0.1": {
-      "sha512": "3Vwz9H/XsRJJFoEUK6hOCH/T6vWqstCOs5Oh2G0ms0XTUtpLvTo4lDFW70+D5cPXsSswaIpOSqtVAOahwoMn4A==",
+    "Watson/3.0.6": {
+      "sha512": "ngew3UnAgUKrp7te5vO05165BJmCBu7AaFvaAbUwtwYRcw9wUiBM7WTebzIAFwvAZP9A/xKPSUHSEWJxIeQBtA==",
       "type": "package",
-      "path": "watson/3.0.1",
+      "path": "watson/3.0.6",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
+        "LICENSE.md",
         "lib/net462/WatsonWebserver.dll",
         "lib/netstandard2.0/WatsonWebserver.dll",
-        "watson.3.0.1.nupkg.sha512",
+        "lib/netstandard2.0/WatsonWebserver.xml",
+        "watson.3.0.6.nupkg.sha512",
         "watson.nuspec"
       ]
     },
@@ -1170,13 +1177,13 @@
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v2.2": [
-      "AWSSDK.S3 >= 3.3.104.25",
+      "AWSSDK.S3 >= 3.3.110.17",
       "Microsoft.NETCore.App >= 2.2.0",
-      "Newtonsoft.Json >= 12.0.2",
-      "S3ServerInterface >= 2.0.1.1",
-      "SqliteHelper >= 1.0.13",
-      "SyslogLogging >= 1.2.0",
-      "Watson >= 3.0.1",
+      "Newtonsoft.Json >= 12.0.3",
+      "S3ServerInterface >= 2.0.1.14",
+      "SqliteHelper >= 1.1.0",
+      "SyslogLogging >= 1.3.2",
+      "Watson >= 3.0.6",
       "XmlToPox >= 1.0.2"
     ]
   },
@@ -1186,13 +1193,13 @@
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
-    "version": "1.1.0",
+    "version": "1.2.0",
     "restore": {
-      "projectUniqueName": "C:\\Code\\KVPbase\\Less3-1.1\\Less3\\Less3.csproj",
+      "projectUniqueName": "C:\\Code\\KVPbase\\Less3-1.2\\Less3\\Less3.csproj",
       "projectName": "Less3",
-      "projectPath": "C:\\Code\\KVPbase\\Less3-1.1\\Less3\\Less3.csproj",
+      "projectPath": "C:\\Code\\KVPbase\\Less3-1.2\\Less3\\Less3.csproj",
       "packagesPath": "C:\\Users\\joelc\\.nuget\\packages\\",
-      "outputPath": "C:\\Code\\KVPbase\\Less3-1.1\\Less3\\obj\\",
+      "outputPath": "C:\\Code\\KVPbase\\Less3-1.2\\Less3\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Microsoft\\Xamarin\\NuGet\\",
@@ -1209,8 +1216,7 @@
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {},
-        "https://nuget.pkg.github.com/jchristn/index.json": {},
-        "https://nuget.pkg.github.com/kvpbase/index.json": {}
+        "https://nuget.pkg.github.com/jchristn/index.json": {}
       },
       "frameworks": {
         "netcoreapp2.2": {
@@ -1228,7 +1234,7 @@
         "dependencies": {
           "AWSSDK.S3": {
             "target": "Package",
-            "version": "[3.3.104.25, )"
+            "version": "[3.3.110.17, )"
           },
           "Microsoft.NETCore.App": {
             "suppressParent": "All",
@@ -1238,23 +1244,23 @@
           },
           "Newtonsoft.Json": {
             "target": "Package",
-            "version": "[12.0.2, )"
+            "version": "[12.0.3, )"
           },
           "S3ServerInterface": {
             "target": "Package",
-            "version": "[2.0.1.1, )"
+            "version": "[2.0.1.14, )"
           },
           "SqliteHelper": {
             "target": "Package",
-            "version": "[1.0.13, )"
+            "version": "[1.1.0, )"
           },
           "SyslogLogging": {
             "target": "Package",
-            "version": "[1.2.0, )"
+            "version": "[1.3.2, )"
           },
           "Watson": {
             "target": "Package",
-            "version": "[3.0.1, )"
+            "version": "[3.0.6, )"
           },
           "XmlToPox": {
             "target": "Package",
@@ -1262,10 +1268,16 @@
           }
         },
         "imports": [
-          "net461"
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48"
         ],
         "assetTargetFallback": true,
-        "warn": true
+        "warn": true,
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.0.100\\RuntimeIdentifierGraph.json"
       }
     }
   }

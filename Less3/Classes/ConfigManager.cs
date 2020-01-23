@@ -511,7 +511,11 @@ namespace Less3.Classes
          
         private void InitializeDatabase()
         {
-            _Database = new DatabaseClient(_Settings.Files.ConfigDatabase, _Settings.Debug.Database);
+            _Database = new DatabaseClient(_Settings.Files.ConfigDatabase);
+
+            _Database.Logger = Logger;
+            _Database.LogQueries = _Settings.Debug.DatabaseQueries;
+            _Database.LogResults = _Settings.Debug.DatabaseResults;
 
             string query = null;
             DataTable result = null;
@@ -526,6 +530,12 @@ namespace Less3.Classes
             result = _Database.Query(query);
         }
 
+        private void Logger(string msg)
+        {
+            _Logging.Debug(msg);
+            return;
+        }
+        
         #endregion
     }
 }

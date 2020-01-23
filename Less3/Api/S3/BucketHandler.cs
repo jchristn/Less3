@@ -288,7 +288,7 @@ namespace Less3.Api.S3
             }
 
             listBucketResult.KeyCount = objs.Count;
-            listBucketResult.MaxKeys = req.MaxKeys;
+            listBucketResult.MaxKeys = req.MaxKeys != null ? req.MaxKeys.Value : 1000;
             listBucketResult.Name = req.Bucket;
             listBucketResult.Prefix = req.Prefix;
 
@@ -635,7 +635,7 @@ namespace Less3.Api.S3
             }
 
             listVersionsResult.KeyMarker = lastKey;
-            listVersionsResult.MaxKeys = req.MaxKeys;
+            listVersionsResult.MaxKeys = req.MaxKeys != null ? req.MaxKeys.Value : 1000;
             listVersionsResult.Name = req.Bucket;
             listVersionsResult.Prefix = req.Prefix;
 

@@ -93,11 +93,12 @@ namespace Less3.Classes
                 {
                     if (req.Headers[_Settings.Server.HeaderApiKey].Equals(_Settings.Server.AdminApiKey))
                     {
-                        Log(LoggingModule.Severity.Info,
-                            "AuthManager AuthorizeAdminRequest admin API key in use: " +
-                            req.SourceIp + ":" + req.SourcePort + " " +
-                            reqType.ToString() + " " +
-                            req.Method.ToString() + " " + req.RawUrl);
+                        if (_Settings.Debug.Authentication) 
+                            _Logging.Info(
+                                "AuthManager AuthorizeAdminRequest admin API key in use: " +
+                                req.SourceIp + ":" + req.SourcePort + " " +
+                                reqType.ToString() + " " +
+                                req.Method.ToString() + " " + req.RawUrl); 
 
                         result = AuthResult.AdminAuthorized;
                         allowed = true; 
@@ -108,7 +109,8 @@ namespace Less3.Classes
             }
             finally
             {
-                Log(LoggingModule.Severity.Info, logMsg + "[" + allowed.ToString() + "]: " + result.ToString());
+                if (_Settings.Debug.Authentication)
+                    _Logging.Info(logMsg + "[" + allowed.ToString() + "]: " + result.ToString());
             }
         }
 
@@ -146,11 +148,12 @@ namespace Less3.Classes
                 {
                     if (req.Headers[_Settings.Server.HeaderApiKey].Equals(_Settings.Server.AdminApiKey))
                     {
-                        Log(LoggingModule.Severity.Info,
-                            "AuthManager AuthorizeServiceRequest admin API key in use: " +
-                            req.SourceIp + ":" + req.SourcePort + " " +
-                            reqType.ToString() + " " +
-                            req.Method.ToString() + " " + req.RawUrl);
+                        if (_Settings.Debug.Authentication)
+                            _Logging.Info(
+                                "AuthManager AuthorizeServiceRequest admin API key in use: " +
+                                req.SourceIp + ":" + req.SourcePort + " " +
+                                reqType.ToString() + " " +
+                                req.Method.ToString() + " " + req.RawUrl);
 
                         result = AuthResult.AdminAuthorized;
                         allowed = true;
@@ -167,7 +170,8 @@ namespace Less3.Classes
             }
             finally
             {
-                Log(LoggingModule.Severity.Info, logMsg + "[" + allowed.ToString() + "]: " + result.ToString());
+                if (_Settings.Debug.Authentication)
+                    _Logging.Info(logMsg + "[" + allowed.ToString() + "]: " + result.ToString());
             }
         }
 
@@ -205,11 +209,12 @@ namespace Less3.Classes
                 {
                     if (req.Headers[_Settings.Server.HeaderApiKey].Equals(_Settings.Server.AdminApiKey))
                     {
-                        Log(LoggingModule.Severity.Info,
-                            "AuthManager AuthorizeBucketRequest admin API key in use: " +
-                            req.SourceIp + ":" + req.SourcePort + " " +
-                            reqType.ToString() + " " +
-                            req.Method.ToString() + " " + req.RawUrl);
+                        if (_Settings.Debug.Authentication)
+                            _Logging.Info(
+                                "AuthManager AuthorizeBucketRequest admin API key in use: " +
+                                req.SourceIp + ":" + req.SourcePort + " " +
+                                reqType.ToString() + " " +
+                                req.Method.ToString() + " " + req.RawUrl);
 
                         result = AuthResult.AdminAuthorized;
                         allowed = true;
@@ -227,7 +232,8 @@ namespace Less3.Classes
             }
             finally
             {
-                Log(LoggingModule.Severity.Info, logMsg + "[" + allowed.ToString() + "]: " + result.ToString());
+                if (_Settings.Debug.Authentication)
+                    _Logging.Info(logMsg + "[" + allowed.ToString() + "]: " + result.ToString());
             }
         }
 
@@ -265,11 +271,12 @@ namespace Less3.Classes
                 {
                     if (req.Headers[_Settings.Server.HeaderApiKey].Equals(_Settings.Server.AdminApiKey))
                     {
-                        Log(LoggingModule.Severity.Info,
-                            "AuthManager AuthorizeBucketRequest admin API key in use: " +
-                            req.SourceIp + ":" + req.SourcePort + " " +
-                            reqType.ToString() + " " +
-                            req.Method.ToString() + " " + req.RawUrl);
+                        if (_Settings.Debug.Authentication)
+                            _Logging.Info(
+                                "AuthManager AuthorizeBucketRequest admin API key in use: " +
+                                req.SourceIp + ":" + req.SourcePort + " " +
+                                reqType.ToString() + " " +
+                                req.Method.ToString() + " " + req.RawUrl);
 
                         result = AuthResult.AdminAuthorized;
                         allowed = true;
@@ -488,7 +495,8 @@ namespace Less3.Classes
             }
             finally
             {
-                Log(LoggingModule.Severity.Info, logMsg + "[" + allowed.ToString() + "]: " + result.ToString());
+                if (_Settings.Debug.Authentication)
+                    _Logging.Info(logMsg + "[" + allowed.ToString() + "]: " + result.ToString());
             }
         }
 
@@ -535,11 +543,12 @@ namespace Less3.Classes
                 {
                     if (req.Headers[_Settings.Server.HeaderApiKey].Equals(_Settings.Server.AdminApiKey))
                     {
-                        Log(LoggingModule.Severity.Info,
-                            "AuthManager AuthorizeObjectRequest admin API key in use: " +
-                            req.SourceIp + ":" + req.SourcePort + " " +
-                            reqType.ToString() + " " +
-                            req.Method.ToString() + " " + req.RawUrl);
+                        if (_Settings.Debug.Authentication)
+                            _Logging.Info(
+                                "AuthManager AuthorizeObjectRequest admin API key in use: " +
+                                req.SourceIp + ":" + req.SourcePort + " " +
+                                reqType.ToString() + " " +
+                                req.Method.ToString() + " " + req.RawUrl);
 
                         result = AuthResult.AdminAuthorized;
                         allowed = true;
@@ -640,7 +649,8 @@ namespace Less3.Classes
             }
             finally
             {
-                Log(LoggingModule.Severity.Info, logMsg + "[" + allowed.ToString() + "]: " + result.ToString());
+                if (_Settings.Debug.Authentication)
+                    _Logging.Info(logMsg + "[" + allowed.ToString() + "]: " + result.ToString());
             }
         }
 
@@ -698,11 +708,12 @@ namespace Less3.Classes
                 {
                     if (req.Headers[_Settings.Server.HeaderApiKey].Equals(_Settings.Server.AdminApiKey))
                     {
-                        Log(LoggingModule.Severity.Info,
-                            "AuthManager AuthorizeObjectRequest admin API key in use: " +
-                            req.SourceIp + ":" + req.SourcePort + " " +
-                            reqType.ToString() + " " +
-                            req.Method.ToString() + " " + req.RawUrl);
+                        if (_Settings.Debug.Authentication)
+                            _Logging.Info(
+                                "AuthManager AuthorizeObjectRequest admin API key in use: " +
+                                req.SourceIp + ":" + req.SourcePort + " " +
+                                reqType.ToString() + " " +
+                                req.Method.ToString() + " " + req.RawUrl);
 
                         result = AuthResult.AdminAuthorized;
                         allowed = true;
@@ -1104,45 +1115,15 @@ namespace Less3.Classes
             }
             finally
             {
-                Log(LoggingModule.Severity.Info, logMsg + "[" + allowed.ToString() + "]: " + result.ToString());
+                if (_Settings.Debug.Authentication)
+                    _Logging.Info(logMsg + "[" + allowed.ToString() + "]: " + result.ToString());
             }
         }
 
         #endregion
 
         #region Private-Methods
-
-        private void Log(LoggingModule.Severity sev, string msg)
-        {
-            if (_Settings.Debug.Authentication)
-            {
-                switch (sev)
-                {
-                    case LoggingModule.Severity.Debug:
-                        _Logging.Debug(msg);
-                        break;
-                    case LoggingModule.Severity.Info:
-                        _Logging.Info(msg);
-                        break;
-                    case LoggingModule.Severity.Warn:
-                        _Logging.Warn(msg);
-                        break;
-                    case LoggingModule.Severity.Alert:
-                        _Logging.Alert(msg);
-                        break;
-                    case LoggingModule.Severity.Critical:
-                        _Logging.Critical(msg);
-                        break;
-                    case LoggingModule.Severity.Error:
-                        _Logging.Error(msg);
-                        break;
-                    case LoggingModule.Severity.Emergency:
-                        _Logging.Emergency(msg);
-                        break;
-                }
-            }
-        }
-
+         
         #endregion
     }
 }

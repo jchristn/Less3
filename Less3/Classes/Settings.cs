@@ -13,11 +13,12 @@ namespace Less3.Classes
     {
         #region Internal-Members-and-Nested-Classes
 
+        public string Version;
         public bool EnableConsole;
         public SettingsFiles Files;
         public SettingsServer Server;
         public SettingsStorage Storage;
-        public SettingsSyslog Syslog;
+        public SettingsLogging Logging;
         public SettingsDebug Debug;
 
         public class SettingsFiles
@@ -30,6 +31,7 @@ namespace Less3.Classes
             public string DnsHostname;
             public int ListenerPort;
             public bool Ssl;
+            public string BaseDomain;
             public string HeaderApiKey;
             public string AdminApiKey;
             public string RegionString;
@@ -41,20 +43,24 @@ namespace Less3.Classes
             public string TempDirectory;
         }
 
-        public class SettingsSyslog
+        public class SettingsLogging
         {
-            public string ServerIp;
-            public int ServerPort;
+            public string SyslogServerIp;
+            public int SyslogServerPort;
             public string Header;
             public int MinimumLevel;
             public bool LogHttpRequests; 
             public bool ConsoleLogging;
+            public bool DiskLogging;
+            public string DiskDirectory;
         }
 
         public class SettingsDebug
         {
-            public bool Database;
+            public bool DatabaseQueries;
+            public bool DatabaseResults;
             public bool Authentication;
+            public bool S3Requests;
         }
 
         #endregion
@@ -107,7 +113,7 @@ namespace Less3.Classes
             if (Files == null) throw new ArgumentException("System.json parameter 'Files' must not be null.");
             if (Server == null) throw new ArgumentException("System.json parameter 'Server' must not be null.");
             if (Storage == null) throw new ArgumentException("System.json parameter 'Storage' must not be null.");
-            if (Syslog == null) throw new ArgumentException("System.json parameter 'Syslog' must not be null.");
+            if (Logging == null) throw new ArgumentException("System.json parameter 'Syslog' must not be null.");
             if (Debug == null) throw new ArgumentException("System.json parameter 'Debug' must not be null.");
 
             if (String.IsNullOrEmpty(Files.ConfigDatabase)) throw new ArgumentException("System.json parameter 'Files.ConfigDatabase' must not be null."); 
@@ -123,8 +129,8 @@ namespace Less3.Classes
             if (String.IsNullOrEmpty(Storage.Directory)) throw new ArgumentException("System.json parameter 'Storage.Directory' must not be null.");
             if (String.IsNullOrEmpty(Storage.TempDirectory)) throw new ArgumentException("System.json parameter 'Storage.TempDirectory' must not be null.");
 
-            if (String.IsNullOrEmpty(Syslog.ServerIp)) throw new ArgumentException("System.json parameter 'Syslog.ServerIp' must not be null.");
-            if (Syslog.ServerPort < 0 || Syslog.ServerPort > 65535) throw new ArgumentException("System.json parameter 'Syslog.ServerPort' must be within the range 0-65535."); 
+            if (String.IsNullOrEmpty(Logging.SyslogServerIp)) throw new ArgumentException("System.json parameter 'Syslog.ServerIp' must not be null.");
+            if (Logging.SyslogServerPort < 0 || Logging.SyslogServerPort > 65535) throw new ArgumentException("System.json parameter 'Syslog.ServerPort' must be within the range 0-65535."); 
         }
 
         #endregion

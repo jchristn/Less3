@@ -1,41 +1,41 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.2",
-    "signature": "ec17f99af012b6510df799537c192a8883a68915"
+    "signature": ""
   },
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v2.2": {
-      "Less3/1.1.0": {
+      "Less3/1.2.0": {
         "dependencies": {
-          "AWSSDK.S3": "3.3.104.25",
-          "Newtonsoft.Json": "12.0.2",
-          "S3ServerInterface": "2.0.1.1",
-          "SqliteHelper": "1.0.13",
-          "SyslogLogging": "1.2.0",
-          "Watson": "3.0.1",
+          "AWSSDK.S3": "3.3.110.17",
+          "Newtonsoft.Json": "12.0.3",
+          "S3ServerInterface": "2.0.1.14",
+          "SqliteHelper": "1.1.0",
+          "SyslogLogging": "1.3.2",
+          "Watson": "3.0.6",
           "XmlToPox": "1.0.2"
         },
         "runtime": {
           "Less3.dll": {}
         }
       },
-      "AWSSDK.Core/3.3.103.37": {
+      "AWSSDK.Core/3.3.104.19": {
         "runtime": {
           "lib/netstandard2.0/AWSSDK.Core.dll": {
             "assemblyVersion": "3.3.0.0",
-            "fileVersion": "3.3.103.37"
+            "fileVersion": "3.3.104.19"
           }
         }
       },
-      "AWSSDK.S3/3.3.104.25": {
+      "AWSSDK.S3/3.3.110.17": {
         "dependencies": {
-          "AWSSDK.Core": "3.3.103.37"
+          "AWSSDK.Core": "3.3.104.19"
         },
         "runtime": {
           "lib/netstandard2.0/AWSSDK.S3.dll": {
             "assemblyVersion": "3.3.0.0",
-            "fileVersion": "3.3.104.25"
+            "fileVersion": "3.3.110.17"
           }
         }
       },
@@ -47,12 +47,12 @@
           }
         }
       },
-      "Microsoft.CSharp/4.5.0": {},
-      "Newtonsoft.Json/12.0.2": {
+      "Microsoft.CSharp/4.7.0": {},
+      "Newtonsoft.Json/12.0.3": {
         "runtime": {
           "lib/netstandard2.0/Newtonsoft.Json.dll": {
             "assemblyVersion": "12.0.0.0",
-            "fileVersion": "12.0.2.23222"
+            "fileVersion": "12.0.3.23909"
           }
         }
       },
@@ -64,50 +64,50 @@
           }
         }
       },
-      "S3ServerInterface/2.0.1.1": {
+      "S3ServerInterface/2.0.1.14": {
         "dependencies": {
-          "AWSSDK.S3": "3.3.104.25",
-          "Newtonsoft.Json": "12.0.2",
-          "Watson": "3.0.1"
+          "AWSSDK.S3": "3.3.110.17",
+          "Newtonsoft.Json": "12.0.3",
+          "Watson": "3.0.6"
         },
         "runtime": {
           "lib/netstandard2.0/S3ServerInterface.dll": {
-            "assemblyVersion": "2.0.1.1",
-            "fileVersion": "2.0.1.1"
+            "assemblyVersion": "2.0.1.14",
+            "fileVersion": "2.0.1.14"
           }
         }
       },
-      "SqliteHelper/1.0.13": {
+      "SqliteHelper/1.1.0": {
         "dependencies": {
-          "Microsoft.CSharp": "4.5.0",
-          "System.Data.SQLite": "1.0.111",
-          "System.Data.SQLite.Core": "1.0.111"
+          "Microsoft.CSharp": "4.7.0",
+          "System.Data.SQLite": "1.0.112",
+          "System.Data.SQLite.Core": "1.0.112"
         },
         "runtime": {
           "lib/netstandard2.0/SqliteWrapper.dll": {
-            "assemblyVersion": "1.0.13.0",
-            "fileVersion": "1.0.13.0"
+            "assemblyVersion": "1.1.0.0",
+            "fileVersion": "1.1.0.0"
           }
         }
       },
-      "SyslogLogging/1.2.0": {
+      "SyslogLogging/1.3.2": {
         "runtime": {
           "lib/netstandard2.0/LoggingModule.dll": {
-            "assemblyVersion": "1.2.0.0",
-            "fileVersion": "1.2.0.0"
+            "assemblyVersion": "1.3.2.0",
+            "fileVersion": "1.3.2.0"
           }
         }
       },
-      "System.Data.SQLite/1.0.111": {
+      "System.Data.SQLite/1.0.112": {
         "dependencies": {
-          "System.Data.SQLite.Core": "1.0.111"
+          "System.Data.SQLite.Core": "1.0.112"
         }
       },
-      "System.Data.SQLite.Core/1.0.111": {
+      "System.Data.SQLite.Core/1.0.112": {
         "runtime": {
           "lib/netstandard2.0/System.Data.SQLite.dll": {
-            "assemblyVersion": "1.0.111.0",
-            "fileVersion": "1.0.111.0"
+            "assemblyVersion": "1.0.112.0",
+            "fileVersion": "1.0.112.0"
           }
         },
         "runtimeTargets": {
@@ -124,25 +124,25 @@
           "runtimes/win-x64/native/netstandard2.0/SQLite.Interop.dll": {
             "rid": "win-x64",
             "assetType": "native",
-            "fileVersion": "1.0.111.0"
+            "fileVersion": "1.0.112.0"
           },
           "runtimes/win-x86/native/netstandard2.0/SQLite.Interop.dll": {
             "rid": "win-x86",
             "assetType": "native",
-            "fileVersion": "1.0.111.0"
+            "fileVersion": "1.0.112.0"
           }
         }
       },
-      "Watson/3.0.1": {
+      "Watson/3.0.6": {
         "dependencies": {
           "IpMatcher": "1.0.1",
-          "Newtonsoft.Json": "12.0.2",
+          "Newtonsoft.Json": "12.0.3",
           "RegexMatcher": "1.0.2"
         },
         "runtime": {
           "lib/netstandard2.0/WatsonWebserver.dll": {
-            "assemblyVersion": "3.0.1.0",
-            "fileVersion": "3.0.1.0"
+            "assemblyVersion": "3.0.6.0",
+            "fileVersion": "3.0.6.0"
           }
         }
       },
@@ -157,94 +157,94 @@
     }
   },
   "libraries": {
-    "Less3/1.1.0": {
+    "Less3/1.2.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "AWSSDK.Core/3.3.103.37": {
+    "AWSSDK.Core/3.3.104.19": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-7erW4wudVKO3YpLYnlfvpbHhH7pCOw7AE1EfIKlXKMiaKEOE9jieGKfVXbyPv9Vz93fo71EvWqxdTdPxtdjaCA==",
-      "path": "awssdk.core/3.3.103.37",
-      "hashPath": "awssdk.core.3.3.103.37.nupkg.sha512"
+      "sha512": "sha512-4qFyRGdgN4NNrlXmQmZ2giroUsrASkJ0n2cH6Qwp8cX02GMHvGFMgkizgu5D+7CdOkpu3dIjGZA2rqAl7JhsgA==",
+      "path": "awssdk.core/3.3.104.19",
+      "hashPath": "awssdk.core.3.3.104.19.nupkg.sha512"
     },
-    "AWSSDK.S3/3.3.104.25": {
+    "AWSSDK.S3/3.3.110.17": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-BjIFN0ZDMhIJPAsy59wE1cMAUUCOdC58zP3oZRI6yU/DvFsfVVB2KCXXqNKpFPst6PzwvRCUMxQoC2WafYH91Q==",
-      "path": "awssdk.s3/3.3.104.25",
-      "hashPath": "awssdk.s3.3.3.104.25.nupkg.sha512"
+      "sha512": "sha512-9kkUvnTAI6Qoc/hA89Qz4OPVur9Oc8PKSMcnAPo8LTVfSsybUOSEr03FI7DekOqkdBxcNjlGcYzumwrAjpGv6Q==",
+      "path": "awssdk.s3/3.3.110.17",
+      "hashPath": "awssdk.s3.3.3.110.17.nupkg.sha512"
     },
     "IpMatcher/1.0.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-ASdqz1wygrLi6biivalAsxORk24DI5ZMyfgyRazsEqqXsVSDqzEBUt9IqxVdGhY6le2P0TX3eQqUzaokNXCpog==",
+      "sha512": "sha512-uj4yFtK2myFRbqpxB+QKvGvMw9fLXHyvyypdQdd3JKDG6C1HvSSemPugf/N+tvtH3swHQPj5JM45s5+1SOdziQ==",
       "path": "ipmatcher/1.0.1",
       "hashPath": "ipmatcher.1.0.1.nupkg.sha512"
     },
-    "Microsoft.CSharp/4.5.0": {
+    "Microsoft.CSharp/4.7.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-kaj6Wb4qoMuH3HySFJhxwQfe8R/sJsNJnANrvv8WdFPMoNbKY5htfNscv+LHCu5ipz+49m2e+WQXpLXr9XYemQ==",
-      "path": "microsoft.csharp/4.5.0",
-      "hashPath": "microsoft.csharp.4.5.0.nupkg.sha512"
+      "sha512": "sha512-pTj+D3uJWyN3My70i2Hqo+OXixq3Os2D1nJ2x92FFo6sk8fYS1m1WLNTs0Dc1uPaViH0YvEEwvzddQ7y4rhXmA==",
+      "path": "microsoft.csharp/4.7.0",
+      "hashPath": "microsoft.csharp.4.7.0.nupkg.sha512"
     },
-    "Newtonsoft.Json/12.0.2": {
+    "Newtonsoft.Json/12.0.3": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-mtweBXPWhp1CMQATtBT7ZfMZrbZBTKfjGwz6Y75NwGjx/GztDaUnfw8GK9KZ2T4fDIqKJyDjc9Rxlw5+G2FcVA==",
-      "path": "newtonsoft.json/12.0.2",
-      "hashPath": "newtonsoft.json.12.0.2.nupkg.sha512"
+      "sha512": "sha512-6mgjfnRB4jKMlzHSl+VD+oUc1IebOZabkbyWj2RiTgWwYPPuaK1H97G1sHqGwPlS5npiF5Q0OrxN1wni2n5QWg==",
+      "path": "newtonsoft.json/12.0.3",
+      "hashPath": "newtonsoft.json.12.0.3.nupkg.sha512"
     },
     "RegexMatcher/1.0.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-gbNpAHo+3HjiX4YSirmR7ujsURje2pk3moWmb64aB2SXfa75BUFf0ffDld6zJ5KmubO9ST+86O/bejBU5y4eWg==",
+      "sha512": "sha512-t+gA+bsDoISfPP80GfkC9CrR0GC9+lzoSAF+T9YZAdiy8lL1DcBHdwIYEpgPNJkVmPglM+RWFokXnuZ1MypBvQ==",
       "path": "regexmatcher/1.0.2",
       "hashPath": "regexmatcher.1.0.2.nupkg.sha512"
     },
-    "S3ServerInterface/2.0.1.1": {
+    "S3ServerInterface/2.0.1.14": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-4h634o8ueFT1zb3v/8qM447mcPEBpsbhRc8UStEZ+JFtCKKEW5aGMJ+GxiNdg+6PYlAwScfuRY2A7O8AiNCNCA==",
-      "path": "s3serverinterface/2.0.1.1",
-      "hashPath": "s3serverinterface.2.0.1.1.nupkg.sha512"
+      "sha512": "sha512-2McetYu9egVDgaZhV8zIb5pHXePl9CVgJ3PhXlfkUT6QanUClyI8B8kwZ8frLD8BbzHdXSMF3UPC2KjvH+YvVQ==",
+      "path": "s3serverinterface/2.0.1.14",
+      "hashPath": "s3serverinterface.2.0.1.14.nupkg.sha512"
     },
-    "SqliteHelper/1.0.13": {
+    "SqliteHelper/1.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-kiQYiyjXM3vWbZSXNRqNQIyIUAfMSoJMchTm40ymxQcIHW4mVJjgZpT8WLbCWGiotxCPLwTCK6vwVjbc3FGgXQ==",
-      "path": "sqlitehelper/1.0.13",
-      "hashPath": "sqlitehelper.1.0.13.nupkg.sha512"
+      "sha512": "sha512-ylkrUh7/EAjSCnizNQ5xkYI9UsLVxifRRCzhDLBB36+Ibi+PyXQnOt4zuwRZyhvok8capS6RYLlo1nLgEPs+nQ==",
+      "path": "sqlitehelper/1.1.0",
+      "hashPath": "sqlitehelper.1.1.0.nupkg.sha512"
     },
-    "SyslogLogging/1.2.0": {
+    "SyslogLogging/1.3.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-tJ6pHIwcV/NMe3JsBfFWOvh3GLoYfR6bmZm6FLcu+K4VEeFlzAijlK+KbZ9kflzWeumPr4pq1lpuVrYllBbJdg==",
-      "path": "sysloglogging/1.2.0",
-      "hashPath": "sysloglogging.1.2.0.nupkg.sha512"
+      "sha512": "sha512-XtIeGSHiZVvpqPLzVtY6ZsFuZpOQi3+bWvRs6s2/kIYX/ZXV+BHFj1ElZFKbfYZaNhZQMvpuc9y3aKtctR4QcA==",
+      "path": "sysloglogging/1.3.2",
+      "hashPath": "sysloglogging.1.3.2.nupkg.sha512"
     },
-    "System.Data.SQLite/1.0.111": {
+    "System.Data.SQLite/1.0.112": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Erg05KGL/sntCBd2ApJGK1A5e1CjyBRlizAXWjrHCH5mvH/V/je1iOZ+2B3NHXDhQZuwi5Zp4KCIm4w1YAALyQ==",
-      "path": "system.data.sqlite/1.0.111",
-      "hashPath": "system.data.sqlite.1.0.111.nupkg.sha512"
+      "sha512": "sha512-QsYUir0pcx+1DfhhbpCsIJN8nWmHTT4Z/s85q6Un5AbVEPCP6RA0EA9cgzwQ1l5wZ8SQ0jUq747FxPmwJs7ycQ==",
+      "path": "system.data.sqlite/1.0.112",
+      "hashPath": "system.data.sqlite.1.0.112.nupkg.sha512"
     },
-    "System.Data.SQLite.Core/1.0.111": {
+    "System.Data.SQLite.Core/1.0.112": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-HfCHIp+Pyvoy81BPmH/9FTTe8HSf4A6LibGDmTT5O4NZVo6g9LitcxHEx31F20dglPhTPb1smuFc2j5CC/7uBw==",
-      "path": "system.data.sqlite.core/1.0.111",
-      "hashPath": "system.data.sqlite.core.1.0.111.nupkg.sha512"
+      "sha512": "sha512-3wA9v/K2ncZWsWfEBTiQppsi2014IJMXsZ1md3pk5bEXAJyuTthSrHF4bIWm5MG+C5g5XLhA2H7XfnSq1PXCeQ==",
+      "path": "system.data.sqlite.core/1.0.112",
+      "hashPath": "system.data.sqlite.core.1.0.112.nupkg.sha512"
     },
-    "Watson/3.0.1": {
+    "Watson/3.0.6": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-3Vwz9H/XsRJJFoEUK6hOCH/T6vWqstCOs5Oh2G0ms0XTUtpLvTo4lDFW70+D5cPXsSswaIpOSqtVAOahwoMn4A==",
-      "path": "watson/3.0.1",
-      "hashPath": "watson.3.0.1.nupkg.sha512"
+      "sha512": "sha512-ngew3UnAgUKrp7te5vO05165BJmCBu7AaFvaAbUwtwYRcw9wUiBM7WTebzIAFwvAZP9A/xKPSUHSEWJxIeQBtA==",
+      "path": "watson/3.0.6",
+      "hashPath": "watson.3.0.6.nupkg.sha512"
     },
     "XmlToPox/1.0.2": {
       "type": "package",

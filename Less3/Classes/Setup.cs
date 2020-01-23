@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Text;
 using SyslogLogging;
 
@@ -72,7 +73,7 @@ namespace Less3.Classes
 
             #region Temporary-Instances
 
-            LoggingModule logging = new LoggingModule("127.0.0.1", 514, false, LoggingModule.Severity.Alert, false, false, false, false, false, false);
+            LoggingModule logging = new LoggingModule("127.0.0.1", 514);
 
             #endregion
 
@@ -95,17 +96,19 @@ namespace Less3.Classes
             currSettings.Storage.Directory = "./Storage/";
             currSettings.Storage.TempDirectory = "./Temp/";
              
-            currSettings.Syslog = new Settings.SettingsSyslog();
-            currSettings.Syslog.ConsoleLogging = true;
-            currSettings.Syslog.Header = "less3";
-            currSettings.Syslog.ServerIp = "127.0.0.1";
-            currSettings.Syslog.ServerPort = 514;
-            currSettings.Syslog.LogHttpRequests = false; 
-            currSettings.Syslog.MinimumLevel = 1;
+            currSettings.Logging = new Settings.SettingsLogging();
+            currSettings.Logging.ConsoleLogging = true;
+            currSettings.Logging.Header = "less3";
+            currSettings.Logging.SyslogServerIp = "127.0.0.1";
+            currSettings.Logging.SyslogServerPort = 514;
+            currSettings.Logging.LogHttpRequests = false; 
+            currSettings.Logging.MinimumLevel = 1;
 
             currSettings.Debug = new Settings.SettingsDebug();
-            currSettings.Debug.Database = false;
+            currSettings.Debug.DatabaseQueries = false;
+            currSettings.Debug.DatabaseResults = false;
             currSettings.Debug.Authentication = false;
+            currSettings.Debug.S3Requests = false;
 
             if (!Common.WriteFile("System.json", Common.SerializeJson(currSettings, true), false))
             {
@@ -228,6 +231,22 @@ namespace Less3.Classes
             #endregion
         }
 
+        static string LogoPlain()
+        {
+            // http://loveascii.com/hearts.html
+            // http://patorjk.com/software/taag/#p=display&f=Small&t=less3 
+
+            string ret = Environment.NewLine;
+            ret +=
+                "  ,d88b.d88b,   " + @"   _           ____  " + Environment.NewLine +
+                "  88888888888   " + @"  | |___ _____|__ /  " + Environment.NewLine +
+                "  `Y8888888Y'   " + @"  | / -_|_-<_-<|_ \  " + Environment.NewLine +
+                "    `Y888Y'     " + @"  |_\___/__/__/___/  " + Environment.NewLine +
+                "      `Y'       " + Environment.NewLine;
+
+            return ret;
+        }
+
         private string SampleHtmlFile(string link)
         {
             string html =
@@ -238,11 +257,14 @@ namespace Less3.Classes
                 "          body {" + Environment.NewLine +
                 "            font-family: arial;" + Environment.NewLine +
                 "          }" + Environment.NewLine +
-                "          h3 {" + Environment.NewLine +
+                "          pre {" + Environment.NewLine +
                 "            background-color: #e5e7ea;" + Environment.NewLine +
                 "            color: #333333; " + Environment.NewLine +
-                "            padding: 16px;" + Environment.NewLine +
-                "            border: 16px;" + Environment.NewLine +
+                "          }" + Environment.NewLine +
+                "          h3 {" + Environment.NewLine +
+                "            color: #333333; " + Environment.NewLine +
+                "            padding: 4px;" + Environment.NewLine +
+                "            border: 4px;" + Environment.NewLine +
                 "          }" + Environment.NewLine +
                 "          p {" + Environment.NewLine +
                 "            color: #333333; " + Environment.NewLine +
@@ -261,12 +283,14 @@ namespace Less3.Classes
                 "            border: 6px;" + Environment.NewLine +
                 "          }" + Environment.NewLine +
                 "      </style>" + Environment.NewLine +
-                "   </head>" + Environment.NewLine +
+                 "   </head>" + Environment.NewLine +
                 "   <body>" + Environment.NewLine +
-                "      <h3>&lt;3 :: Less3</h3>" + Environment.NewLine +
+                "      <pre>" + Environment.NewLine +
+                WebUtility.HtmlEncode(LogoPlain()) +
+                "      </pre>" + Environment.NewLine +
                 "      <p>Congratulations, your Less3 node is running!</p>" + Environment.NewLine +
                 "      <p>" + Environment.NewLine +
-                "        <a href='" + link + "' target='_blank'>SDKs and Source Code</a>" + Environment.NewLine +
+                "        <a href='" + link + "' target='_blank'>Source Code</a>" + Environment.NewLine +
                 "      </p>" + Environment.NewLine +
                 "   </body>" + Environment.NewLine +
                 "</html>";

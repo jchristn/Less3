@@ -20,10 +20,11 @@ namespace Less3.Classes
         #endregion
 
         #region Private-Members
-         
-        private Settings _Settings;
-        private LoggingModule _Logging;
-        private DatabaseClient _Database;
+
+        private Settings _Settings = null;
+        private LoggingModule _Logging = null;
+        private DatabaseClient _Database = null;
+        private DatabaseQueries _Queries = null;
 
         #endregion
 
@@ -63,7 +64,7 @@ namespace Less3.Classes
         internal void GetUsers(out List<User> users)
         {
             users = new List<User>();
-            string query = DatabaseQueries.GetUsers();
+            string query = _Queries.GetUsers();
             DataTable result = _Database.Query(query);
 
             if (result != null && result.Rows.Count > 0)
@@ -81,7 +82,7 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
 
-            string query = DatabaseQueries.GetUserByGuid(guid);
+            string query = _Queries.GetUserByGuid(guid);
             DataTable result = _Database.Query(query);
 
             if (result != null && result.Rows.Count > 0) return true;
@@ -92,7 +93,7 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(email)) throw new ArgumentNullException(nameof(email));
 
-            string query = DatabaseQueries.GetUserByEmail(email);
+            string query = _Queries.GetUserByEmail(email);
             DataTable result = _Database.Query(query);
 
             if (result != null && result.Rows.Count > 0) return true;
@@ -104,7 +105,7 @@ namespace Less3.Classes
             user = null;
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
 
-            string query = DatabaseQueries.GetUserByGuid(guid);
+            string query = _Queries.GetUserByGuid(guid);
             DataTable result = _Database.Query(query);
 
             if (result != null && result.Rows.Count > 0)
@@ -121,7 +122,7 @@ namespace Less3.Classes
             user = null;
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
-            string query = DatabaseQueries.GetUserByName(name);
+            string query = _Queries.GetUserByName(name);
             DataTable result = _Database.Query(query);
 
             if (result != null && result.Rows.Count > 0)
@@ -138,7 +139,7 @@ namespace Less3.Classes
             user = null;
             if (String.IsNullOrEmpty(email)) throw new ArgumentNullException(nameof(email));
 
-            string query = DatabaseQueries.GetUserByEmail(email);
+            string query = _Queries.GetUserByEmail(email);
             DataTable result = _Database.Query(query);
 
             if (result != null && result.Rows.Count > 0)
@@ -198,7 +199,7 @@ namespace Less3.Classes
                 return false;
             }
 
-            string query = DatabaseQueries.InsertUser(user);
+            string query = _Queries.InsertUser(user);
             DataTable result = _Database.Query(query);
             return true;
         }
@@ -207,7 +208,7 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid)); 
               
-            string query = DatabaseQueries.DeleteUser(guid);
+            string query = _Queries.DeleteUser(guid);
             DataTable result = _Database.Query(query);
             return;
         }
@@ -221,7 +222,7 @@ namespace Less3.Classes
             Dictionary<string, object> vals = new Dictionary<string, object>();
             vals.Add(field, val);
 
-            string query = DatabaseQueries.UpdateRecord("Users", "GUID", guid, vals);
+            string query = _Queries.UpdateRecord("Users", "GUID", guid, vals);
             DataTable result = _Database.Query(query);
             return;
         }
@@ -233,7 +234,7 @@ namespace Less3.Classes
         internal void GetCredentials(out List<Credential> creds)
         {
             creds = new List<Credential>();
-            string query = DatabaseQueries.GetCredentials();
+            string query = _Queries.GetCredentials();
             DataTable result = _Database.Query(query);
 
             if (result != null && result.Rows.Count > 0)
@@ -251,7 +252,7 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
 
-            string query = DatabaseQueries.GetCredentialsByGuid(guid);
+            string query = _Queries.GetCredentialsByGuid(guid);
             DataTable result = _Database.Query(query);
 
             if (result != null && result.Rows.Count > 0) return true;
@@ -263,7 +264,7 @@ namespace Less3.Classes
             cred = null;
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
 
-            string query = DatabaseQueries.GetCredentialsByGuid(guid);
+            string query = _Queries.GetCredentialsByGuid(guid);
             DataTable result = _Database.Query(query);
 
             if (result != null && result.Rows.Count > 0)
@@ -280,7 +281,7 @@ namespace Less3.Classes
             creds = new List<Credential>();
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
 
-            string query = DatabaseQueries.GetCredentialsByUser(userGuid);
+            string query = _Queries.GetCredentialsByUser(userGuid);
             DataTable result = _Database.Query(query);
 
             if (result != null && result.Rows.Count > 0)
@@ -301,7 +302,7 @@ namespace Less3.Classes
             cred = null;
             if (String.IsNullOrEmpty(accessKey)) throw new ArgumentNullException(nameof(accessKey));
 
-            string query = DatabaseQueries.GetCredentialsByAccessKey(accessKey);
+            string query = _Queries.GetCredentialsByAccessKey(accessKey);
             DataTable result = _Database.Query(query);
 
             if (result != null && result.Rows.Count > 0)
@@ -340,7 +341,7 @@ namespace Less3.Classes
                 return false;
             }
 
-            string query = DatabaseQueries.InsertCredentials(cred);
+            string query = _Queries.InsertCredentials(cred);
             DataTable result = _Database.Query(query);
             return true;
         }
@@ -349,7 +350,7 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
 
-            string query = DatabaseQueries.DeleteCredentials(guid);
+            string query = _Queries.DeleteCredentials(guid);
             DataTable result = _Database.Query(query);
             return;
         }
@@ -363,7 +364,7 @@ namespace Less3.Classes
             Dictionary<string, object> vals = new Dictionary<string, object>();
             vals.Add(field, val);
 
-            string query = DatabaseQueries.UpdateRecord("Credentials", "GUID", guid, vals);
+            string query = _Queries.UpdateRecord("Credentials", "GUID", guid, vals);
             DataTable result = _Database.Query(query);
             return;
         }
@@ -375,7 +376,7 @@ namespace Less3.Classes
         internal void GetBuckets(out List<BucketConfiguration> buckets)
         {
             buckets = new List<BucketConfiguration>();
-            string query = DatabaseQueries.GetBuckets();
+            string query = _Queries.GetBuckets();
             DataTable result = _Database.Query(query);
 
             if (result != null && result.Rows.Count > 0)
@@ -393,7 +394,7 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
-            string query = DatabaseQueries.GetBucketByName(name);
+            string query = _Queries.GetBucketByName(name);
             DataTable result = _Database.Query(query);
 
             if (result != null && result.Rows.Count > 0) return true;
@@ -405,7 +406,7 @@ namespace Less3.Classes
             buckets = new List<BucketConfiguration>();
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
 
-            string query = DatabaseQueries.GetBucketsByUser(userGuid);
+            string query = _Queries.GetBucketsByUser(userGuid);
             DataTable result = _Database.Query(query);
 
             if (result != null && result.Rows.Count > 0)
@@ -424,7 +425,7 @@ namespace Less3.Classes
             bucket = null;
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
 
-            string query = DatabaseQueries.GetBucketByGuid(guid);
+            string query = _Queries.GetBucketByGuid(guid);
             DataTable result = _Database.Query(query);
 
             if (result != null && result.Rows.Count > 0)
@@ -441,7 +442,7 @@ namespace Less3.Classes
             bucket = null;
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
-            string query = DatabaseQueries.GetBucketByName(name);
+            string query = _Queries.GetBucketByName(name);
             DataTable result = _Database.Query(query);
 
             if (result != null && result.Rows.Count > 0)
@@ -477,7 +478,7 @@ namespace Less3.Classes
                 return false;
             }
 
-            string query = DatabaseQueries.InsertBucket(bucket);
+            string query = _Queries.InsertBucket(bucket);
             DataTable result = _Database.Query(query);
             return true;
         }
@@ -486,7 +487,7 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
 
-            string query = DatabaseQueries.DeleteBucket(guid);
+            string query = _Queries.DeleteBucket(guid);
             DataTable result = _Database.Query(query);
             return;
         }
@@ -500,7 +501,7 @@ namespace Less3.Classes
             Dictionary<string, object> vals = new Dictionary<string, object>();
             vals.Add(field, val);
 
-            string query = DatabaseQueries.UpdateRecord("Buckets", "GUID", guid, vals);
+            string query = _Queries.UpdateRecord("Buckets", "GUID", guid, vals);
             DataTable result = _Database.Query(query);
             return;
         }
@@ -511,22 +512,24 @@ namespace Less3.Classes
          
         private void InitializeDatabase()
         {
-            _Database = new DatabaseClient(_Settings.Files.ConfigDatabase);
+            _Database = new DatabaseClient(_Settings.Files.Database);
 
             _Database.Logger = Logger;
             _Database.LogQueries = _Settings.Debug.DatabaseQueries;
             _Database.LogResults = _Settings.Debug.DatabaseResults;
 
+            _Queries = new DatabaseQueries(_Database);
+
             string query = null;
             DataTable result = null;
 
-            query = DatabaseQueries.CreateUsersTable();
+            query = _Queries.CreateUsersTable();
             result = _Database.Query(query);
 
-            query = DatabaseQueries.CreateCredentialsTable();
+            query = _Queries.CreateCredentialsTable();
             result = _Database.Query(query);
 
-            query = DatabaseQueries.CreateBucketsTable();
+            query = _Queries.CreateBucketsTable();
             result = _Database.Query(query);
         }
 

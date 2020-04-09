@@ -42,10 +42,11 @@ namespace Less3.Classes
 
         #region Private-Members
 
-        private Settings _Settings;
-        private LoggingModule _Logging;
-        private BucketConfiguration _BucketConfiguration;
-        private DatabaseClient _Database;
+        private Settings _Settings = null;
+        private LoggingModule _Logging = null;
+        private BucketConfiguration _BucketConfiguration = null;
+        private DatabaseClient _Database = null;
+        private DatabaseQueries _Queries = null;
 
         private long _StreamReadBufferSize = 65536;
 
@@ -66,12 +67,7 @@ namespace Less3.Classes
 
             _Settings = settings;
             _Logging = logging;
-            _BucketConfiguration = bucket;
-
-            if (!Directory.Exists(_BucketConfiguration.ObjectsDirectory)) Directory.CreateDirectory(_BucketConfiguration.ObjectsDirectory);
-            _Database = new DatabaseClient(_BucketConfiguration.DatabaseFilename);
-            _Database.LogQueries = _Settings.Debug.DatabaseQueries;
-            _Database.LogResults = _Settings.Debug.DatabaseResults;
+            _BucketConfiguration = bucket; 
 
             InitializeDatabase();
         }
@@ -158,7 +154,7 @@ namespace Less3.Classes
             obj.LastUpdateUtc = ts;
             obj.ExpirationUtc = null;
 
-            string query = DatabaseQueries.InsertObject(obj);
+            string query = _Queries.InsertObject(obj);
             DataTable result = _Database.Query(query);
 
             return true;
@@ -190,7 +186,7 @@ namespace Less3.Classes
             obj.LastUpdateUtc = ts;
             obj.ExpirationUtc = null;
 
-            string query = DatabaseQueries.InsertObject(obj);
+            string query = _Queries.InsertObject(obj);
             DataTable result = _Database.Query(query);
 
             return true;
@@ -269,7 +265,7 @@ namespace Less3.Classes
             objects = 0;
             bytes = 0;
 
-            string query = DatabaseQueries.GetObjectCount();
+            string query = _Queries.GetObjectCount();
             DataTable result = _Database.Query(query);
 
             if (result != null && result.Rows.Count == 1)
@@ -297,7 +293,7 @@ namespace Less3.Classes
             obj = null;
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            string query = DatabaseQueries.ObjectExists(key);
+            string query = _Queries.ObjectExists(key);
             DataTable result = _Database.Query(query);
             if (result == null || result.Rows.Count < 1) return false;
 
@@ -310,7 +306,7 @@ namespace Less3.Classes
             obj = null;
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            string query = DatabaseQueries.VersionExists(key, version);
+            string query = _Queries.VersionExists(key, version);
             DataTable result = _Database.Query(query);
             if (result == null || result.Rows.Count < 1) return false;
 
@@ -351,14 +347,14 @@ namespace Less3.Classes
             if (_BucketConfiguration.EnableVersioning)
             {
                 _Logging.Info("Delete marking key " + _BucketConfiguration.Name + "/" + key + " as deleted");
-                query = DatabaseQueries.MarkObjectDeleted(obj);
+                query = _Queries.MarkObjectDeleted(obj);
                 result = _Database.Query(query);
                 return true;
             }
             else
             {
                 _Logging.Info("Delete deleting key " + _BucketConfiguration.Name + "/" + key);
-                query = DatabaseQueries.DeleteObject(obj.Key, obj.Version); 
+                query = _Queries.DeleteObject(obj.Key, obj.Version); 
                 result = _Database.Query(query);
                 File.Delete(_BucketConfiguration.ObjectsDirectory + obj.BlobFilename);
                 return true;
@@ -377,13 +373,13 @@ namespace Less3.Classes
 
             if (_BucketConfiguration.EnableVersioning)
             {
-                query = DatabaseQueries.MarkObjectDeleted(obj);
+                query = _Queries.MarkObjectDeleted(obj);
                 result = _Database.Query(query);
                 return true;
             }
             else
             {
-                query = DatabaseQueries.DeleteObject(obj.Key, obj.Version);
+                query = _Queries.DeleteObject(obj.Key, obj.Version);
                 result = _Database.Query(query);
                 File.Delete(_BucketConfiguration.ObjectsDirectory + obj.BlobFilename);
                 return true;
@@ -402,13 +398,13 @@ namespace Less3.Classes
 
             if (_BucketConfiguration.EnableVersioning)
             {
-                query = DatabaseQueries.MarkObjectDeleted(obj);
+                query = _Queries.MarkObjectDeleted(obj);
                 result = _Database.Query(query);
                 return true;
             }
             else
             {
-                query = DatabaseQueries.DeleteObject(obj.Key, obj.Version);
+                query = _Queries.DeleteObject(obj.Key, obj.Version);
                 result = _Database.Query(query);
                 return true;
             }
@@ -417,7 +413,7 @@ namespace Less3.Classes
         internal void Enumerate(string prefix, long startIndex, int maxResults, out List<Obj> objs)
         {
             objs = new List<Obj>();
-            string query = DatabaseQueries.Enumerate(prefix, startIndex, maxResults);
+            string query = _Queries.Enumerate(prefix, startIndex, maxResults);
             DataTable result = _Database.Query(query);
             if (result != null && result.Rows.Count > 0)
             {
@@ -434,19 +430,19 @@ namespace Less3.Classes
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
             if (vals == null || vals.Count < 1) throw new ArgumentException("At least one value must be supplied.");
 
-            string query = DatabaseQueries.UpdateRecord(key, version, vals);
+            string query = _Queries.UpdateRecord(key, version, vals);
             DataTable result = _Database.Query(query);
             return;
         }
 
         internal void AddBucketTags(Dictionary<string, string> tags)
         {
-            string query = DatabaseQueries.DeleteBucketTags();
+            string query = _Queries.DeleteBucketTags();
             DataTable result = _Database.Query(query);
 
             if (tags != null && tags.Count > 0)
             {
-                query = DatabaseQueries.InsertBucketTags(tags);
+                query = _Queries.InsertBucketTags(tags);
                 result = _Database.Query(query);
             }
         }
@@ -456,19 +452,19 @@ namespace Less3.Classes
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
             if (version < 1) throw new ArgumentException("Version ID must be one or greater.");
 
-            string query = DatabaseQueries.DeleteObjectTags(key, version);
+            string query = _Queries.DeleteObjectTags(key, version);
             DataTable result = _Database.Query(query);
 
             if (tags != null && tags.Count > 0)
             {
-                query = DatabaseQueries.InsertObjectTags(key, version, tags);
+                query = _Queries.InsertObjectTags(key, version, tags);
                 result = _Database.Query(query);
             }
         }
 
         internal Dictionary<string, string> GetBucketTags()
         {
-            string query = DatabaseQueries.GetBucketTags();
+            string query = _Queries.GetBucketTags();
             DataTable result = _Database.Query(query);
 
             Dictionary<string, string> ret = new Dictionary<string, string>();
@@ -499,7 +495,7 @@ namespace Less3.Classes
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
             if (versionId < 1) throw new ArgumentException("Version ID must be one or greater.");
 
-            string query = DatabaseQueries.GetObjectTags(key, versionId);
+            string query = _Queries.GetObjectTags(key, versionId);
             DataTable result = _Database.Query(query);
 
             Dictionary<string, string> ret = new Dictionary<string, string>();
@@ -527,7 +523,7 @@ namespace Less3.Classes
 
         internal void DeleteBucketTags()
         {
-            string query = DatabaseQueries.DeleteBucketTags();
+            string query = _Queries.DeleteBucketTags();
             DataTable result = _Database.Query(query);
         }
 
@@ -536,7 +532,7 @@ namespace Less3.Classes
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
             if (version < 1) throw new ArgumentException("Version ID must be one or greater.");
 
-            string query = DatabaseQueries.DeleteObjectTags(key, version);
+            string query = _Queries.DeleteObjectTags(key, version);
             DataTable result = _Database.Query(query);
         }
         
@@ -545,7 +541,7 @@ namespace Less3.Classes
             if (String.IsNullOrEmpty(groupName)) throw new ArgumentNullException(nameof(groupName));
             if (String.IsNullOrEmpty(objectKey)) throw new ArgumentNullException(nameof(objectKey));
 
-            string query = DatabaseQueries.ObjectGroupAclExists(groupName, objectKey, versionId);
+            string query = _Queries.ObjectGroupAclExists(groupName, objectKey, versionId);
             DataTable result = _Database.Query(query);
             if (result != null && result.Rows.Count > 0) return true;
             return false;
@@ -556,7 +552,7 @@ namespace Less3.Classes
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
             if (String.IsNullOrEmpty(objectKey)) throw new ArgumentNullException(nameof(objectKey));
 
-            string query = DatabaseQueries.ObjectUserAclExists(userGuid, objectKey, versionId);
+            string query = _Queries.ObjectUserAclExists(userGuid, objectKey, versionId);
             DataTable result = _Database.Query(query);
             if (result != null && result.Rows.Count > 0) return true;
             return false;
@@ -566,7 +562,7 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(groupName)) throw new ArgumentNullException(nameof(groupName));
 
-            string query = DatabaseQueries.BucketGroupAclExists(groupName);
+            string query = _Queries.BucketGroupAclExists(groupName);
             DataTable result = _Database.Query(query);
             if (result != null && result.Rows.Count > 0) return true;
             return false;
@@ -576,7 +572,7 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
 
-            string query = DatabaseQueries.BucketUserAclExists(userGuid);
+            string query = _Queries.BucketUserAclExists(userGuid);
             DataTable result = _Database.Query(query);
             if (result != null && result.Rows.Count > 0) return true;
             return false;
@@ -585,7 +581,7 @@ namespace Less3.Classes
         internal void GetBucketAcl(out List<BucketAcl> acls)
         {
             acls = new List<BucketAcl>();
-            string query = DatabaseQueries.GetBucketAcl();
+            string query = _Queries.GetBucketAcl();
             DataTable result = _Database.Query(query);
 
             if (result != null && result.Rows.Count > 0)
@@ -601,7 +597,7 @@ namespace Less3.Classes
         internal void GetObjectAcl(string key, long version, out List<ObjectAcl> acls)
         {
             acls = new List<ObjectAcl>();
-            string query = DatabaseQueries.GetObjectAcl(key, version);
+            string query = _Queries.GetObjectAcl(key, version);
             DataTable result = _Database.Query(query);
 
             if (result != null && result.Rows.Count > 0)
@@ -638,13 +634,13 @@ namespace Less3.Classes
                 if (BucketUserAclExists(acl.UserGUID))
                 {
                     _Logging.Debug("BucketClient AddBucketAcl ACL already exists for user " + acl.UserGUID + ", updating");
-                    query = DatabaseQueries.UpdateBucketUserAcl(acl.UserGUID, perm); 
+                    query = _Queries.UpdateBucketUserAcl(acl.UserGUID, perm); 
                     result = _Database.Query(query);
                     return;
                 }
                 else
                 {
-                    query = DatabaseQueries.InsertBucketAcl(acl); 
+                    query = _Queries.InsertBucketAcl(acl); 
                     result = _Database.Query(query);
                     return;
                 }
@@ -658,13 +654,13 @@ namespace Less3.Classes
                 if (BucketGroupAclExists(acl.UserGroup))
                 {
                     _Logging.Debug("BucketClient AddBucketAcl ACL already exists for group " + acl.UserGroup + ", updating");
-                    query = DatabaseQueries.UpdateBucketGroupAcl(acl.UserGroup, perm);
+                    query = _Queries.UpdateBucketGroupAcl(acl.UserGroup, perm);
                     result = _Database.Query(query);
                     return;
                 }
                 else
                 {
-                    query = DatabaseQueries.InsertBucketAcl(acl);
+                    query = _Queries.InsertBucketAcl(acl);
                     result = _Database.Query(query);
                     return;
                 }
@@ -700,13 +696,13 @@ namespace Less3.Classes
                 if (ObjectUserAclExists(acl.UserGUID, acl.ObjectKey, acl.ObjectVersion))
                 {
                     _Logging.Debug("BucketClient AddObjectAcl ACL already exists for user " + acl.UserGUID + " object " + _BucketConfiguration.Name + "/" + acl.ObjectKey + " version " + acl.ObjectVersion);
-                    query = DatabaseQueries.UpdateObjectUserAcl(acl.UserGUID, acl.ObjectKey, acl.ObjectVersion, perm);
+                    query = _Queries.UpdateObjectUserAcl(acl.UserGUID, acl.ObjectKey, acl.ObjectVersion, perm);
                     result = _Database.Query(query);
                     return;
                 }
                 else
                 {
-                    query = DatabaseQueries.InsertObjectAcl(acl);
+                    query = _Queries.InsertObjectAcl(acl);
                     result = _Database.Query(query);
                     return;
                 }
@@ -720,13 +716,13 @@ namespace Less3.Classes
                 if (ObjectGroupAclExists(acl.UserGroup, acl.ObjectKey, acl.ObjectVersion))
                 {
                     _Logging.Debug("BucketClient AddObjectAcl ACL already exists for group " + acl.UserGroup + " object " + _BucketConfiguration.Name + "/" + acl.ObjectKey + " version " + acl.ObjectVersion);
-                    query = DatabaseQueries.UpdateObjectGroupAcl(acl.UserGroup, acl.ObjectKey, acl.ObjectVersion, perm);
+                    query = _Queries.UpdateObjectGroupAcl(acl.UserGroup, acl.ObjectKey, acl.ObjectVersion, perm);
                     result = _Database.Query(query);
                     return;
                 }
                 else
                 {
-                    query = DatabaseQueries.InsertObjectAcl(acl);
+                    query = _Queries.InsertObjectAcl(acl);
                     result = _Database.Query(query);
                     return;
                 }
@@ -741,21 +737,21 @@ namespace Less3.Classes
 
         internal void DeleteBucketAcl()
         {
-            string query = DatabaseQueries.DeleteBucketAcl();
+            string query = _Queries.DeleteBucketAcl();
             DataTable result = _Database.Query(query);
             return;
         }
 
         internal void DeleteObjectAcl(string key, long version)
         { 
-            string query = DatabaseQueries.DeleteObjectAcl(key, version); 
+            string query = _Queries.DeleteObjectAcl(key, version); 
             DataTable result = _Database.Query(query);  
             return;
         }
 
         internal void DeleteObjectAcl(string key)
         {
-            string query = DatabaseQueries.DeleteObjectAcl(key);
+            string query = _Queries.DeleteObjectAcl(key);
             DataTable result = _Database.Query(query);
             return;
         }
@@ -766,22 +762,29 @@ namespace Less3.Classes
          
         private void InitializeDatabase()
         {
+            if (!Directory.Exists(_BucketConfiguration.ObjectsDirectory)) Directory.CreateDirectory(_BucketConfiguration.ObjectsDirectory);
+            _Database = new DatabaseClient(_BucketConfiguration.DatabaseFilename);
+            _Database.LogQueries = _Settings.Debug.DatabaseQueries;
+            _Database.LogResults = _Settings.Debug.DatabaseResults;
+
+            _Queries = new DatabaseQueries(_Database);
+
             string query = null;
             DataTable result = null;
 
-            query = DatabaseQueries.CreateObjectTable();
+            query = _Queries.CreateObjectTable();
             result = _Database.Query(query);
 
-            query = DatabaseQueries.CreateBucketTagsTable();
+            query = _Queries.CreateBucketTagsTable();
             result = _Database.Query(query);
 
-            query = DatabaseQueries.CreateObjectTagsTable();
+            query = _Queries.CreateObjectTagsTable();
             result = _Database.Query(query);
 
-            query = DatabaseQueries.CreateBucketAclTable();
+            query = _Queries.CreateBucketAclTable();
             result = _Database.Query(query);
 
-            query = DatabaseQueries.CreateObjectAclTable();
+            query = _Queries.CreateObjectAclTable();
             result = _Database.Query(query);
         }
 

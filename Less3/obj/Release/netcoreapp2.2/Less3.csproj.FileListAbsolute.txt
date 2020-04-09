@@ -23,3 +23,4 @@ C:\Code\KVPbase\Less3-1.2\Less3\obj\Release\netcoreapp2.2\Less3.AssemblyInfo.cs
 C:\Code\KVPbase\Less3-1.2\Less3\obj\Release\netcoreapp2.2\Less3.dll
 C:\Code\KVPbase\Less3-1.2\Less3\obj\Release\netcoreapp2.2\Less3.pdb
 C:\Code\KVPbase\Less3-1.2\Less3\bin\Release\netcoreapp2.2\Assets\favicon-old.ico
+C:\code\kvpbase\less3-1.2\Less3\obj\Release\netcoreapp2.2\Less3.genruntimeconfig.cache

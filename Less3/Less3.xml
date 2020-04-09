@@ -1,0 +1,326 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Less3</name>
+    </assembly>
+    <members>
+        <member name="T:Less3.Api.Admin.AdminApiHandler">
+            <summary>
+            Admin API handler.
+            </summary>
+        </member>
+        <member name="T:Less3.Api.Admin.DeleteHandler">
+            <summary>
+            Admin API DELETE handler.
+            </summary>
+        </member>
+        <member name="T:Less3.Api.Admin.GetHandler">
+            <summary>
+            Admin API GET handler.
+            </summary>
+        </member>
+        <member name="T:Less3.Api.Admin.PostHandler">
+            <summary>
+            Admin API POST handler.
+            </summary>
+        </member>
+        <member name="T:Less3.Api.S3.ApiHandler">
+            <summary>
+            API handler.
+            </summary>
+        </member>
+        <member name="T:Less3.Api.S3.BucketHandler">
+            <summary>
+            Bucket API callbacks.
+            </summary>
+        </member>
+        <member name="T:Less3.Api.S3.ObjectHandler">
+            <summary>
+            Object API callbacks.
+            </summary>
+        </member>
+        <member name="T:Less3.Api.S3.ServiceHandler">
+            <summary>
+            Service API callbacks.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.AuthManager">
+            <summary>
+            Authentication manager.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.AuthResult">
+            <summary>
+            Authentication result.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.BucketAcl">
+            <summary>
+            Access control list entry for a bucket.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.BucketClient">
+            <summary>
+            Bucket client.  All object construction, authentication, and authorization must occur prior to using bucket methods.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.BucketConfiguration">
+            <summary>
+            Bucket configuration.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.BucketManager">
+            <summary>
+            Bucket manager.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.ConfigManager">
+            <summary>
+            Configuration manager.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.ConfigManager.Dispose">
+            <summary>
+            Tear down the client and dispose of background workers.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.ConsoleManager">
+            <summary>
+            Console for less3.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.Credential">
+            <summary>
+            Credential.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.Obj">
+            <summary>
+            Object stored in Less3.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.ObjectAcl">
+            <summary>
+            Access control list entry for an object.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.ObjectAcl.ToString">
+            <summary>
+            Create a human-readable string of the object.
+            </summary>
+            <returns>String.</returns>
+        </member>
+        <member name="T:Less3.Classes.RequestType">
+            <summary>
+            Type of API request.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.Settings">
+            <summary>
+            Less3 settings.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.EnableConsole">
+            <summary>
+            Enable or disable the console.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.Files">
+            <summary>
+            Files settings.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.Server">
+            <summary>
+            Web server settings.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.Storage">
+            <summary>
+            Storage settings.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.Logging">
+            <summary>
+            Logging settings.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.Debug">
+            <summary>
+            Debugging settings.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.Settings.SettingsFiles">
+            <summary>
+            Files settings.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.SettingsFiles.Database">
+            <summary>
+            Sqlite database filename.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.Settings.SettingsServer">
+            <summary>
+            Web server settings.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.SettingsServer.DnsHostname">
+            <summary>
+            Hostname on which to listen.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.SettingsServer.ListenerPort">
+            <summary>
+            TCP port on which to listen.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.SettingsServer.Ssl">
+            <summary>
+            Enable or disable SSL.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.SettingsServer.BaseDomain">
+            <summary>
+            Base domain.  
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.SettingsServer.HeaderApiKey">
+            <summary>
+            Header to use for the admin API key.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.SettingsServer.AdminApiKey">
+            <summary>
+            Admin API key.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.SettingsServer.RegionString">
+            <summary>
+            AWS region string to use for location requests.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.Settings.SettingsStorage">
+            <summary>
+            Storage settings.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.SettingsStorage.Directory">
+            <summary>
+            Storage directory.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.SettingsStorage.TempDirectory">
+            <summary>
+            Temporary storage directory.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.Settings.SettingsLogging">
+            <summary>
+            Logging settings.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.SettingsLogging.SyslogServerIp">
+            <summary>
+            IP address or hostname of the syslog server.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.SettingsLogging.SyslogServerPort">
+            <summary>
+            Syslog server port number.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.SettingsLogging.Header">
+            <summary>
+            Header to prepend to log messages.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.SettingsLogging.MinimumLevel">
+            <summary>
+            Minimum log level severity.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.SettingsLogging.LogHttpRequests">
+            <summary>
+            Enable or disable logging of HTTP requests.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.SettingsLogging.ConsoleLogging">
+            <summary>
+            Enable or disable logging to the console.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.SettingsLogging.DiskLogging">
+            <summary>
+            Enable or disable logging to disk.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.SettingsLogging.DiskDirectory">
+            <summary>
+            Directory on disk to write log files.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.Settings.SettingsDebug">
+            <summary>
+            Debug settings.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.SettingsDebug.DatabaseQueries">
+            <summary>
+            Enable or disable debugging of database queries.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.SettingsDebug.DatabaseResults">
+            <summary>
+            Enable or disable debugging of database query results.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.SettingsDebug.Authentication">
+            <summary>
+            Enable or disable debugging of authentication logic.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.SettingsDebug.S3Requests">
+            <summary>
+            Enable or disable debugging of S3 request parsing.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.Settings.#ctor">
+            <summary>
+            Instantiate the object.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.Settings.FromFile(System.String)">
+            <summary>
+            Instantiate the object from a file.
+            </summary>
+            <param name="filename">Filename.</param>
+            <returns>Settings.</returns>
+        </member>
+        <member name="T:Less3.Classes.Setup">
+            <summary>
+            Setup workflow.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.User">
+            <summary>
+            User object.
+            </summary>
+        </member>
+        <member name="T:Less3.Common">
+            <summary>
+            Common static methods.
+            </summary>
+        </member>
+        <member name="T:Less3.Database.Configuration.DatabaseQueries">
+            <summary>
+            Configuration database queries.
+            </summary>
+        </member>
+        <member name="T:Less3.Program">
+            <summary>
+            Less3 is an S3-compatible object storage server.
+            </summary>
+        </member>
+    </members>
+</doc>

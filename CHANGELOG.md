@@ -2,14 +2,23 @@
 
 ## Current Version
 
+v1.2.0.2
+
+- Minor cleanup, version from assembly, dependency update, XML documentation, Postman collection
+ 
+## Previous Versions
+
+v1.2.0
+
+- Support for bucket in hostname or bucket in URL
+- Dependency update
+
 v1.1.0
  
 - Dependency update with performance improvements, better async behavior
 - Better support for large objects using streams instead of memory-intensive byte arrays
 - Better support for chunked transfer-encoding
 - Bugfixes
- 
-## Previous Versions
  
 v1.0.x
 

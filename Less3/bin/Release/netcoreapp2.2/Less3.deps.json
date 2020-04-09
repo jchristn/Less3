@@ -6,36 +6,36 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v2.2": {
-      "Less3/1.2.0": {
+      "Less3/1.2.0.2": {
         "dependencies": {
-          "AWSSDK.S3": "3.3.110.17",
+          "AWSSDK.S3": "3.3.110.50",
           "Newtonsoft.Json": "12.0.3",
-          "S3ServerInterface": "2.0.1.14",
-          "SqliteHelper": "1.1.0",
+          "S3ServerInterface": "2.0.1.15",
+          "SqliteHelper": "1.1.4",
           "SyslogLogging": "1.3.2",
-          "Watson": "3.0.6",
+          "Watson": "3.0.9",
           "XmlToPox": "1.0.2"
         },
         "runtime": {
           "Less3.dll": {}
         }
       },
-      "AWSSDK.Core/3.3.104.19": {
+      "AWSSDK.Core/3.3.106.3": {
         "runtime": {
           "lib/netstandard2.0/AWSSDK.Core.dll": {
             "assemblyVersion": "3.3.0.0",
-            "fileVersion": "3.3.104.19"
+            "fileVersion": "3.3.106.3"
           }
         }
       },
-      "AWSSDK.S3/3.3.110.17": {
+      "AWSSDK.S3/3.3.110.50": {
         "dependencies": {
-          "AWSSDK.Core": "3.3.104.19"
+          "AWSSDK.Core": "3.3.106.3"
         },
         "runtime": {
           "lib/netstandard2.0/AWSSDK.S3.dll": {
             "assemblyVersion": "3.3.0.0",
-            "fileVersion": "3.3.110.17"
+            "fileVersion": "3.3.110.50"
           }
         }
       },
@@ -64,20 +64,20 @@
           }
         }
       },
-      "S3ServerInterface/2.0.1.14": {
+      "S3ServerInterface/2.0.1.15": {
         "dependencies": {
-          "AWSSDK.S3": "3.3.110.17",
+          "AWSSDK.S3": "3.3.110.50",
           "Newtonsoft.Json": "12.0.3",
-          "Watson": "3.0.6"
+          "Watson": "3.0.9"
         },
         "runtime": {
           "lib/netstandard2.0/S3ServerInterface.dll": {
-            "assemblyVersion": "2.0.1.14",
-            "fileVersion": "2.0.1.14"
+            "assemblyVersion": "2.0.1.15",
+            "fileVersion": "2.0.1.15"
           }
         }
       },
-      "SqliteHelper/1.1.0": {
+      "SqliteHelper/1.1.4": {
         "dependencies": {
           "Microsoft.CSharp": "4.7.0",
           "System.Data.SQLite": "1.0.112",
@@ -85,8 +85,8 @@
         },
         "runtime": {
           "lib/netstandard2.0/SqliteWrapper.dll": {
-            "assemblyVersion": "1.1.0.0",
-            "fileVersion": "1.1.0.0"
+            "assemblyVersion": "1.1.4.0",
+            "fileVersion": "1.1.4.0"
           }
         }
       },
@@ -133,7 +133,7 @@
           }
         }
       },
-      "Watson/3.0.6": {
+      "Watson/3.0.9": {
         "dependencies": {
           "IpMatcher": "1.0.1",
           "Newtonsoft.Json": "12.0.3",
@@ -141,8 +141,8 @@
         },
         "runtime": {
           "lib/netstandard2.0/WatsonWebserver.dll": {
-            "assemblyVersion": "3.0.6.0",
-            "fileVersion": "3.0.6.0"
+            "assemblyVersion": "3.0.9.0",
+            "fileVersion": "3.0.9.0"
           }
         }
       },
@@ -157,24 +157,24 @@
     }
   },
   "libraries": {
-    "Less3/1.2.0": {
+    "Less3/1.2.0.2": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "AWSSDK.Core/3.3.104.19": {
+    "AWSSDK.Core/3.3.106.3": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-4qFyRGdgN4NNrlXmQmZ2giroUsrASkJ0n2cH6Qwp8cX02GMHvGFMgkizgu5D+7CdOkpu3dIjGZA2rqAl7JhsgA==",
-      "path": "awssdk.core/3.3.104.19",
-      "hashPath": "awssdk.core.3.3.104.19.nupkg.sha512"
+      "sha512": "sha512-eFmqSDbnaqAlGHLNsHYwDON3UiTmiGtQfIvfe39jp6fAD1bE/+J2jtZ76/KRpBLvus8KoWUcSqntzBUYvbTStg==",
+      "path": "awssdk.core/3.3.106.3",
+      "hashPath": "awssdk.core.3.3.106.3.nupkg.sha512"
     },
-    "AWSSDK.S3/3.3.110.17": {
+    "AWSSDK.S3/3.3.110.50": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-9kkUvnTAI6Qoc/hA89Qz4OPVur9Oc8PKSMcnAPo8LTVfSsybUOSEr03FI7DekOqkdBxcNjlGcYzumwrAjpGv6Q==",
-      "path": "awssdk.s3/3.3.110.17",
-      "hashPath": "awssdk.s3.3.3.110.17.nupkg.sha512"
+      "sha512": "sha512-H0tu/MdUG7jhDieqzsiMPIeV4B99tIaUvQn/UOkS6iZtGjnXFFzlswyB40tDsm2E1hcePMvcs5iHU1DyNMEmAw==",
+      "path": "awssdk.s3/3.3.110.50",
+      "hashPath": "awssdk.s3.3.3.110.50.nupkg.sha512"
     },
     "IpMatcher/1.0.1": {
       "type": "package",
@@ -204,19 +204,19 @@
       "path": "regexmatcher/1.0.2",
       "hashPath": "regexmatcher.1.0.2.nupkg.sha512"
     },
-    "S3ServerInterface/2.0.1.14": {
+    "S3ServerInterface/2.0.1.15": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-2McetYu9egVDgaZhV8zIb5pHXePl9CVgJ3PhXlfkUT6QanUClyI8B8kwZ8frLD8BbzHdXSMF3UPC2KjvH+YvVQ==",
-      "path": "s3serverinterface/2.0.1.14",
-      "hashPath": "s3serverinterface.2.0.1.14.nupkg.sha512"
+      "sha512": "sha512-6puzL3nb9RRG5fxu8fo9IGwGEnnSfaLZgewOjsOcDLpVEqY+CZwjW68PiBBpxtFCW0RPRlwl9nw5cU0N7X5xOg==",
+      "path": "s3serverinterface/2.0.1.15",
+      "hashPath": "s3serverinterface.2.0.1.15.nupkg.sha512"
     },
-    "SqliteHelper/1.1.0": {
+    "SqliteHelper/1.1.4": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-ylkrUh7/EAjSCnizNQ5xkYI9UsLVxifRRCzhDLBB36+Ibi+PyXQnOt4zuwRZyhvok8capS6RYLlo1nLgEPs+nQ==",
-      "path": "sqlitehelper/1.1.0",
-      "hashPath": "sqlitehelper.1.1.0.nupkg.sha512"
+      "sha512": "sha512-zYcVfqqLCX0IBlAHbalHVkdbTlTQTWLBVZXMEF08ODnA6ov1mh5r9Pyhllgk/cWxK++LFGb9C9oIGya3Zhs8FA==",
+      "path": "sqlitehelper/1.1.4",
+      "hashPath": "sqlitehelper.1.1.4.nupkg.sha512"
     },
     "SyslogLogging/1.3.2": {
       "type": "package",
@@ -239,12 +239,12 @@
       "path": "system.data.sqlite.core/1.0.112",
       "hashPath": "system.data.sqlite.core.1.0.112.nupkg.sha512"
     },
-    "Watson/3.0.6": {
+    "Watson/3.0.9": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-ngew3UnAgUKrp7te5vO05165BJmCBu7AaFvaAbUwtwYRcw9wUiBM7WTebzIAFwvAZP9A/xKPSUHSEWJxIeQBtA==",
-      "path": "watson/3.0.6",
-      "hashPath": "watson.3.0.6.nupkg.sha512"
+      "sha512": "sha512-/3hDZZ+7XD0/hjIJ7DvhY6MWyytDJc39AGuWsRiuLK90CiNMDPVOjf7T7hPafkwNgrZrn9Bu+0ZiXR7AOwcxCg==",
+      "path": "watson/3.0.9",
+      "hashPath": "watson.3.0.9.nupkg.sha512"
     },
     "XmlToPox/1.0.2": {
       "type": "package",

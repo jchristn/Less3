@@ -11,67 +11,189 @@ namespace Less3.Classes
     /// </summary>
     public class Settings
     {
-        #region Internal-Members-and-Nested-Classes
-
-        public string Version;
+        /// <summary>
+        /// Enable or disable the console.
+        /// </summary>
         public bool EnableConsole;
+
+        /// <summary>
+        /// Files settings.
+        /// </summary>
         public SettingsFiles Files;
+
+        /// <summary>
+        /// Web server settings.
+        /// </summary>
         public SettingsServer Server;
+
+        /// <summary>
+        /// Storage settings.
+        /// </summary>
         public SettingsStorage Storage;
+
+        /// <summary>
+        /// Logging settings.
+        /// </summary>
         public SettingsLogging Logging;
+
+        /// <summary>
+        /// Debugging settings.
+        /// </summary>
         public SettingsDebug Debug;
 
+        /// <summary>
+        /// Files settings.
+        /// </summary>
         public class SettingsFiles
         {
-            public string ConfigDatabase; 
+            /// <summary>
+            /// Sqlite database filename.
+            /// </summary>
+            public string Database; 
         }
 
+        /// <summary>
+        /// Web server settings.
+        /// </summary>
         public class SettingsServer
         {
+            /// <summary>
+            /// Hostname on which to listen.
+            /// </summary>
             public string DnsHostname;
+
+            /// <summary>
+            /// TCP port on which to listen.
+            /// </summary>
             public int ListenerPort;
+
+            /// <summary>
+            /// Enable or disable SSL.
+            /// </summary>
             public bool Ssl;
+
+            /// <summary>
+            /// Base domain.  
+            /// </summary>
             public string BaseDomain;
+
+            /// <summary>
+            /// Header to use for the admin API key.
+            /// </summary>
             public string HeaderApiKey;
+
+            /// <summary>
+            /// Admin API key.
+            /// </summary>
             public string AdminApiKey;
+
+            /// <summary>
+            /// AWS region string to use for location requests.
+            /// </summary>
             public string RegionString;
         }
 
+        /// <summary>
+        /// Storage settings.
+        /// </summary>
         public class SettingsStorage
         {
+            /// <summary>
+            /// Storage directory.
+            /// </summary>
             public string Directory;
+
+            /// <summary>
+            /// Temporary storage directory.
+            /// </summary>
             public string TempDirectory;
         }
 
+        /// <summary>
+        /// Logging settings.
+        /// </summary>
         public class SettingsLogging
         {
+            /// <summary>
+            /// IP address or hostname of the syslog server.
+            /// </summary>
             public string SyslogServerIp;
+
+            /// <summary>
+            /// Syslog server port number.
+            /// </summary>
             public int SyslogServerPort;
+
+            /// <summary>
+            /// Header to prepend to log messages.
+            /// </summary>
             public string Header;
+
+            /// <summary>
+            /// Minimum log level severity.
+            /// </summary>
             public int MinimumLevel;
+
+            /// <summary>
+            /// Enable or disable logging of HTTP requests.
+            /// </summary>
             public bool LogHttpRequests; 
+
+            /// <summary>
+            /// Enable or disable logging to the console.
+            /// </summary>
             public bool ConsoleLogging;
+
+            /// <summary>
+            /// Enable or disable logging to disk.
+            /// </summary>
             public bool DiskLogging;
+
+            /// <summary>
+            /// Directory on disk to write log files.
+            /// </summary>
             public string DiskDirectory;
         }
 
+        /// <summary>
+        /// Debug settings.
+        /// </summary>
         public class SettingsDebug
         {
+            /// <summary>
+            /// Enable or disable debugging of database queries.
+            /// </summary>
             public bool DatabaseQueries;
+
+            /// <summary>
+            /// Enable or disable debugging of database query results.
+            /// </summary>
             public bool DatabaseResults;
+
+            /// <summary>
+            /// Enable or disable debugging of authentication logic.
+            /// </summary>
             public bool Authentication;
+
+            /// <summary>
+            /// Enable or disable debugging of S3 request parsing.
+            /// </summary>
             public bool S3Requests;
         }
-
-        #endregion
-
-        #region Constructors-and-Factories
-
+         
+        /// <summary>
+        /// Instantiate the object.
+        /// </summary>
         public Settings()
         {
 
         }
 
+        /// <summary>
+        /// Instantiate the object from a file.
+        /// </summary>
+        /// <param name="filename">Filename.</param>
+        /// <returns>Settings.</returns>
         public static Settings FromFile(string filename)
         {
             if (String.IsNullOrEmpty(filename)) throw new ArgumentNullException(nameof(filename));
@@ -103,11 +225,7 @@ namespace Less3.Classes
 
             return ret;
         }
-
-        #endregion
-
-        #region Internal-Methods
-
+         
         internal void Validate()
         {
             if (Files == null) throw new ArgumentException("System.json parameter 'Files' must not be null.");
@@ -116,7 +234,7 @@ namespace Less3.Classes
             if (Logging == null) throw new ArgumentException("System.json parameter 'Syslog' must not be null.");
             if (Debug == null) throw new ArgumentException("System.json parameter 'Debug' must not be null.");
 
-            if (String.IsNullOrEmpty(Files.ConfigDatabase)) throw new ArgumentException("System.json parameter 'Files.ConfigDatabase' must not be null."); 
+            if (String.IsNullOrEmpty(Files.Database)) throw new ArgumentException("System.json parameter 'Files.ConfigDatabase' must not be null."); 
 
             if (String.IsNullOrEmpty(Server.DnsHostname)) throw new ArgumentException("System.json parameter 'Server.DnsHostname' must not be null.");
             if (String.IsNullOrEmpty(Server.HeaderApiKey)) throw new ArgumentException("System.json parameter 'Server.HeaderApiKey' must not be null.");
@@ -131,8 +249,6 @@ namespace Less3.Classes
 
             if (String.IsNullOrEmpty(Logging.SyslogServerIp)) throw new ArgumentException("System.json parameter 'Syslog.ServerIp' must not be null.");
             if (Logging.SyslogServerPort < 0 || Logging.SyslogServerPort > 65535) throw new ArgumentException("System.json parameter 'Syslog.ServerPort' must be within the range 0-65535."); 
-        }
-
-        #endregion
+        } 
     }
 }

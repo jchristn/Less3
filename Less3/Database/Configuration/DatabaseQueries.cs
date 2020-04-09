@@ -11,11 +11,18 @@ namespace Less3.Database.Configuration
     /// <summary>
     /// Configuration database queries.
     /// </summary>
-    internal static class DatabaseQueries
+    internal class DatabaseQueries
     {
+        private DatabaseClient _Database = null;
+
+        internal DatabaseQueries(DatabaseClient database)
+        {
+            _Database = database;
+        }
+
         #region Table-Creation
-         
-        internal static string CreateUsersTable()
+
+        internal string CreateUsersTable()
         {
             string query =
                 "CREATE TABLE IF NOT EXISTS Users " +
@@ -28,7 +35,7 @@ namespace Less3.Database.Configuration
             return query;
         }
 
-        internal static string CreateCredentialsTable()
+        internal string CreateCredentialsTable()
         {
             string query =
                 "CREATE TABLE IF NOT EXISTS Credentials " +
@@ -42,7 +49,7 @@ namespace Less3.Database.Configuration
             return query;
         }
 
-        internal static string CreateBucketsTable()
+        internal string CreateBucketsTable()
         {
             string query =
                 "CREATE TABLE IF NOT EXISTS Buckets " +
@@ -65,13 +72,13 @@ namespace Less3.Database.Configuration
 
         #region Users-Queries
 
-        internal static string GetUsers()
+        internal string GetUsers()
         {
             string query = "SELECT * FROM Users";
             return query;
         }
 
-        internal static string GetUserByGuid(string guid)
+        internal string GetUserByGuid(string guid)
         {
             string query =
                 "SELECT * FROM Users WHERE " +
@@ -79,7 +86,7 @@ namespace Less3.Database.Configuration
             return query;
         }
 
-        internal static string GetUserByName(string name)
+        internal string GetUserByName(string name)
         {
             string query =
                 "SELECT * FROM Users WHERE " +
@@ -87,7 +94,7 @@ namespace Less3.Database.Configuration
             return query;
         }
 
-        internal static string GetUserByEmail(string email)
+        internal string GetUserByEmail(string email)
         {
             string query =
                 "SELECT * FROM Users WHERE " +
@@ -95,7 +102,7 @@ namespace Less3.Database.Configuration
             return query;
         }
 
-        internal static string InsertUser(User user)
+        internal string InsertUser(User user)
         {
             string query =
                 "INSERT INTO Users " +
@@ -113,7 +120,7 @@ namespace Less3.Database.Configuration
             return query;
         }
 
-        internal static string DeleteUser(string guid)
+        internal string DeleteUser(string guid)
         {
             string query = "DELETE FROM Users WHERE GUID = '" + Sanitize(guid) + "'";
             return query;
@@ -123,31 +130,31 @@ namespace Less3.Database.Configuration
 
         #region Credentials-Queries
 
-        internal static string GetCredentials()
+        internal string GetCredentials()
         {
             string query = "SELECT * FROM Credentials";
             return query;
         }
 
-        internal static string GetCredentialsByUser(string userGuid)
+        internal string GetCredentialsByUser(string userGuid)
         {
             string query = "SELECT * FROM Credentials WHERE UserGUID = '" + Sanitize(userGuid) + "'";
             return query;
         }
 
-        internal static string GetCredentialsByGuid(string guid)
+        internal string GetCredentialsByGuid(string guid)
         {
             string query = "SELECT * FROM Credentials WHERE GUID = '" + Sanitize(guid) + "'";
             return query;
         }
 
-        internal static string GetCredentialsByAccessKey(string accessKey)
+        internal string GetCredentialsByAccessKey(string accessKey)
         {
             string query = "SELECT * FROM Credentials WHERE AccessKey = '" + Sanitize(accessKey) + "'";
             return query;
         }
 
-        internal static string InsertCredentials(Credential cred)
+        internal string InsertCredentials(Credential cred)
         {
             string query =
                 "INSERT INTO Credentials " +
@@ -167,13 +174,13 @@ namespace Less3.Database.Configuration
             return query;
         }
 
-        internal static string DeleteCredentials(string guid)
+        internal string DeleteCredentials(string guid)
         {
             string query = "DELETE FROM Credentials WHERE GUID = '" + Sanitize(guid) + "'";
             return query;
         }
 
-        internal static string DeleteCredentialsByUserGuid(string userGuid)
+        internal string DeleteCredentialsByUserGuid(string userGuid)
         {
             string query = "DELETE FROM Credentials WHERE UserGUID = '" + Sanitize(userGuid) + "'";
             return query;
@@ -183,31 +190,31 @@ namespace Less3.Database.Configuration
 
         #region Buckets-Queries
 
-        internal static string GetBuckets()
+        internal string GetBuckets()
         {
             string query = "SELECT * FROM Buckets";
             return query;
         }
 
-        internal static string GetBucketsByUser(string userGuid)
+        internal string GetBucketsByUser(string userGuid)
         {
             string query = "SELECT * FROM Buckets WHERE OwnerGUID = '" + Sanitize(userGuid) + "'";
             return query;
         }
 
-        internal static string GetBucketByName(string name)
+        internal string GetBucketByName(string name)
         {
             string query = "SELECT * FROM Buckets WHERE Name = '" + Sanitize(name) + "'";
             return query;
         }
 
-        internal static string GetBucketByGuid(string guid)
+        internal string GetBucketByGuid(string guid)
         {
             string query = "SELECT * FROM Buckets WHERE GUID = '" + Sanitize(guid) + "'";
             return query;
         }
 
-        internal static string InsertBucket(BucketConfiguration bucket)
+        internal string InsertBucket(BucketConfiguration bucket)
         {
             string query =
                 "INSERT INTO Buckets " +
@@ -237,13 +244,13 @@ namespace Less3.Database.Configuration
             return query;
         }
 
-        internal static string DeleteBucket(string guid)
+        internal string DeleteBucket(string guid)
         {
             string query = "DELETE FROM Buckets WHERE GUID = '" + Sanitize(guid) + "'";
             return query;
         }
 
-        internal static string DeleteBucketsByUserGuid(string userGuid)
+        internal string DeleteBucketsByUserGuid(string userGuid)
         {
             string query = "DELETE FROM Buckets WHERE OwnerGUID = '" + Sanitize(userGuid) + "'";
             return query;
@@ -253,7 +260,7 @@ namespace Less3.Database.Configuration
 
         #region General-Queries
          
-        internal static string UpdateRecord(string table, string key, string val, Dictionary<string, object> vals)
+        internal string UpdateRecord(string table, string key, string val, Dictionary<string, object> vals)
         {
             int added = 0;
             string query =
@@ -292,25 +299,25 @@ namespace Less3.Database.Configuration
 
         #region Internal
 
-        internal static string TimestampFormat = "yyyy-MM-ddTHH:mm:ss.ffffffZ";
+        internal string TimestampFormat = "yyyy-MM-ddTHH:mm:ss.ffffffZ";
 
-        internal static string Sanitize(string str)
+        internal string Sanitize(string str)
         {
-            return DatabaseClient.SanitizeString(str);
+            return _Database.SanitizeString(str);
         }
 
-        internal static string TimestampUtc()
+        internal string TimestampUtc()
         {
             return DateTime.Now.ToUniversalTime().ToString(TimestampFormat);
         }
 
-        internal static string TimestampUtc(DateTime? ts)
+        internal string TimestampUtc(DateTime? ts)
         {
             if (ts == null) return null;
             return Convert.ToDateTime(ts).ToUniversalTime().ToString(TimestampFormat);
         }
 
-        internal static string TimestampUtc(DateTime ts)
+        internal string TimestampUtc(DateTime ts)
         {
             return ts.ToUniversalTime().ToString(TimestampFormat);
         }

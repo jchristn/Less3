@@ -5,7 +5,7 @@
   },
   "projects": {
     "C:\\Code\\KVPbase\\Less3-1.2\\Less3\\Less3.csproj": {
-      "version": "1.2.0",
+      "version": "1.2.0.2",
       "restore": {
         "projectUniqueName": "C:\\Code\\KVPbase\\Less3-1.2\\Less3\\Less3.csproj",
         "projectName": "Less3",
@@ -46,7 +46,7 @@
           "dependencies": {
             "AWSSDK.S3": {
               "target": "Package",
-              "version": "[3.3.110.17, )"
+              "version": "[3.3.110.50, )"
             },
             "Microsoft.NETCore.App": {
               "suppressParent": "All",
@@ -60,11 +60,11 @@
             },
             "S3ServerInterface": {
               "target": "Package",
-              "version": "[2.0.1.14, )"
+              "version": "[2.0.1.15, )"
             },
             "SqliteHelper": {
               "target": "Package",
-              "version": "[1.1.0, )"
+              "version": "[1.1.4, )"
             },
             "SyslogLogging": {
               "target": "Package",
@@ -72,7 +72,7 @@
             },
             "Watson": {
               "target": "Package",
-              "version": "[3.0.6, )"
+              "version": "[3.0.9, )"
             },
             "XmlToPox": {
               "target": "Package",
@@ -89,7 +89,7 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.0.100\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.200\\RuntimeIdentifierGraph.json"
         }
       }
     }

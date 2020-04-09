@@ -82,7 +82,7 @@ namespace Less3.Classes
             currSettings.EnableConsole = true;
 
             currSettings.Files = new Settings.SettingsFiles();
-            currSettings.Files.ConfigDatabase = "./Less3.db";
+            currSettings.Files.Database = "./Less3.db";
 
             currSettings.Server = new Settings.SettingsServer();
             currSettings.Server.DnsHostname = "localhost";

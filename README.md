@@ -17,12 +17,9 @@ Core use cases for Less3:
 
 ## New in This Version
 
-v1.1.0
+v1.2.0.2
 
-- Dependency update with performance improvements, better async behavior
-- Better support for large objects using streams instead of memory-intensive byte arrays
-- Better support for chunked transfer-encoding
-- Bugfixes
+- Minor cleanup, version from assembly, dependency update, XML documentation, Postman collection
 
 ## Help and Feedback
 
@@ -92,6 +89,16 @@ The following APIs are supported with Less3:
 There are several minor differences between how S3 and less3 handle certain aspects of API requests.  However, these should be inconsequential from the perspective of the developer (for instance, version IDs are numbers internally within less3 rather than strings).  
 
 Should you find any incompatibilities or behavioral issues with the APIs listed above that are considered 'supported', please file an issue here along with details on the expected behavior.  I've tried to mimic the behavior of S3 while building out the API logic.  A link to the supporting documentation will also be helpful to aid me in righting the wrong :)
+
+## Bucket in Hostname vs URL
+
+Less3 supports cases where having the bucket name as:
+- Part of the URL (```http://hostname.com/bucket/key```)
+- Part of the hostname (```http://bucket.hostname.com/key```)  
+
+To support the latter cases where the bucket should be part of the hostname, set the ```Server.BaseDomain``` to an appropriate value.  For instance, if the bucket name is ```bucket``` and you would like it to be accessible via ```bucket.hostname.com```, set ```Server.BaseDomain``` to ```.hostname.com``` within ```System.json```.
+
+If this parameter is not set, Less3 will always assume the bucket name is part of the URL.  If this parameter is set, and the base domain cannot be found within the incoming request hostname, Less3 will assume the bucket name is part of the URL.
 
 ## Administrative APIs
 

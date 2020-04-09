@@ -27,6 +27,7 @@ namespace Less3
     /// </summary>
     class Program
     {
+        private static string _Version;
         static Settings _Settings;
         static LoggingModule _Logging;
         static ConfigManager _Config;
@@ -40,7 +41,9 @@ namespace Less3
         static bool _Exiting = false;
 
         static void Main(string[] args)
-        { 
+        {
+            _Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+
             #region Load-Settings
 
             bool initialSetup = false;
@@ -56,11 +59,7 @@ namespace Less3
             }
 
             _Settings = Settings.FromFile("System.json");
-            _Settings.Validate();
-
-            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
-            FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
-            if (String.IsNullOrEmpty(_Settings.Version)) _Settings.Version = fvi.FileVersion;
+            _Settings.Validate(); 
 
             Welcome();
 
@@ -172,7 +171,7 @@ namespace Less3
 
             LogoColor();
             Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.WriteLine("Less3 | S3-Compatible Object Storage | v" + _Settings.Version);
+            Console.WriteLine("Less3 | S3-Compatible Object Storage | v" + _Version);
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine("");
 

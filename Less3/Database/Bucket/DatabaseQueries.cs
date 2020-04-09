@@ -8,14 +8,18 @@ using Less3.Classes;
 
 namespace Less3.Database.Bucket
 {
-    /// <summary>
-    /// Bucket database queries.
-    /// </summary>
-    internal static class DatabaseQueries
+    internal class DatabaseQueries
     {
+        private DatabaseClient _Database = null;
+
+        internal DatabaseQueries(DatabaseClient database)
+        {
+            _Database = database;
+        }
+
         #region Table-Creation
 
-        internal static string CreateObjectTable()
+        internal string CreateObjectTable()
         {
             string query =
                 "CREATE TABLE IF NOT EXISTS Objects " +
@@ -40,7 +44,7 @@ namespace Less3.Database.Bucket
             return query;
         }
 
-        internal static string CreateBucketTagsTable()
+        internal string CreateBucketTagsTable()
         {
             string query =
                 "CREATE TABLE IF NOT EXISTS BucketTags " +
@@ -52,7 +56,7 @@ namespace Less3.Database.Bucket
             return query;
         }
 
-        internal static string CreateObjectTagsTable()
+        internal string CreateObjectTagsTable()
         {
             string query =
                 "CREATE TABLE IF NOT EXISTS ObjectTags " +
@@ -66,7 +70,7 @@ namespace Less3.Database.Bucket
             return query;
         }
 
-        internal static string CreateBucketAclTable()
+        internal string CreateBucketAclTable()
         {
             string query =
                 "CREATE TABLE IF NOT Exists BucketAcl " +
@@ -84,7 +88,7 @@ namespace Less3.Database.Bucket
             return query;
         }
 
-        internal static string CreateObjectAclTable()
+        internal string CreateObjectAclTable()
         {
             string query =
                 "CREATE TABLE IF NOT Exists ObjectAcl " +
@@ -108,7 +112,7 @@ namespace Less3.Database.Bucket
 
         #region Object-Queries
 
-        internal static string ObjectExists(string key)
+        internal string ObjectExists(string key)
         {
             string query =
                 "SELECT * FROM Objects " +
@@ -118,7 +122,7 @@ namespace Less3.Database.Bucket
             return query;
         }
 
-        internal static string VersionExists(string key, long version)
+        internal string VersionExists(string key, long version)
         {
             string query =
                 "SELECT * FROM Objects " +
@@ -129,7 +133,7 @@ namespace Less3.Database.Bucket
             return query;
         }
 
-        internal static string InsertObject(Obj obj)
+        internal string InsertObject(Obj obj)
         { 
             string query =
                 "INSERT INTO Objects " +
@@ -169,7 +173,7 @@ namespace Less3.Database.Bucket
             return query;
         }
 
-        internal static string DeleteObject(string key, long version)
+        internal string DeleteObject(string key, long version)
         { 
             string query =
                 "DELETE FROM Objects WHERE Key = '" + Sanitize(key) + "' " +
@@ -177,7 +181,7 @@ namespace Less3.Database.Bucket
             return query;
         }
 
-        internal static string MarkObjectDeleted(Obj obj)
+        internal string MarkObjectDeleted(Obj obj)
         { 
             DateTime ts = DateTime.Now.ToUniversalTime();
              
@@ -219,7 +223,7 @@ namespace Less3.Database.Bucket
             return query;
         }
 
-        internal static string UpdateRecord(string key, long version, Dictionary<string, object> vals)
+        internal string UpdateRecord(string key, long version, Dictionary<string, object> vals)
         { 
             int added = 0;
             string query =
@@ -254,12 +258,12 @@ namespace Less3.Database.Bucket
             return query;
         }
 
-        internal static string GetObjectCount()
+        internal string GetObjectCount()
         {
             return "SELECT COUNT(*) AS NumObjects, SUM(ContentLength) AS TotalBytes FROM Objects";
         }
 
-        internal static string Enumerate(string prefix, long indexStart, int maxResults)
+        internal string Enumerate(string prefix, long indexStart, int maxResults)
         {
             string query =
                 "SELECT * FROM " +
@@ -279,7 +283,7 @@ namespace Less3.Database.Bucket
             return query;
         }
 
-        internal static string EnumerationVersions(string prefix, long indexStart, int maxResults)
+        internal string EnumerationVersions(string prefix, long indexStart, int maxResults)
         {
             string query =
                 "SELECT * FROM " +
@@ -303,19 +307,19 @@ namespace Less3.Database.Bucket
 
         #region Bucket-Tags-Queries
 
-        internal static string GetBucketTags()
+        internal string GetBucketTags()
         {
             string query = "SELECT * FROM BucketTags";
             return query;
         }
          
-        internal static string DeleteBucketTags()
+        internal string DeleteBucketTags()
         {
             string query = "DELETE FROM BucketTags";
             return query;
         }
          
-        internal static string InsertBucketTags(Dictionary<string, string> tags)
+        internal string InsertBucketTags(Dictionary<string, string> tags)
         {
             string query =
                 "INSERT INTO BucketTags " +
@@ -349,7 +353,7 @@ namespace Less3.Database.Bucket
 
         #region Object-Tags-Queries
          
-        internal static string GetObjectTags(string key, long version)
+        internal string GetObjectTags(string key, long version)
         {
             string query =
                 "SELECT * FROM ObjectTags WHERE " +
@@ -358,7 +362,7 @@ namespace Less3.Database.Bucket
             return query;
         }
          
-        internal static string DeleteObjectTags(string key, long version)
+        internal string DeleteObjectTags(string key, long version)
         {
             string query =
                 "DELETE FROM ObjectTags WHERE " +
@@ -367,7 +371,7 @@ namespace Less3.Database.Bucket
             return query;
         }
          
-        internal static string InsertObjectTags(string key, long version, Dictionary<string, string> tags)
+        internal string InsertObjectTags(string key, long version, Dictionary<string, string> tags)
         {
             string query =
                 "INSERT INTO ObjectTags " +
@@ -405,13 +409,13 @@ namespace Less3.Database.Bucket
 
         #region Bucket-Acl-Queries
 
-        internal static string GetBucketAcl()
+        internal string GetBucketAcl()
         {
             string query = "SELECT * FROM BucketAcl";
             return query;
         }
 
-        internal static string GetBucketAclForUserByGuid(string userGuid)
+        internal string GetBucketAclForUserByGuid(string userGuid)
         {
             string query =
                 "SELECT * FROM BucketAcl " +
@@ -419,7 +423,7 @@ namespace Less3.Database.Bucket
             return query;
         }
 
-        internal static string GetBucketAclIssuedByUserGuid(string userGuid)
+        internal string GetBucketAclIssuedByUserGuid(string userGuid)
         {
             string query =
                 "SELECT * FROM BucketAcl " +
@@ -427,14 +431,14 @@ namespace Less3.Database.Bucket
             return query;
         }
         
-        internal static string DeleteBucketAcl()
+        internal string DeleteBucketAcl()
         {
             string query =
                 "DELETE FROM BucketAcl WHERE Id > 0";
             return query;
         }
          
-        internal static string InsertBucketAcl(BucketAcl acl)
+        internal string InsertBucketAcl(BucketAcl acl)
         {
             string query =
                "INSERT INTO BucketAcl " +
@@ -466,7 +470,7 @@ namespace Less3.Database.Bucket
             return query;
         }
         
-        internal static string BucketGroupAclExists(string groupName)
+        internal string BucketGroupAclExists(string groupName)
         {
             string query =
                "SELECT * FROM BucketAcl WHERE Id > 0 " +
@@ -475,7 +479,7 @@ namespace Less3.Database.Bucket
 
         }
 
-        internal static string BucketUserAclExists(string userGuid)
+        internal string BucketUserAclExists(string userGuid)
         {
             string query =
                 "SELECT * FROM BucketAcl WHERE Id > 0 " +
@@ -483,7 +487,7 @@ namespace Less3.Database.Bucket
             return query;
         }
         
-        internal static string UpdateBucketGroupAcl(string groupName, string perm)
+        internal string UpdateBucketGroupAcl(string groupName, string perm)
         {
             string query =
                 "UPDATE BucketAcl SET " + Sanitize(perm) + " = 'True' " +
@@ -491,7 +495,7 @@ namespace Less3.Database.Bucket
             return query;
         }
 
-        internal static string UpdateBucketUserAcl(string userGuid, string perm)
+        internal string UpdateBucketUserAcl(string userGuid, string perm)
         {
             string query =
                 "UPDATE BucketAcl SET " + Sanitize(perm) + " = 'True' " +
@@ -503,7 +507,7 @@ namespace Less3.Database.Bucket
 
         #region Object-Acl-Queries
         
-        internal static string GetObjectAcl(string key, long version)
+        internal string GetObjectAcl(string key, long version)
         {
             string query =
                 "SELECT * FROM ObjectAcl " +
@@ -512,7 +516,7 @@ namespace Less3.Database.Bucket
             return query;
         }
 
-        internal static string GetObjectAclForUserByGuid(string key, long version, string userGuid)
+        internal string GetObjectAclForUserByGuid(string key, long version, string userGuid)
         {
             string query =
                 "SELECT * FROM ObjectAcl " +
@@ -522,7 +526,7 @@ namespace Less3.Database.Bucket
             return query;
         }
         
-        internal static string DeleteObjectAcl(string key, long version)
+        internal string DeleteObjectAcl(string key, long version)
         {
             string query =
                 "DELETE FROM ObjectAcl WHERE ObjectKey = '" + Sanitize(key) + "' " +
@@ -530,14 +534,14 @@ namespace Less3.Database.Bucket
             return query;
         }
 
-        internal static string DeleteObjectAcl(string key)
+        internal string DeleteObjectAcl(string key)
         {
             string query =
                 "DELETE FROM ObjectAcl WHERE ObjectKey = '" + Sanitize(key) + "'";
             return query;
         }
         
-        internal static string InsertObjectAcl(ObjectAcl acl)
+        internal string InsertObjectAcl(ObjectAcl acl)
         {
             string query =
                 "INSERT INTO ObjectAcl " +
@@ -574,7 +578,7 @@ namespace Less3.Database.Bucket
             return query;
         }
         
-        internal static string ObjectGroupAclExists(string groupName, string objectKey, long objectVersion)
+        internal string ObjectGroupAclExists(string groupName, string objectKey, long objectVersion)
         {
             string query =
                 "SELECT * FROM ObjectAcl WHERE Id > 0 " +
@@ -584,7 +588,7 @@ namespace Less3.Database.Bucket
             return query;
         }
 
-        internal static string ObjectUserAclExists(string userGuid, string objectKey, long objectVersion)
+        internal string ObjectUserAclExists(string userGuid, string objectKey, long objectVersion)
         {
             string query =
                 "SELECT * FROM ObjectAcl WHERE Id > 0 " +
@@ -594,7 +598,7 @@ namespace Less3.Database.Bucket
             return query;
         }
         
-        internal static string UpdateObjectGroupAcl(string groupName, string objectKey, long versionId, string perm)
+        internal string UpdateObjectGroupAcl(string groupName, string objectKey, long versionId, string perm)
         {
             string query =
                 "UPDATE ObjectAcl SET " + Sanitize(perm) + " = 'True' " +
@@ -604,7 +608,7 @@ namespace Less3.Database.Bucket
             return query;
         }
 
-        internal static string UpdateObjectUserAcl(string userGuid, string objectKey, long versionId, string perm)
+        internal string UpdateObjectUserAcl(string userGuid, string objectKey, long versionId, string perm)
         {
             string query =
                 "UPDATE ObjectAcl SET " + Sanitize(perm) + " = 'True' " +
@@ -618,7 +622,7 @@ namespace Less3.Database.Bucket
 
         #region General-Queries
 
-        internal static string UpdateRecord(string table, string key, string val, Dictionary<string, object> vals)
+        internal string UpdateRecord(string table, string key, string val, Dictionary<string, object> vals)
         {
             int added = 0;
             string query =
@@ -657,25 +661,25 @@ namespace Less3.Database.Bucket
 
         #region Internal
 
-        internal static string TimestampFormat = "yyyy-MM-ddTHH:mm:ss.ffffffZ";
+        internal string TimestampFormat = "yyyy-MM-ddTHH:mm:ss.ffffffZ";
 
-        internal static string Sanitize(string str)
+        internal string Sanitize(string str)
         { 
-            return DatabaseClient.SanitizeString(str);
+            return _Database.SanitizeString(str);
         }
 
-        internal static string TimestampUtc()
+        internal string TimestampUtc()
         {
             return DateTime.Now.ToUniversalTime().ToString(TimestampFormat);
         }
 
-        internal static string TimestampUtc(DateTime? ts)
+        internal string TimestampUtc(DateTime? ts)
         {
             if (ts == null) return null;
             return Convert.ToDateTime(ts).ToUniversalTime().ToString(TimestampFormat);
         }
 
-        internal static string TimestampUtc(DateTime ts)
+        internal string TimestampUtc(DateTime ts)
         {
             return ts.ToUniversalTime().ToString(TimestampFormat);
         }

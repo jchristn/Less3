@@ -28,5 +28,16 @@ RUN mkdir Storage
 RUN mkdir Temp
 #
 
+#
+# Since certain operating systems are case sensitive when it comes
+# to files in the file system, you may want to uncomment the
+# following line so you can see the exact case used.
+#
+# This is particularly important for copying in system.json, any
+# Sqlite database files, and setting the ENTRYPOINT DLL.
+#
+# RUN ls -la
+#
+
 # Set the entrypoint for the container
-ENTRYPOINT ["dotnet", "less3.dll"]
+ENTRYPOINT ["dotnet", "Less3.dll"]

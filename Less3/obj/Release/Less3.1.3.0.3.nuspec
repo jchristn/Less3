@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Less3</id>
+    <version>1.3.0.3</version>
+    <authors>Joel Christner</authors>
+    <owners>Joel Christner</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="file">LICENSE.md</license>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <projectUrl>https://github.com/jchristn/less3</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/jchristn/less3/master/assets/icon.ico</iconUrl>
+    <description>&lt;3 Less3 is S3-compatible object storage that you can run on your laptop, server, or anywhere you like.</description>
+    <releaseNotes>- Migrate database layer to ORM
+- Improved usability and console log messages
+- Simplification of objects
+- Centralized authentication and authorization
+- Virtualized storage layer to support new backend storage options
+- Updated Postman collection
+- Dockerfile for containerized deployments</releaseNotes>
+    <copyright>(c)2020 Joel Christner</copyright>
+    <tags>S3 storage blob object storage rest restful</tags>
+    <repository type="Github" url="https://github.com/jchristn/less3" />
+    <dependencies>
+      <group targetFramework=".NETCoreApp3.1">
+        <dependency id="AWSSDK.S3" version="3.3.111.10" exclude="Build,Analyzers" />
+        <dependency id="Newtonsoft.Json" version="12.0.3" exclude="Build,Analyzers" />
+        <dependency id="S3ServerInterface" version="2.0.1.19" exclude="Build,Analyzers" />
+        <dependency id="SyslogLogging" version="1.3.2.2" exclude="Build,Analyzers" />
+        <dependency id="Watson" version="3.0.11" exclude="Build,Analyzers" />
+        <dependency id="WatsonORM" version="1.1.3" exclude="Build,Analyzers" />
+        <dependency id="XmlToPox" version="1.0.2" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="C:\Code\KVPbase\Less3-1.3\Less3\bin\Release\netcoreapp3.1\Less3.runtimeconfig.json" target="lib\netcoreapp3.1\Less3.runtimeconfig.json" />
+    <file src="C:\Code\KVPbase\Less3-1.3\Less3\bin\Release\netcoreapp3.1\Less3.dll" target="lib\netcoreapp3.1\Less3.dll" />
+    <file src="C:\Code\KVPbase\Less3-1.3\Less3\LICENSE.md" target="LICENSE.md" />
+  </files>
+</package>

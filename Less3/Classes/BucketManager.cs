@@ -148,12 +148,12 @@ namespace Less3.Classes
         {
             List<Bucket> buckets = _Config.GetBuckets();
 
-            if (buckets == null || buckets.Count < 1)
-                throw new Exception("No buckets configured.");
-
-            foreach (Bucket curr in buckets)
+            if (buckets != null && buckets.Count > 0)
             {
-                InitializeBucket(curr);
+                foreach (Bucket curr in buckets)
+                {
+                    InitializeBucket(curr);
+                }
             }
         }
 

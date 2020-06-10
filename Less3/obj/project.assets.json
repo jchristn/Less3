@@ -2,7 +2,7 @@
   "version": 3,
   "targets": {
     ".NETCoreApp,Version=v3.1": {
-      "AWSSDK.Core/3.3.107.8": {
+      "AWSSDK.Core/3.3.107.9": {
         "type": "package",
         "compile": {
           "lib/netstandard2.0/AWSSDK.Core.dll": {}
@@ -11,10 +11,10 @@
           "lib/netstandard2.0/AWSSDK.Core.dll": {}
         }
       },
-      "AWSSDK.S3/3.3.111.9": {
+      "AWSSDK.S3/3.3.111.10": {
         "type": "package",
         "dependencies": {
-          "AWSSDK.Core": "[3.3.107.8, 3.4.0)"
+          "AWSSDK.Core": "[3.3.107.9, 3.4.0)"
         },
         "compile": {
           "lib/netstandard2.0/AWSSDK.S3.dll": {}
@@ -691,7 +691,7 @@
           "lib/netstandard1.3/SshNet.Security.Cryptography.dll": {}
         }
       },
-      "SyslogLogging/1.3.2.1": {
+      "SyslogLogging/1.3.2.2": {
         "type": "package",
         "compile": {
           "lib/netstandard2.0/LoggingModule.dll": {}
@@ -2144,15 +2144,15 @@
     }
   },
   "libraries": {
-    "AWSSDK.Core/3.3.107.8": {
-      "sha512": "DyQ/q6TNvQGdsq4wUBbYdUzCh7bjPEiLsqck1AKL6djvZMLsJalHjnbAhTcuAfaoACFYqk2AqiLVo9dmC7poLg==",
+    "AWSSDK.Core/3.3.107.9": {
+      "sha512": "GnXjs80LtibLT6phoiooXLLuI0XvDqi3kp0tz+fVDmE/i0kEKu4iCjKyPqogoQBCmzlqUsLWj6bRSjxCoIuGhA==",
       "type": "package",
-      "path": "awssdk.core/3.3.107.8",
+      "path": "awssdk.core/3.3.107.9",
       "hasTools": true,
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "awssdk.core.3.3.107.8.nupkg.sha512",
+        "awssdk.core.3.3.107.9.nupkg.sha512",
         "awssdk.core.nuspec",
         "lib/MonoAndroid10/AWSSDK.Core.XML",
         "lib/MonoAndroid10/AWSSDK.Core.dll",
@@ -2193,16 +2193,16 @@
         "tools/account-management.ps1"
       ]
     },
-    "AWSSDK.S3/3.3.111.9": {
-      "sha512": "jPHlD+M3QeDBPIxGcT/aTpwza9CtxowADU0o1hOX1KIRL2jzJge0Shqrj+cXRo+Yv7ZU3Po+XKLj4mm3lTUhzw==",
+    "AWSSDK.S3/3.3.111.10": {
+      "sha512": "yvUh0WJSbpgajL4OhDUXcT3Aem/2v1pXPfoOR5adXTsi33/g/fLSTlHC3eFHshwqHegI3K30dJ1twpsSQHnJXw==",
       "type": "package",
-      "path": "awssdk.s3/3.3.111.9",
+      "path": "awssdk.s3/3.3.111.10",
       "hasTools": true,
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "analyzers/dotnet/cs/AWSSDK.S3.CodeAnalysis.dll",
-        "awssdk.s3.3.3.111.9.nupkg.sha512",
+        "awssdk.s3.3.3.111.10.nupkg.sha512",
         "awssdk.s3.nuspec",
         "lib/MonoAndroid10/AWSSDK.S3.XML",
         "lib/MonoAndroid10/AWSSDK.S3.dll",
@@ -3197,10 +3197,10 @@
         "sshnet.security.cryptography.nuspec"
       ]
     },
-    "SyslogLogging/1.3.2.1": {
-      "sha512": "hEtE4YRyAUfFAROtNBwcr/2qC65oRymcjO0RVRZasGO26pg+fxFEjNrA5q10lzAt4q3+cO2KagNPrqn3VrwNig==",
+    "SyslogLogging/1.3.2.2": {
+      "sha512": "ljSCUd/G4VTwQvXRHmpM7uA+BYjxKpPThEG0paUdb05LBiZr4GYt6NQ+/5Y5T4AgHZmIVIcipSkcP3c6/CR2+A==",
       "type": "package",
-      "path": "sysloglogging/1.3.2.1",
+      "path": "sysloglogging/1.3.2.2",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3208,7 +3208,7 @@
         "lib/net452/LoggingModule.dll",
         "lib/netstandard2.0/LoggingModule.dll",
         "lib/netstandard2.0/LoggingModule.xml",
-        "sysloglogging.1.3.2.1.nupkg.sha512",
+        "sysloglogging.1.3.2.2.nupkg.sha512",
         "sysloglogging.nuspec"
       ]
     },
@@ -7185,10 +7185,10 @@
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v3.1": [
-      "AWSSDK.S3 >= 3.3.111.9",
+      "AWSSDK.S3 >= 3.3.111.10",
       "Newtonsoft.Json >= 12.0.3",
       "S3ServerInterface >= 2.0.1.19",
-      "SyslogLogging >= 1.3.2.1",
+      "SyslogLogging >= 1.3.2.2",
       "Watson >= 3.0.11",
       "WatsonORM >= 1.1.3",
       "XmlToPox >= 1.0.2"
@@ -7200,7 +7200,7 @@
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
-    "version": "1.3.0.1",
+    "version": "1.3.0.3",
     "restore": {
       "projectUniqueName": "C:\\Code\\KVPbase\\Less3-1.3\\Less3\\Less3.csproj",
       "projectName": "Less3",
@@ -7242,7 +7242,7 @@
         "dependencies": {
           "AWSSDK.S3": {
             "target": "Package",
-            "version": "[3.3.111.9, )"
+            "version": "[3.3.111.10, )"
           },
           "Newtonsoft.Json": {
             "target": "Package",
@@ -7254,7 +7254,7 @@
           },
           "SyslogLogging": {
             "target": "Package",
-            "version": "[1.3.2.1, )"
+            "version": "[1.3.2.2, )"
           },
           "Watson": {
             "target": "Package",

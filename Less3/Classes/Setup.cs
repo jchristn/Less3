@@ -67,7 +67,7 @@ namespace Less3.Classes
             //                          1         2         3         4         5         6         7
             //                 12345678901234567890123456789012345678901234567890123456789012345678901234567890
             Console.WriteLine("Thank you for using Less3!  We're putting together a basic system configuration");
-            Console.WriteLine("so you can be up and running quickly.  You'll want to modify the System.json");
+            Console.WriteLine("so you can be up and running quickly.  You'll want to modify the system.json");
             Console.WriteLine("file after to ensure a more secure operating environment.");
             Console.WriteLine("");
 
@@ -110,18 +110,6 @@ namespace Less3.Classes
             settings.Debug.Authentication = false;
             settings.Debug.S3Requests = false;
 
-            if (!Common.WriteFile("System.json", Common.SerializeJson(settings, true), false))
-            {
-                Common.ExitApplication("setup", "Unable to write System.json", -1);
-                return;
-            }
-
-            if (!Directory.Exists(settings.Storage.DiskDirectory))
-                Directory.CreateDirectory(settings.Storage.DiskDirectory);
-
-            if (!Directory.Exists(settings.Storage.TempDirectory))
-                Directory.CreateDirectory(settings.Storage.TempDirectory);
-
             #endregion
 
             #region Database-and-ORM
@@ -145,7 +133,7 @@ namespace Less3.Classes
                 {
                     case "sqlite":
                         settings.Database = new DatabaseSettings(
-                            Common.InputString("Filename:", "./Less3.db", false)
+                            Common.InputString("Filename:", "./less3.db", false)
                             );
 
                         //                          1         2         3         4         5         6         7
@@ -193,6 +181,18 @@ namespace Less3.Classes
                         break;
                 }
             }
+
+            if (!Common.WriteFile("system.json", Common.SerializeJson(settings, true), false))
+            {
+                Common.ExitApplication("setup", "Unable to write system.json", -1);
+                return;
+            }
+
+            if (!Directory.Exists(settings.Storage.DiskDirectory))
+                Directory.CreateDirectory(settings.Storage.DiskDirectory);
+
+            if (!Directory.Exists(settings.Storage.TempDirectory))
+                Directory.CreateDirectory(settings.Storage.TempDirectory);
 
             #endregion
 
@@ -283,7 +283,7 @@ namespace Less3.Classes
             bucket.AddObject(obj2, Encoding.UTF8.GetBytes(textFile));
             bucket.AddObject(obj3, Encoding.UTF8.GetBytes(jsonFile));
 
-            Common.WriteFile("./System.json", Encoding.UTF8.GetBytes(Common.SerializeJson(settings, true)));
+            Common.WriteFile("./system.json", Encoding.UTF8.GetBytes(Common.SerializeJson(settings, true)));
 
             #endregion 
 
@@ -310,7 +310,7 @@ namespace Less3.Classes
             Console.WriteLine("  Bucket name : default (public read enabled!)");
             Console.WriteLine("  S3 endpoint : http://" + settings.Server.DnsHostname + ":" + settings.Server.ListenerPort);
             Console.WriteLine("");
-            Console.WriteLine("IMPORTANT: be sure to supply a hostname in the System.json Server.DnsHostname");
+            Console.WriteLine("IMPORTANT: be sure to supply a hostname in the system.json Server.DnsHostname");
             Console.WriteLine("field if you wish to allow access from other machines.  Your node is currently");
             Console.WriteLine("only accessible via localhost.  Do not use an IP address for this value.");
             Console.WriteLine("");

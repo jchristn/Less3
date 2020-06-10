@@ -18,14 +18,15 @@ EXPOSE 8000/tcp
 COPY --from=build /app/out .
 
 #
-# Copy in the System.json file containing the appropriate external
+# Copy in the system.json file containing the appropriate external
 # database and storage settings.  Refer to Docker.md for details.
 #
-COPY ./System.json .
+COPY ./system.json .
+COPY ./less3.db .
 RUN mkdir Logs
 RUN mkdir Storage
 RUN mkdir Temp
 #
 
 # Set the entrypoint for the container
-ENTRYPOINT ["dotnet", "Less3.dll"]
+ENTRYPOINT ["dotnet", "less3.dll"]

@@ -91,7 +91,7 @@ namespace Less3
                 Console.WriteLine("WARNING: Less3 started on '" + _Settings.Server.DnsHostname + "'");
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
                 Console.WriteLine("Less3 can only service requests from the local machine.  If you wish to serve");
-                Console.WriteLine("external requests, edit the System.json file and specify a DNS-resolvable");
+                Console.WriteLine("external requests, edit the system.json file and specify a DNS-resolvable");
                 Console.WriteLine("hostname in the Server.DnsHostname field.");
                 Console.WriteLine("");
             }
@@ -179,13 +179,13 @@ namespace Less3
                 if (String.Compare(args[0], "setup") == 0) initialSetup = true;
             }
 
-            if (!Common.FileExists("System.json")) initialSetup = true;
+            if (!Common.FileExists("system.json")) initialSetup = true;
             if (initialSetup)
             {
                 Setup setup = new Setup();
             }
 
-            _Settings = Settings.FromFile("System.json");
+            _Settings = Settings.FromFile("system.json");
             _Settings.Validate(); 
         }
 

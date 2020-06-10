@@ -238,25 +238,25 @@ namespace Less3.Classes
 
         internal void Validate()
         {
-            if (Database == null) throw new ArgumentException("System.json parameter 'Database' must not be null.");
-            if (Server == null) throw new ArgumentException("System.json parameter 'Server' must not be null.");
-            if (Storage == null) throw new ArgumentException("System.json parameter 'Storage' must not be null.");
-            if (Logging == null) throw new ArgumentException("System.json parameter 'Syslog' must not be null.");
-            if (Debug == null) throw new ArgumentException("System.json parameter 'Debug' must not be null.");
+            if (Database == null) throw new ArgumentException("system.json parameter 'Database' must not be null.");
+            if (Server == null) throw new ArgumentException("system.json parameter 'Server' must not be null.");
+            if (Storage == null) throw new ArgumentException("system.json parameter 'Storage' must not be null.");
+            if (Logging == null) throw new ArgumentException("system.json parameter 'Syslog' must not be null.");
+            if (Debug == null) throw new ArgumentException("system.json parameter 'Debug' must not be null.");
 
-            if (String.IsNullOrEmpty(Server.DnsHostname)) throw new ArgumentException("System.json parameter 'Server.DnsHostname' must not be null.");
-            if (String.IsNullOrEmpty(Server.HeaderApiKey)) throw new ArgumentException("System.json parameter 'Server.HeaderApiKey' must not be null.");
-            if (String.IsNullOrEmpty(Server.AdminApiKey)) throw new ArgumentException("System.json parameter 'Server.AdminApiKey' must not be null.");
-            if (Server.ListenerPort < 0 || Server.ListenerPort > 65535) throw new ArgumentException("System.json parameter 'Server.ListenerPort' must be within the range 0-65535.");
+            if (String.IsNullOrEmpty(Server.DnsHostname)) throw new ArgumentException("system.json parameter 'Server.DnsHostname' must not be null.");
+            if (String.IsNullOrEmpty(Server.HeaderApiKey)) throw new ArgumentException("system.json parameter 'Server.HeaderApiKey' must not be null.");
+            if (String.IsNullOrEmpty(Server.AdminApiKey)) throw new ArgumentException("system.json parameter 'Server.AdminApiKey' must not be null.");
+            if (Server.ListenerPort < 0 || Server.ListenerPort > 65535) throw new ArgumentException("system.json parameter 'Server.ListenerPort' must be within the range 0-65535.");
 
             IPAddress tempIp;
-            if (IPAddress.TryParse(Server.DnsHostname, out tempIp)) throw new ArgumentException("System.json parameter 'Server.DnsHostname' must be a hostname, not an IP address.");
+            if (IPAddress.TryParse(Server.DnsHostname, out tempIp)) throw new ArgumentException("system.json parameter 'Server.DnsHostname' must be a hostname, not an IP address.");
 
-            if (String.IsNullOrEmpty(Storage.DiskDirectory)) throw new ArgumentException("System.json parameter 'Storage.DiskDirectory' must not be null.");
-            if (String.IsNullOrEmpty(Storage.TempDirectory)) throw new ArgumentException("System.json parameter 'Storage.TempDirectory' must not be null.");
+            if (String.IsNullOrEmpty(Storage.DiskDirectory)) throw new ArgumentException("system.json parameter 'Storage.DiskDirectory' must not be null.");
+            if (String.IsNullOrEmpty(Storage.TempDirectory)) throw new ArgumentException("system.json parameter 'Storage.TempDirectory' must not be null.");
 
-            if (String.IsNullOrEmpty(Logging.SyslogServerIp)) throw new ArgumentException("System.json parameter 'Syslog.ServerIp' must not be null.");
-            if (Logging.SyslogServerPort < 0 || Logging.SyslogServerPort > 65535) throw new ArgumentException("System.json parameter 'Syslog.ServerPort' must be within the range 0-65535."); 
+            if (String.IsNullOrEmpty(Logging.SyslogServerIp)) throw new ArgumentException("system.json parameter 'Syslog.ServerIp' must not be null.");
+            if (Logging.SyslogServerPort < 0 || Logging.SyslogServerPort > 65535) throw new ArgumentException("system.json parameter 'Syslog.ServerPort' must be within the range 0-65535."); 
         }
 
         #endregion

@@ -234,28 +234,31 @@ namespace Less3.Classes
 
             #region Check-for-Bucket-Global-Config
 
-            switch (req.RequestType)
+            if (md.Bucket != null)
             {
-                case S3RequestType.BucketExists:
-                case S3RequestType.BucketRead:
-                case S3RequestType.BucketReadVersioning:
-                case S3RequestType.BucketReadVersions:
-                    if (md.Bucket.EnablePublicRead)
-                    {
-                        md.Authorization = AuthorizationResult.PermitBucketGlobalConfig;
-                        return md;
-                    }
-                    break;
+                switch (req.RequestType)
+                {
+                    case S3RequestType.BucketExists:
+                    case S3RequestType.BucketRead:
+                    case S3RequestType.BucketReadVersioning:
+                    case S3RequestType.BucketReadVersions:
+                        if (md.Bucket.EnablePublicRead)
+                        {
+                            md.Authorization = AuthorizationResult.PermitBucketGlobalConfig;
+                            return md;
+                        }
+                        break;
 
-                case S3RequestType.BucketDeleteTags:
-                case S3RequestType.BucketWriteTags:
-                case S3RequestType.BucketWriteVersioning:
-                    if (md.Bucket.EnablePublicWrite)
-                    {
-                        md.Authorization = AuthorizationResult.PermitBucketGlobalConfig;
-                        return md;
-                    }
-                    break;
+                    case S3RequestType.BucketDeleteTags:
+                    case S3RequestType.BucketWriteTags:
+                    case S3RequestType.BucketWriteVersioning:
+                        if (md.Bucket.EnablePublicWrite)
+                        {
+                            md.Authorization = AuthorizationResult.PermitBucketGlobalConfig;
+                            return md;
+                        }
+                        break;
+                }
             }
 
 
@@ -270,36 +273,36 @@ namespace Less3.Classes
                     case S3RequestType.BucketExists:
                     case S3RequestType.BucketRead:
                     case S3RequestType.BucketReadVersioning:
-                    case S3RequestType.BucketReadVersions:
+                    case S3RequestType.BucketReadVersions: 
                         allowed = md.BucketAcls.Exists(
                             b => !String.IsNullOrEmpty(b.UserGroup)
                             && b.UserGroup.Contains("AllUsers")
-                            && (b.PermitRead || b.FullControl));
+                            && (b.PermitRead || b.FullControl)); 
                         break;
 
-                    case S3RequestType.BucketReadAcl:
+                    case S3RequestType.BucketReadAcl: 
                         allowed = md.BucketAcls.Exists(
                             b => !String.IsNullOrEmpty(b.UserGroup)
                             && b.UserGroup.Contains("AllUsers")
-                            && (b.PermitReadAcp || b.FullControl));
+                            && (b.PermitReadAcp || b.FullControl)); 
                         break;
 
                     case S3RequestType.BucketDelete:
                     case S3RequestType.BucketDeleteTags:
                     case S3RequestType.BucketWrite:
                     case S3RequestType.BucketWriteTags:
-                    case S3RequestType.BucketWriteVersioning:
+                    case S3RequestType.BucketWriteVersioning: 
                         allowed = md.BucketAcls.Exists(
                             b => !String.IsNullOrEmpty(b.UserGroup)
                             && b.UserGroup.Contains("AllUsers")
-                            && (b.PermitWrite || b.FullControl));
+                            && (b.PermitWrite || b.FullControl)); 
                         break;
 
-                    case S3RequestType.BucketWriteAcl:
+                    case S3RequestType.BucketWriteAcl: 
                         allowed = md.BucketAcls.Exists(
                             b => !String.IsNullOrEmpty(b.UserGroup)
                             && b.UserGroup.Contains("AllUsers")
-                            && (b.PermitWriteAcp || b.FullControl));
+                            && (b.PermitWriteAcp || b.FullControl)); 
                         break;
                 }
 
@@ -344,36 +347,36 @@ namespace Less3.Classes
                     case S3RequestType.BucketExists:
                     case S3RequestType.BucketRead:
                     case S3RequestType.BucketReadVersioning:
-                    case S3RequestType.BucketReadVersions:
+                    case S3RequestType.BucketReadVersions: 
                         allowed = md.BucketAcls.Exists(
                             b => !String.IsNullOrEmpty(b.UserGroup)
                             && b.UserGroup.Contains("AuthenticatedUsers")
-                            && (b.PermitRead || b.FullControl));
+                            && (b.PermitRead || b.FullControl)); 
                         break;
 
-                    case S3RequestType.BucketReadAcl:
+                    case S3RequestType.BucketReadAcl: 
                         allowed = md.BucketAcls.Exists(
                             b => !String.IsNullOrEmpty(b.UserGroup)
                             && b.UserGroup.Contains("AuthenticatedUsers")
-                            && (b.PermitReadAcp || b.FullControl));
+                            && (b.PermitReadAcp || b.FullControl)); 
                         break;
 
                     case S3RequestType.BucketDelete:
                     case S3RequestType.BucketDeleteTags:
                     case S3RequestType.BucketWrite:
                     case S3RequestType.BucketWriteTags:
-                    case S3RequestType.BucketWriteVersioning:
+                    case S3RequestType.BucketWriteVersioning: 
                         allowed = md.BucketAcls.Exists(
                             b => !String.IsNullOrEmpty(b.UserGroup)
                             && b.UserGroup.Contains("AuthenticatedUsers")
-                            && (b.PermitWrite || b.FullControl));
+                            && (b.PermitWrite || b.FullControl)); 
                         break;
 
-                    case S3RequestType.BucketWriteAcl:
+                    case S3RequestType.BucketWriteAcl: 
                         allowed = md.BucketAcls.Exists(
                             b => !String.IsNullOrEmpty(b.UserGroup)
                             && b.UserGroup.Contains("AuthenticatedUsers")
-                            && (b.PermitWriteAcp || b.FullControl));
+                            && (b.PermitWriteAcp || b.FullControl)); 
                         break;
                 }
 
@@ -395,36 +398,36 @@ namespace Less3.Classes
                     case S3RequestType.BucketExists:
                     case S3RequestType.BucketRead:
                     case S3RequestType.BucketReadVersioning:
-                    case S3RequestType.BucketReadVersions:
+                    case S3RequestType.BucketReadVersions: 
                         allowed = md.BucketAcls.Exists(
                             b => !String.IsNullOrEmpty(b.UserGUID)
                             && b.UserGUID.Equals(md.User.GUID)
-                            && (b.PermitRead || b.FullControl));
+                            && (b.PermitRead || b.FullControl)); 
                         break;
 
-                    case S3RequestType.BucketReadAcl:
+                    case S3RequestType.BucketReadAcl: 
                         allowed = md.BucketAcls.Exists(
                             b => !String.IsNullOrEmpty(b.UserGUID)
                             && b.UserGUID.Equals(md.User.GUID)
-                            && (b.PermitReadAcp || b.FullControl));
+                            && (b.PermitReadAcp || b.FullControl)); 
                         break;
 
                     case S3RequestType.BucketDelete:
                     case S3RequestType.BucketDeleteTags:
                     case S3RequestType.BucketWrite:
                     case S3RequestType.BucketWriteTags:
-                    case S3RequestType.BucketWriteVersioning:
+                    case S3RequestType.BucketWriteVersioning: 
                         allowed = md.BucketAcls.Exists(
                             b => !String.IsNullOrEmpty(b.UserGUID)
                             && b.UserGUID.Equals(md.User.GUID)
-                            && (b.PermitWrite || b.FullControl));
+                            && (b.PermitWrite || b.FullControl)); 
                         break;
 
-                    case S3RequestType.BucketWriteAcl:
+                    case S3RequestType.BucketWriteAcl: 
                         allowed = md.BucketAcls.Exists(
                             b => !String.IsNullOrEmpty(b.UserGUID)
                             && b.UserGUID.Equals(md.User.GUID)
-                            && (b.PermitWriteAcp || b.FullControl));
+                            && (b.PermitWriteAcp || b.FullControl)); 
                         break;
                 }
 
@@ -483,26 +486,29 @@ namespace Less3.Classes
 
             #region Check-for-Bucket-Global-Config
 
-            switch (req.RequestType)
+            if (md.Bucket != null)
             {
-                case S3RequestType.ObjectExists:
-                case S3RequestType.ObjectRead:
-                case S3RequestType.ObjectReadLegalHold:
-                case S3RequestType.ObjectReadRange:
-                case S3RequestType.ObjectReadRetention:
-                case S3RequestType.ObjectReadTags:
-                    if (md.Bucket.EnablePublicRead) allowed = true;
-                    break;
+                switch (req.RequestType)
+                {
+                    case S3RequestType.ObjectExists:
+                    case S3RequestType.ObjectRead:
+                    case S3RequestType.ObjectReadLegalHold:
+                    case S3RequestType.ObjectReadRange:
+                    case S3RequestType.ObjectReadRetention:
+                    case S3RequestType.ObjectReadTags:
+                        if (md.Bucket.EnablePublicRead) allowed = true;
+                        break;
 
-                case S3RequestType.ObjectDelete:
-                case S3RequestType.ObjectDeleteMultiple:
-                case S3RequestType.ObjectDeleteTags:
-                case S3RequestType.ObjectWrite:
-                case S3RequestType.ObjectWriteLegalHold:
-                case S3RequestType.ObjectWriteRetention:
-                case S3RequestType.ObjectWriteTags:
-                    if (md.Bucket.EnablePublicWrite) allowed = true;
-                    break;
+                    case S3RequestType.ObjectDelete:
+                    case S3RequestType.ObjectDeleteMultiple:
+                    case S3RequestType.ObjectDeleteTags:
+                    case S3RequestType.ObjectWrite:
+                    case S3RequestType.ObjectWriteLegalHold:
+                    case S3RequestType.ObjectWriteRetention:
+                    case S3RequestType.ObjectWriteTags:
+                        if (md.Bucket.EnablePublicWrite) allowed = true;
+                        break;
+                }
             }
 
             if (allowed)

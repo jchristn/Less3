@@ -6,6 +6,74 @@
 	},
 	"item": [
 		{
+			"name": "*Admin* Create Bucket",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "less3admin",
+						"type": "text"
+					},
+					{
+						"key": "content-type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"GUID\": \"testbucket\",\n  \"OwnerGUID\": \"default\",\n  \"Name\": \"testbucket\",\n  \"StorageType\": \"Disk\",\n  \"DiskDirectory\": \"./Storage/testbucket/Objects/\",\n  \"EnableVersioning\": false,\n  \"EnablePublicWrite\": false,\n  \"EnablePUblicRead\": true,\n  \"CreatedUtc\": \"2020-01-01T00:00:00.000000Z\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8000/admin/buckets",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"admin",
+						"buckets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "*Admin* List Buckets",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "less3admin",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:8000/admin/buckets",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"admin",
+						"buckets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "*Admin* List Bucket Metadata",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
@@ -40,7 +108,155 @@
 			"response": []
 		},
 		{
+			"name": "*Admin* Delete Bucket (with destroy)",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "less3admin",
+						"type": "text"
+					},
+					{
+						"key": "Authentication",
+						"value": "ubuntu",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:8000/admin/buckets/testbucket?destroy",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"admin",
+						"buckets",
+						"testbucket"
+					],
+					"query": [
+						{
+							"key": "destroy",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "*Admin* Delete Bucket (without destroy)",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "less3admin",
+						"type": "text"
+					},
+					{
+						"key": "Authentication",
+						"value": "ubuntu",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:8000/admin/buckets/testbucket",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"admin",
+						"buckets",
+						"testbucket"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "*Admin* Create User",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "less3admin",
+						"type": "text"
+					},
+					{
+						"key": "content-type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \r\n  \"GUID\": \"testuser\",\r\n  \"Name\": \"Test User\",\r\n  \"Email\": \"test@user.com\"\r\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8000/admin/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"admin",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "*Admin* List Users",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "less3admin",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:8000/admin/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"admin",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "*Admin* List User Metadata",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
 			},
@@ -68,6 +284,175 @@
 						"admin",
 						"users",
 						"default"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "*Admin* Delete User",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "less3admin",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:8000/admin/users/testuser",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"admin",
+						"users",
+						"testuser"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "*Admin* List Credentials",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "less3admin",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:8000/admin/credentials",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"admin",
+						"credentials"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "*Admin* List Credential Metadata",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "less3admin",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:8000/admin/credentials/default",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"admin",
+						"credentials",
+						"default"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "*Admin* Create Credentials",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "less3admin",
+						"type": "text"
+					},
+					{
+						"key": "content-type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \r\n  \"GUID\": \"testcred\",\r\n  \"UserGUID\": \"default\",\r\n  \"Description\": \"My second access key\",\r\n  \"AccessKey\": \"testcred\",\r\n  \"SecretKey\": \"testcred\"\r\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8000/admin/credentials",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"admin",
+						"credentials"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "*Admin* Delete Credentials",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "less3admin",
+						"type": "text"
+					},
+					{
+						"key": "content-type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:8000/admin/credentials/testcred",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"admin",
+						"credentials",
+						"testcred"
 					]
 				}
 			},

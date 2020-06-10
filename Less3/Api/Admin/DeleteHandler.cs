@@ -98,8 +98,10 @@ namespace Less3.Api.Admin
                 await resp.Send();
                 return;
             }
-                
-            _Config.DeleteBucket(bucket.GUID);
+
+            bool destroy = false;
+            if (req.Querystring.ContainsKey("destroy")) destroy = true; 
+            _Buckets.Remove(bucket, destroy); 
 
             resp.StatusCode = 204;
             resp.ContentType = "text/plain";
@@ -115,7 +117,7 @@ namespace Less3.Api.Admin
                 return;
             }
 
-            User user = _Config.GetUserByName(req.RawUrlEntries[2]);
+            User user = _Config.GetUserByGuid(req.RawUrlEntries[2]);
             if (user == null)
             {
                 resp.StatusCode = 404;

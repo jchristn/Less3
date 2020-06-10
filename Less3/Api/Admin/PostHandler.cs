@@ -110,8 +110,9 @@ namespace Less3.Api.Admin
                 await resp.Send(S3ServerInterface.S3Objects.ErrorCode.BucketAlreadyExists);
                 return;
             }
+             
+            _Buckets.Add(bucket);
 
-            _Config.AddBucket(bucket); 
             resp.StatusCode = 201;
             resp.ContentType = "text/plain";
             await resp.Send();
@@ -139,7 +140,16 @@ namespace Less3.Api.Admin
                 return;
             }
 
-            User tempUser = _Config.GetUserByName(user.Name);
+            User tempUser = _Config.GetUserByEmail(user.Email);
+            if (tempUser != null)
+            {
+                resp.StatusCode = 409;
+                resp.ContentType = "text/plain";
+                await resp.Send();
+                return;
+            }
+
+            tempUser = _Config.GetUserByGuid(user.GUID);
             if (tempUser != null)
             {
                 resp.StatusCode = 409;

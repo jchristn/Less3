@@ -52,7 +52,7 @@ namespace Less3
 
             #region Wait-for-Server-Thread
 
-            if (_Settings.EnableConsole)
+            if (_Settings.EnableConsole && Environment.UserInteractive)
             {
                 _Console.Worker();
             }

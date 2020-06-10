@@ -6,7 +6,7 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v3.1": {
-      "Less3/1.3.0.3": {
+      "Less3/1.3.0.4": {
         "dependencies": {
           "AWSSDK.S3": "3.3.111.10",
           "Newtonsoft.Json": "12.0.3",
@@ -1467,7 +1467,7 @@
     }
   },
   "libraries": {
-    "Less3/1.3.0.3": {
+    "Less3/1.3.0.4": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

@@ -55,7 +55,7 @@
     <None Update="System.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
-    <None Include="..\LICENSE.md">
+    <None Include="LICENSE.md">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>

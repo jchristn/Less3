@@ -5,8 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
- 
+
 using SyslogLogging;
+using Watson.ORM;
 
 namespace Less3.Classes
 {
@@ -24,6 +25,7 @@ namespace Less3.Classes
         private Settings _Settings;
         private LoggingModule _Logging;
         private ConfigManager _Config;
+        private WatsonORM _ORM;
 
         private readonly object _BucketsLock = new object();
         private List<BucketClient> _Buckets = new List<BucketClient>();
@@ -32,15 +34,12 @@ namespace Less3.Classes
 
         #region Constructors-and-Factories
 
-        internal BucketManager(Settings settings, LoggingModule logging, ConfigManager config)
+        internal BucketManager(Settings settings, LoggingModule logging, ConfigManager config, WatsonORM orm)
         {
-            if (settings == null) throw new ArgumentNullException(nameof(settings));
-            if (logging == null) throw new ArgumentNullException(nameof(logging));
-            if (config == null) throw new ArgumentNullException(nameof(config));
-
-            _Settings = settings;
-            _Logging = logging;
-            _Config = config;
+            _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _Logging = logging ?? throw new ArgumentNullException(nameof(logging));
+            _Config = config ?? throw new ArgumentNullException(nameof(config));
+            _ORM = orm ?? throw new ArgumentNullException(nameof(orm));
 
             InitializeBuckets();
         }
@@ -49,14 +48,14 @@ namespace Less3.Classes
 
         #region Internal-Methods
          
-        internal bool Add(BucketConfiguration bucket)
+        internal bool Add(Bucket bucket)
         {
             if (bucket == null) throw new ArgumentNullException(nameof(bucket));
 
             bool success = _Config.AddBucket(bucket);
             if (success)
             {
-                BucketClient client = new BucketClient(_Settings, _Logging, bucket);
+                BucketClient client = new BucketClient(_Settings, _Logging, bucket, _ORM);
 
                 lock (_BucketsLock)
                 {
@@ -69,7 +68,7 @@ namespace Less3.Classes
             return success; 
         }
 
-        internal bool Remove(BucketConfiguration bucket, bool destroy)
+        internal bool Remove(Bucket bucket, bool destroy)
         {
             if (bucket == null) throw new ArgumentNullException(nameof(bucket));
 
@@ -77,8 +76,8 @@ namespace Less3.Classes
 
             if (_Config.BucketExists(bucket.Name))
             {
-                BucketClient client = null;
-                if (GetClient(bucket.Name, out client))
+                BucketClient client = GetClient(bucket.Name);
+                if (client != null)
                 {
                     lock (_BucketsLock)
                     {
@@ -117,42 +116,28 @@ namespace Less3.Classes
             }
         }
 
-        internal bool Get(string bucketName, out BucketConfiguration bucket)
+        internal Bucket Get(string bucketName)
         {
-            bucket = null;
             if (String.IsNullOrEmpty(bucketName)) throw new ArgumentNullException(nameof(bucketName));
-
-            if (!_Config.GetBucketByName(bucketName, out bucket))
-            {
-                _Logging.Warn("BucketManager Get unable to find bucket with name " + bucketName);
-                return false;
-            }
-            else
-            {
-                return true;
-            }
+            return _Config.GetBucketByName(bucketName);
         }
          
-        internal bool GetClient(string bucketName, out BucketClient client)
-        {
-            client = null;
+        internal BucketClient GetClient(string bucketName)
+        { 
             if (String.IsNullOrEmpty(bucketName)) throw new ArgumentNullException(nameof(bucketName));
 
             lock (_BucketsLock)
             {
                 bool exists = _Buckets.Exists(b => b.Name.Equals(bucketName));
-                if (!exists) return false;
-                client = _Buckets.First(b => b.Name.Equals(bucketName));
-                return true;
+                if (!exists) return null;
+                return _Buckets.First(b => b.Name.Equals(bucketName));
             }
         }
 
-        internal void GetUserBuckets(string userGuid, out List<BucketConfiguration> buckets)
-        {
-            buckets = null;
+        internal List<Bucket> GetUserBuckets(string userGuid)
+        { 
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
-
-            _Config.GetBucketsByUser(userGuid, out buckets);
+            return _Config.GetBucketsByUser(userGuid);
         }
 
         #endregion
@@ -161,52 +146,35 @@ namespace Less3.Classes
 
         private void InitializeBuckets()
         {
-            List<BucketConfiguration> buckets = null;
-            _Config.GetBuckets(out buckets);
+            List<Bucket> buckets = _Config.GetBuckets();
 
             if (buckets == null || buckets.Count < 1)
                 throw new Exception("No buckets configured.");
 
-            foreach (BucketConfiguration curr in buckets)
+            foreach (Bucket curr in buckets)
             {
                 InitializeBucket(curr);
             }
         }
 
-        private void InitializeBucket(BucketConfiguration bucket)
+        private void InitializeBucket(Bucket bucket)
         {
             lock (_BucketsLock)
             {
-                BucketClient client = new BucketClient(_Settings, _Logging, bucket);
+                BucketClient client = new BucketClient(_Settings, _Logging, bucket, _ORM);
                 _Buckets.Add(client);
             }
         }
 
-        private bool Destroy(BucketConfiguration bucket)
-        { 
-            #region Delete-Database
-
-            bool databaseDelete = false;
-            try
-            {
-                if (File.Exists(bucket.DatabaseFilename))
-                    File.Delete(bucket.DatabaseFilename);
-                databaseDelete = true;
-            }
-            catch (Exception)
-            {
-                _Logging.Warn("Destroy bucket " + bucket.Name + " failed");
-            }
-
-            #endregion
-
+        private bool Destroy(Bucket bucket)
+        {  
             #region Delete-Object-Files
 
             bool objectFilesDelete = false;
             try
             {
-                if (Directory.Exists(bucket.ObjectsDirectory))
-                    ClearDirectory(bucket.ObjectsDirectory);
+                if (Directory.Exists(bucket.DiskDirectory))
+                    ClearDirectory(bucket.DiskDirectory);
                 objectFilesDelete = true;
             }
             catch (Exception)
@@ -221,8 +189,8 @@ namespace Less3.Classes
             bool objectsDirectoryDelete = false;
             try
             {
-                if (Directory.Exists(bucket.ObjectsDirectory))
-                    Directory.Delete(bucket.ObjectsDirectory);
+                if (Directory.Exists(bucket.DiskDirectory))
+                    Directory.Delete(bucket.DiskDirectory);
                 objectsDirectoryDelete = true;
             }
             catch (Exception)
@@ -235,11 +203,14 @@ namespace Less3.Classes
             #region Delete-Root-Files
 
             bool rootFilesDelete = false;
+
             try
             {
-                if (Directory.Exists(_Settings.Storage.Directory + bucket.Name))
-                    ClearDirectory(_Settings.Storage.Directory + bucket.Name);
-                rootFilesDelete = true;
+                if (Directory.Exists(_Settings.Storage.DiskDirectory + bucket.Name))
+                {
+                    ClearDirectory(_Settings.Storage.DiskDirectory + bucket.Name);
+                    rootFilesDelete = true;
+                }
             }
             catch (Exception)
             {
@@ -251,11 +222,14 @@ namespace Less3.Classes
             #region Remove-Root-Directory
 
             bool rootDirectoryDelete = false;
+
             try
             {
-                if (Directory.Exists(_Settings.Storage.Directory + bucket.Name))
-                    Directory.Delete(_Settings.Storage.Directory + bucket.Name);
-                rootDirectoryDelete = true;
+                if (Directory.Exists(_Settings.Storage.DiskDirectory + bucket.Name))
+                {
+                    Directory.Delete(_Settings.Storage.DiskDirectory + bucket.Name);
+                    rootDirectoryDelete = true;
+                }
             }
             catch (Exception)
             {
@@ -264,14 +238,13 @@ namespace Less3.Classes
 
             #endregion
 
-            _Logging.Info("Destroy bucket " + bucket.Name + ": " +
-                "db files [" + databaseDelete + "] " +
+            _Logging.Info("Destroy bucket " + bucket.Name + ": " + 
                 "obj files [" + objectFilesDelete + "] " +
                 "obj dir [" + objectsDirectoryDelete + "] " +
                 "root files [" + rootFilesDelete + "] " +
                 "root dir [" + rootDirectoryDelete + "]");
 
-            return databaseDelete && objectFilesDelete && objectsDirectoryDelete && rootFilesDelete && rootDirectoryDelete;
+            return objectFilesDelete && objectsDirectoryDelete && rootFilesDelete && rootDirectoryDelete;
         }
 
         private void ClearDirectory(string path)

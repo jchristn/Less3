@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using SyslogLogging;
+using Watson.ORM.Core;
+using Less3.Storage;
 
 namespace Less3.Classes
 {
@@ -11,15 +13,17 @@ namespace Less3.Classes
     /// </summary>
     public class Settings
     {
+        #region Public-Members
+
         /// <summary>
         /// Enable or disable the console.
         /// </summary>
         public bool EnableConsole;
 
         /// <summary>
-        /// Files settings.
+        /// Database settings.
         /// </summary>
-        public SettingsFiles Files;
+        public DatabaseSettings Database;
 
         /// <summary>
         /// Web server settings.
@@ -41,16 +45,9 @@ namespace Less3.Classes
         /// </summary>
         public SettingsDebug Debug;
 
-        /// <summary>
-        /// Files settings.
-        /// </summary>
-        public class SettingsFiles
-        {
-            /// <summary>
-            /// Sqlite database filename.
-            /// </summary>
-            public string Database; 
-        }
+        #endregion
+
+        #region Subordinate-Classes
 
         /// <summary>
         /// Web server settings.
@@ -99,14 +96,19 @@ namespace Less3.Classes
         public class SettingsStorage
         {
             /// <summary>
-            /// Storage directory.
-            /// </summary>
-            public string Directory;
-
-            /// <summary>
             /// Temporary storage directory.
             /// </summary>
             public string TempDirectory;
+
+            /// <summary>
+            /// Type of storage driver.
+            /// </summary>
+            public StorageDriverType StorageType;
+
+            /// <summary>
+            /// Storage directory for 'Disk' StorageType.
+            /// </summary>
+            public string DiskDirectory;
         }
 
         /// <summary>
@@ -132,7 +134,7 @@ namespace Less3.Classes
             /// <summary>
             /// Minimum log level severity.
             /// </summary>
-            public int MinimumLevel;
+            public Severity MinimumLevel;
 
             /// <summary>
             /// Enable or disable logging of HTTP requests.
@@ -180,7 +182,11 @@ namespace Less3.Classes
             /// </summary>
             public bool S3Requests;
         }
-         
+
+        #endregion
+
+        #region Constructors-and-Factories
+
         /// <summary>
         /// Instantiate the object.
         /// </summary>
@@ -225,16 +231,18 @@ namespace Less3.Classes
 
             return ret;
         }
-         
+
+        #endregion
+
+        #region Internal-Methods
+
         internal void Validate()
         {
-            if (Files == null) throw new ArgumentException("System.json parameter 'Files' must not be null.");
+            if (Database == null) throw new ArgumentException("System.json parameter 'Database' must not be null.");
             if (Server == null) throw new ArgumentException("System.json parameter 'Server' must not be null.");
             if (Storage == null) throw new ArgumentException("System.json parameter 'Storage' must not be null.");
             if (Logging == null) throw new ArgumentException("System.json parameter 'Syslog' must not be null.");
             if (Debug == null) throw new ArgumentException("System.json parameter 'Debug' must not be null.");
-
-            if (String.IsNullOrEmpty(Files.Database)) throw new ArgumentException("System.json parameter 'Files.ConfigDatabase' must not be null."); 
 
             if (String.IsNullOrEmpty(Server.DnsHostname)) throw new ArgumentException("System.json parameter 'Server.DnsHostname' must not be null.");
             if (String.IsNullOrEmpty(Server.HeaderApiKey)) throw new ArgumentException("System.json parameter 'Server.HeaderApiKey' must not be null.");
@@ -244,11 +252,13 @@ namespace Less3.Classes
             IPAddress tempIp;
             if (IPAddress.TryParse(Server.DnsHostname, out tempIp)) throw new ArgumentException("System.json parameter 'Server.DnsHostname' must be a hostname, not an IP address.");
 
-            if (String.IsNullOrEmpty(Storage.Directory)) throw new ArgumentException("System.json parameter 'Storage.Directory' must not be null.");
+            if (String.IsNullOrEmpty(Storage.DiskDirectory)) throw new ArgumentException("System.json parameter 'Storage.DiskDirectory' must not be null.");
             if (String.IsNullOrEmpty(Storage.TempDirectory)) throw new ArgumentException("System.json parameter 'Storage.TempDirectory' must not be null.");
 
             if (String.IsNullOrEmpty(Logging.SyslogServerIp)) throw new ArgumentException("System.json parameter 'Syslog.ServerIp' must not be null.");
             if (Logging.SyslogServerPort < 0 || Logging.SyslogServerPort > 65535) throw new ArgumentException("System.json parameter 'Syslog.ServerPort' must be within the range 0-65535."); 
-        } 
+        }
+
+        #endregion
     }
 }

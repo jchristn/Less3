@@ -2,20 +2,41 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Text;
+using Watson.ORM.Core;
 
 namespace Less3.Classes
 {
     /// <summary>
     /// User object.
     /// </summary>
-    internal class User
+    [Table("users")]
+    public class User
     {
-        #region Internal-Members
+        #region Public-Members
 
-        internal int Id { get; set; }
-        internal string GUID { get; set; }
-        internal string Name { get; set; }
-        internal string Email { get; set; }
+        /// <summary>
+        /// Database identifier.
+        /// </summary>
+        [Column("id", true, DataTypes.Int, false)]
+        public int Id { get; set; }
+
+        /// <summary>
+        /// GUID of the user.
+        /// </summary>
+        [Column("guid", false, DataTypes.Nvarchar, 64, false)]
+        public string GUID { get; set; }
+
+        /// <summary>
+        /// Name of the user.
+        /// </summary>
+        [Column("name", false, DataTypes.Nvarchar, 256, false)]
+        public string Name { get; set; }
+         
+        /// <summary>
+        /// Email address of the user.
+        /// </summary>
+        [Column("email", false, DataTypes.Nvarchar, 256, false)]
+        public string Email { get; set; }
 
         #endregion
 
@@ -25,7 +46,10 @@ namespace Less3.Classes
 
         #region Constructors-and-Factories
 
-        internal User()
+        /// <summary>
+        /// Instantiate the object.
+        /// </summary>
+        public User()
         {
 
         }
@@ -50,28 +74,7 @@ namespace Less3.Classes
             Name = name;
             Email = email;
         }
-
-        internal static User FromDataRow(DataRow row)
-        {
-            if (row == null) throw new ArgumentNullException(nameof(row));
-
-            User ret = new User();
-
-            if (row.Table.Columns.Contains("Id") && row["Id"] != DBNull.Value && row["Id"] != null)
-                ret.Id = Convert.ToInt32(row["Id"]);
-
-            if (row.Table.Columns.Contains("GUID") && row["GUID"] != DBNull.Value && row["GUID"] != null)
-                ret.GUID = row["GUID"].ToString();
-
-            if (row.Table.Columns.Contains("Name") && row["Name"] != DBNull.Value && row["Name"] != null)
-                ret.Name = row["Name"].ToString();
-
-            if (row.Table.Columns.Contains("Email") && row["Email"] != DBNull.Value && row["Email"] != null)
-                ret.Email = row["Email"].ToString(); 
-
-            return ret;
-        }
-
+         
         #endregion
 
         #region Public-Methods

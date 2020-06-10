@@ -2,27 +2,83 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Text;
+using Watson.ORM.Core;
 
 namespace Less3.Classes
 {
     /// <summary>
     /// Access control list entry for an object.
     /// </summary>
-    internal class ObjectAcl
+    [Table("objectacls")]
+    public class ObjectAcl
     {
-        #region Internal-Members
+        #region Public-Members
 
-        internal int Id { get; set; }
-        internal string UserGroup { get; set; }
-        internal string UserGUID { get; set; }
-        internal string IssuedByUserGUID { get; set; }
-        internal string ObjectKey { get; set; }
-        internal long ObjectVersion { get; set; }
-        internal bool PermitRead { get; set; }
-        internal bool PermitWrite { get; set; }
-        internal bool PermitReadAcp { get; set; }
-        internal bool PermitWriteAcp { get; set; }
-        internal bool FullControl { get; set; }
+        /// <summary>
+        /// Database identifier.
+        /// </summary>
+        [Column("id", true, DataTypes.Int, false)]
+        public int Id { get; set; }
+
+        /// <summary>
+        /// User group.
+        /// </summary>
+        [Column("usergroup", false, DataTypes.Nvarchar, 256, true)]
+        public string UserGroup { get; set; }
+
+        /// <summary>
+        /// User GUID.
+        /// </summary>
+        [Column("userguid", false, DataTypes.Nvarchar, 64, true)]
+        public string UserGUID { get; set; }
+
+        /// <summary>
+        /// GUID of the issuing user.
+        /// </summary>
+        [Column("issuedbyuserguid", false, DataTypes.Nvarchar, 64, true)]
+        public string IssuedByUserGUID { get; set; }
+
+        /// <summary>
+        /// GUID of the bucket.
+        /// </summary>
+        [Column("bucketguid", false, DataTypes.Nvarchar, 64, false)]
+        public string BucketGUID { get; set; }
+
+        /// <summary>
+        /// GUID of the object.
+        /// </summary>
+        [Column("objectguid", false, DataTypes.Nvarchar, 64, false)]
+        public string ObjectGUID { get; set; }
+
+        /// <summary>
+        /// Permit read operations.
+        /// </summary>
+        [Column("permitread", false, DataTypes.Boolean, false)]
+        public bool PermitRead { get; set; }
+
+        /// <summary>
+        /// Permit write operations.
+        /// </summary>
+        [Column("permitwrite", false, DataTypes.Boolean, false)]
+        public bool PermitWrite { get; set; }
+
+        /// <summary>
+        /// Permit access control read operations.
+        /// </summary>
+        [Column("permitreadacp", false, DataTypes.Boolean, false)]
+        public bool PermitReadAcp { get; set; }
+
+        /// <summary>
+        /// Permit access control write operations.
+        /// </summary>
+        [Column("permitwriteacp", false, DataTypes.Boolean, false)]
+        public bool PermitWriteAcp { get; set; }
+
+        /// <summary>
+        /// Permit full control.
+        /// </summary>
+        [Column("permitfullcontrol", false, DataTypes.Boolean, false)]
+        public bool FullControl { get; set; }
 
         #endregion
 
@@ -32,7 +88,10 @@ namespace Less3.Classes
 
         #region Constructors-and-Factories
          
-        internal ObjectAcl()
+        /// <summary>
+        /// Instantiate the object.
+        /// </summary>
+        public ObjectAcl()
         {
 
         }
@@ -40,8 +99,8 @@ namespace Less3.Classes
         internal static ObjectAcl ObjectGroupAcl(
             string groupName, 
             string issuedByUserGuid, 
-            string objectKey, 
-            long versionId,
+            string bucketGuid,
+            string objectGuid,  
             bool permitRead,
             bool permitWrite,
             bool permitReadAcp,
@@ -50,16 +109,16 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(groupName)) throw new ArgumentNullException(nameof(groupName));
             if (String.IsNullOrEmpty(issuedByUserGuid)) throw new ArgumentNullException(nameof(issuedByUserGuid));
-            if (String.IsNullOrEmpty(objectKey)) throw new ArgumentNullException(nameof(objectKey));
-            if (versionId < 1) throw new ArgumentException("Version ID must be one or greater.");
+            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
+            if (String.IsNullOrEmpty(objectGuid)) throw new ArgumentNullException(nameof(objectGuid)); 
 
             ObjectAcl ret = new ObjectAcl();
 
             ret.UserGroup = groupName;
             ret.UserGUID = null;
             ret.IssuedByUserGUID = issuedByUserGuid;
-            ret.ObjectKey = objectKey;
-            ret.ObjectVersion = versionId;
+            ret.BucketGUID = bucketGuid;
+            ret.ObjectGUID = objectGuid;
 
             ret.PermitRead = permitRead;
             ret.PermitWrite = permitWrite;
@@ -73,8 +132,8 @@ namespace Less3.Classes
         internal static ObjectAcl ObjectUserAcl(
             string userGuid, 
             string issuedByUserGuid, 
-            string objectKey, 
-            long versionId,
+            string bucketGuid,
+            string objectGuid,  
             bool permitRead,
             bool permitWrite,
             bool permitReadAcp,
@@ -83,16 +142,15 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
             if (String.IsNullOrEmpty(issuedByUserGuid)) throw new ArgumentNullException(nameof(issuedByUserGuid));
-            if (String.IsNullOrEmpty(objectKey)) throw new ArgumentNullException(nameof(objectKey));
-            if (versionId < 1) throw new ArgumentException("Version ID must be one or greater.");
+            if (String.IsNullOrEmpty(objectGuid)) throw new ArgumentNullException(nameof(objectGuid)); 
 
             ObjectAcl ret = new ObjectAcl();
 
             ret.UserGroup = null;
             ret.UserGUID = userGuid;
             ret.IssuedByUserGUID = issuedByUserGuid;
-            ret.ObjectKey = objectKey;
-            ret.ObjectVersion = versionId;
+            ret.BucketGUID = bucketGuid;
+            ret.ObjectGUID = objectGuid;
 
             ret.PermitRead = permitRead;
             ret.PermitWrite = permitWrite;
@@ -102,49 +160,7 @@ namespace Less3.Classes
 
             return ret;
         }
-          
-        internal static ObjectAcl FromDataRow(DataRow row)
-        {
-            if (row == null) throw new ArgumentNullException(nameof(row));
-             
-            ObjectAcl ret = new ObjectAcl();
-
-            if (row.Table.Columns.Contains("Id") && row["Id"] != DBNull.Value && row["Id"] != null)
-                ret.Id = Convert.ToInt32(row["Id"]);
-
-            if (row.Table.Columns.Contains("UserGroup") && row["UserGroup"] != DBNull.Value && row["UserGroup"] != null)
-                ret.UserGroup = row["UserGroup"].ToString();
-
-            if (row.Table.Columns.Contains("UserGUID") && row["UserGUID"] != DBNull.Value && row["UserGUID"] != null)
-                ret.UserGUID = row["UserGUID"].ToString();
-
-            if (row.Table.Columns.Contains("IssuedByUserGUID") && row["IssuedByUserGUID"] != DBNull.Value && row["IssuedByUserGUID"] != null)
-                ret.IssuedByUserGUID = row["IssuedByUserGUID"].ToString();
-
-            if (row.Table.Columns.Contains("ObjectKey") && row["ObjectKey"] != DBNull.Value && row["ObjectKey"] != null)
-                ret.ObjectKey = row["ObjectKey"].ToString();
-
-            if (row.Table.Columns.Contains("ObjectVersion") && row["ObjectVersion"] != DBNull.Value && row["ObjectVersion"] != null)
-                ret.ObjectVersion = Convert.ToInt64(row["ObjectVersion"]);
-
-            if (row.Table.Columns.Contains("PermitRead") && row["PermitRead"] != DBNull.Value && row["PermitRead"] != null)
-                if (Convert.ToBoolean(row["PermitRead"])) ret.PermitRead = true;
-
-            if (row.Table.Columns.Contains("PermitWrite") && row["PermitWrite"] != DBNull.Value && row["PermitWrite"] != null)
-                if (Convert.ToBoolean(row["PermitWrite"])) ret.PermitWrite = true;
-
-            if (row.Table.Columns.Contains("PermitReadAcp") && row["PermitReadAcp"] != DBNull.Value && row["PermitReadAcp"] != null)
-                if (Convert.ToBoolean(row["PermitReadAcp"])) ret.PermitReadAcp = true;
-
-            if (row.Table.Columns.Contains("PermitWriteAcp") && row["PermitWriteAcp"] != DBNull.Value && row["PermitWriteAcp"] != null)
-                if (Convert.ToBoolean(row["PermitWriteAcp"])) ret.PermitWriteAcp = true;
-
-            if (row.Table.Columns.Contains("FullControl") && row["FullControl"] != DBNull.Value && row["FullControl"] != null)
-                if (Convert.ToBoolean(row["FullControl"])) ret.FullControl = true;
-
-            return ret;
-        }
-
+           
         #endregion
 
         #region Public-Methods
@@ -160,8 +176,8 @@ namespace Less3.Classes
                 "  User group      : " + UserGroup + Environment.NewLine +
                 "  User GUID       : " + UserGUID + Environment.NewLine +
                 "  Issued by       : " + IssuedByUserGUID + Environment.NewLine +
-                "  Object key      : " + ObjectKey + Environment.NewLine +
-                "  Object version  : " + ObjectVersion + Environment.NewLine +
+                "  Bucket GUID     : " + BucketGUID + Environment.NewLine +
+                "  Object GUID     : " + ObjectGUID + Environment.NewLine +
                 "  Permissions     : " + Environment.NewLine +
                 "    READ          : " + PermitRead.ToString() + Environment.NewLine +
                 "    WRITE         : " + PermitWrite.ToString() + Environment.NewLine +

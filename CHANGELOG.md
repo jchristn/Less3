@@ -2,11 +2,21 @@
 
 ## Current Version
 
+v1.3.0.1
+
+- Migrate database layer to ORM
+- Improved usability and console log messages
+- Simplification of objects
+- Centralized authentication and authorization
+- Virtualized storage layer to support new backend storage options
+- Updated Postman collection
+- Dockerfile for containerized deployments
+ 
+## Previous Versions
+
 v1.2.0.2
 
 - Minor cleanup, version from assembly, dependency update, XML documentation, Postman collection
- 
-## Previous Versions
 
 v1.2.0
 

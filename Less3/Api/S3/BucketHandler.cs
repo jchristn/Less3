@@ -66,57 +66,40 @@ namespace Less3.Api.S3
 
         internal async Task Delete(S3Request req, S3Response resp)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
-            resp.Chunked = false;
+            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
 
-            BucketConfiguration bucket = null;
-            if (!_Buckets.Get(req.Bucket, out bucket))
+            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            if (md == null)
             {
-                _Logging.Warn(header + "BucketHandler Delete unable to retrieve configuration for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.NoSuchBucket);
+                _Logging.Warn(header + "unable to retrieve metadata");
+                await resp.Send(ErrorCode.InternalError);
                 return;
             }
-
-            BucketClient client = null;
-            if (!_Buckets.GetClient(req.Bucket, out client))
+             
+            if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
-                _Logging.Warn(header + "BucketHandler Delete unable to retrieve client for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.NoSuchBucket);
-                return;
-            }
-
-            User user = null;
-            Credential cred = null;
-            AuthResult authResult = AuthResult.Denied;
-            _Auth.Authenticate(req, out user, out cred);
-            if (!_Auth.AuthorizeBucketRequest(
-                RequestType.BucketDelete,
-                req,
-                user,
-                cred,
-                bucket,
-                client,
-                out authResult))
-            {
-                _Logging.Warn(header + "BucketHandler Delete unable to authenticate or authorize request for bucket " + req.Bucket);
+                _Logging.Warn(header + "not authorized");
                 await resp.Send(ErrorCode.AccessDenied);
                 return;
             }
-              
-            long count = 0;
-            long bytes = 0;
-
-            client.GetCounts(out count, out bytes);
-
-            if (count > 0 || bytes > 0)
+             
+            if (md.Bucket == null || md.BucketClient == null)
             {
-                _Logging.Warn(header + "BucketHandler Delete bucket " + bucket.Name + " is not empty");
+                _Logging.Warn(header + "no such bucket");
+                await resp.Send(ErrorCode.NoSuchBucket);
+                return;
+            }
+
+            BucketStatistics stats = md.BucketClient.GetStatistics();
+            if (stats.Objects > 0 || stats.Bytes > 0)
+            {
+                _Logging.Warn(header + "bucket " + md.Bucket.Name + " is not empty");
                 await resp.Send(ErrorCode.BucketNotEmpty);
                 return;
             }
 
-            _Logging.Info(header + "BucketHandler Delete deleting bucket " + req.Bucket);
-            _Buckets.Remove(bucket, true);
+            _Logging.Info(header + "deleting bucket " + req.Bucket);
+            _Buckets.Remove(md.Bucket, true);
 
             resp.StatusCode = 204;
             resp.ContentType = "application/xml";
@@ -126,44 +109,31 @@ namespace Less3.Api.S3
 
         internal async Task DeleteTags(S3Request req, S3Response resp)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
-            resp.Chunked = false;
+            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
 
-            BucketConfiguration bucket = null;
-            if (!_Buckets.Get(req.Bucket, out bucket))
+            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            if (md == null)
             {
-                _Logging.Warn(header + "BucketHandler DeleteTags unable to retrieve configuration for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.NoSuchBucket);
+                _Logging.Warn(header + "unable to retrieve metadata");
+                await resp.Send(ErrorCode.InternalError);
                 return;
             }
 
-            BucketClient client = null;
-            if (!_Buckets.GetClient(req.Bucket, out client))
+            if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
-                _Logging.Warn(header + "BucketHandler DeleteTags unable to retrieve client for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.NoSuchBucket);
-                return;
-            }
-
-            User user = null;
-            Credential cred = null;
-            AuthResult authResult = AuthResult.Denied;
-            _Auth.Authenticate(req, out user, out cred);
-            if (!_Auth.AuthorizeBucketRequest(
-                RequestType.BucketDeleteTags,
-                req,
-                user,
-                cred,
-                bucket,
-                client,
-                out authResult))
-            {
-                _Logging.Warn(header + "BucketHandler DeleteTags unable to authenticate or authorize request for bucket " + req.Bucket);
+                _Logging.Warn(header + "not authorized");
                 await resp.Send(ErrorCode.AccessDenied);
                 return;
             }
-              
-            client.DeleteBucketTags();
+
+            if (md.Bucket == null || md.BucketClient == null)
+            {
+                _Logging.Warn(header + "no such bucket");
+                await resp.Send(ErrorCode.NoSuchBucket);
+                return;
+            }
+
+            md.BucketClient.DeleteBucketTags();
 
             resp.StatusCode = 204;
             resp.ContentType = "application/xml";
@@ -173,40 +143,27 @@ namespace Less3.Api.S3
 
         internal async Task Exists(S3Request req, S3Response resp)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
-            resp.Chunked = false;
+            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
 
-            BucketConfiguration bucket = null;
-            if (!_Buckets.Get(req.Bucket, out bucket))
+            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            if (md == null)
             {
-                _Logging.Warn(header + "BucketHandler Exists unable to retrieve configuration for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.NoSuchBucket);
+                _Logging.Warn(header + "unable to retrieve metadata");
+                await resp.Send(ErrorCode.InternalError);
                 return;
             }
 
-            BucketClient client = null;
-            if (!_Buckets.GetClient(req.Bucket, out client))
+            if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
-                _Logging.Warn(header + "BucketHandler Exists unable to retrieve client for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.NoSuchBucket);
-                return;
-            }
-
-            User user = null;
-            Credential cred = null;
-            AuthResult authResult = AuthResult.Denied;
-            _Auth.Authenticate(req, out user, out cred);
-            if (!_Auth.AuthorizeBucketRequest(
-                RequestType.BucketExists,
-                req,
-                user,
-                cred,
-                bucket,
-                client,
-                out authResult))
-            {
-                _Logging.Warn(header + "BucketHandler Exists unable to authenticate or authorize request for bucket " + req.Bucket);
+                _Logging.Warn(header + "not authorized");
                 await resp.Send(ErrorCode.AccessDenied);
+                return;
+            }
+
+            if (md.Bucket == null || md.BucketClient == null)
+            {
+                _Logging.Warn(header + "no such bucket");
+                await resp.Send(ErrorCode.NoSuchBucket);
                 return;
             }
 
@@ -218,54 +175,38 @@ namespace Less3.Api.S3
 
         internal async Task Read(S3Request req, S3Response resp)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
-            resp.Chunked = false;
+            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
 
-            string continuationToken = req.RetrieveHeaderValue("continuation-token");
-            long startIndex = 0;
-            if (!String.IsNullOrEmpty(continuationToken)) startIndex = ParseContinuationToken(continuationToken);
-            if (req.MaxKeys < 1 || req.MaxKeys > 1000) req.MaxKeys = 1000;
-
-            BucketConfiguration bucket = null;
-            if (!_Buckets.Get(req.Bucket, out bucket))
+            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            if (md == null)
             {
-                _Logging.Warn(header + "BucketHandler Read unable to retrieve configuration for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.NoSuchBucket);
+                _Logging.Warn(header + "unable to retrieve metadata");
+                await resp.Send(ErrorCode.InternalError);
                 return;
             }
 
-            BucketClient client = null;
-            if (!_Buckets.GetClient(req.Bucket, out client))
+            if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
-                _Logging.Warn(header + "BucketHandler Read unable to retrieve client for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.NoSuchBucket);
-                return;
-            }
-
-            User user = null;
-            Credential cred = null;
-            AuthResult authResult = AuthResult.Denied;
-            _Auth.Authenticate(req, out user, out cred);
-            if (!_Auth.AuthorizeBucketRequest(
-                RequestType.BucketRead,
-                req,
-                user,
-                cred,
-                bucket,
-                client,
-                out authResult))
-            {
-                _Logging.Warn(header + "BucketHandler Read unable to authenticate or authorize request for bucket " + req.Bucket);
+                _Logging.Warn(header + "not authorized");
                 await resp.Send(ErrorCode.AccessDenied);
                 return;
             }
 
-            List<Obj> objs = new List<Obj>();
-            client.Enumerate(req.Prefix, startIndex, (int)req.MaxKeys, out objs);
-
-            long numObjects = 0;
-            long numBytes = 0;
-            client.GetCounts(out numObjects, out numBytes);
+            if (md.Bucket == null || md.BucketClient == null)
+            {
+                _Logging.Warn(header + "no such bucket");
+                await resp.Send(ErrorCode.NoSuchBucket);
+                return;
+            }
+             
+            long startIndex = 0;
+            int maxResults = 1000;
+            if (!String.IsNullOrEmpty(req.ContinuationToken)) startIndex = ParseContinuationToken(req.ContinuationToken);
+            if (req.MaxKeys != null) maxResults = (int)(req.MaxKeys);
+            if (maxResults < 1 || maxResults > 1000) maxResults = 1000;
+             
+            List<Obj> objs = md.BucketClient.Enumerate(req.Prefix, startIndex, maxResults);
+            BucketStatistics stats = md.BucketClient.GetStatistics();
 
             long maxId = 0;
             if (objs.Count > 0)
@@ -303,9 +244,7 @@ namespace Less3.Api.S3
                 listBucketResult.Contents.Add(c);
             }
 
-            resp.StatusCode = 200;
-            resp.ContentType = "application/xml";
-            await resp.Send(Common.SerializeXml<ListBucketResult>(listBucketResult, false));
+            await ApiHelper.SendSerializedResponse<ListBucketResult>(req, resp, listBucketResult);
             return;
         }
 
@@ -317,73 +256,62 @@ namespace Less3.Api.S3
             LocationConstraint loc = new LocationConstraint();
             loc.Text = _Settings.Server.RegionString;
 
-            resp.StatusCode = 200;
-            resp.ContentType = "application/xml";
-            await resp.Send(Common.SerializeXml<LocationConstraint>(loc, false));
-
+            await ApiHelper.SendSerializedResponse<LocationConstraint>(req, resp, loc);
             return;
         }
 
         internal async Task ReadAcl(S3Request req, S3Response resp)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
-            resp.Chunked = false;
+            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
 
-            BucketConfiguration bucket = null;
-            if (!_Buckets.Get(req.Bucket, out bucket))
+            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            if (md == null)
             {
-                _Logging.Warn(header + "BucketHandler ReadAcl unable to retrieve configuration for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.NoSuchBucket);
+                _Logging.Warn(header + "unable to retrieve metadata");
+                await resp.Send(ErrorCode.InternalError);
                 return;
             }
 
-            BucketClient client = null;
-            if (!_Buckets.GetClient(req.Bucket, out client))
+            if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
-                _Logging.Warn(header + "BucketHandler ReadAcl unable to retrieve client for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.NoSuchBucket);
-                return;
-            }
-
-            User user = null;
-            Credential cred = null;
-            AuthResult authResult = AuthResult.Denied;
-            _Auth.Authenticate(req, out user, out cred);
-            if (!_Auth.AuthorizeBucketRequest(
-                RequestType.BucketReadAcl,
-                req,
-                user,
-                cred,
-                bucket,
-                client,
-                out authResult))
-            {
-                _Logging.Warn(header + "BucketHandler ReadAcl unable to authenticate or authorize request for bucket " + req.Bucket);
+                _Logging.Warn(header + "not authorized");
                 await resp.Send(ErrorCode.AccessDenied);
+                return;
+            }
+
+            if (md.Bucket == null || md.BucketClient == null)
+            {
+                _Logging.Warn(header + "no such bucket");
+                await resp.Send(ErrorCode.NoSuchBucket);
+                return;
+            }
+
+            User owner = _Config.GetUserByGuid(md.Bucket.OwnerGUID);
+            if (owner == null)
+            {
+                _Logging.Warn(header + "unable to find owner GUID " + md.Bucket.OwnerGUID + " for bucket GUID " + md.Bucket.GUID);
+                await resp.Send(ErrorCode.InternalError);
                 return;
             }
 
             AccessControlPolicy ret = new AccessControlPolicy();
             ret.Owner = new S3ServerInterface.S3Objects.Owner();
-            ret.Owner.DisplayName = user.Name;
-            ret.Owner.ID = user.GUID;
+            ret.Owner.DisplayName = owner.Name;
+            ret.Owner.ID = owner.GUID;
 
             ret.AccessControlList = new AccessControlList(); 
             ret.AccessControlList.Grant = new List<Grant>();
 
-            List<BucketAcl> bucketAcls = new List<BucketAcl>();
-            client.GetBucketAcl(out bucketAcls);
-
-            foreach (BucketAcl curr in bucketAcls)
+            foreach (BucketAcl curr in md.BucketAcls)
             { 
                 if (!String.IsNullOrEmpty(curr.UserGUID))
                 {
                     #region Individual-Permissions
 
-                    User tempUser = null;
-                    if (!_Config.GetUserByGuid(curr.UserGUID, out tempUser))
+                    User tempUser = _Config.GetUserByGuid(curr.UserGUID);
+                    if (tempUser == null)
                     {
-                        _Logging.Warn(header + "BucketHandler ReadAcl unlinked ACL ID " + curr.Id + ", could not find user GUID " + curr.UserGUID);
+                        _Logging.Warn(header + "unlinked ACL ID " + curr.Id + ", could not find user GUID " + curr.UserGUID);
                         continue;
                     }
 
@@ -497,62 +425,46 @@ namespace Less3.Api.S3
                 }
                 else
                 {
-                    _Logging.Warn(header + "BucketHandler ReadAcl incorrectly configured bucket ACL in ID " + curr.Id);
+                    _Logging.Warn(header + "incorrectly configured bucket ACL ID " + curr.Id + " (not user or group)");
                 }
             }
 
-            resp.StatusCode = 200;
-            resp.ContentType = "application/xml";
-            await resp.Send(Common.SerializeXml<AccessControlPolicy>(ret, false));
-            return;
+            await ApiHelper.SendSerializedResponse<AccessControlPolicy>(req, resp, ret);
+            return; 
         }
 
         internal async Task ReadTags(S3Request req, S3Response resp)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
-            resp.Chunked = false;
+            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
 
-            BucketConfiguration bucket = null;
-            if (!_Buckets.Get(req.Bucket, out bucket))
+            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            if (md == null)
             {
-                _Logging.Warn(header + "BucketHandler ReadTags unable to retrieve configuration for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.NoSuchBucket);
+                _Logging.Warn(header + "unable to retrieve metadata");
+                await resp.Send(ErrorCode.InternalError);
                 return;
             }
 
-            BucketClient client = null;
-            if (!_Buckets.GetClient(req.Bucket, out client))
+            if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
-                _Logging.Warn(header + "BucketHandler ReadTags unable to retrieve client for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.NoSuchBucket);
-                return;
-            }
-
-            User user = null;
-            Credential cred = null;
-            AuthResult authResult = AuthResult.Denied;
-            _Auth.Authenticate(req, out user, out cred);
-            if (!_Auth.AuthorizeBucketRequest(
-                RequestType.BucketReadTags,
-                req,
-                user,
-                cred,
-                bucket,
-                client,
-                out authResult))
-            {
-                _Logging.Warn(header + "BucketHandler ReadTags unable to authenticate or authorize request for bucket " + req.Bucket);
+                _Logging.Warn(header + "not authorized");
                 await resp.Send(ErrorCode.AccessDenied);
                 return;
             }
+
+            if (md.Bucket == null || md.BucketClient == null)
+            {
+                _Logging.Warn(header + "no such bucket");
+                await resp.Send(ErrorCode.NoSuchBucket);
+                return;
+            }
              
-            Dictionary<string, string> storedTags = client.GetBucketTags(); 
             Tagging tags = new Tagging();
             tags.TagSet = new List<Tag>();
 
-            if (storedTags != null && storedTags.Count > 0)
+            if (md.BucketTags != null && md.BucketTags.Count > 0)
             {
-                foreach (KeyValuePair<string, string> curr in storedTags)
+                foreach (BucketTag curr in md.BucketTags)
                 {
                     Tag currTag = new Tag();
                     currTag.Key = curr.Key;
@@ -561,58 +473,44 @@ namespace Less3.Api.S3
                 }
             }
 
-            resp.StatusCode = 200;
-            resp.ContentType = "application/xml";
-            await resp.Send(Common.SerializeXml<Tagging>(tags, false));
-            return;
+            await ApiHelper.SendSerializedResponse<Tagging>(req, resp, tags);
+            return; 
         }
 
         internal async Task ReadVersions(S3Request req, S3Response resp)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
-            resp.Chunked = false;
-            if (req.MaxKeys < 1 || req.MaxKeys > 1000) req.MaxKeys = 1000;
-             
-            BucketConfiguration bucket = null;
-            if (!_Buckets.Get(req.Bucket, out bucket))
+            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+
+            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            if (md == null)
             {
-                _Logging.Warn(header + "BucketHandler ReadVersions unable to retrieve configuration for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.NoSuchBucket);
+                _Logging.Warn(header + "unable to retrieve metadata");
+                await resp.Send(ErrorCode.InternalError);
                 return;
             }
 
-            BucketClient client = null;
-            if (!_Buckets.GetClient(req.Bucket, out client))
+            if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
-                _Logging.Warn(header + "BucketHandler ReadVersions unable to retrieve client for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.NoSuchBucket);
-                return;
-            }
-
-            User user = null;
-            Credential cred = null;
-            AuthResult authResult = AuthResult.Denied;
-            _Auth.Authenticate(req, out user, out cred);
-            if (!_Auth.AuthorizeBucketRequest(
-                RequestType.BucketReadVersions,
-                req,
-                user,
-                cred,
-                bucket,
-                client,
-                out authResult))
-            {
-                _Logging.Warn(header + "BucketHandler ReadVersions unable to authenticate or authorize request for bucket " + req.Bucket);
+                _Logging.Warn(header + "not authorized");
                 await resp.Send(ErrorCode.AccessDenied);
                 return;
             }
-             
-            List<Obj> objs = new List<Obj>();
-            client.Enumerate(req.Prefix, 0, (int)req.MaxKeys, out objs);
 
-            long numObjects = 0;
-            long numBytes = 0;
-            client.GetCounts(out numObjects, out numBytes);
+            if (md.Bucket == null || md.BucketClient == null)
+            {
+                _Logging.Warn(header + "no such bucket");
+                await resp.Send(ErrorCode.NoSuchBucket);
+                return;
+            }
+             
+            long startIndex = 0;
+            int maxResults = 1000;
+            if (!String.IsNullOrEmpty(req.ContinuationToken)) startIndex = ParseContinuationToken(req.ContinuationToken);
+            if (req.MaxKeys != null) maxResults = (int)(req.MaxKeys);
+            if (maxResults < 1 || maxResults > 1000) maxResults = 1000;
+             
+            List<Obj> objs = md.BucketClient.Enumerate(req.Prefix, startIndex, maxResults);  
+            BucketStatistics stats = md.BucketClient.GetStatistics();
 
             string lastKey = null;
             long maxId = 0;
@@ -641,15 +539,15 @@ namespace Less3.Api.S3
 
             foreach (Obj curr in objs)
             {
-                if (curr.DeleteMarker == 1)
+                if (curr.DeleteMarker)
                 {
                     DeleteMarker d = new DeleteMarker();
                     d.IsLatest = IsLatest(objs, curr.Key, curr.LastAccessUtc);
                     d.Key = curr.Key;
                     d.LastModified = curr.LastUpdateUtc;
                     d.Owner = new S3ServerInterface.S3Objects.Owner();
-                    d.Owner.DisplayName = curr.Owner;
-                    d.Owner.ID = curr.Owner;
+                    d.Owner.DisplayName = curr.OwnerGUID;
+                    d.Owner.ID = curr.OwnerGUID;
                     d.VersionId = curr.Version.ToString();
                     listVersionsResult.DeleteMarker.Add(d);
                 }
@@ -662,145 +560,116 @@ namespace Less3.Api.S3
                     v.ETag = "\"" + curr.Md5 + "\"";
                     v.LastModified = curr.LastUpdateUtc;
                     v.Owner = new S3ServerInterface.S3Objects.Owner();
-                    v.Owner.DisplayName = curr.Owner;
-                    v.Owner.ID = curr.Owner;
+                    v.Owner.DisplayName = curr.OwnerGUID;
+                    v.Owner.ID = curr.OwnerGUID;
                     v.Size = curr.ContentLength;
                     v.StorageClass = "STANDARD";
                     listVersionsResult.Version.Add(v);
                 }
             }
 
-            resp.StatusCode = 200;
-            resp.ContentType = "application/xml";
-            await resp.Send(Common.SerializeXml<ListVersionsResult>(listVersionsResult, false));
-            return;
+            await ApiHelper.SendSerializedResponse<ListVersionsResult>(req, resp, listVersionsResult);
+            return; 
         }
 
         internal async Task ReadVersioning(S3Request req, S3Response resp)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
-            resp.Chunked = false;
+            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
 
-            BucketConfiguration bucket = null;
-            if (!_Buckets.Get(req.Bucket, out bucket))
+            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            if (md == null)
             {
-                _Logging.Warn(header + "BucketHandler ReadVersioning unable to retrieve configuration for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.NoSuchBucket);
+                _Logging.Warn(header + "unable to retrieve metadata");
+                await resp.Send(ErrorCode.InternalError);
                 return;
             }
 
-            BucketClient client = null;
-            if (!_Buckets.GetClient(req.Bucket, out client))
+            if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
-                _Logging.Warn(header + "BucketHandler ReadVersioning unable to retrieve client for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.NoSuchBucket);
-                return;
-            }
-
-            User user = null;
-            Credential cred = null;
-            AuthResult authResult = AuthResult.Denied;
-            _Auth.Authenticate(req, out user, out cred);
-            if (!_Auth.AuthorizeBucketRequest(
-                RequestType.BucketReadVersioning,
-                req,
-                user,
-                cred,
-                bucket,
-                client,
-                out authResult))
-            {
-                _Logging.Warn(header + "BucketHandler ReadVersioning unable to authenticate or authorize request for bucket " + req.Bucket);
+                _Logging.Warn(header + "not authorized");
                 await resp.Send(ErrorCode.AccessDenied);
                 return;
             }
-             
+
+            if (md.Bucket == null || md.BucketClient == null)
+            {
+                _Logging.Warn(header + "no such bucket");
+                await resp.Send(ErrorCode.NoSuchBucket);
+                return;
+            }
+
             VersioningConfiguration ret = new VersioningConfiguration();
             ret.Status = "Off";
             ret.MfaDelete = "Disabled";
                  
-            if (bucket.EnableVersioning)
+            if (md.Bucket.EnableVersioning)
             {
                 ret.Status = "Enabled";
                 ret.MfaDelete = "Disabled";
             }
 
-            resp.StatusCode = 200;
-            resp.ContentType = "application/json";
-            await resp.Send(Common.SerializeXml<VersioningConfiguration>(ret, false));
-            return;
+            await ApiHelper.SendSerializedResponse<VersioningConfiguration>(req, resp, ret);
+            return; 
         }
 
         internal async Task Write(S3Request req, S3Response resp)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
-            resp.Chunked = false;
+            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
 
-            byte[] data = null;
-            S3Bucket reqBody = null;
-
-            if (req.Data != null)
+            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            if (md == null)
             {
-                try
-                {
-                    data = Common.StreamToBytes(req.Data);
-                    reqBody = Common.DeserializeXml<S3Bucket>(Encoding.UTF8.GetString(data));
-                }
-                catch (Exception e)
-                {
-                    _Logging.Exception(header + " BucketHandler", "Write", e);
-                    await resp.Send(ErrorCode.InvalidRequest);
-                    return;
-                }
-            }
-
-            if (IsInvalidBucketName(reqBody.BucketName))
-            {
-                _Logging.Warn(header + "BucketHandler Write invalid bucket name: " + reqBody.BucketName);
-                await resp.Send(ErrorCode.InvalidRequest);
-                return;
-            }
-
-            User user = null;
-            Credential cred = null;
-            AuthResult authResult = AuthResult.Denied;
-            _Auth.Authenticate(req, out user, out cred);
-            if (!_Auth.AuthorizeBucketRequest(
-                RequestType.BucketWrite,
-                req,
-                user,
-                cred,
-                out authResult))
-            {
-                _Logging.Warn(header + "BucketHandler Write unable to authenticate or authorize request");
-                await resp.Send(ErrorCode.AccessDenied);
-                return;
-            }
-
-            BucketConfiguration config = new BucketConfiguration(
-                req.Bucket,
-                user.GUID,
-                _Settings.Storage.Directory + req.Bucket + "/" + req.Bucket + ".db",
-                _Settings.Storage.Directory + req.Bucket + "/Objects/");
-
-            if (!_Buckets.Add(config))
-            {
-                _Logging.Warn(header + "BucketHandler Write unable to write bucket " + req.Bucket);
+                _Logging.Warn(header + "unable to retrieve metadata");
                 await resp.Send(ErrorCode.InternalError);
                 return;
             }
 
-            BucketClient client = null;
-            if (!_Buckets.GetClient(req.Bucket, out client))
+            if (md.User == null || md.Credential == null)
             {
-                _Logging.Warn(header + "BucketHandler Write unable to retrieve bucket client for bucket " + req.Bucket);
+                _Logging.Warn(header + "not authorized");
+                await resp.Send(ErrorCode.AccessDenied);
+                return;
+            }
+
+            if (md.Bucket != null || md.BucketClient != null)
+            {
+                _Logging.Warn(header + "bucket already exists");
+                await resp.Send(ErrorCode.BucketAlreadyExists);
+                return;
+            }
+               
+            if (IsInvalidBucketName(req.Bucket))
+            {
+                _Logging.Warn(header + "invalid bucket name: " + req.Bucket);
+                await resp.Send(ErrorCode.InvalidRequest);
+                return;
+            }
+             
+            Classes.Bucket bucket = new Classes.Bucket(
+                Guid.NewGuid().ToString(),
+                req.Bucket,
+                md.User.GUID, 
+                _Settings.Storage.StorageType, 
+                _Settings.Storage.DiskDirectory + req.Bucket + "/Objects/");
+             
+            if (!_Buckets.Add(bucket))
+            {
+                _Logging.Warn(header + "unable to write bucket " + req.Bucket);
+                await resp.Send(ErrorCode.InternalError);
+                return;
+            }
+
+            BucketClient client = _Buckets.GetClient(req.Bucket);
+            if (client == null)
+            {
+                _Logging.Warn(header + "unable to retrieve bucket client for bucket " + req.Bucket);
                 await resp.Send(ErrorCode.InternalError);
                 return;
             }
 
             #region Permissions-in-Headers
 
-            List<Grant> grants = GrantsFromHeaders(user, req.Headers);
+            List<Grant> grants = GrantsFromHeaders(md.User, req.Headers);
             if (grants != null && grants.Count > 0)
             {
                 foreach (Grant curr in grants)
@@ -817,15 +686,16 @@ namespace Less3.Api.S3
 
                         if (!String.IsNullOrEmpty(curr.Grantee.ID))
                         {
-                            if (!_Config.GetUserByGuid(curr.Grantee.ID, out tempUser))
+                            tempUser = _Config.GetUserByGuid(curr.Grantee.ID);
+                            if (tempUser == null) 
                             {
-                                _Logging.Warn(header + "BucketHandler Write unable to retrieve user " + curr.Grantee.ID + " to add ACL to bucket " + config.GUID);
+                                _Logging.Warn(header + "unable to retrieve user " + curr.Grantee.ID + " to add ACL to bucket " + bucket.GUID);
                                 continue;
                             }
 
                             if (String.IsNullOrEmpty(curr.Permission))
                             {
-                                _Logging.Warn(header + "BucketHandler no permissions specified for user " + curr.Grantee.ID + " in ACL for bucket " + config.GUID);
+                                _Logging.Warn(header + "no permissions specified for user " + curr.Grantee.ID + " in ACL for bucket " + bucket.GUID);
                                 continue;
                             }
 
@@ -835,14 +705,22 @@ namespace Less3.Api.S3
                             else if (curr.Permission.Equals("WRITE_ACP")) permitWriteAcp = true;
                             else if (curr.Permission.Equals("FULL_CONTROL")) fullControl = true;
 
-                            bucketAcl = BucketAcl.BucketUserAcl(curr.Grantee.ID, user.GUID, permitRead, permitWrite, permitReadAcp, permitWriteAcp, fullControl);
+                            bucketAcl = BucketAcl.BucketUserAcl(
+                                curr.Grantee.ID, 
+                                md.User.GUID, 
+                                permitRead, 
+                                permitWrite, 
+                                permitReadAcp, 
+                                permitWriteAcp, 
+                                fullControl);
+
                             client.AddBucketAcl(bucketAcl);
                         }
                         else if (!String.IsNullOrEmpty(curr.Grantee.URI))
                         {
                             if (String.IsNullOrEmpty(curr.Permission))
                             {
-                                _Logging.Warn(header + "BucketHandler no permissions specified for user " + curr.Grantee.ID + " in ACL for bucket " + config.GUID);
+                                _Logging.Warn(header + "no permissions specified for user " + curr.Grantee.ID + " in ACL for bucket " + bucket.GUID);
                                 continue;
                             }
 
@@ -852,7 +730,15 @@ namespace Less3.Api.S3
                             else if (curr.Permission.Equals("WRITE_ACP")) permitWriteAcp = true;
                             else if (curr.Permission.Equals("FULL_CONTROL")) fullControl = true;
 
-                            bucketAcl = BucketAcl.BucketGroupAcl(curr.Grantee.URI, user.GUID, permitRead, permitWrite, permitReadAcp, permitWriteAcp, fullControl);
+                            bucketAcl = BucketAcl.BucketGroupAcl(
+                                curr.Grantee.URI, 
+                                md.User.GUID, 
+                                permitRead, 
+                                permitWrite, 
+                                permitReadAcp, 
+                                permitWriteAcp, 
+                                fullControl);
+
                             client.AddBucketAcl(bucketAcl);
                         }
                     }
@@ -869,13 +755,36 @@ namespace Less3.Api.S3
 
         internal async Task WriteAcl(S3Request req, S3Response resp)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+
+            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            if (md == null)
+            {
+                _Logging.Warn(header + "unable to retrieve metadata");
+                await resp.Send(ErrorCode.InternalError);
+                return;
+            }
+
+            if (md.Authorization == AuthorizationResult.NotAuthorized)
+            {
+                _Logging.Warn(header + "not authorized");
+                await resp.Send(ErrorCode.AccessDenied);
+                return;
+            }
+             
+            if (md.Bucket == null || md.BucketClient == null)
+            {
+                _Logging.Warn(header + "no such bucket");
+                await resp.Send(ErrorCode.NoSuchBucket);
+                return;
+            }
+
             resp.Chunked = false;
 
             byte[] data = null;
             AccessControlPolicy reqBody = null;
 
-            if (req.Data!= null)
+            if (req.Data != null)
             {
                 try
                 {
@@ -890,44 +799,10 @@ namespace Less3.Api.S3
                     return;
                 }
             }
+             
+            md.BucketClient.DeleteBucketAcl();
 
-            BucketConfiguration bucket = null;
-            if (!_Buckets.Get(req.Bucket, out bucket))
-            {
-                _Logging.Warn(header + "BucketHandler WriteAcl unable to retrieve configuration for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.NoSuchBucket);
-                return;
-            }
-
-            BucketClient client = null;
-            if (!_Buckets.GetClient(req.Bucket, out client))
-            {
-                _Logging.Warn(header + "BucketHandler WriteAcl unable to retrieve client for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.NoSuchBucket);
-                return;
-            }
-
-            User user = null;
-            Credential cred = null;
-            AuthResult authResult = AuthResult.Denied;
-            _Auth.Authenticate(req, out user, out cred);
-            if (!_Auth.AuthorizeBucketRequest(
-                RequestType.BucketWriteAcl,
-                req,
-                user,
-                cred,
-                bucket,
-                client,
-                out authResult))
-            {
-                _Logging.Warn(header + "BucketHandler WriteAcl unable to authenticate or authorize request for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.AccessDenied);
-                return;
-            }
-
-            client.DeleteBucketAcl();
-
-            List<Grant> headerGrants = GrantsFromHeaders(user, req.Headers);
+            List<Grant> headerGrants = GrantsFromHeaders(md.User, req.Headers);
             if (headerGrants != null && headerGrants.Count > 0)
             {
                 if (reqBody.AccessControlList.Grant != null)
@@ -952,22 +827,23 @@ namespace Less3.Api.S3
                 {
                     #region User-ACL
 
-                    if (!_Config.GetUserByGuid(curr.Grantee.ID, out tempUser))
+                    tempUser = _Config.GetUserByGuid(curr.Grantee.ID);
+                    if (tempUser == null)
                     {
-                        _Logging.Warn(header + "BucketHandler ReadAcl unable to find user GUID " + curr.Grantee.ID);
+                        _Logging.Warn(header + "unable to find user GUID " + curr.Grantee.ID);
                         continue;
                     }
 
                     if (curr.Permission.Equals("READ"))
-                        acl = BucketAcl.BucketUserAcl(curr.Grantee.ID, bucket.OwnerGUID, true, false, false, false, false);
+                        acl = BucketAcl.BucketUserAcl(curr.Grantee.ID, md.Bucket.OwnerGUID, true, false, false, false, false);
                     else if (curr.Permission.Equals("WRITE"))
-                        acl = BucketAcl.BucketUserAcl(curr.Grantee.ID, bucket.OwnerGUID, false, true, false, false, false);
+                        acl = BucketAcl.BucketUserAcl(curr.Grantee.ID, md.Bucket.OwnerGUID, false, true, false, false, false);
                     else if (curr.Permission.Equals("READ_ACP"))
-                        acl = BucketAcl.BucketUserAcl(curr.Grantee.ID, bucket.OwnerGUID, false, false, true, false, false);
+                        acl = BucketAcl.BucketUserAcl(curr.Grantee.ID, md.Bucket.OwnerGUID, false, false, true, false, false);
                     else if (curr.Permission.Equals("WRITE_ACP"))
-                        acl = BucketAcl.BucketUserAcl(curr.Grantee.ID, bucket.OwnerGUID, false, false, false, true, false);
+                        acl = BucketAcl.BucketUserAcl(curr.Grantee.ID, md.Bucket.OwnerGUID, false, false, false, true, false);
                     else if (curr.Permission.Equals("FULL_CONTROL"))
-                        acl = BucketAcl.BucketUserAcl(curr.Grantee.ID, bucket.OwnerGUID, false, false, false, false, true);
+                        acl = BucketAcl.BucketUserAcl(curr.Grantee.ID, md.Bucket.OwnerGUID, false, false, false, false, true);
 
                     #endregion
                 }
@@ -976,22 +852,22 @@ namespace Less3.Api.S3
                     #region Group-ACL
                      
                     if (curr.Permission.Equals("READ"))
-                        acl = BucketAcl.BucketGroupAcl(curr.Grantee.URI, bucket.OwnerGUID, true, false, false, false, false);
+                        acl = BucketAcl.BucketGroupAcl(curr.Grantee.URI, md.Bucket.OwnerGUID, true, false, false, false, false);
                     else if (curr.Permission.Equals("WRITE"))
-                        acl = BucketAcl.BucketGroupAcl(curr.Grantee.URI, bucket.OwnerGUID, false, true, false, false, false);
+                        acl = BucketAcl.BucketGroupAcl(curr.Grantee.URI, md.Bucket.OwnerGUID, false, true, false, false, false);
                     else if (curr.Permission.Equals("READ_ACP"))
-                        acl = BucketAcl.BucketGroupAcl(curr.Grantee.URI, bucket.OwnerGUID, false, false, true, false, false);
+                        acl = BucketAcl.BucketGroupAcl(curr.Grantee.URI, md.Bucket.OwnerGUID, false, false, true, false, false);
                     else if (curr.Permission.Equals("WRITE_ACP"))
-                        acl = BucketAcl.BucketGroupAcl(curr.Grantee.URI, bucket.OwnerGUID, false, false, false, true, false);
+                        acl = BucketAcl.BucketGroupAcl(curr.Grantee.URI, md.Bucket.OwnerGUID, false, false, false, true, false);
                     else if (curr.Permission.Equals("FULL_CONTROL"))
-                        acl = BucketAcl.BucketGroupAcl(curr.Grantee.URI, bucket.OwnerGUID, false, false, false, false, true);
+                        acl = BucketAcl.BucketGroupAcl(curr.Grantee.URI, md.Bucket.OwnerGUID, false, false, false, false, true);
 
                     #endregion
                 }
 
                 if (acl != null)
                 { 
-                    client.AddBucketAcl(acl);
+                    md.BucketClient.AddBucketAcl(acl);
                 }
             }
 
@@ -1003,7 +879,30 @@ namespace Less3.Api.S3
 
         internal async Task WriteTags(S3Request req, S3Response resp)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+
+            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            if (md == null)
+            {
+                _Logging.Warn(header + "unable to retrieve metadata");
+                await resp.Send(ErrorCode.InternalError);
+                return;
+            }
+
+            if (md.Authorization == AuthorizationResult.NotAuthorized)
+            {
+                _Logging.Warn(header + "not authorized");
+                await resp.Send(ErrorCode.AccessDenied);
+                return;
+            }
+
+            if (md.Bucket == null || md.BucketClient == null)
+            {
+                _Logging.Warn(header + "no such bucket");
+                await resp.Send(ErrorCode.NoSuchBucket);
+                return;
+            }
+
             resp.Chunked = false;
 
             byte[] data = null;
@@ -1023,54 +922,23 @@ namespace Less3.Api.S3
                     return;
                 }
             }
-
-            BucketConfiguration bucket = null;
-            if (!_Buckets.Get(req.Bucket, out bucket))
-            {
-                _Logging.Warn(header + "BucketHandler WriteTags unable to retrieve configuration for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.NoSuchBucket);
-                return;
-            }
-
-            BucketClient client = null;
-            if (!_Buckets.GetClient(req.Bucket, out client))
-            {
-                _Logging.Warn(header + "BucketHandler WriteTags unable to retrieve client for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.NoSuchBucket);
-                return;
-            }
-
-            User user = null;
-            Credential cred = null;
-            AuthResult authResult = AuthResult.Denied;
-            _Auth.Authenticate(req, out user, out cred);
-            if (!_Auth.AuthorizeBucketRequest(
-                RequestType.BucketWriteTags,
-                req,
-                user,
-                cred,
-                bucket,
-                client,
-                out authResult))
-            {
-                _Logging.Warn(header + "BucketHandler WriteTags unable to authenticate or authorize request for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.AccessDenied);
-                return;
-            }
              
-            client.DeleteBucketTags();
+            md.BucketClient.DeleteBucketTags();
 
-            Dictionary<string, string> tagSet = new Dictionary<string, string>();
-
+            List<BucketTag> tags = new List<BucketTag>(); 
             if (reqBody.TagSet != null && reqBody.TagSet.Count > 0)
             {
                 foreach (Tag curr in reqBody.TagSet)
                 {
-                    tagSet.Add(curr.Key, curr.Value);
+                    BucketTag tag = new BucketTag();
+                    tag.BucketGUID = md.Bucket.GUID;
+                    tag.Key = curr.Key;
+                    tag.Value = curr.Value;
+                    tags.Add(tag);
                 }
             }
 
-            client.AddBucketTags(tagSet);
+            md.BucketClient.AddBucketTags(tags);
 
             resp.StatusCode = 204;
             resp.ContentType = "text/plain";
@@ -1080,7 +948,30 @@ namespace Less3.Api.S3
 
         internal async Task WriteVersioning(S3Request req, S3Response resp)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+
+            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            if (md == null)
+            {
+                _Logging.Warn(header + "unable to retrieve metadata");
+                await resp.Send(ErrorCode.InternalError);
+                return;
+            }
+
+            if (md.Authorization == AuthorizationResult.NotAuthorized)
+            {
+                _Logging.Warn(header + "not authorized");
+                await resp.Send(ErrorCode.AccessDenied);
+                return;
+            }
+
+            if (md.Bucket == null || md.BucketClient == null)
+            {
+                _Logging.Warn(header + "no such bucket");
+                await resp.Send(ErrorCode.NoSuchBucket);
+                return;
+            }
+
             resp.Chunked = false;
 
             byte[] data = null;
@@ -1100,52 +991,18 @@ namespace Less3.Api.S3
                     return;
                 }
             }
-
-            BucketConfiguration bucket = null;
-            if (!_Buckets.Get(req.Bucket, out bucket))
-            {
-                _Logging.Warn(header + "BucketHandler WriteVersioning unable to retrieve configuration for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.NoSuchBucket);
-                return;
-            }
-
-            BucketClient client = null;
-            if (!_Buckets.GetClient(req.Bucket, out client))
-            {
-                _Logging.Warn(header + "BucketHandler WriteVersioning unable to retrieve client for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.NoSuchBucket);
-                return;
-            }
-
-            User user = null;
-            Credential cred = null;
-            AuthResult authResult = AuthResult.Denied;
-            _Auth.Authenticate(req, out user, out cred);
-            if (!_Auth.AuthorizeBucketRequest(
-                RequestType.BucketWriteVersioning,
-                req,
-                user,
-                cred,
-                bucket,
-                client,
-                out authResult))
-            {
-                _Logging.Warn(header + "BucketHandler WriteVersioning unable to authenticate or authorize request for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.AccessDenied);
-                return;
-            }
              
-            if (reqBody.Status.Equals("Enabled") && !bucket.EnableVersioning)
+            if (reqBody.Status.Equals("Enabled") && !md.Bucket.EnableVersioning)
             {
-                bucket.EnableVersioning = true;
-                _Buckets.Remove(bucket, false);
-                _Buckets.Add(bucket);
+                md.Bucket.EnableVersioning = true;
+                _Buckets.Remove(md.Bucket, false);
+                _Buckets.Add(md.Bucket);
             }
-            else if (!reqBody.Status.Equals("Enabled") && bucket.EnableVersioning)
+            else if (!reqBody.Status.Equals("Enabled") && md.Bucket.EnableVersioning)
             {
-                bucket.EnableVersioning = false;
-                _Buckets.Remove(bucket, false);
-                _Buckets.Add(bucket);
+                md.Bucket.EnableVersioning = false;
+                _Buckets.Remove(md.Bucket, false);
+                _Buckets.Add(md.Bucket);
             }
 
             resp.StatusCode = 200;
@@ -1157,12 +1014,7 @@ namespace Less3.Api.S3
         #endregion
 
         #region Private-Methods
-          
-        private string AmazonTimestamp(DateTime dt)
-        {
-            return dt.ToString("yyyy-MM-ddTHH:mm:ss.fffz");
-        }
-          
+           
         private string BuildContinuationToken(long lastId)
         {
             return Common.StringToBase64(lastId.ToString());
@@ -1352,16 +1204,22 @@ namespace Less3.Api.S3
 
             if (granteeType.Equals("emailAddress"))
             {
-                User user = null;
-                if (!_Config.GetUserByEmail(grantee, out user)) return false;
+                User user = _Config.GetUserByEmail(grantee);
+                if (user == null)
+                {
+                    return false;
+                }
                 grant.Grantee.ID = user.GUID;
                 grant.Grantee.DisplayName = user.Name;
                 return true;
             }
             else if (granteeType.Equals("id"))
             {
-                User user = null;
-                if (!_Config.GetUserByGuid(grantee, out user)) return false;
+                User user = _Config.GetUserByGuid(grantee);
+                if (user == null)
+                {
+                    return false;
+                }
                 grant.Grantee.ID = user.GUID;
                 grant.Grantee.DisplayName = user.Name;
                 return true;
@@ -1375,14 +1233,14 @@ namespace Less3.Api.S3
             return false;
         }
 
-        private bool IsInvalidBucketName(string bucket)
+        private bool IsInvalidBucketName(string name)
         {
             List<string> invalidNames = new List<string>
             {
                 "admin"
             };
 
-            if (invalidNames.Contains(bucket.ToLower())) return true;
+            if (invalidNames.Contains(name.ToLower())) return true;
             return false;
         }
 

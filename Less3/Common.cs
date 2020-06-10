@@ -1136,6 +1136,27 @@ namespace Less3
             return ret;
         }
 
+        public static async Task<string> Md5Async(Stream stream, int bufferSize)
+        {
+            using (var md5 = MD5.Create())
+            {
+                byte[] buffer = new byte[bufferSize];
+                int read = 0;
+
+                do
+                {
+                    read = await stream.ReadAsync(buffer, 0, bufferSize);
+                    if (read > 0)
+                    {
+                        md5.TransformBlock(buffer, 0, read, null, 0);
+                    }
+                } while (read > 0);
+
+                md5.TransformFinalBlock(buffer, 0, 0);
+                return BitConverter.ToString(md5.Hash).Replace("-", "").ToUpperInvariant();
+            }
+        }
+
         #endregion
 
         #region Encoding

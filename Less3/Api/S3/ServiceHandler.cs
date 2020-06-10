@@ -63,64 +63,53 @@ namespace Less3.Api.S3
          
         internal async Task ListBuckets(S3Request req, S3Response resp)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
+            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
 
-            if (String.IsNullOrEmpty(req.AccessKey))
+            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            if (md == null)
             {
-                _Logging.Warn(header + "ListBuckets no access key supplied");
-                await resp.Send(ErrorCode.AccessDenied);
+                _Logging.Warn(header + "unable to retrieve metadata");
+                await resp.Send(ErrorCode.InternalError);
                 return;
             }
 
-            User user = null;
-            Credential cred = null;
-            AuthResult authResult = AuthResult.Denied;
-            _Auth.Authenticate(req, out user, out cred);
-            if (!_Auth.AuthorizeServiceRequest(
-                RequestType.ServiceListBuckets,
-                req,
-                user,
-                cred,
-                out authResult))
+            if (md.Authentication != AuthenticationResult.Authenticated)
             {
-                _Logging.Warn(header + "ListBuckets authentication or authorization failed");
+                _Logging.Warn(header + "requestor not authenticated");
                 await resp.Send(ErrorCode.AccessDenied);
                 return;
+            } 
+            else
+            {
+                md.Authorization = AuthorizationResult.PermitService;
             }
 
-            List<BucketConfiguration> buckets = null;
-            _Buckets.GetUserBuckets(user.GUID, out buckets);
+            List<Classes.Bucket> buckets = _Buckets.GetUserBuckets(md.User.GUID);
 
             ListAllMyBucketsResult listBucketsResult = new ListAllMyBucketsResult();
             listBucketsResult.Owner = new S3ServerInterface.S3Objects.Owner();
-            listBucketsResult.Owner.DisplayName = user.Name;
-            listBucketsResult.Owner.ID = user.Name;
+            listBucketsResult.Owner.DisplayName = md.User.Name;
+            listBucketsResult.Owner.ID = md.User.Name;
 
             listBucketsResult.Buckets = new Buckets();
-            listBucketsResult.Buckets.Bucket = new List<Bucket>();
+            listBucketsResult.Buckets.Bucket = new List<S3ServerInterface.S3Objects.Bucket>();
 
-            foreach (BucketConfiguration curr in buckets)
+            foreach (Classes.Bucket curr in buckets)
             {
-                Bucket b = new Bucket();
+                S3ServerInterface.S3Objects.Bucket b = new S3ServerInterface.S3Objects.Bucket();
                 b.Name = curr.Name;
                 b.CreationDate = curr.CreatedUtc;
                 listBucketsResult.Buckets.Bucket.Add(b);
             }
-             
-            resp.StatusCode = 200;
-            resp.ContentType = "application/xml";
-            await resp.Send(Common.SerializeXml<ListAllMyBucketsResult>(listBucketsResult, false));
+
+            await ApiHelper.SendSerializedResponse<ListAllMyBucketsResult>(req, resp, listBucketsResult);
+            return;
         }
 
         #endregion
 
         #region Private-Methods
          
-        private string AmazonTimestamp(DateTime dt)
-        {
-            return dt.ToString("yyyy-MM-ddTHH:mm:ss.fffz");
-        }
-
         #endregion
     }
 }

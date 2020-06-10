@@ -1,6 +1,0 @@
-2020-01-23 05:20:30 [Warn     ] BucketManager Get unable to find bucket with name favicon.ico
-2020-01-23 05:20:30 [Warn     ] [::1:62935] BucketHandler Read unable to retrieve configuration for bucket favicon.ico
-2020-01-23 05:21:31 [Warn     ] BucketManager Get unable to find bucket with name favicon.ico
-2020-01-23 05:21:31 [Warn     ] [::1:63049] BucketHandler Read unable to retrieve configuration for bucket favicon.ico
-2020-01-23 05:23:13 [Warn     ] BucketManager Get unable to find bucket with name favicon.ico
-2020-01-23 05:23:13 [Warn     ] [::1:63206] BucketHandler Read unable to retrieve configuration for bucket favicon.ico

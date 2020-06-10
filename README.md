@@ -17,9 +17,15 @@ Core use cases for Less3:
 
 ## New in This Version
 
-v1.2.0.2
+v1.3.0.1
 
-- Minor cleanup, version from assembly, dependency update, XML documentation, Postman collection
+- Migrate database layer to ORM
+- Improved usability and console log messages
+- Simplification of objects
+- Centralized authentication and authorization
+- Virtualized storage layer to support new backend storage options
+- Updated Postman collection
+- Dockerfile for containerized deployments
 
 ## Help and Feedback
 
@@ -111,6 +117,10 @@ Less3 is built using a series of open-source packages, including:
 - AWS SDK - https://github.com/aws/aws-sdk-net
 - S3 Server Interface - https://github.com/jchristn/s3serverinterface
 - Watson Webserver - https://github.com/jchristn/WatsonWebserver
+
+## Deployment in Docker
+
+Please refer to ```Docker.md``` and ```Dockerfile``` in the project directory.
 
 ## Version History
 

@@ -85,9 +85,9 @@ namespace Less3.Api.Admin
         private async Task GetBuckets(S3Request req, S3Response resp)
         {
             if (req.RawUrlEntries.Count >= 3)
-            { 
-                BucketConfiguration config = null;
-                if (!_Buckets.Get(req.RawUrlEntries[2], out config))
+            {
+                Bucket bucket = _Buckets.Get(req.RawUrlEntries[2]);
+                if (bucket == null)
                 {
                     resp.StatusCode = 404;
                     resp.ContentType = "text/plain";
@@ -98,18 +98,16 @@ namespace Less3.Api.Admin
                 {
                     resp.StatusCode = 200;
                     resp.ContentType = "application/json";
-                    await resp.Send(Common.SerializeJson(config, true));
+                    await resp.Send(Common.SerializeJson(bucket, true));
                     return;
                 }
             }
             else
             {
-                List<BucketConfiguration> configs = null;
-                _Config.GetBuckets(out configs);
-
+                List<Bucket> buckets = _Config.GetBuckets();
                 resp.StatusCode = 200;
                 resp.ContentType = "application/json";
-                await resp.Send(Common.SerializeJson(configs, true));
+                await resp.Send(Common.SerializeJson(buckets, true));
                 return;
             }
         }
@@ -118,8 +116,8 @@ namespace Less3.Api.Admin
         {
             if (req.RawUrlEntries.Count >= 3)
             {
-                User user = null;
-                if (!_Config.GetUserByName(req.RawUrlEntries[2], out user))
+                User user = _Config.GetUserByName(req.RawUrlEntries[2]);
+                if (user == null)
                 {
                     resp.StatusCode = 404;
                     resp.ContentType = "text/plain";
@@ -136,9 +134,7 @@ namespace Less3.Api.Admin
             }
             else
             {
-                List<User> users = null;
-                _Config.GetUsers(out users);
-
+                List<User> users = _Config.GetUsers(); 
                 resp.StatusCode = 200;
                 resp.ContentType = "application/json";
                 await resp.Send(Common.SerializeJson(users, true));
@@ -150,8 +146,8 @@ namespace Less3.Api.Admin
         {
             if (req.RawUrlEntries.Count >= 3)
             {
-                Credential cred = null;
-                if (!_Config.GetCredentialByAccessKey(req.RawUrlEntries[2], out cred))
+                Credential cred = _Config.GetCredentialByAccessKey(req.RawUrlEntries[2]);
+                if (cred == null)
                 {
                     resp.StatusCode = 404;
                     resp.ContentType = "text/plain";
@@ -168,9 +164,7 @@ namespace Less3.Api.Admin
             }
             else
             {
-                List<Credential> creds = null;
-                _Config.GetCredentials(out creds);
-
+                List<Credential> creds = _Config.GetCredentials(); 
                 resp.StatusCode = 200;
                 resp.ContentType = "application/json";
                 await resp.Send(Common.SerializeJson(creds, true));

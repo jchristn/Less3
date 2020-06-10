@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Text;
 
-using SqliteWrapper;
 using SyslogLogging;
-
-using Less3.Database.Configuration;
+using Watson.ORM;
+using Watson.ORM.Core;
 
 namespace Less3.Classes
 {
@@ -23,22 +22,17 @@ namespace Less3.Classes
 
         private Settings _Settings = null;
         private LoggingModule _Logging = null;
-        private DatabaseClient _Database = null;
-        private DatabaseQueries _Queries = null;
+        private WatsonORM _ORM = null;
 
         #endregion
 
         #region Constructors-and-Factories
          
-        internal ConfigManager(Settings settings, LoggingModule logging)
+        internal ConfigManager(Settings settings, LoggingModule logging, WatsonORM orm)
         {
-            if (settings == null) throw new ArgumentNullException(nameof(settings));
-            if (logging == null) throw new ArgumentNullException(nameof(logging));
-
-            _Settings = settings;
-            _Logging = logging;
-
-            InitializeDatabase();
+            _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _Logging = logging ?? throw new ArgumentNullException(nameof(logging));
+            _ORM = orm ?? throw new ArgumentNullException(nameof(orm));
         }
 
         #endregion
@@ -50,10 +44,10 @@ namespace Less3.Classes
         /// </summary>
         public void Dispose()
         {
-            if (_Database != null)
+            if (_ORM != null)
             {
-                _Database.Dispose();
-                _Database = null;
+                _ORM.Dispose();
+                _ORM = null;
             }
         }
 
@@ -61,31 +55,26 @@ namespace Less3.Classes
 
         #region Internal-User-Methods
 
-        internal void GetUsers(out List<User> users)
+        internal List<User> GetUsers()
         {
-            users = new List<User>();
-            string query = _Queries.GetUsers();
-            DataTable result = _Database.Query(query);
-
-            if (result != null && result.Rows.Count > 0)
-            {
-                foreach (DataRow row in result.Rows)
-                {
-                    users.Add(User.FromDataRow(row));
-                }
-            }
-
-            return;
+            DbExpression e = new DbExpression(
+                _ORM.GetColumnName<User>(nameof(User.Id)),
+                DbOperators.GreaterThan,
+                0);
+            return _ORM.SelectMany<User>(e);
         }
 
         internal bool UserGuidExists(string guid)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
 
-            string query = _Queries.GetUserByGuid(guid);
-            DataTable result = _Database.Query(query);
+            DbExpression e = new DbExpression(
+                _ORM.GetColumnName<User>(nameof(User.GUID)),
+                DbOperators.Equals,
+                guid);
 
-            if (result != null && result.Rows.Count > 0) return true;
+            User user = _ORM.SelectFirst<User>(e);
+            if (user != null) return true;
             return false;
         }
 
@@ -93,83 +82,71 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(email)) throw new ArgumentNullException(nameof(email));
 
-            string query = _Queries.GetUserByEmail(email);
-            DataTable result = _Database.Query(query);
+            DbExpression e = new DbExpression(
+                _ORM.GetColumnName<User>(nameof(User.Email)),
+                DbOperators.Equals,
+                email);
 
-            if (result != null && result.Rows.Count > 0) return true;
+            User user = _ORM.SelectFirst<User>(e);
+            if (user != null) return true;
             return false;
         }
 
-        internal bool GetUserByGuid(string guid, out User user)
-        {
-            user = null;
+        internal User GetUserByGuid(string guid)
+        { 
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
 
-            string query = _Queries.GetUserByGuid(guid);
-            DataTable result = _Database.Query(query);
+            DbExpression e = new DbExpression(
+                _ORM.GetColumnName<User>(nameof(User.GUID)),
+                DbOperators.Equals,
+                guid);
 
-            if (result != null && result.Rows.Count > 0)
-            {
-                user = User.FromDataRow(result.Rows[0]);
-                return true;
-            }
-
-            return false;
+            return _ORM.SelectFirst<User>(e);
         }
 
-        internal bool GetUserByName(string name, out User user)
-        {
-            user = null;
+        internal User GetUserByName(string name)
+        { 
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
-            string query = _Queries.GetUserByName(name);
-            DataTable result = _Database.Query(query);
+            DbExpression e = new DbExpression(
+                _ORM.GetColumnName<User>(nameof(User.Name)),
+                DbOperators.Equals,
+                name);
 
-            if (result != null && result.Rows.Count > 0)
-            {
-                user = User.FromDataRow(result.Rows[0]);
-                return true;
-            }
-
-            return false;
+            return _ORM.SelectFirst<User>(e);
         }
 
-        internal bool GetUserByEmail(string email, out User user)
-        {
-            user = null;
+        internal User GetUserByEmail(string email)
+        { 
             if (String.IsNullOrEmpty(email)) throw new ArgumentNullException(nameof(email));
 
-            string query = _Queries.GetUserByEmail(email);
-            DataTable result = _Database.Query(query);
+            DbExpression e = new DbExpression(
+                _ORM.GetColumnName<User>(nameof(User.Email)),
+                DbOperators.Equals,
+                email);
 
-            if (result != null && result.Rows.Count > 0)
-            {
-                user = User.FromDataRow(result.Rows[0]);
-                return true;
-            }
-
-            return false;
+            return _ORM.SelectFirst<User>(e);
         }
 
-        internal bool GetUserByAccessKey(string accessKey, out User user)
-        {
-            user = null;
+        internal User GetUserByAccessKey(string accessKey)
+        { 
             if (String.IsNullOrEmpty(accessKey)) throw new ArgumentNullException(nameof(accessKey));
 
-            Credential cred = null;
-            if (!GetCredentialByAccessKey(accessKey, out cred))
+            Credential cred = GetCredentialByAccessKey(accessKey);
+            if (cred == null)
             {
                 _Logging.Warn("ConfigManager GetUserByAccessKey access key " + accessKey + " not found");
-                return false;
+                return null;
             }
 
-            if (!GetUserByGuid(cred.UserGUID, out user))
+            User user = GetUserByGuid(cred.UserGUID);
+            if (user == null)
             {
                 _Logging.Warn("ConfigManager GetUserByAccessKey user GUID " + cred.UserGUID + " not found, referenced by credential GUID " + cred.GUID);
-                return false;
+                return null;
             }
 
-            return true;
+            return user;
         }
 
         internal bool AddUser(string guid, string name, string email)
@@ -185,133 +162,96 @@ namespace Less3.Classes
         internal bool AddUser(User user)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
-            User tempUser = null;
 
-            if (GetUserByGuid(user.GUID, out tempUser))
+            User userByGuid = GetUserByGuid(user.GUID);
+            if (userByGuid != null)
             {
                 _Logging.Warn("ConfigManager AddUser user GUID " + user.GUID + " already exists");
                 return false;
             }
 
-            if (GetUserByEmail(user.Email, out tempUser))
+            User userByEmail = GetUserByEmail(user.Email);
+            if (userByEmail != null)
             {
                 _Logging.Warn("ConfigManager AddUser user email " + user.Email + " already exists");
                 return false;
             }
 
-            string query = _Queries.InsertUser(user);
-            DataTable result = _Database.Query(query);
+            _ORM.Insert<User>(user);
             return true;
         }
 
         internal void DeleteUser(string guid)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid)); 
-              
-            string query = _Queries.DeleteUser(guid);
-            DataTable result = _Database.Query(query);
-            return;
-        }
-
-        internal void SetUserValue(string guid, string field, string val)
-        {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            if (String.IsNullOrEmpty(field)) throw new ArgumentNullException(nameof(field));
-            if (String.IsNullOrEmpty(val)) throw new ArgumentNullException(nameof(val));
-
-            Dictionary<string, object> vals = new Dictionary<string, object>();
-            vals.Add(field, val);
-
-            string query = _Queries.UpdateRecord("Users", "GUID", guid, vals);
-            DataTable result = _Database.Query(query);
-            return;
+            User tempUser = GetUserByGuid(guid);
+            if (tempUser != null)
+            {
+                _ORM.Delete<User>(tempUser);
+            }
         }
-
+         
         #endregion
 
         #region Internal-Credential-Methods
 
-        internal void GetCredentials(out List<Credential> creds)
+        internal List<Credential> GetCredentials()
         {
-            creds = new List<Credential>();
-            string query = _Queries.GetCredentials();
-            DataTable result = _Database.Query(query);
-
-            if (result != null && result.Rows.Count > 0)
-            {
-                foreach (DataRow row in result.Rows)
-                {
-                    creds.Add(Credential.FromDataRow(row));
-                }
-            }
-
-            return;
+            DbExpression e = new DbExpression(
+                _ORM.GetColumnName<Credential>(nameof(Credential.Id)),
+                DbOperators.GreaterThan,
+                0);
+            return _ORM.SelectMany<Credential>(e); 
         }
 
         internal bool CredentialGuidExists(string guid)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
 
-            string query = _Queries.GetCredentialsByGuid(guid);
-            DataTable result = _Database.Query(query);
+            DbExpression e = new DbExpression(
+                _ORM.GetColumnName<Credential>(nameof(Credential.GUID)),
+                DbOperators.Equals,
+                guid);
 
-            if (result != null && result.Rows.Count > 0) return true;
+            Credential cred = _ORM.SelectFirst<Credential>(e);
+            if (cred != null) return true;
             return false;
         }
 
-        internal bool GetCredentialByGuid(string guid, out Credential cred)
-        {
-            cred = null;
+        internal Credential GetCredentialByGuid(string guid)
+        { 
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
 
-            string query = _Queries.GetCredentialsByGuid(guid);
-            DataTable result = _Database.Query(query);
+            DbExpression e = new DbExpression(
+                _ORM.GetColumnName<Credential>(nameof(Credential.GUID)),
+                DbOperators.Equals,
+                guid);
 
-            if (result != null && result.Rows.Count > 0)
-            {
-                cred = Credential.FromDataRow(result.Rows[0]);
-                return true;
-            }
-
-            return false;
+            return _ORM.SelectFirst<Credential>(e);
         }
 
-        internal bool GetCredentialsByUser(string userGuid, out List<Credential> creds)
-        {
-            creds = new List<Credential>();
+        internal List<Credential> GetCredentialsByUser(string userGuid)
+        { 
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
 
-            string query = _Queries.GetCredentialsByUser(userGuid);
-            DataTable result = _Database.Query(query);
+            DbExpression e = new DbExpression(
+                _ORM.GetColumnName<Credential>(nameof(Credential.UserGUID)),
+                DbOperators.Equals,
+                userGuid);
 
-            if (result != null && result.Rows.Count > 0)
-            {
-                foreach (DataRow row in result.Rows)
-                {
-                    creds.Add(Credential.FromDataRow(row));
-                }
-
-                return true;
-            }
-
-            return false;
+            return _ORM.SelectMany<Credential>(e);
         }
 
-        internal bool GetCredentialByAccessKey(string accessKey, out Credential cred)
-        {
-            cred = null;
+        internal Credential GetCredentialByAccessKey(string accessKey)
+        { 
             if (String.IsNullOrEmpty(accessKey)) throw new ArgumentNullException(nameof(accessKey));
+             
+            DbExpression e = new DbExpression(
+                _ORM.GetColumnName<Credential>(nameof(Credential.AccessKey)),
+                DbOperators.Equals,
+                accessKey);
 
-            string query = _Queries.GetCredentialsByAccessKey(accessKey);
-            DataTable result = _Database.Query(query);
-
-            if (result != null && result.Rows.Count > 0)
-            {
-                cred = Credential.FromDataRow(result.Rows[0]);
-                return true;
-            }
-
-            return false;
+            return _ORM.SelectFirst<Credential>(e);
         }
 
         internal bool AddCredential(string userGuid, string description, string accessKey, string secretKey)
@@ -328,130 +268,95 @@ namespace Less3.Classes
         {
             if (cred == null) throw new ArgumentNullException(nameof(cred));
 
-            Credential tempCred = null;
-            if (GetCredentialByGuid(cred.GUID, out tempCred))
+            Credential credByGuid = GetCredentialByGuid(cred.GUID);
+            if (credByGuid != null)
             {
                 _Logging.Warn("ConfigManager AddCredential credential GUID " + cred.GUID + " already exists");
                 return false;
             }
 
-            if (GetCredentialByAccessKey(cred.AccessKey, out tempCred)) 
+            Credential credByKey = GetCredentialByAccessKey(cred.AccessKey);
+            if (credByKey != null)
             {
                 _Logging.Warn("ConfigManager AddCredential access key " + cred.AccessKey + " already exists");
                 return false;
             }
 
-            string query = _Queries.InsertCredentials(cred);
-            DataTable result = _Database.Query(query);
+            _ORM.Insert<Credential>(cred); 
             return true;
         }
 
         internal void DeleteCredential(string guid)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-
-            string query = _Queries.DeleteCredentials(guid);
-            DataTable result = _Database.Query(query);
-            return;
+            Credential tempCred = GetCredentialByGuid(guid);
+            if (tempCred != null)
+            {
+                _ORM.Delete<Credential>(tempCred);
+            }
         }
-
-        internal void SetCredentialValue(string guid, string field, string val)
-        {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            if (String.IsNullOrEmpty(field)) throw new ArgumentNullException(nameof(field));
-            if (String.IsNullOrEmpty(val)) throw new ArgumentNullException(nameof(val));
-
-            Dictionary<string, object> vals = new Dictionary<string, object>();
-            vals.Add(field, val);
-
-            string query = _Queries.UpdateRecord("Credentials", "GUID", guid, vals);
-            DataTable result = _Database.Query(query);
-            return;
-        }
-
+         
         #endregion
 
         #region Internal-Bucket-Methods
 
-        internal void GetBuckets(out List<BucketConfiguration> buckets)
+        internal List<Bucket> GetBuckets()
         {
-            buckets = new List<BucketConfiguration>();
-            string query = _Queries.GetBuckets();
-            DataTable result = _Database.Query(query);
-
-            if (result != null && result.Rows.Count > 0)
-            {
-                foreach (DataRow row in result.Rows)
-                {
-                    buckets.Add(BucketConfiguration.FromDataRow(row));
-                }
-            }
-
-            return;
+            DbExpression e = new DbExpression(
+                _ORM.GetColumnName<Bucket>(nameof(Bucket.Id)),
+                DbOperators.GreaterThan,
+                0);
+            return _ORM.SelectMany<Bucket>(e); 
         }
 
         internal bool BucketExists(string name)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
-            string query = _Queries.GetBucketByName(name);
-            DataTable result = _Database.Query(query);
+            DbExpression e = new DbExpression(
+                _ORM.GetColumnName<Bucket>(nameof(Bucket.Name)),
+                DbOperators.Equals,
+                name);
 
-            if (result != null && result.Rows.Count > 0) return true;
+            Bucket bucket = _ORM.SelectFirst<Bucket>(e);
+            if (bucket != null) return true;
             return false;
         }
 
-        internal void GetBucketsByUser(string userGuid, out List<BucketConfiguration> buckets)
-        {
-            buckets = new List<BucketConfiguration>();
+        internal List<Bucket> GetBucketsByUser(string userGuid)
+        { 
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
 
-            string query = _Queries.GetBucketsByUser(userGuid);
-            DataTable result = _Database.Query(query);
+            DbExpression e = new DbExpression(
+                _ORM.GetColumnName<Bucket>(nameof(Bucket.OwnerGUID)),
+                DbOperators.Equals,
+                userGuid);
 
-            if (result != null && result.Rows.Count > 0)
-            {
-                foreach (DataRow row in result.Rows)
-                {
-                    buckets.Add(BucketConfiguration.FromDataRow(row));
-                } 
-            }
-
-            return;
+            return _ORM.SelectMany<Bucket>(e); 
         }
 
-        internal bool GetBucketByGuid(string guid, out BucketConfiguration bucket)
-        {
-            bucket = null;
+        internal Bucket GetBucketByGuid(string guid)
+        { 
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
 
-            string query = _Queries.GetBucketByGuid(guid);
-            DataTable result = _Database.Query(query);
+            DbExpression e = new DbExpression(
+                _ORM.GetColumnName<Bucket>(nameof(Bucket.GUID)),
+                DbOperators.Equals,
+                guid);
 
-            if (result != null && result.Rows.Count > 0)
-            {
-                bucket = BucketConfiguration.FromDataRow(result.Rows[0]);
-                return true;
-            }
-
-            return false;
+            return _ORM.SelectFirst<Bucket>(e);
         }
 
-        internal bool GetBucketByName(string name, out BucketConfiguration bucket)
-        {
-            bucket = null;
+        internal Bucket GetBucketByName(string name)
+        { 
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
-            string query = _Queries.GetBucketByName(name);
-            DataTable result = _Database.Query(query);
+            DbExpression e = new DbExpression(
+                _ORM.GetColumnName<Bucket>(nameof(Bucket.Name)),
+                DbOperators.Equals,
+                name);
 
-            if (result != null && result.Rows.Count > 0)
-            {
-                bucket = BucketConfiguration.FromDataRow(result.Rows[0]);
-                return true;
-            }
-
-            return false;
+            return _ORM.SelectFirst<Bucket>(e);
         }
 
         internal bool AddBucket(string userGuid, string name)
@@ -459,16 +364,17 @@ namespace Less3.Classes
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
-            BucketConfiguration bucket = new BucketConfiguration(
+            Bucket bucket = new Bucket(
+                Guid.NewGuid().ToString(),
                 name,
                 userGuid,
-                _Settings.Storage.Directory + name + "/" + name + ".db",
-                _Settings.Storage.Directory + name + "/Objects");
+                _Settings.Storage.StorageType,
+                _Settings.Storage.DiskDirectory + name + "/Objects");
 
             return AddBucket(bucket);
         }
 
-        internal bool AddBucket(BucketConfiguration bucket)
+        internal bool AddBucket(Bucket bucket)
         {
             if (bucket == null) throw new ArgumentNullException(nameof(bucket));
 
@@ -478,67 +384,20 @@ namespace Less3.Classes
                 return false;
             }
 
-            string query = _Queries.InsertBucket(bucket);
-            DataTable result = _Database.Query(query);
+            _ORM.Insert<Bucket>(bucket);
             return true;
         }
 
         internal void DeleteBucket(string guid)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-
-            string query = _Queries.DeleteBucket(guid);
-            DataTable result = _Database.Query(query);
-            return;
+            Bucket bucket = GetBucketByGuid(guid);
+            if (bucket != null)
+            {
+                _ORM.Delete<Bucket>(bucket);
+            }
         }
-
-        internal void SetBucketValue(string guid, string field, string val)
-        {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            if (String.IsNullOrEmpty(field)) throw new ArgumentNullException(nameof(field));
-            if (String.IsNullOrEmpty(val)) throw new ArgumentNullException(nameof(val));
-
-            Dictionary<string, object> vals = new Dictionary<string, object>();
-            vals.Add(field, val);
-
-            string query = _Queries.UpdateRecord("Buckets", "GUID", guid, vals);
-            DataTable result = _Database.Query(query);
-            return;
-        }
-
-        #endregion
-
-        #region Private-Methods
          
-        private void InitializeDatabase()
-        {
-            _Database = new DatabaseClient(_Settings.Files.Database);
-
-            _Database.Logger = Logger;
-            _Database.LogQueries = _Settings.Debug.DatabaseQueries;
-            _Database.LogResults = _Settings.Debug.DatabaseResults;
-
-            _Queries = new DatabaseQueries(_Database);
-
-            string query = null;
-            DataTable result = null;
-
-            query = _Queries.CreateUsersTable();
-            result = _Database.Query(query);
-
-            query = _Queries.CreateCredentialsTable();
-            result = _Database.Query(query);
-
-            query = _Queries.CreateBucketsTable();
-            result = _Database.Query(query);
-        }
-
-        private void Logger(string msg)
-        {
-            _Logging.Debug(msg);
-            return;
-        }
-        
-        #endregion
+        #endregion 
     }
 }

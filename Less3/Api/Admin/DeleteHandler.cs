@@ -90,8 +90,8 @@ namespace Less3.Api.Admin
                 return;
             }
 
-            BucketConfiguration config = null;
-            if (!_Config.GetBucketByName(req.RawUrlEntries[2], out config))
+            Bucket bucket = _Config.GetBucketByName(req.RawUrlEntries[2]);
+            if (bucket == null)
             {
                 resp.StatusCode = 404;
                 resp.ContentType = "text/plain";
@@ -99,7 +99,7 @@ namespace Less3.Api.Admin
                 return;
             }
                 
-            _Config.DeleteBucket(config.GUID);
+            _Config.DeleteBucket(bucket.GUID);
 
             resp.StatusCode = 204;
             resp.ContentType = "text/plain";
@@ -115,8 +115,8 @@ namespace Less3.Api.Admin
                 return;
             }
 
-            User user = null;
-            if (!_Config.GetUserByName(req.RawUrlEntries[2], out user))
+            User user = _Config.GetUserByName(req.RawUrlEntries[2]);
+            if (user == null)
             {
                 resp.StatusCode = 404;
                 resp.ContentType = "text/plain";
@@ -140,8 +140,8 @@ namespace Less3.Api.Admin
                 return;
             }
 
-            Credential cred = null;
-            if (!_Config.GetCredentialByAccessKey(req.RawUrlEntries[2], out cred))
+            Credential cred = _Config.GetCredentialByAccessKey(req.RawUrlEntries[2]);
+            if (cred == null)
             {
                 resp.StatusCode = 404;
                 resp.ContentType = "text/plain";

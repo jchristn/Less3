@@ -91,12 +91,12 @@ namespace Less3.Api.Admin
             }
 
             byte[] data = null;
-            BucketConfiguration config = null;
+            Bucket bucket = null;
 
             try
             {
                 data = Common.StreamToBytes(req.Data);
-                config = Common.DeserializeJson<BucketConfiguration>(data);
+                bucket = Common.DeserializeJson<Bucket>(data);
             }
             catch (Exception)
             {
@@ -104,16 +104,15 @@ namespace Less3.Api.Admin
                 return;
             }
 
-            BucketConfiguration tempConfig = null;
-            if (_Config.GetBucketByName(config.Name, out tempConfig))
+            Bucket tempBucket = _Config.GetBucketByName(bucket.Name);
+            if (tempBucket != null)
             {
                 await resp.Send(S3ServerInterface.S3Objects.ErrorCode.BucketAlreadyExists);
                 return;
             }
 
-            _Config.AddBucket(config);
-
-            resp.StatusCode = 204;
+            _Config.AddBucket(bucket); 
+            resp.StatusCode = 201;
             resp.ContentType = "text/plain";
             await resp.Send();
         }
@@ -140,8 +139,8 @@ namespace Less3.Api.Admin
                 return;
             }
 
-            User tempUser = null;
-            if (_Config.GetUserByName(user.Name, out tempUser))
+            User tempUser = _Config.GetUserByName(user.Name);
+            if (tempUser != null)
             {
                 resp.StatusCode = 409;
                 resp.ContentType = "text/plain";
@@ -151,7 +150,7 @@ namespace Less3.Api.Admin
 
             _Config.AddUser(user);
 
-            resp.StatusCode = 204;
+            resp.StatusCode = 201;
             resp.ContentType = "text/plain";
             await resp.Send();
         }
@@ -178,8 +177,8 @@ namespace Less3.Api.Admin
                 return;
             }
 
-            Credential tempCred = null;
-            if (_Config.GetCredentialByAccessKey(cred.AccessKey, out tempCred))
+            Credential tempCred = _Config.GetCredentialByAccessKey(cred.AccessKey);
+            if (tempCred != null)
             {
                 resp.StatusCode = 409;
                 resp.ContentType = "text/plain";
@@ -189,7 +188,7 @@ namespace Less3.Api.Admin
 
             _Config.AddCredential(cred);
 
-            resp.StatusCode = 204;
+            resp.StatusCode = 201;
             resp.ContentType = "text/plain";
             await resp.Send();
         }

@@ -2,23 +2,54 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Text;
+using Watson.ORM.Core;
 
 namespace Less3.Classes
 {
     /// <summary>
     /// Credential.
     /// </summary>
-    internal class Credential
+    [Table("credential")]
+    public class Credential
     {
-        #region Internal-Members
+        #region Public-Members
 
-        internal int Id { get; set; }
-        internal string GUID { get; set; }
-        internal string UserGUID { get; set; }
-        internal string Description { get; set; }
-        internal string AccessKey { get; set; }
-        internal string SecretKey { get; set; }
-         
+        /// <summary>
+        /// Database identifier.
+        /// </summary>
+        [Column("id", true, DataTypes.Int, false)]
+        public int Id { get; set; }
+
+        /// <summary>
+        /// GUID of the credential.
+        /// </summary>
+        [Column("guid", false, DataTypes.Nvarchar, 64, false)]
+        public string GUID { get; set; }
+
+        /// <summary>
+        /// User GUID.
+        /// </summary>
+        [Column("userguid", false, DataTypes.Nvarchar, 64, false)]
+        public string UserGUID { get; set; }
+
+        /// <summary>
+        /// Description.
+        /// </summary>
+        [Column("description", false, DataTypes.Nvarchar, 256, true)]
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Access key.
+        /// </summary>
+        [Column("accesskey", false, DataTypes.Nvarchar, 256, false)]
+        public string AccessKey { get; set; }
+
+        /// <summary>
+        /// Secret key.
+        /// </summary>
+        [Column("secretkey", false, DataTypes.Nvarchar, 256, false)]
+        public string SecretKey { get; set; }
+
         #endregion
 
         #region Private-Members
@@ -27,7 +58,10 @@ namespace Less3.Classes
 
         #region Constructors-and-Factories
 
-        internal Credential()
+        /// <summary>
+        /// Instantiate the object.
+        /// </summary>
+        public Credential()
         {
 
         }
@@ -58,34 +92,7 @@ namespace Less3.Classes
             AccessKey = accessKey;
             SecretKey = secretKey;
         }
-
-        internal static Credential FromDataRow(DataRow row)
-        {
-            if (row == null) throw new ArgumentNullException(nameof(row));
-
-            Credential ret = new Credential();
-
-            if (row.Table.Columns.Contains("Id") && row["Id"] != DBNull.Value && row["Id"] != null)
-                ret.Id = Convert.ToInt32(row["Id"]);
-
-            if (row.Table.Columns.Contains("GUID") && row["GUID"] != DBNull.Value && row["GUID"] != null)
-                ret.GUID = row["GUID"].ToString();
-
-            if (row.Table.Columns.Contains("UserGUID") && row["UserGUID"] != DBNull.Value && row["UserGUID"] != null)
-                ret.UserGUID = row["UserGUID"].ToString();
-
-            if (row.Table.Columns.Contains("Description") && row["Description"] != DBNull.Value && row["Description"] != null)
-                ret.Description = row["Description"].ToString();
-
-            if (row.Table.Columns.Contains("AccessKey") && row["AccessKey"] != DBNull.Value && row["AccessKey"] != null)
-                ret.AccessKey = row["AccessKey"].ToString();
-
-            if (row.Table.Columns.Contains("SecretKey") && row["SecretKey"] != DBNull.Value && row["SecretKey"] != null)
-                ret.SecretKey = row["SecretKey"].ToString();
-
-            return ret;
-        }
-
+         
         #endregion
 
         #region Public-Methods

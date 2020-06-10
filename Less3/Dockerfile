@@ -21,11 +21,10 @@ COPY --from=build /app/out .
 # Copy in the System.json file containing the appropriate external
 # database and storage settings.  Refer to Docker.md for details.
 #
-# COPY ./System.json .
-# RUN mkdir Logs
-# RUN mkdir Storage
-# RUN mkdir Temp
-# RUN mkdir Assets
+COPY ./System.json .
+RUN mkdir Logs
+RUN mkdir Storage
+RUN mkdir Temp
 #
 
 # Set the entrypoint for the container

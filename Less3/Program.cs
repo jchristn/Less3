@@ -286,6 +286,11 @@ namespace Less3
                 DefaultRequestHandler);
             Console.WriteLine("[success]");
 
+            if (_Settings.Server.Ssl) 
+                Console.WriteLine("| https://" + _Settings.Server.DnsHostname + ":" + _Settings.Server.ListenerPort); 
+            else 
+                Console.WriteLine("| http://" + _Settings.Server.DnsHostname + ":" + _Settings.Server.ListenerPort); 
+
             //             0        1         2         3         4         5
             //             123456789012345678901234567890123456789012345678901234567890
             Console.Write("| Initializing S3 server APIs                    : ");

@@ -14,11 +14,11 @@ Certain operating systems may be case-sensitive when it comes to file names.  Be
 
 ### Copy in Node Configuration
 
-The ```system.json``` file which defines the configuration for your node should be copied in as part of your ```Dockerfile```.  Do not allow it to be built dynamically.
+The ```System.json``` file which defines the configuration for your node should be either be copied in as part of your ```Dockerfile``` or overridden using either ```-v``` or ```docker-compose```.  Do not allow it to be built dynamically.
 
-Also, if you will be detaching (i.e. the ```-d``` flag in ```docker run```) be sure to set ```system.json``` ```EnableConsole``` to false and ```Logging.ConsoleLogging``` to false.
+Set ```System.json``` ```EnableConsole``` to false and ```Logging.ConsoleLogging``` to false.  
 
-Be sure to set your ```system.json``` ```Server.DnsHostname``` to ```*```.
+Set your ```System.json``` ```Server.DnsHostname``` to ```*```.
 
 ### Use an External Database
 
@@ -75,6 +75,15 @@ $ docker run --user ContainerAdministrator -d -p 8000:8000 less3
 
 Linux or Mac 
 $ docker run --user root -d -p 8000:8000 less3
+```
+
+To run using a ```System.json``` from your filesystem (or external storage) use the following.  Note that the first parameter to ```-v``` is the path to the file outside of the container image and the second parameter is the path within the image.  The app is in ```/app``` so the path will need to reflect that.
+```
+Windows
+$ docker run --user ContainerAdministrator -p 8000:8000 -v /[PathOnLocalFilesystem]/System.json:/app/System.json less3
+
+Linux or Mac 
+$ docker run --user root -p 8000:8000 -v /[PathOnLocalFilesystem]/System.json:/app/System.json less3
 ```
 
 5) Connect to Less3 in your browser: 

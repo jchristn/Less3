@@ -254,13 +254,13 @@ namespace Less3.Classes
             return _ORM.SelectFirst<Credential>(e);
         }
 
-        internal bool AddCredential(string userGuid, string description, string accessKey, string secretKey)
+        internal bool AddCredential(string userGuid, string description, string accessKey, string secretKey, bool isBase64)
         {
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
             if (String.IsNullOrEmpty(accessKey)) throw new ArgumentNullException(nameof(accessKey));
             if (String.IsNullOrEmpty(secretKey)) throw new ArgumentNullException(nameof(secretKey));
 
-            Credential cred = new Credential(userGuid, description, accessKey, secretKey);
+            Credential cred = new Credential(userGuid, description, accessKey, secretKey, isBase64);
             return AddCredential(cred);
         }
 

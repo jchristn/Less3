@@ -316,7 +316,7 @@ namespace Less3.Storage
         /// <param name="key">Key.</param>
         /// <param name="data">Data.</param> 
         /// <returns>MD5 hash.</returns>
-        public override string Write(string key, byte[] data)
+        public override byte[] Write(string key, byte[] data)
         { 
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
             if (data == null) data = new byte[0];
@@ -331,7 +331,7 @@ namespace Less3.Storage
         /// <param name="key">Key.</param>
         /// <param name="data">Data.</param> 
         /// <returns>MD5 hash.</returns>
-        public override async Task<string> WriteAsync(string key, byte[] data)
+        public override async Task<byte[]> WriteAsync(string key, byte[] data)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
             if (data == null) data = new byte[0];
@@ -347,7 +347,7 @@ namespace Less3.Storage
         /// <param name="contentLength">Number of bytes to read from the stream.</param>
         /// <param name="stream">Stream.</param>
         /// <returns>MD5 hash.</returns>
-        public override string Write(string key, long contentLength, Stream stream)
+        public override byte[] Write(string key, long contentLength, Stream stream)
         { 
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
@@ -384,7 +384,7 @@ namespace Less3.Storage
         /// <param name="contentLength">Number of bytes to read from the stream.</param>
         /// <param name="stream">Stream.</param>
         /// <returns>MD5 hash.</returns>
-        public override async Task<string> WriteAsync(string key, long contentLength, Stream stream)
+        public override async Task<byte[]> WriteAsync(string key, long contentLength, Stream stream)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 

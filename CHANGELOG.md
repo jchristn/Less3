@@ -2,6 +2,14 @@
 
 ## Current Version
 
+v1.4.0
+
+- Minor refactor
+- Fixes to enumeration including folder support
+- Request signature authentication
+ 
+## Previous Versions
+
 v1.3.0.1
 
 - Migrate database layer to ORM
@@ -11,8 +19,6 @@ v1.3.0.1
 - Virtualized storage layer to support new backend storage options
 - Updated Postman collection
 - Dockerfile for containerized deployments
- 
-## Previous Versions
 
 v1.2.0.2
 

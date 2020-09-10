@@ -90,7 +90,7 @@ namespace Less3.Api.S3
                 return;
             }
 
-            BucketStatistics stats = md.BucketClient.GetStatistics();
+            BucketStatistics stats = md.BucketClient.GetFullStatistics();
             if (stats.Objects > 0 || stats.Bytes > 0)
             {
                 _Logging.Warn(header + "bucket " + md.Bucket.Name + " is not empty");
@@ -199,41 +199,46 @@ namespace Less3.Api.S3
                 return;
             }
              
-            long startIndex = 0;
-            int maxResults = 1000;
-            if (!String.IsNullOrEmpty(req.ContinuationToken)) startIndex = ParseContinuationToken(req.ContinuationToken);
-            if (req.MaxKeys != null) maxResults = (int)(req.MaxKeys);
-            if (maxResults < 1 || maxResults > 1000) maxResults = 1000;
-             
-            List<Obj> objs = md.BucketClient.Enumerate(req.Prefix, startIndex, maxResults);
-            BucketStatistics stats = md.BucketClient.GetStatistics();
-
-            long maxId = 0;
-            if (objs.Count > 0)
+            int startIndex = 0;
+            if (!String.IsNullOrEmpty(req.ContinuationToken))
             {
-                objs = objs.OrderBy(p => p.Id).ToList();
-                maxId = objs[objs.Count - 1].Id;
+                startIndex = ParseContinuationToken(req.ContinuationToken);
             }
 
+            if (!String.IsNullOrEmpty(req.Marker))
+            {
+                Obj marker = md.BucketClient.GetObjectMetadata(req.Marker);
+                if (marker != null) startIndex = (marker.Id + 1);
+            }
+             
+            if (req.MaxKeys < 1 || req.MaxKeys > 1000) req.MaxKeys = 1000;
+
+            List<Obj> objects = new List<Obj>();
+            List<string> prefixes = new List<string>();
+            int nextStartIndex = startIndex;
+            bool isTruncated = false;
+            md.BucketClient.Enumerate(req.Delimiter, req.Prefix, startIndex, (int)req.MaxKeys, out objects, out prefixes, out nextStartIndex, out isTruncated);
+             
             ListBucketResult listBucketResult = new ListBucketResult();
             listBucketResult.Contents = new List<Contents>();
 
-            if (objs.Count > req.MaxKeys && objs.Count == req.MaxKeys)
+            listBucketResult.Prefix = req.Prefix;
+            listBucketResult.Delimiter = req.Delimiter;
+            listBucketResult.KeyCount = objects.Count;
+            listBucketResult.MaxKeys = req.MaxKeys;
+            listBucketResult.Name = req.Bucket;
+            listBucketResult.Marker = req.Marker;
+            listBucketResult.Prefix = req.Prefix; 
+            listBucketResult.CommonPrefixes.Prefix = prefixes;
+            listBucketResult.IsTruncated = false;
+
+            if (isTruncated)
             {
                 listBucketResult.IsTruncated = true;
-                listBucketResult.NextContinuationToken = BuildContinuationToken(maxId);
-            }
-            else
-            {
-                listBucketResult.IsTruncated = false;
+                listBucketResult.NextContinuationToken = BuildContinuationToken(nextStartIndex); 
             }
 
-            listBucketResult.KeyCount = objs.Count;
-            listBucketResult.MaxKeys = req.MaxKeys != null ? req.MaxKeys.Value : 1000;
-            listBucketResult.Name = req.Bucket;
-            listBucketResult.Prefix = req.Prefix;
-
-            foreach (Obj curr in objs)
+            foreach (Obj curr in objects)
             {
                 Contents c = new Contents();
                 c.ETag = "\"" + curr.Md5 + "\"";
@@ -503,46 +508,46 @@ namespace Less3.Api.S3
                 return;
             }
              
-            long startIndex = 0;
-            int maxResults = 1000;
-            if (!String.IsNullOrEmpty(req.ContinuationToken)) startIndex = ParseContinuationToken(req.ContinuationToken);
-            if (req.MaxKeys != null) maxResults = (int)(req.MaxKeys);
-            if (maxResults < 1 || maxResults > 1000) maxResults = 1000;
+            int startIndex = 0;
+            if (!String.IsNullOrEmpty(req.ContinuationToken))
+            {
+                startIndex = ParseContinuationToken(req.ContinuationToken);
+            }
+
+            if (!String.IsNullOrEmpty(req.Marker))
+            {
+                Obj marker = md.BucketClient.GetObjectMetadata(req.Marker);
+                if (marker != null) startIndex = (marker.Id + 1);
+            }
              
-            List<Obj> objs = md.BucketClient.Enumerate(req.Prefix, startIndex, maxResults);  
-            BucketStatistics stats = md.BucketClient.GetStatistics();
+            if (req.MaxKeys < 1 || req.MaxKeys > 1000) req.MaxKeys = 1000;
 
-            string lastKey = null;
-            long maxId = 0;
-            if (objs.Count > 0)
+            List<Obj> objects = new List<Obj>();
+            List<string> prefixes = new List<string>();
+            int nextStartIndex = startIndex;
+            bool isTruncated = false;
+            md.BucketClient.Enumerate(req.Delimiter, req.Prefix, startIndex, (int)req.MaxKeys, out objects, out prefixes, out nextStartIndex, out isTruncated);
+             
+            string lastKey = null; 
+            if (objects.Count > 0)
             {
-                objs = objs.OrderBy(p => p.Id).ToList();
-                maxId = objs[objs.Count - 1].Id;
-                lastKey = objs[objs.Count - 1].Key;
+                objects = objects.OrderBy(p => p.Id).ToList(); 
+                lastKey = objects[objects.Count - 1].Key; 
             }
-                
+             
             ListVersionsResult listVersionsResult = new ListVersionsResult();
-                
-            if (objs.Count > req.MaxKeys && objs.Count == req.MaxKeys)
-            {
-                listVersionsResult.IsTruncated = true;
-            }
-            else
-            {
-                listVersionsResult.IsTruncated = false;
-            }
-
+            listVersionsResult.IsTruncated = isTruncated;
             listVersionsResult.KeyMarker = lastKey;
-            listVersionsResult.MaxKeys = req.MaxKeys != null ? req.MaxKeys.Value : 1000;
+            listVersionsResult.MaxKeys = req.MaxKeys;
             listVersionsResult.Name = req.Bucket;
             listVersionsResult.Prefix = req.Prefix;
-
-            foreach (Obj curr in objs)
+            
+            foreach (Obj curr in objects)
             {
                 if (curr.DeleteMarker)
                 {
                     DeleteMarker d = new DeleteMarker();
-                    d.IsLatest = IsLatest(objs, curr.Key, curr.LastAccessUtc);
+                    d.IsLatest = IsLatest(objects, curr.Key, curr.LastAccessUtc);
                     d.Key = curr.Key;
                     d.LastModified = curr.LastUpdateUtc;
                     d.Owner = new S3ServerInterface.S3Objects.Owner();
@@ -555,7 +560,7 @@ namespace Less3.Api.S3
                 {
                     S3ServerInterface.S3Objects.Version v = new S3ServerInterface.S3Objects.Version();
                     v.ETag = null;
-                    v.IsLatest = IsLatest(objs, curr.Key, curr.LastAccessUtc);
+                    v.IsLatest = IsLatest(objects, curr.Key, curr.LastAccessUtc);
                     v.Key = curr.Key;
                     v.ETag = "\"" + curr.Md5 + "\"";
                     v.LastModified = curr.LastUpdateUtc;
@@ -1020,9 +1025,9 @@ namespace Less3.Api.S3
             return Common.StringToBase64(lastId.ToString());
         }
 
-        private long ParseContinuationToken(string base64)
+        private int ParseContinuationToken(string base64)
         {
-            return Convert.ToInt64(Common.Base64ToString(base64));
+            return Convert.ToInt32(Common.Base64ToString(base64));
         }
 
         private bool IsLatest(List<Obj> objs, string key, DateTime lastAccessUtc)

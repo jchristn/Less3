@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\code\\KVPbase\\Less3-1.3\\Less3\\Less3.csproj": {}
+    "C:\\code\\KVPbase\\Less3-1.4\\Less3\\Less3.csproj": {}
   },
   "projects": {
-    "C:\\code\\KVPbase\\Less3-1.3\\Less3\\Less3.csproj": {
-      "version": "1.3.0.6",
+    "C:\\code\\KVPbase\\Less3-1.4\\Less3\\Less3.csproj": {
+      "version": "1.4.0",
       "restore": {
-        "projectUniqueName": "C:\\code\\KVPbase\\Less3-1.3\\Less3\\Less3.csproj",
+        "projectUniqueName": "C:\\code\\KVPbase\\Less3-1.4\\Less3\\Less3.csproj",
         "projectName": "Less3",
-        "projectPath": "C:\\code\\KVPbase\\Less3-1.3\\Less3\\Less3.csproj",
+        "projectPath": "C:\\code\\KVPbase\\Less3-1.4\\Less3\\Less3.csproj",
         "packagesPath": "C:\\Users\\joelc\\.nuget\\packages\\",
-        "outputPath": "C:\\code\\KVPbase\\Less3-1.3\\Less3\\obj\\",
+        "outputPath": "C:\\code\\KVPbase\\Less3-1.4\\Less3\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Microsoft\\Xamarin\\NuGet\\",
@@ -26,8 +26,6 @@
           "netcoreapp3.1"
         ],
         "sources": {
-          "C:\\NuGet": {},
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {},
           "https://nuget.pkg.github.com/jchristn/index.json": {}
         },
@@ -47,7 +45,7 @@
           "dependencies": {
             "AWSSDK.S3": {
               "target": "Package",
-              "version": "[3.3.111.10, )"
+              "version": "[3.5.0.10, )"
             },
             "Newtonsoft.Json": {
               "target": "Package",
@@ -55,7 +53,7 @@
             },
             "S3ServerInterface": {
               "target": "Package",
-              "version": "[2.0.1.19, )"
+              "version": "[2.1.0.9, )"
             },
             "SyslogLogging": {
               "target": "Package",
@@ -63,11 +61,11 @@
             },
             "Watson": {
               "target": "Package",
-              "version": "[3.0.11, )"
+              "version": "[3.1.0.2, )"
             },
             "WatsonORM": {
               "target": "Package",
-              "version": "[1.1.3, )"
+              "version": "[1.3.0.5, )"
             },
             "XmlToPox": {
               "target": "Package",

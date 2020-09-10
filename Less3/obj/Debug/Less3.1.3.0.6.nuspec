@@ -34,9 +34,9 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="C:\code\KVPbase\Less3-1.3\Less3\bin\Debug\netcoreapp3.1\Less3.runtimeconfig.json" target="lib\netcoreapp3.1\Less3.runtimeconfig.json" />
-    <file src="C:\code\KVPbase\Less3-1.3\Less3\bin\Debug\netcoreapp3.1\Less3.dll" target="lib\netcoreapp3.1\Less3.dll" />
-    <file src="C:\code\KVPbase\Less3-1.3\Less3\bin\Debug\netcoreapp3.1\Less3.xml" target="lib\netcoreapp3.1\Less3.xml" />
-    <file src="C:\code\KVPbase\Less3-1.3\Less3\LICENSE.md" target="LICENSE.md" />
+    <file src="C:\Code\KVPbase\Less3-1.3\Less3\bin\Debug\netcoreapp3.1\Less3.runtimeconfig.json" target="lib\netcoreapp3.1\Less3.runtimeconfig.json" />
+    <file src="C:\Code\KVPbase\Less3-1.3\Less3\bin\Debug\netcoreapp3.1\Less3.dll" target="lib\netcoreapp3.1\Less3.dll" />
+    <file src="C:\Code\KVPbase\Less3-1.3\Less3\bin\Debug\netcoreapp3.1\Less3.xml" target="lib\netcoreapp3.1\Less3.xml" />
+    <file src="C:\Code\KVPbase\Less3-1.3\Less3\LICENSE.md" target="LICENSE.md" />
   </files>
 </package>

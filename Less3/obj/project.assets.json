@@ -2,25 +2,25 @@
   "version": 3,
   "targets": {
     ".NETCoreApp,Version=v3.1": {
-      "AWSSDK.Core/3.3.107.9": {
+      "AWSSDK.Core/3.5.1.8": {
         "type": "package",
         "compile": {
-          "lib/netstandard2.0/AWSSDK.Core.dll": {}
+          "lib/netcoreapp3.1/AWSSDK.Core.dll": {}
         },
         "runtime": {
-          "lib/netstandard2.0/AWSSDK.Core.dll": {}
+          "lib/netcoreapp3.1/AWSSDK.Core.dll": {}
         }
       },
-      "AWSSDK.S3/3.3.111.10": {
+      "AWSSDK.S3/3.5.0.10": {
         "type": "package",
         "dependencies": {
-          "AWSSDK.Core": "[3.3.107.9, 3.4.0)"
+          "AWSSDK.Core": "[3.5.1.8, 3.6.0)"
         },
         "compile": {
-          "lib/netstandard2.0/AWSSDK.S3.dll": {}
+          "lib/netcoreapp3.1/AWSSDK.S3.dll": {}
         },
         "runtime": {
-          "lib/netstandard2.0/AWSSDK.S3.dll": {}
+          "lib/netcoreapp3.1/AWSSDK.S3.dll": {}
         }
       },
       "BouncyCastle.NetCore/1.8.3": {
@@ -37,105 +37,82 @@
           "lib/netstandard2.0/BouncyCastle.Crypto.dll": {}
         }
       },
-      "DatabaseWrapper.Core/3.0.1.1": {
+      "DatabaseWrapper.Core/3.1.0.2": {
         "type": "package",
         "dependencies": {
           "Microsoft.CSharp": "4.7.0",
-          "Microsoft.Extensions.Configuration.Binder": "3.1.4",
+          "Microsoft.Extensions.Configuration.Binder": "3.1.5",
           "Newtonsoft.Json": "12.0.3"
         },
         "compile": {
-          "lib/netstandard2.0/DatabaseWrapper.Core.dll": {}
+          "lib/netcoreapp2.0/DatabaseWrapper.Core.dll": {}
         },
         "runtime": {
-          "lib/netstandard2.0/DatabaseWrapper.Core.dll": {}
+          "lib/netcoreapp2.0/DatabaseWrapper.Core.dll": {}
         }
       },
-      "DatabaseWrapper.Mysql/3.0.1.1": {
+      "DatabaseWrapper.Mysql/3.2.0.2": {
         "type": "package",
         "dependencies": {
-          "DatabaseWrapper.Core": "3.0.1.1",
+          "DatabaseWrapper.Core": "3.1.0.2",
           "Microsoft.CSharp": "4.7.0",
-          "Microsoft.Extensions.Configuration.Binder": "3.1.4",
-          "MySql.Data": "8.0.20",
+          "Microsoft.Extensions.Configuration.Binder": "3.1.8",
+          "MySql.Data": "8.0.21",
           "Newtonsoft.Json": "12.0.3"
         },
         "compile": {
-          "lib/netstandard2.0/DatabaseWrapper.Mysql.dll": {}
+          "lib/netcoreapp2.0/DatabaseWrapper.Mysql.dll": {}
         },
         "runtime": {
-          "lib/netstandard2.0/DatabaseWrapper.Mysql.dll": {}
+          "lib/netcoreapp2.0/DatabaseWrapper.Mysql.dll": {}
         }
       },
-      "DatabaseWrapper.Postgresql/3.0.1.1": {
+      "DatabaseWrapper.Postgresql/3.2.0.2": {
         "type": "package",
         "dependencies": {
-          "DatabaseWrapper.Core": "3.0.1.1",
+          "DatabaseWrapper.Core": "3.1.0.2",
           "Microsoft.CSharp": "4.7.0",
-          "Microsoft.Extensions.Configuration.Binder": "3.1.4",
+          "Microsoft.Extensions.Configuration.Binder": "3.1.8",
           "Newtonsoft.Json": "12.0.3",
-          "Npgsql": "4.1.3.1"
+          "Npgsql": "4.1.4"
         },
         "compile": {
-          "lib/netstandard2.0/DatabaseWrapper.Postgresql.dll": {}
+          "lib/netcoreapp2.0/DatabaseWrapper.Postgresql.dll": {}
         },
         "runtime": {
-          "lib/netstandard2.0/DatabaseWrapper.Postgresql.dll": {}
+          "lib/netcoreapp2.0/DatabaseWrapper.Postgresql.dll": {}
         }
       },
-      "DatabaseWrapper.Sqlite/3.0.1.1": {
+      "DatabaseWrapper.Sqlite/3.2.1.3": {
         "type": "package",
         "dependencies": {
-          "DatabaseWrapper.Core": "3.0.1.1",
+          "DatabaseWrapper.Core": "3.1.0.2",
           "Microsoft.CSharp": "4.7.0",
-          "Microsoft.Extensions.Configuration.Binder": "3.1.4",
-          "Newtonsoft.Json": "12.0.3",
-          "System.Data.SQLite": "1.0.113.1",
-          "System.Data.SQLite.Core": "1.0.113.1"
+          "Microsoft.Data.Sqlite": "3.1.8",
+          "Microsoft.Extensions.Configuration.Binder": "3.1.8",
+          "Newtonsoft.Json": "12.0.3"
         },
         "compile": {
-          "lib/netstandard2.0/DatabaseWrapper.Sqlite.dll": {}
+          "lib/netcoreapp2.0/DatabaseWrapper.Sqlite.dll": {}
         },
         "runtime": {
-          "lib/netstandard2.0/DatabaseWrapper.Sqlite.dll": {}
+          "lib/netcoreapp2.0/DatabaseWrapper.Sqlite.dll": {}
         }
       },
-      "DatabaseWrapper.SqlServer/3.0.1.1": {
+      "DatabaseWrapper.SqlServer/3.2.0.2": {
         "type": "package",
         "dependencies": {
-          "DatabaseWrapper.Core": "3.0.1.1",
+          "DatabaseWrapper.Core": "3.1.0.2",
           "Microsoft.CSharp": "4.7.0",
-          "Microsoft.Extensions.Configuration.Binder": "3.1.4",
+          "Microsoft.Extensions.Configuration.Binder": "3.1.8",
           "Newtonsoft.Json": "12.0.3",
-          "System.Data.SqlClient": "4.8.1"
+          "System.Data.SqlClient": "4.8.2"
         },
         "compile": {
-          "lib/netstandard2.0/DatabaseWrapper.SqlServer.dll": {}
+          "lib/netcoreapp2.0/DatabaseWrapper.SqlServer.dll": {}
         },
         "runtime": {
-          "lib/netstandard2.0/DatabaseWrapper.SqlServer.dll": {}
-        }
-      },
-      "EntityFramework/6.3.0": {
-        "type": "package",
-        "dependencies": {
-          "Microsoft.CSharp": "4.6.0",
-          "System.CodeDom": "4.6.0",
-          "System.ComponentModel.Annotations": "4.6.0",
-          "System.Configuration.ConfigurationManager": "4.6.0",
-          "System.Data.SqlClient": "4.7.0"
-        },
-        "compile": {
-          "lib/netstandard2.1/EntityFramework.SqlServer.dll": {},
-          "lib/netstandard2.1/EntityFramework.dll": {}
-        },
-        "runtime": {
-          "lib/netstandard2.1/EntityFramework.SqlServer.dll": {},
-          "lib/netstandard2.1/EntityFramework.dll": {}
-        },
-        "build": {
-          "buildTransitive/EntityFramework.props": {},
-          "buildTransitive/EntityFramework.targets": {}
+          "lib/netcoreapp2.0/DatabaseWrapper.SqlServer.dll": {}
         }
       },
       "Google.Protobuf/3.6.1": {
@@ -205,10 +182,35 @@
           "lib/netcoreapp2.0/_._": {}
         }
       },
-      "Microsoft.Extensions.Configuration/3.1.4": {
+      "Microsoft.Data.Sqlite/3.1.8": {
         "type": "package",
         "dependencies": {
-          "Microsoft.Extensions.Configuration.Abstractions": "3.1.4"
+          "Microsoft.Data.Sqlite.Core": "3.1.8",
+          "SQLitePCLRaw.bundle_e_sqlite3": "2.0.2"
+        },
+        "compile": {
+          "lib/netstandard2.0/_._": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/_._": {}
+        }
+      },
+      "Microsoft.Data.Sqlite.Core/3.1.8": {
+        "type": "package",
+        "dependencies": {
+          "SQLitePCLRaw.core": "2.0.2"
+        },
+        "compile": {
+          "lib/netstandard2.0/Microsoft.Data.Sqlite.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.Data.Sqlite.dll": {}
+        }
+      },
+      "Microsoft.Extensions.Configuration/3.1.8": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration.Abstractions": "3.1.8"
         },
         "compile": {
           "lib/netcoreapp3.1/Microsoft.Extensions.Configuration.dll": {}
@@ -217,10 +219,10 @@
           "lib/netcoreapp3.1/Microsoft.Extensions.Configuration.dll": {}
         }
       },
-      "Microsoft.Extensions.Configuration.Abstractions/3.1.4": {
+      "Microsoft.Extensions.Configuration.Abstractions/3.1.8": {
         "type": "package",
         "dependencies": {
-          "Microsoft.Extensions.Primitives": "3.1.4"
+          "Microsoft.Extensions.Primitives": "3.1.8"
         },
         "compile": {
           "lib/netcoreapp3.1/Microsoft.Extensions.Configuration.Abstractions.dll": {}
@@ -229,10 +231,10 @@
           "lib/netcoreapp3.1/Microsoft.Extensions.Configuration.Abstractions.dll": {}
         }
       },
-      "Microsoft.Extensions.Configuration.Binder/3.1.4": {
+      "Microsoft.Extensions.Configuration.Binder/3.1.8": {
         "type": "package",
         "dependencies": {
-          "Microsoft.Extensions.Configuration": "3.1.4"
+          "Microsoft.Extensions.Configuration": "3.1.8"
         },
         "compile": {
           "lib/netcoreapp3.1/Microsoft.Extensions.Configuration.Binder.dll": {}
@@ -241,7 +243,7 @@
           "lib/netcoreapp3.1/Microsoft.Extensions.Configuration.Binder.dll": {}
         }
       },
-      "Microsoft.Extensions.Primitives/3.1.4": {
+      "Microsoft.Extensions.Primitives/3.1.8": {
         "type": "package",
         "compile": {
           "lib/netcoreapp3.1/Microsoft.Extensions.Primitives.dll": {}
@@ -320,7 +322,7 @@
           }
         }
       },
-      "MySql.Data/8.0.20": {
+      "MySql.Data/8.0.21": {
         "type": "package",
         "dependencies": {
           "BouncyCastle.NetCore": "1.8.3",
@@ -404,7 +406,7 @@
           "lib/netstandard2.0/Newtonsoft.Json.dll": {}
         }
       },
-      "Npgsql/4.1.3.1": {
+      "Npgsql/4.1.4": {
         "type": "package",
         "dependencies": {
           "System.Runtime.CompilerServices.Unsafe": "4.6.0"
@@ -631,18 +633,117 @@
           }
         }
       },
-      "S3ServerInterface/2.0.1.19": {
+      "S3ServerInterface/2.1.0.9": {
         "type": "package",
         "dependencies": {
-          "AWSSDK.S3": "3.3.111.9",
+          "AWSSDK.S3": "3.5.0.5",
           "Newtonsoft.Json": "12.0.3",
-          "Watson": "3.0.11"
+          "Watson": "3.1.0.2"
         },
         "compile": {
-          "lib/netstandard2.0/S3ServerInterface.dll": {}
+          "lib/netcoreapp2.0/S3ServerInterface.dll": {}
         },
         "runtime": {
-          "lib/netstandard2.0/S3ServerInterface.dll": {}
+          "lib/netcoreapp2.0/S3ServerInterface.dll": {}
+        }
+      },
+      "SQLitePCLRaw.bundle_e_sqlite3/2.0.2": {
+        "type": "package",
+        "dependencies": {
+          "SQLitePCLRaw.core": "2.0.2",
+          "SQLitePCLRaw.lib.e_sqlite3": "2.0.2",
+          "SQLitePCLRaw.provider.dynamic_cdecl": "2.0.2"
+        },
+        "compile": {
+          "lib/netcoreapp3.0/SQLitePCLRaw.batteries_v2.dll": {},
+          "lib/netcoreapp3.0/SQLitePCLRaw.nativelibrary.dll": {}
+        },
+        "runtime": {
+          "lib/netcoreapp3.0/SQLitePCLRaw.batteries_v2.dll": {},
+          "lib/netcoreapp3.0/SQLitePCLRaw.nativelibrary.dll": {}
+        }
+      },
+      "SQLitePCLRaw.core/2.0.2": {
+        "type": "package",
+        "dependencies": {
+          "System.Memory": "4.5.3"
+        },
+        "compile": {
+          "lib/netstandard2.0/SQLitePCLRaw.core.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/SQLitePCLRaw.core.dll": {}
+        }
+      },
+      "SQLitePCLRaw.lib.e_sqlite3/2.0.2": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/_._": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/_._": {}
+        },
+        "runtimeTargets": {
+          "runtimes/alpine-x64/native/libe_sqlite3.so": {
+            "assetType": "native",
+            "rid": "alpine-x64"
+          },
+          "runtimes/linux-arm/native/libe_sqlite3.so": {
+            "assetType": "native",
+            "rid": "linux-arm"
+          },
+          "runtimes/linux-arm64/native/libe_sqlite3.so": {
+            "assetType": "native",
+            "rid": "linux-arm64"
+          },
+          "runtimes/linux-armel/native/libe_sqlite3.so": {
+            "assetType": "native",
+            "rid": "linux-armel"
+          },
+          "runtimes/linux-musl-x64/native/libe_sqlite3.so": {
+            "assetType": "native",
+            "rid": "linux-musl-x64"
+          },
+          "runtimes/linux-x64/native/libe_sqlite3.so": {
+            "assetType": "native",
+            "rid": "linux-x64"
+          },
+          "runtimes/linux-x86/native/libe_sqlite3.so": {
+            "assetType": "native",
+            "rid": "linux-x86"
+          },
+          "runtimes/osx-x64/native/libe_sqlite3.dylib": {
+            "assetType": "native",
+            "rid": "osx-x64"
+          },
+          "runtimes/win-arm/native/e_sqlite3.dll": {
+            "assetType": "native",
+            "rid": "win-arm"
+          },
+          "runtimes/win-arm64/native/e_sqlite3.dll": {
+            "assetType": "native",
+            "rid": "win-arm64"
+          },
+          "runtimes/win-x64/native/e_sqlite3.dll": {
+            "assetType": "native",
+            "rid": "win-x64"
+          },
+          "runtimes/win-x86/native/e_sqlite3.dll": {
+            "assetType": "native",
+            "rid": "win-x86"
+          }
+        }
+      },
+      "SQLitePCLRaw.provider.dynamic_cdecl/2.0.2": {
+        "type": "package",
+        "dependencies": {
+          "SQLitePCLRaw.core": "2.0.2"
+        },
+        "compile": {
+          "lib/netstandard2.0/SQLitePCLRaw.provider.dynamic_cdecl.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/SQLitePCLRaw.provider.dynamic_cdecl.dll": {}
         }
       },
       "SSH.NET/2016.1.0": {
@@ -721,15 +822,6 @@
           "lib/netcoreapp2.0/_._": {}
         }
       },
-      "System.CodeDom/4.6.0": {
-        "type": "package",
-        "compile": {
-          "ref/netstandard2.0/System.CodeDom.dll": {}
-        },
-        "runtime": {
-          "lib/netstandard2.0/System.CodeDom.dll": {}
-        }
-      },
       "System.Collections/4.3.0": {
         "type": "package",
         "dependencies": {
@@ -762,20 +854,10 @@
           "lib/netstandard1.3/System.Collections.Concurrent.dll": {}
         }
       },
-      "System.ComponentModel.Annotations/4.6.0": {
-        "type": "package",
-        "compile": {
-          "ref/netstandard2.1/System.ComponentModel.Annotations.dll": {}
-        },
-        "runtime": {
-          "lib/netstandard2.1/System.ComponentModel.Annotations.dll": {}
-        }
-      },
-      "System.Configuration.ConfigurationManager/4.6.0": {
+      "System.Configuration.ConfigurationManager/4.4.1": {
         "type": "package",
         "dependencies": {
-          "System.Security.Cryptography.ProtectedData": "4.6.0",
-          "System.Security.Permissions": "4.6.0"
+          "System.Security.Cryptography.ProtectedData": "4.4.0"
         },
         "compile": {
           "ref/netstandard2.0/System.Configuration.ConfigurationManager.dll": {}
@@ -797,7 +879,7 @@
           "ref/netstandard1.3/System.Console.dll": {}
         }
       },
-      "System.Data.SqlClient/4.8.1": {
+      "System.Data.SqlClient/4.8.2": {
         "type": "package",
         "dependencies": {
           "Microsoft.Win32.Registry": "4.7.0",
@@ -819,68 +901,6 @@
             "assetType": "runtime",
             "rid": "win"
           }
-        }
-      },
-      "System.Data.SQLite/1.0.113.1": {
-        "type": "package",
-        "dependencies": {
-          "System.Data.SQLite.Core": "1.0.113.1",
-          "System.Data.SQLite.EF6": "1.0.113"
-        }
-      },
-      "System.Data.SQLite.Core/1.0.113.1": {
-        "type": "package",
-        "compile": {
-          "lib/netstandard2.1/System.Data.SQLite.dll": {}
-        },
-        "runtime": {
-          "lib/netstandard2.1/System.Data.SQLite.dll": {}
-        },
-        "runtimeTargets": {
-          "runtimes/linux-x64/native/netstandard2.0/SQLite.Interop.dll": {
-            "assetType": "native",
-            "rid": "linux-x64"
-          },
-          "runtimes/linux-x64/native/netstandard2.1/SQLite.Interop.dll": {
-            "assetType": "native",
-            "rid": "linux-x64"
-          },
-          "runtimes/osx-x64/native/netstandard2.0/SQLite.Interop.dll": {
-            "assetType": "native",
-            "rid": "osx-x64"
-          },
-          "runtimes/osx-x64/native/netstandard2.1/SQLite.Interop.dll": {
-            "assetType": "native",
-            "rid": "osx-x64"
-          },
-          "runtimes/win-x64/native/netstandard2.0/SQLite.Interop.dll": {
-            "assetType": "native",
-            "rid": "win-x64"
-          },
-          "runtimes/win-x64/native/netstandard2.1/SQLite.Interop.dll": {
-            "assetType": "native",
-            "rid": "win-x64"
-          },
-          "runtimes/win-x86/native/netstandard2.0/SQLite.Interop.dll": {
-            "assetType": "native",
-            "rid": "win-x86"
-          },
-          "runtimes/win-x86/native/netstandard2.1/SQLite.Interop.dll": {
-            "assetType": "native",
-            "rid": "win-x86"
-          }
-        }
-      },
-      "System.Data.SQLite.EF6/1.0.113": {
-        "type": "package",
-        "dependencies": {
-          "EntityFramework": "6.3.0"
-        },
-        "compile": {
-          "lib/netstandard2.1/System.Data.SQLite.EF6.dll": {}
-        },
-        "runtime": {
-          "lib/netstandard2.1/System.Data.SQLite.EF6.dll": {}
         }
       },
       "System.Diagnostics.Debug/4.3.0": {
@@ -1692,7 +1712,7 @@
           "lib/netstandard1.3/System.Security.Cryptography.Primitives.dll": {}
         }
       },
-      "System.Security.Cryptography.ProtectedData/4.6.0": {
+      "System.Security.Cryptography.ProtectedData/4.4.0": {
         "type": "package",
         "compile": {
           "ref/netstandard2.0/_._": {}
@@ -2038,7 +2058,7 @@
           "lib/netstandard1.3/System.Xml.XPath.XmlDocument.dll": {}
         }
       },
-      "Watson/3.0.11": {
+      "Watson/3.1.0.2": {
         "type": "package",
         "dependencies": {
           "IpMatcher": "1.0.1",
@@ -2052,84 +2072,83 @@
           "lib/netstandard2.0/WatsonWebserver.dll": {}
         }
       },
-      "WatsonORM/1.1.3": {
+      "WatsonORM/1.3.0.5": {
         "type": "package",
         "dependencies": {
-          "WatsonORM.Core": "1.1.2.1",
-          "WatsonORM.Mysql": "1.1.3",
-          "WatsonORM.Postgresql": "1.1.3",
-          "WatsonORM.SqlServer": "1.1.3",
-          "WatsonORM.Sqlite": "1.1.3"
+          "WatsonORM.Mysql": "1.3.0.3",
+          "WatsonORM.Postgresql": "1.3.0.3",
+          "WatsonORM.SqlServer": "1.3.0.3",
+          "WatsonORM.Sqlite": "1.3.0.5"
         },
         "compile": {
-          "lib/netstandard2.0/WatsonORM.dll": {}
+          "lib/netcoreapp2.0/WatsonORM.dll": {}
         },
         "runtime": {
-          "lib/netstandard2.0/WatsonORM.dll": {}
+          "lib/netcoreapp2.0/WatsonORM.dll": {}
         }
       },
-      "WatsonORM.Core/1.1.2.1": {
+      "WatsonORM.Core/1.2.0.4": {
         "type": "package",
         "dependencies": {
-          "DatabaseWrapper.Core": "3.0.1"
+          "DatabaseWrapper.Core": "3.1.0.2"
         },
         "compile": {
-          "lib/netstandard2.0/WatsonORM.Core.dll": {}
+          "lib/netcoreapp2.0/WatsonORM.Core.dll": {}
         },
         "runtime": {
-          "lib/netstandard2.0/WatsonORM.Core.dll": {}
+          "lib/netcoreapp2.0/WatsonORM.Core.dll": {}
         }
       },
-      "WatsonORM.Mysql/1.1.3": {
+      "WatsonORM.Mysql/1.3.0.3": {
         "type": "package",
         "dependencies": {
-          "DatabaseWrapper.Mysql": "3.0.1.1",
-          "WatsonORM.Core": "1.1.2.1"
+          "DatabaseWrapper.Mysql": "3.2.0.2",
+          "WatsonORM.Core": "1.2.0.4"
         },
         "compile": {
-          "lib/netstandard2.0/WatsonORM.Mysql.dll": {}
+          "lib/netcoreapp2.0/WatsonORM.Mysql.dll": {}
         },
         "runtime": {
-          "lib/netstandard2.0/WatsonORM.Mysql.dll": {}
+          "lib/netcoreapp2.0/WatsonORM.Mysql.dll": {}
         }
       },
-      "WatsonORM.Postgresql/1.1.3": {
+      "WatsonORM.Postgresql/1.3.0.3": {
         "type": "package",
         "dependencies": {
-          "DatabaseWrapper.Postgresql": "3.0.1.1",
-          "WatsonORM.Core": "1.1.2.1"
+          "DatabaseWrapper.Postgresql": "3.2.0.2",
+          "WatsonORM.Core": "1.2.0.4"
         },
         "compile": {
-          "lib/netstandard2.0/WatsonORM.Postgresql.dll": {}
+          "lib/netcoreapp2.0/WatsonORM.Postgresql.dll": {}
         },
         "runtime": {
-          "lib/netstandard2.0/WatsonORM.Postgresql.dll": {}
+          "lib/netcoreapp2.0/WatsonORM.Postgresql.dll": {}
         }
       },
-      "WatsonORM.Sqlite/1.1.3": {
+      "WatsonORM.Sqlite/1.3.0.5": {
         "type": "package",
         "dependencies": {
-          "DatabaseWrapper.Sqlite": "3.0.1.1",
-          "WatsonORM.Core": "1.1.2.1"
+          "DatabaseWrapper.Sqlite": "3.2.1.3",
+          "WatsonORM.Core": "1.2.0.4"
         },
         "compile": {
-          "lib/netstandard2.0/WatsonORM.Sqlite.dll": {}
+          "lib/netcoreapp2.0/WatsonORM.Sqlite.dll": {}
         },
         "runtime": {
-          "lib/netstandard2.0/WatsonORM.Sqlite.dll": {}
+          "lib/netcoreapp2.0/WatsonORM.Sqlite.dll": {}
         }
       },
-      "WatsonORM.SqlServer/1.1.3": {
+      "WatsonORM.SqlServer/1.3.0.3": {
         "type": "package",
         "dependencies": {
-          "DatabaseWrapper.SqlServer": "3.0.1.1",
-          "WatsonORM.Core": "1.1.2.1"
+          "DatabaseWrapper.SqlServer": "3.2.0.2",
+          "WatsonORM.Core": "1.2.0.3"
         },
         "compile": {
-          "lib/netstandard2.0/WatsonORM.SqlServer.dll": {}
+          "lib/netcoreapp2.0/WatsonORM.SqlServer.dll": {}
         },
         "runtime": {
-          "lib/netstandard2.0/WatsonORM.SqlServer.dll": {}
+          "lib/netcoreapp2.0/WatsonORM.SqlServer.dll": {}
         }
       },
       "XmlToPox/1.0.2": {
@@ -2144,91 +2163,60 @@
     }
   },
   "libraries": {
-    "AWSSDK.Core/3.3.107.9": {
-      "sha512": "GnXjs80LtibLT6phoiooXLLuI0XvDqi3kp0tz+fVDmE/i0kEKu4iCjKyPqogoQBCmzlqUsLWj6bRSjxCoIuGhA==",
+    "AWSSDK.Core/3.5.1.8": {
+      "sha512": "l7Lk6rZjYlTCDXjEdOirdMC8eXz9MLlH75JhiQ+O9brz52SAZ8izfYlESbIFEn3aX5m2hj/58uO8hZiew1IouA==",
       "type": "package",
-      "path": "awssdk.core/3.3.107.9",
+      "path": "awssdk.core/3.5.1.8",
       "hasTools": true,
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "awssdk.core.3.3.107.9.nupkg.sha512",
+        "awssdk.core.3.5.1.8.nupkg.sha512",
         "awssdk.core.nuspec",
-        "lib/MonoAndroid10/AWSSDK.Core.XML",
-        "lib/MonoAndroid10/AWSSDK.Core.dll",
-        "lib/MonoAndroid10/AWSSDK.Core.pdb",
-        "lib/MonoTouch10/AWSSDK.Core.XML",
-        "lib/MonoTouch10/AWSSDK.Core.dll",
-        "lib/Xamarin.Mac20/AWSSDK.Core.XML",
-        "lib/Xamarin.Mac20/AWSSDK.Core.dll",
-        "lib/Xamarin.iOS10/AWSSDK.Core.XML",
-        "lib/Xamarin.iOS10/AWSSDK.Core.dll",
         "lib/net35/AWSSDK.Core.dll",
         "lib/net35/AWSSDK.Core.pdb",
         "lib/net35/AWSSDK.Core.xml",
         "lib/net45/AWSSDK.Core.dll",
         "lib/net45/AWSSDK.Core.pdb",
         "lib/net45/AWSSDK.Core.xml",
+        "lib/netcoreapp3.1/AWSSDK.Core.dll",
+        "lib/netcoreapp3.1/AWSSDK.Core.pdb",
+        "lib/netcoreapp3.1/AWSSDK.Core.xml",
         "lib/netstandard1.3/AWSSDK.Core.dll",
         "lib/netstandard1.3/AWSSDK.Core.pdb",
         "lib/netstandard1.3/AWSSDK.Core.xml",
         "lib/netstandard2.0/AWSSDK.Core.dll",
         "lib/netstandard2.0/AWSSDK.Core.pdb",
         "lib/netstandard2.0/AWSSDK.Core.xml",
-        "lib/portable-net45+win8+wpa81+wp8/AWSSDK.Core.XML",
-        "lib/portable-net45+win8+wpa81+wp8/AWSSDK.Core.dll",
-        "lib/portable-net45+win8+wpa81+wp8/AWSSDK.Core.pdb",
-        "lib/uap/AWSSDK.Core.XML",
-        "lib/uap/AWSSDK.Core.dll",
-        "lib/uap/AWSSDK.Core.pdb",
-        "lib/win8/AWSSDK.Core.XML",
-        "lib/win8/AWSSDK.Core.dll",
-        "lib/win8/AWSSDK.Core.pdb",
-        "lib/wp8/AWSSDK.Core.XML",
-        "lib/wp8/AWSSDK.Core.dll",
-        "lib/wp8/AWSSDK.Core.pdb",
-        "lib/wpa81/AWSSDK.Core.XML",
-        "lib/wpa81/AWSSDK.Core.dll",
-        "lib/wpa81/AWSSDK.Core.pdb",
         "tools/account-management.ps1"
       ]
     },
-    "AWSSDK.S3/3.3.111.10": {
-      "sha512": "yvUh0WJSbpgajL4OhDUXcT3Aem/2v1pXPfoOR5adXTsi33/g/fLSTlHC3eFHshwqHegI3K30dJ1twpsSQHnJXw==",
+    "AWSSDK.S3/3.5.0.10": {
+      "sha512": "COufAAMmoy66F5cVimHU8YslNfl+GyAoqcxOSHbXVPZYZzbQ8fe4dNuRxMd0BZiIHsnbhf6fOKDibq0DIBzN9g==",
       "type": "package",
-      "path": "awssdk.s3/3.3.111.10",
+      "path": "awssdk.s3/3.5.0.10",
       "hasTools": true,
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "analyzers/dotnet/cs/AWSSDK.S3.CodeAnalysis.dll",
-        "awssdk.s3.3.3.111.10.nupkg.sha512",
+        "awssdk.s3.3.5.0.10.nupkg.sha512",
         "awssdk.s3.nuspec",
-        "lib/MonoAndroid10/AWSSDK.S3.XML",
-        "lib/MonoAndroid10/AWSSDK.S3.dll",
-        "lib/MonoTouch10/AWSSDK.S3.XML",
-        "lib/MonoTouch10/AWSSDK.S3.dll",
-        "lib/MonoTouch10/AWSSDK.S3.pdb",
-        "lib/Xamarin.iOS10/AWSSDK.S3.XML",
-        "lib/Xamarin.iOS10/AWSSDK.S3.dll",
         "lib/net35/AWSSDK.S3.dll",
         "lib/net35/AWSSDK.S3.pdb",
         "lib/net35/AWSSDK.S3.xml",
         "lib/net45/AWSSDK.S3.dll",
         "lib/net45/AWSSDK.S3.pdb",
         "lib/net45/AWSSDK.S3.xml",
+        "lib/netcoreapp3.1/AWSSDK.S3.dll",
+        "lib/netcoreapp3.1/AWSSDK.S3.pdb",
+        "lib/netcoreapp3.1/AWSSDK.S3.xml",
         "lib/netstandard1.3/AWSSDK.S3.dll",
         "lib/netstandard1.3/AWSSDK.S3.pdb",
         "lib/netstandard1.3/AWSSDK.S3.xml",
         "lib/netstandard2.0/AWSSDK.S3.dll",
         "lib/netstandard2.0/AWSSDK.S3.pdb",
         "lib/netstandard2.0/AWSSDK.S3.xml",
-        "lib/portable-net45+win8+wpa81+wp8/AWSSDK.S3.XML",
-        "lib/portable-net45+win8+wpa81+wp8/AWSSDK.S3.dll",
-        "lib/portable-net45+win8+wpa81+wp8/AWSSDK.S3.pdb",
-        "lib/uap/AWSSDK.S3.XML",
-        "lib/uap/AWSSDK.S3.dll",
-        "lib/uap/AWSSDK.S3.pdb",
         "tools/install.ps1",
         "tools/uninstall.ps1"
       ]
@@ -2260,129 +2248,84 @@
         "lib/xamarinios/BouncyCastle.Crypto.xml"
       ]
     },
-    "DatabaseWrapper.Core/3.0.1.1": {
-      "sha512": "y9UCo9WCM8S3DeOIDzXPrTIzoSLqfJMLlxUIkVf5gwJauUyuwA7KB0mvWue7FkOApo6pKDIk2DKQd94YCzggfQ==",
+    "DatabaseWrapper.Core/3.1.0.2": {
+      "sha512": "Vl34NFh1gPhVgWKYmnaoMuwYNvQnpTzhKlS8qnvGhfe2udUVTLSaTGTGWfbuBEj7K9LrHqQHiwmMBVTyW3IYKg==",
       "type": "package",
-      "path": "databasewrapper.core/3.0.1.1",
+      "path": "databasewrapper.core/3.1.0.2",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "LICENSE.md",
-        "databasewrapper.core.3.0.1.1.nupkg.sha512",
+        "databasewrapper.core.3.1.0.2.nupkg.sha512",
         "databasewrapper.core.nuspec",
         "lib/net461/DatabaseWrapper.Core.dll",
+        "lib/netcoreapp2.0/DatabaseWrapper.Core.dll",
         "lib/netstandard2.0/DatabaseWrapper.Core.dll",
         "lib/netstandard2.0/DatabaseWrapper.Core.xml"
       ]
     },
-    "DatabaseWrapper.Mysql/3.0.1.1": {
-      "sha512": "BRO6mbacjW4+oKzsYLF0+iHQcVlQjQVIzGVavjrDYtd80VieJQpe5pOZIe86yQWDf+EZDAyOiwn61k8gn84hRw==",
+    "DatabaseWrapper.Mysql/3.2.0.2": {
+      "sha512": "RTECHVDGL8AK//jCz3XAeh7fOzH254e9324h6YuEI3YSfZ0MT0yBELd8exZwQPML1LZgksfFm4T7Jb3y/VS56Q==",
       "type": "package",
-      "path": "databasewrapper.mysql/3.0.1.1",
+      "path": "databasewrapper.mysql/3.2.0.2",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "LICENSE.md",
-        "databasewrapper.mysql.3.0.1.1.nupkg.sha512",
+        "databasewrapper.mysql.3.2.0.2.nupkg.sha512",
         "databasewrapper.mysql.nuspec",
         "lib/net461/DatabaseWrapper.Mysql.dll",
+        "lib/netcoreapp2.0/DatabaseWrapper.Mysql.dll",
         "lib/netstandard2.0/DatabaseWrapper.Mysql.dll",
         "lib/netstandard2.0/DatabaseWrapper.Mysql.xml"
       ]
     },
-    "DatabaseWrapper.Postgresql/3.0.1.1": {
-      "sha512": "didJaEMnnMrzIx6Az4pbwkH4+31MRwWHajoamv5/uIhiEKXeG3RNdVP9WHy53dGkqn0OuLeOX3p8rPRKaHrHCQ==",
+    "DatabaseWrapper.Postgresql/3.2.0.2": {
+      "sha512": "Lw/U4h7biVu6CBMDIYV8dd2aK1SK40R8v+u3zVD4g9tSUAhf/mSjrCxKnEeCO+xQNGYrIkJgemyKRMee1dzw0g==",
       "type": "package",
-      "path": "databasewrapper.postgresql/3.0.1.1",
+      "path": "databasewrapper.postgresql/3.2.0.2",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "LICENSE.md",
-        "databasewrapper.postgresql.3.0.1.1.nupkg.sha512",
+        "databasewrapper.postgresql.3.2.0.2.nupkg.sha512",
         "databasewrapper.postgresql.nuspec",
         "lib/net461/DatabaseWrapper.Postgresql.dll",
+        "lib/netcoreapp2.0/DatabaseWrapper.Postgresql.dll",
         "lib/netstandard2.0/DatabaseWrapper.Postgresql.dll",
         "lib/netstandard2.0/DatabaseWrapper.Postgresql.xml"
       ]
     },
-    "DatabaseWrapper.Sqlite/3.0.1.1": {
-      "sha512": "QLAW+n+CqPcRw1+4o58opVrmj62Z60u+vRNq/4ec40UqsG8ujiz9s5TFKxO3RU82fgL7xKy8GpF1pYZV5xbJsQ==",
+    "DatabaseWrapper.Sqlite/3.2.1.3": {
+      "sha512": "N2UAmp23+AGR4vRgCJDtOv+ZVXFlw+U3cHWSVXh31hXWd+VlK+y3O093dOVmwX/5VqUSWind9u4bYdbJKF31Bw==",
       "type": "package",
-      "path": "databasewrapper.sqlite/3.0.1.1",
+      "path": "databasewrapper.sqlite/3.2.1.3",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "LICENSE.md",
-        "databasewrapper.sqlite.3.0.1.1.nupkg.sha512",
+        "databasewrapper.sqlite.3.2.1.3.nupkg.sha512",
         "databasewrapper.sqlite.nuspec",
+        "lib/net461/DatabaseWrapper.Sqlite.dll",
+        "lib/netcoreapp2.0/DatabaseWrapper.Sqlite.dll",
         "lib/netstandard2.0/DatabaseWrapper.Sqlite.dll",
         "lib/netstandard2.0/DatabaseWrapper.Sqlite.xml"
       ]
     },
-    "DatabaseWrapper.SqlServer/3.0.1.1": {
-      "sha512": "mEW6Du2x1zqH+FKGfr/UQoT0BAeTA9KBaSK7or4SpuBDpu6k1alxIYGNE4HODaAXj4p7JWIV47//txnfuO/RBg==",
+    "DatabaseWrapper.SqlServer/3.2.0.2": {
+      "sha512": "hQYGj4qS0DxO8RfYOADfUJFoH01nYKq0Ezq9U7zShQhoyqIc4LCh2negKaEbx5chulOgd395C6PIy51ex/AO4A==",
       "type": "package",
-      "path": "databasewrapper.sqlserver/3.0.1.1",
+      "path": "databasewrapper.sqlserver/3.2.0.2",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "LICENSE.md",
-        "databasewrapper.sqlserver.3.0.1.1.nupkg.sha512",
+        "databasewrapper.sqlserver.3.2.0.2.nupkg.sha512",
         "databasewrapper.sqlserver.nuspec",
         "lib/net461/DatabaseWrapper.SqlServer.dll",
+        "lib/netcoreapp2.0/DatabaseWrapper.SqlServer.dll",
         "lib/netstandard2.0/DatabaseWrapper.SqlServer.dll",
         "lib/netstandard2.0/DatabaseWrapper.SqlServer.xml"
-      ]
-    },
-    "EntityFramework/6.3.0": {
-      "sha512": "mEvhoXscTyLFMcnbLzKlbWdx6N8fCY2IMe4drjUTMFqOqI4KThnTPXr1m50oXDJAn5PvCy2e90IcwN/OxkJUjg==",
-      "type": "package",
-      "path": "entityframework/6.3.0",
-      "hasTools": true,
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "build/EntityFramework.props",
-        "build/EntityFramework.targets",
-        "build/Microsoft.Data.Entity.Build.Tasks.dll",
-        "buildTransitive/EntityFramework.props",
-        "buildTransitive/EntityFramework.targets",
-        "content/net40/App.config.install.xdt",
-        "content/net40/App.config.transform",
-        "content/net40/Web.config.install.xdt",
-        "content/net40/Web.config.transform",
-        "entityframework.6.3.0.nupkg.sha512",
-        "entityframework.nuspec",
-        "lib/net40/EntityFramework.SqlServer.dll",
-        "lib/net40/EntityFramework.SqlServer.xml",
-        "lib/net40/EntityFramework.dll",
-        "lib/net40/EntityFramework.xml",
-        "lib/net45/EntityFramework.SqlServer.dll",
-        "lib/net45/EntityFramework.SqlServer.xml",
-        "lib/net45/EntityFramework.dll",
-        "lib/net45/EntityFramework.xml",
-        "lib/netstandard2.1/EntityFramework.SqlServer.dll",
-        "lib/netstandard2.1/EntityFramework.SqlServer.xml",
-        "lib/netstandard2.1/EntityFramework.dll",
-        "lib/netstandard2.1/EntityFramework.xml",
-        "tools/EntityFramework6.PS2.psd1",
-        "tools/EntityFramework6.PS2.psm1",
-        "tools/EntityFramework6.psd1",
-        "tools/EntityFramework6.psm1",
-        "tools/about_EntityFramework6.help.txt",
-        "tools/init.ps1",
-        "tools/install.ps1",
-        "tools/net40/any/ef6.exe",
-        "tools/net40/any/ef6.pdb",
-        "tools/net40/win-x86/ef6.exe",
-        "tools/net40/win-x86/ef6.pdb",
-        "tools/net45/any/ef6.exe",
-        "tools/net45/any/ef6.pdb",
-        "tools/net45/win-x86/ef6.exe",
-        "tools/net45/win-x86/ef6.pdb",
-        "tools/netcoreapp3.0/any/ef6.dll",
-        "tools/netcoreapp3.0/any/ef6.pdb",
-        "tools/netcoreapp3.0/any/ef6.runtimeconfig.json"
       ]
     },
     "Google.Protobuf/3.6.1": {
@@ -2538,10 +2481,37 @@
         "version.txt"
       ]
     },
-    "Microsoft.Extensions.Configuration/3.1.4": {
-      "sha512": "+NsYvQ00h+9kSp4/60iCAhPUp9S6joS2rsEmfCVrUmVATCveTewcHdrMB+9pJDYkWzCEqPQoJuMfsxe/299Z0w==",
+    "Microsoft.Data.Sqlite/3.1.8": {
+      "sha512": "1n1Jhlym5Ljw5KCwc9KNe8HGIAjLJuhE9B7DRgQJ9sD+8/sHD0aNCS9XfJanaPBJl2zuBDimO67cmfm0jckzlg==",
       "type": "package",
-      "path": "microsoft.extensions.configuration/3.1.4",
+      "path": "microsoft.data.sqlite/3.1.8",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "lib/netstandard2.0/_._",
+        "microsoft.data.sqlite.3.1.8.nupkg.sha512",
+        "microsoft.data.sqlite.nuspec"
+      ]
+    },
+    "Microsoft.Data.Sqlite.Core/3.1.8": {
+      "sha512": "7zA23EkPltGmtobG/X1JviLEnylQ27zoupMfTs4Prif9WQpGdyrajLQP1Emfxq8nzimB99omKO2piM2g8IhqfA==",
+      "type": "package",
+      "path": "microsoft.data.sqlite.core/3.1.8",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "lib/netstandard2.0/Microsoft.Data.Sqlite.dll",
+        "lib/netstandard2.0/Microsoft.Data.Sqlite.xml",
+        "microsoft.data.sqlite.core.3.1.8.nupkg.sha512",
+        "microsoft.data.sqlite.core.nuspec"
+      ]
+    },
+    "Microsoft.Extensions.Configuration/3.1.8": {
+      "sha512": "xWvtu/ra8xDOy62ZXzQj1ElmmH3GpZBSKvw4LbfNXKCy+PaziS5Uh0gQ47D4H4w3u+PJfhNWCCGCp9ORNEzkRw==",
+      "type": "package",
+      "path": "microsoft.extensions.configuration/3.1.8",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2550,14 +2520,14 @@
         "lib/netcoreapp3.1/Microsoft.Extensions.Configuration.xml",
         "lib/netstandard2.0/Microsoft.Extensions.Configuration.dll",
         "lib/netstandard2.0/Microsoft.Extensions.Configuration.xml",
-        "microsoft.extensions.configuration.3.1.4.nupkg.sha512",
+        "microsoft.extensions.configuration.3.1.8.nupkg.sha512",
         "microsoft.extensions.configuration.nuspec"
       ]
     },
-    "Microsoft.Extensions.Configuration.Abstractions/3.1.4": {
-      "sha512": "k7IJME4US5S5JFOGYaei5TLwutp8IqUvcBWtliKXETGn/JScmCgfej21xq5+ttxi0qZhiyJY06y9dw+cLh3kiQ==",
+    "Microsoft.Extensions.Configuration.Abstractions/3.1.8": {
+      "sha512": "0qbNyxGpuNP/fuQ3FLHesm1Vn/83qYcAgVsi1UQCQN1peY4YH1uiizOh4xbYkQyxiVMD/c/zhiYYv94G0DXSSA==",
       "type": "package",
-      "path": "microsoft.extensions.configuration.abstractions/3.1.4",
+      "path": "microsoft.extensions.configuration.abstractions/3.1.8",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2566,14 +2536,14 @@
         "lib/netcoreapp3.1/Microsoft.Extensions.Configuration.Abstractions.xml",
         "lib/netstandard2.0/Microsoft.Extensions.Configuration.Abstractions.dll",
         "lib/netstandard2.0/Microsoft.Extensions.Configuration.Abstractions.xml",
-        "microsoft.extensions.configuration.abstractions.3.1.4.nupkg.sha512",
+        "microsoft.extensions.configuration.abstractions.3.1.8.nupkg.sha512",
         "microsoft.extensions.configuration.abstractions.nuspec"
       ]
     },
-    "Microsoft.Extensions.Configuration.Binder/3.1.4": {
-      "sha512": "rN0FlUcOmHpGX1BFGZbtTgsXWwHO9pRTocynckXpqCvcMzqehS36aN+lfIlG3PriFulHF2kzwNVfhBakc072iw==",
+    "Microsoft.Extensions.Configuration.Binder/3.1.8": {
+      "sha512": "l/oqIWRM4YF62mlCOrIKGUOCemsaID/lngK2SZEtpYI8LrktpjPd4QzvENWj5GebbLbqOtsFhF6Ko6dgzmUnBw==",
       "type": "package",
-      "path": "microsoft.extensions.configuration.binder/3.1.4",
+      "path": "microsoft.extensions.configuration.binder/3.1.8",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2582,14 +2552,14 @@
         "lib/netcoreapp3.1/Microsoft.Extensions.Configuration.Binder.xml",
         "lib/netstandard2.0/Microsoft.Extensions.Configuration.Binder.dll",
         "lib/netstandard2.0/Microsoft.Extensions.Configuration.Binder.xml",
-        "microsoft.extensions.configuration.binder.3.1.4.nupkg.sha512",
+        "microsoft.extensions.configuration.binder.3.1.8.nupkg.sha512",
         "microsoft.extensions.configuration.binder.nuspec"
       ]
     },
-    "Microsoft.Extensions.Primitives/3.1.4": {
-      "sha512": "tLR9n5ltwA56nr1t5M6q5IBfGLXtMS+XgumtqVENmtPQOWUD+m0Kgo1U6GWr06Y875WUN3sOGnmqkvW4an7fYA==",
+    "Microsoft.Extensions.Primitives/3.1.8": {
+      "sha512": "XcIoXQhT0kwnEhOKv/LmpWR6yF6QWmBTy9Fcsz4aHuCOgTJ7Zd23ELtUA4BfwlYoFlSedavS+vURz9tNekd44g==",
       "type": "package",
-      "path": "microsoft.extensions.primitives/3.1.4",
+      "path": "microsoft.extensions.primitives/3.1.8",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2598,7 +2568,7 @@
         "lib/netcoreapp3.1/Microsoft.Extensions.Primitives.xml",
         "lib/netstandard2.0/Microsoft.Extensions.Primitives.dll",
         "lib/netstandard2.0/Microsoft.Extensions.Primitives.xml",
-        "microsoft.extensions.primitives.3.1.4.nupkg.sha512",
+        "microsoft.extensions.primitives.3.1.8.nupkg.sha512",
         "microsoft.extensions.primitives.nuspec"
       ]
     },
@@ -2747,10 +2717,10 @@
         "version.txt"
       ]
     },
-    "MySql.Data/8.0.20": {
-      "sha512": "VIHN+VmEuQzVwrEUt/rTOv51V4R73bCHX1H9lfJY2IkzXUDbDIytME+nhQfKPJ59nlPSFj03CmuS3F/pSzJF+A==",
+    "MySql.Data/8.0.21": {
+      "sha512": "mKARhpOOn4rQ6PPdY98UVHq00v/4vDCfluR2Xrr5VNQgtyVzjzorcvQjYArHLRwKLEkBRxgHWRfg0+hS96FI3Q==",
       "type": "package",
-      "path": "mysql.data/8.0.20",
+      "path": "mysql.data/8.0.21",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2770,7 +2740,7 @@
         "lib/netstandard2.1/MySql.Data.xml",
         "lib/netstandard2.1/Ubiety.Dns.Core.dll",
         "lib/netstandard2.1/Zstandard.Net.dll",
-        "mysql.data.8.0.20.nupkg.sha512",
+        "mysql.data.8.0.21.nupkg.sha512",
         "mysql.data.nuspec"
       ]
     },
@@ -2817,26 +2787,22 @@
         "packageIcon.png"
       ]
     },
-    "Npgsql/4.1.3.1": {
-      "sha512": "354pl/Picmt5/AIrm8urFwtxfK4n4NbmfBnLA9yvP8VtILSQF3/sFo3+lGuz+q4iyD18QeNFy0NMNBzsocFVlw==",
+    "Npgsql/4.1.4": {
+      "sha512": "qLwnSF7GAAxxrNFH3EprG352CJbhTCIDkk9PJ3/6aBeMOZBq+QMI1Yxsi9aUrBJwE51PaMLIYw0eq/bv9CGQTw==",
       "type": "package",
-      "path": "npgsql/4.1.3.1",
+      "path": "npgsql/4.1.4",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "lib/net461/Npgsql.dll",
-        "lib/net461/Npgsql.pdb",
         "lib/net461/Npgsql.xml",
         "lib/netcoreapp3.0/Npgsql.dll",
-        "lib/netcoreapp3.0/Npgsql.pdb",
         "lib/netcoreapp3.0/Npgsql.xml",
         "lib/netstandard2.0/Npgsql.dll",
-        "lib/netstandard2.0/Npgsql.pdb",
         "lib/netstandard2.0/Npgsql.xml",
         "lib/netstandard2.1/Npgsql.dll",
-        "lib/netstandard2.1/Npgsql.pdb",
         "lib/netstandard2.1/Npgsql.xml",
-        "npgsql.4.1.3.1.nupkg.sha512",
+        "npgsql.4.1.4.nupkg.sha512",
         "npgsql.nuspec",
         "postgresql.png"
       ]
@@ -3122,19 +3088,92 @@
         "version.txt"
       ]
     },
-    "S3ServerInterface/2.0.1.19": {
-      "sha512": "IsMNhsFj8flXp2HDUDbsR+7i1d7Rr33QQgslgDwLC9oiwJbEb2lYpOntFfJtX6Nxi8KvOPPwksvBNUDt5cxuDQ==",
+    "S3ServerInterface/2.1.0.9": {
+      "sha512": "z0izIJwYzuFpRKKt7K7LUH4DATm3grDl1kEOYgQkvGi985ZGXwkgEBWJLUHd47AtsBGeEWJBLuhxxPUNgWtXtg==",
       "type": "package",
-      "path": "s3serverinterface/2.0.1.19",
+      "path": "s3serverinterface/2.1.0.9",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "LICENSE.md",
         "lib/net462/S3ServerInterface.dll",
+        "lib/netcoreapp2.0/S3ServerInterface.dll",
         "lib/netstandard2.0/S3ServerInterface.dll",
         "lib/netstandard2.0/S3ServerInterface.xml",
-        "s3serverinterface.2.0.1.19.nupkg.sha512",
+        "s3serverinterface.2.1.0.9.nupkg.sha512",
         "s3serverinterface.nuspec"
+      ]
+    },
+    "SQLitePCLRaw.bundle_e_sqlite3/2.0.2": {
+      "sha512": "OVPI/nh5AqfLCIKhAYqjCa6AHhc7oKApGcGM3UhMRSerFiBx58nSpGwxVFdMgjOCWZR+fA49nzsnKlWp5hFo8w==",
+      "type": "package",
+      "path": "sqlitepclraw.bundle_e_sqlite3/2.0.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/Xamarin.iOS10/SQLitePCLRaw.batteries_v2.dll",
+        "lib/Xamarin.tvOS10/SQLitePCLRaw.batteries_v2.dll",
+        "lib/net461/SQLitePCLRaw.batteries_v2.dll",
+        "lib/net461/SQLitePCLRaw.nativelibrary.dll",
+        "lib/netcoreapp3.0/SQLitePCLRaw.batteries_v2.dll",
+        "lib/netcoreapp3.0/SQLitePCLRaw.nativelibrary.dll",
+        "lib/netstandard2.0/SQLitePCLRaw.batteries_v2.dll",
+        "sqlitepclraw.bundle_e_sqlite3.2.0.2.nupkg.sha512",
+        "sqlitepclraw.bundle_e_sqlite3.nuspec"
+      ]
+    },
+    "SQLitePCLRaw.core/2.0.2": {
+      "sha512": "TFSBX426OelS1tkaVC254NVVlrJIe9YLhWPkEvuqJj2104QpmDmEYOhfdfDJD1E/2SmqDhoRw1ek5cQHj8olcQ==",
+      "type": "package",
+      "path": "sqlitepclraw.core/2.0.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/netstandard2.0/SQLitePCLRaw.core.dll",
+        "sqlitepclraw.core.2.0.2.nupkg.sha512",
+        "sqlitepclraw.core.nuspec"
+      ]
+    },
+    "SQLitePCLRaw.lib.e_sqlite3/2.0.2": {
+      "sha512": "S+Tsqe/M7wsc+9HeediI6UHtBKf2X586aRwhi1aBVLGe0WxkAo52O9ZxwEy/v8XMLefcrEMupd2e9CDlIT6QCw==",
+      "type": "package",
+      "path": "sqlitepclraw.lib.e_sqlite3/2.0.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "build/net461/SQLitePCLRaw.lib.e_sqlite3.targets",
+        "lib/net461/_._",
+        "lib/netstandard2.0/_._",
+        "runtimes/alpine-x64/native/libe_sqlite3.so",
+        "runtimes/linux-arm/native/libe_sqlite3.so",
+        "runtimes/linux-arm64/native/libe_sqlite3.so",
+        "runtimes/linux-armel/native/libe_sqlite3.so",
+        "runtimes/linux-musl-x64/native/libe_sqlite3.so",
+        "runtimes/linux-x64/native/libe_sqlite3.so",
+        "runtimes/linux-x86/native/libe_sqlite3.so",
+        "runtimes/osx-x64/native/libe_sqlite3.dylib",
+        "runtimes/win-arm/native/e_sqlite3.dll",
+        "runtimes/win-arm64/native/e_sqlite3.dll",
+        "runtimes/win-x64/native/e_sqlite3.dll",
+        "runtimes/win-x86/native/e_sqlite3.dll",
+        "runtimes/win10-arm/nativeassets/uap10.0/e_sqlite3.dll",
+        "runtimes/win10-arm64/nativeassets/uap10.0/e_sqlite3.dll",
+        "runtimes/win10-x64/nativeassets/uap10.0/e_sqlite3.dll",
+        "runtimes/win10-x86/nativeassets/uap10.0/e_sqlite3.dll",
+        "sqlitepclraw.lib.e_sqlite3.2.0.2.nupkg.sha512",
+        "sqlitepclraw.lib.e_sqlite3.nuspec"
+      ]
+    },
+    "SQLitePCLRaw.provider.dynamic_cdecl/2.0.2": {
+      "sha512": "ZSwacbKJUsxJEZxwT23uZVrGbaIvXcADZDz5Sr66fikO5eehdcceDncjzwzTzWfW13di8gpTpstx3WJSt/Ci5Q==",
+      "type": "package",
+      "path": "sqlitepclraw.provider.dynamic_cdecl/2.0.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/netstandard2.0/SQLitePCLRaw.provider.dynamic_cdecl.dll",
+        "sqlitepclraw.provider.dynamic_cdecl.2.0.2.nupkg.sha512",
+        "sqlitepclraw.provider.dynamic_cdecl.nuspec"
       ]
     },
     "SSH.NET/2016.1.0": {
@@ -3295,29 +3334,6 @@
         "version.txt"
       ]
     },
-    "System.CodeDom/4.6.0": {
-      "sha512": "ArWGZOxPhOaJUd4YgvbTxGZDbVDJHPAOQNiJIpbRDPW6v2NT5xkallQv1zpu8Rwwb5Z3iZ1jwWA4gSQuWgR+jw==",
-      "type": "package",
-      "path": "system.codedom/4.6.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "LICENSE.TXT",
-        "THIRD-PARTY-NOTICES.TXT",
-        "lib/net461/System.CodeDom.dll",
-        "lib/net461/System.CodeDom.xml",
-        "lib/netstandard2.0/System.CodeDom.dll",
-        "lib/netstandard2.0/System.CodeDom.xml",
-        "ref/net461/System.CodeDom.dll",
-        "ref/net461/System.CodeDom.xml",
-        "ref/netstandard2.0/System.CodeDom.dll",
-        "ref/netstandard2.0/System.CodeDom.xml",
-        "system.codedom.4.6.0.nupkg.sha512",
-        "system.codedom.nuspec",
-        "useSharedDesignerContext.txt",
-        "version.txt"
-      ]
-    },
     "System.Collections/4.3.0": {
       "sha512": "3Dcj85/TBdVpL5Zr+gEEBUuFe2icOnLalmEh9hfck1PTYbbyWuZgh4fmm2ysCLTrqLQw6t3TgTyJ+VLp+Qb+Lw==",
       "type": "package",
@@ -3452,113 +3468,22 @@
         "system.collections.concurrent.nuspec"
       ]
     },
-    "System.ComponentModel.Annotations/4.6.0": {
-      "sha512": "pOd+UhZ3X8xfwKDlgAzowUJNjp8VYVmOHZm++vCd0kq1HZ0zK3mNo2yRXjYgv7Ik/Xi43fmJfND2PLEsQSALCg==",
+    "System.Configuration.ConfigurationManager/4.4.1": {
+      "sha512": "jz3TWKMAeuDEyrPCK5Jyt4bzQcmzUIMcY9Ud6PkElFxTfnsihV+9N/UCqvxe1z5gc7jMYAnj7V1COMS9QKIuHQ==",
       "type": "package",
-      "path": "system.componentmodel.annotations/4.6.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "LICENSE.TXT",
-        "THIRD-PARTY-NOTICES.TXT",
-        "lib/MonoAndroid10/_._",
-        "lib/MonoTouch10/_._",
-        "lib/net45/_._",
-        "lib/net461/System.ComponentModel.Annotations.dll",
-        "lib/netcore50/System.ComponentModel.Annotations.dll",
-        "lib/netstandard1.4/System.ComponentModel.Annotations.dll",
-        "lib/netstandard2.0/System.ComponentModel.Annotations.dll",
-        "lib/netstandard2.1/System.ComponentModel.Annotations.dll",
-        "lib/netstandard2.1/System.ComponentModel.Annotations.xml",
-        "lib/portable-net45+win8/_._",
-        "lib/win8/_._",
-        "lib/xamarinios10/_._",
-        "lib/xamarinmac20/_._",
-        "lib/xamarintvos10/_._",
-        "lib/xamarinwatchos10/_._",
-        "ref/MonoAndroid10/_._",
-        "ref/MonoTouch10/_._",
-        "ref/net45/_._",
-        "ref/net461/System.ComponentModel.Annotations.dll",
-        "ref/net461/System.ComponentModel.Annotations.xml",
-        "ref/netcore50/System.ComponentModel.Annotations.dll",
-        "ref/netcore50/System.ComponentModel.Annotations.xml",
-        "ref/netcore50/de/System.ComponentModel.Annotations.xml",
-        "ref/netcore50/es/System.ComponentModel.Annotations.xml",
-        "ref/netcore50/fr/System.ComponentModel.Annotations.xml",
-        "ref/netcore50/it/System.ComponentModel.Annotations.xml",
-        "ref/netcore50/ja/System.ComponentModel.Annotations.xml",
-        "ref/netcore50/ko/System.ComponentModel.Annotations.xml",
-        "ref/netcore50/ru/System.ComponentModel.Annotations.xml",
-        "ref/netcore50/zh-hans/System.ComponentModel.Annotations.xml",
-        "ref/netcore50/zh-hant/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.1/System.ComponentModel.Annotations.dll",
-        "ref/netstandard1.1/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.1/de/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.1/es/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.1/fr/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.1/it/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.1/ja/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.1/ko/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.1/ru/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.1/zh-hans/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.1/zh-hant/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.3/System.ComponentModel.Annotations.dll",
-        "ref/netstandard1.3/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.3/de/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.3/es/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.3/fr/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.3/it/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.3/ja/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.3/ko/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.3/ru/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.3/zh-hans/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.3/zh-hant/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.4/System.ComponentModel.Annotations.dll",
-        "ref/netstandard1.4/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.4/de/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.4/es/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.4/fr/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.4/it/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.4/ja/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.4/ko/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.4/ru/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.4/zh-hans/System.ComponentModel.Annotations.xml",
-        "ref/netstandard1.4/zh-hant/System.ComponentModel.Annotations.xml",
-        "ref/netstandard2.0/System.ComponentModel.Annotations.dll",
-        "ref/netstandard2.0/System.ComponentModel.Annotations.xml",
-        "ref/netstandard2.1/System.ComponentModel.Annotations.dll",
-        "ref/netstandard2.1/System.ComponentModel.Annotations.xml",
-        "ref/portable-net45+win8/_._",
-        "ref/win8/_._",
-        "ref/xamarinios10/_._",
-        "ref/xamarinmac20/_._",
-        "ref/xamarintvos10/_._",
-        "ref/xamarinwatchos10/_._",
-        "system.componentmodel.annotations.4.6.0.nupkg.sha512",
-        "system.componentmodel.annotations.nuspec",
-        "useSharedDesignerContext.txt",
-        "version.txt"
-      ]
-    },
-    "System.Configuration.ConfigurationManager/4.6.0": {
-      "sha512": "gkNklXxdmB3r4SQTUzRhESZAb3MotgDz24XYi2R/bIjJ10SF0KHJ/qTEwi9CLyIAOTjmCo8Vx8+rKldLaiW7Ig==",
-      "type": "package",
-      "path": "system.configuration.configurationmanager/4.6.0",
+      "path": "system.configuration.configurationmanager/4.4.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "LICENSE.TXT",
         "THIRD-PARTY-NOTICES.TXT",
         "lib/net461/System.Configuration.ConfigurationManager.dll",
-        "lib/net461/System.Configuration.ConfigurationManager.xml",
         "lib/netstandard2.0/System.Configuration.ConfigurationManager.dll",
-        "lib/netstandard2.0/System.Configuration.ConfigurationManager.xml",
         "ref/net461/System.Configuration.ConfigurationManager.dll",
         "ref/net461/System.Configuration.ConfigurationManager.xml",
         "ref/netstandard2.0/System.Configuration.ConfigurationManager.dll",
         "ref/netstandard2.0/System.Configuration.ConfigurationManager.xml",
-        "system.configuration.configurationmanager.4.6.0.nupkg.sha512",
+        "system.configuration.configurationmanager.4.4.1.nupkg.sha512",
         "system.configuration.configurationmanager.nuspec",
         "useSharedDesignerContext.txt",
         "version.txt"
@@ -3601,10 +3526,10 @@
         "system.console.nuspec"
       ]
     },
-    "System.Data.SqlClient/4.8.1": {
-      "sha512": "HKLykcv6eZLbLnSMnlQ6Os4+UAmFE+AgYm92CTvJYeTOBtOYusX3qu8OoGhFrnKZax91UcLcDo5vPrqvJUTSNQ==",
+    "System.Data.SqlClient/4.8.2": {
+      "sha512": "80vGtW6uLB4AkyrdVuKTXYUyuXDPAsSKbTVfvjndZaRAYxzFzWhJbvUfeAKrN+128ycWZjLIAl61dFUwWHOOTw==",
       "type": "package",
-      "path": "system.data.sqlclient/4.8.1",
+      "path": "system.data.sqlclient/4.8.2",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3681,113 +3606,10 @@
         "runtimes/win/lib/netstandard2.0/System.Data.SqlClient.xml",
         "runtimes/win/lib/uap10.0.16299/System.Data.SqlClient.dll",
         "runtimes/win/lib/uap10.0.16299/System.Data.SqlClient.xml",
-        "system.data.sqlclient.4.8.1.nupkg.sha512",
+        "system.data.sqlclient.4.8.2.nupkg.sha512",
         "system.data.sqlclient.nuspec",
         "useSharedDesignerContext.txt",
         "version.txt"
-      ]
-    },
-    "System.Data.SQLite/1.0.113.1": {
-      "sha512": "80q28QKsEebMm1PhCBEKFoxTYiE6P1YtA+5IVlBeBxgB8LwDgbaAml6RIfGu719JoRtbmNqtLdhDA8jj84s0gA==",
-      "type": "package",
-      "path": "system.data.sqlite/1.0.113.1",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "system.data.sqlite.1.0.113.1.nupkg.sha512",
-        "system.data.sqlite.nuspec"
-      ]
-    },
-    "System.Data.SQLite.Core/1.0.113.1": {
-      "sha512": "ymvB558/Tgdxj2MzJjhDvPLJ/S2WgG1KzQ1cmqzsW3+YQ5DO+eAU04OpY5deK6fndM+DEU8+lwmmYHxxUS2Qvw==",
-      "type": "package",
-      "path": "system.data.sqlite.core/1.0.113.1",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "build/net20/System.Data.SQLite.Core.targets",
-        "build/net20/x64/SQLite.Interop.dll",
-        "build/net20/x86/SQLite.Interop.dll",
-        "build/net40/System.Data.SQLite.Core.targets",
-        "build/net40/x64/SQLite.Interop.dll",
-        "build/net40/x86/SQLite.Interop.dll",
-        "build/net45/System.Data.SQLite.Core.targets",
-        "build/net45/x64/SQLite.Interop.dll",
-        "build/net45/x86/SQLite.Interop.dll",
-        "build/net451/System.Data.SQLite.Core.targets",
-        "build/net451/x64/SQLite.Interop.dll",
-        "build/net451/x86/SQLite.Interop.dll",
-        "build/net46/System.Data.SQLite.Core.targets",
-        "build/net46/x64/SQLite.Interop.dll",
-        "build/net46/x86/SQLite.Interop.dll",
-        "lib/net20/System.Data.SQLite.dll",
-        "lib/net20/System.Data.SQLite.dll.config",
-        "lib/net20/System.Data.SQLite.xml",
-        "lib/net40/System.Data.SQLite.dll",
-        "lib/net40/System.Data.SQLite.dll.config",
-        "lib/net40/System.Data.SQLite.xml",
-        "lib/net45/System.Data.SQLite.dll",
-        "lib/net45/System.Data.SQLite.dll.config",
-        "lib/net45/System.Data.SQLite.xml",
-        "lib/net451/System.Data.SQLite.dll",
-        "lib/net451/System.Data.SQLite.dll.config",
-        "lib/net451/System.Data.SQLite.xml",
-        "lib/net46/System.Data.SQLite.dll",
-        "lib/net46/System.Data.SQLite.dll.config",
-        "lib/net46/System.Data.SQLite.xml",
-        "lib/netstandard2.0/System.Data.SQLite.dll",
-        "lib/netstandard2.0/System.Data.SQLite.dll.config",
-        "lib/netstandard2.0/System.Data.SQLite.xml",
-        "lib/netstandard2.1/System.Data.SQLite.dll",
-        "lib/netstandard2.1/System.Data.SQLite.dll.config",
-        "lib/netstandard2.1/System.Data.SQLite.xml",
-        "runtimes/linux-x64/native/netstandard2.0/SQLite.Interop.dll",
-        "runtimes/linux-x64/native/netstandard2.1/SQLite.Interop.dll",
-        "runtimes/osx-x64/native/netstandard2.0/SQLite.Interop.dll",
-        "runtimes/osx-x64/native/netstandard2.1/SQLite.Interop.dll",
-        "runtimes/win-x64/native/netstandard2.0/SQLite.Interop.dll",
-        "runtimes/win-x64/native/netstandard2.1/SQLite.Interop.dll",
-        "runtimes/win-x86/native/netstandard2.0/SQLite.Interop.dll",
-        "runtimes/win-x86/native/netstandard2.1/SQLite.Interop.dll",
-        "system.data.sqlite.core.1.0.113.1.nupkg.sha512",
-        "system.data.sqlite.core.nuspec"
-      ]
-    },
-    "System.Data.SQLite.EF6/1.0.113": {
-      "sha512": "4EioCVv8fEsI6Xp66Q/r9QI680smaLZzlIvBDXWRxPuc1/puBA8jHm7CTY3wgAOwAuiPgLsmq6RVdAjoaVuziQ==",
-      "type": "package",
-      "path": "system.data.sqlite.ef6/1.0.113",
-      "hasTools": true,
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "content/net40/app.config.install.xdt",
-        "content/net40/app.config.transform",
-        "content/net40/web.config.install.xdt",
-        "content/net40/web.config.transform",
-        "content/net45/app.config.install.xdt",
-        "content/net45/app.config.transform",
-        "content/net45/web.config.install.xdt",
-        "content/net45/web.config.transform",
-        "content/net451/app.config.install.xdt",
-        "content/net451/app.config.transform",
-        "content/net451/web.config.install.xdt",
-        "content/net451/web.config.transform",
-        "content/net46/app.config.install.xdt",
-        "content/net46/app.config.transform",
-        "content/net46/web.config.install.xdt",
-        "content/net46/web.config.transform",
-        "lib/net40/System.Data.SQLite.EF6.dll",
-        "lib/net45/System.Data.SQLite.EF6.dll",
-        "lib/net451/System.Data.SQLite.EF6.dll",
-        "lib/net46/System.Data.SQLite.EF6.dll",
-        "lib/netstandard2.1/System.Data.SQLite.EF6.dll",
-        "system.data.sqlite.ef6.1.0.113.nupkg.sha512",
-        "system.data.sqlite.ef6.nuspec",
-        "tools/net40/install.ps1",
-        "tools/net45/install.ps1",
-        "tools/net451/install.ps1",
-        "tools/net46/install.ps1"
       ]
     },
     "System.Diagnostics.Debug/4.3.0": {
@@ -6062,10 +5884,10 @@
         "system.security.cryptography.primitives.nuspec"
       ]
     },
-    "System.Security.Cryptography.ProtectedData/4.6.0": {
-      "sha512": "zdCsTOakmbAQVyOI6+ZadvXZgzSiFiY5nXAfGUQNGrz3ofc9sjehpXRvqYb3vWUsvloYFILSpiQCjiZVFKRBjA==",
+    "System.Security.Cryptography.ProtectedData/4.4.0": {
+      "sha512": "cJV7ScGW7EhatRsjehfvvYVBvtiSMKgN8bOVI0bQhnF5bU7vnHVIsH49Kva7i7GWaWYvmEzkYVk1TC+gZYBEog==",
       "type": "package",
-      "path": "system.security.cryptography.protecteddata/4.6.0",
+      "path": "system.security.cryptography.protecteddata/4.4.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -6075,10 +5897,8 @@
         "lib/MonoTouch10/_._",
         "lib/net46/System.Security.Cryptography.ProtectedData.dll",
         "lib/net461/System.Security.Cryptography.ProtectedData.dll",
-        "lib/net461/System.Security.Cryptography.ProtectedData.xml",
         "lib/netstandard1.3/System.Security.Cryptography.ProtectedData.dll",
         "lib/netstandard2.0/System.Security.Cryptography.ProtectedData.dll",
-        "lib/netstandard2.0/System.Security.Cryptography.ProtectedData.xml",
         "lib/xamarinios10/_._",
         "lib/xamarinmac20/_._",
         "lib/xamarintvos10/_._",
@@ -6097,11 +5917,9 @@
         "ref/xamarinwatchos10/_._",
         "runtimes/win/lib/net46/System.Security.Cryptography.ProtectedData.dll",
         "runtimes/win/lib/net461/System.Security.Cryptography.ProtectedData.dll",
-        "runtimes/win/lib/net461/System.Security.Cryptography.ProtectedData.xml",
         "runtimes/win/lib/netstandard1.3/System.Security.Cryptography.ProtectedData.dll",
         "runtimes/win/lib/netstandard2.0/System.Security.Cryptography.ProtectedData.dll",
-        "runtimes/win/lib/netstandard2.0/System.Security.Cryptography.ProtectedData.xml",
-        "system.security.cryptography.protecteddata.4.6.0.nupkg.sha512",
+        "system.security.cryptography.protecteddata.4.4.0.nupkg.sha512",
         "system.security.cryptography.protecteddata.nuspec",
         "useSharedDesignerContext.txt",
         "version.txt"
@@ -7070,10 +6888,10 @@
         "system.xml.xpath.xmldocument.nuspec"
       ]
     },
-    "Watson/3.0.11": {
-      "sha512": "my/B4ngpESUiSk0EVHl2AZxg8gwMUUBky4RmQdKzfVLdruDp+hAlFhdYZ5fOKDhJTQtmPEQwlXLv2SUs4+5TkA==",
+    "Watson/3.1.0.2": {
+      "sha512": "WQLSyhmlfk+IuEtXLuYeP1k1eQ3gQ5+qeJQPseFQSlqpwBflMhu1MdRdzenTCHLss1EKBrCg8GSXk6Xqxs+TFw==",
       "type": "package",
-      "path": "watson/3.0.11",
+      "path": "watson/3.1.0.2",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -7081,91 +6899,115 @@
         "lib/net462/WatsonWebserver.dll",
         "lib/netstandard2.0/WatsonWebserver.dll",
         "lib/netstandard2.0/WatsonWebserver.xml",
-        "watson.3.0.11.nupkg.sha512",
+        "watson.3.1.0.2.nupkg.sha512",
         "watson.nuspec"
       ]
     },
-    "WatsonORM/1.1.3": {
-      "sha512": "vWfHSex53bSlLCdijz2NeAIC8bjKPrBpl31VnygNmy+BCdoFXnbcpsHS0aCTvHP6LNcpobBXlpGK0JPHZueZEw==",
+    "WatsonORM/1.3.0.5": {
+      "sha512": "0lZYX4/UyyjwYb5yairGDB2ldnEqzIHrSY31nR4eyBMb5pbPUp/ZqAdPGMihZBQe0JP/HQZwzMnTzvujIBqfDQ==",
       "type": "package",
-      "path": "watsonorm/1.1.3",
+      "path": "watsonorm/1.3.0.5",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "LICENSE.md",
+        "lib/net461/WatsonORM.dll",
+        "lib/net461/WatsonORM.xml",
+        "lib/netcoreapp2.0/WatsonORM.dll",
+        "lib/netcoreapp2.0/WatsonORM.xml",
         "lib/netstandard2.0/WatsonORM.dll",
         "lib/netstandard2.0/WatsonORM.xml",
-        "watsonorm.1.1.3.nupkg.sha512",
+        "watsonorm.1.3.0.5.nupkg.sha512",
         "watsonorm.nuspec"
       ]
     },
-    "WatsonORM.Core/1.1.2.1": {
-      "sha512": "ums0n0t/B115VYYFKQlsVH+UN9D4Nv2lSUbIncwMY5Bcl6NxavqC6nUaqgWpQ5dBY11hDxWGTFz4ySVwlEuk6g==",
+    "WatsonORM.Core/1.2.0.4": {
+      "sha512": "wX38BBzf6g1fW0A02chRBw7qZXEco02TJ5fUZ9NadVUlnqp9CC3+1PpvgGk9oh/vJnrTARCrR/Q1FFKoGf7cHw==",
       "type": "package",
-      "path": "watsonorm.core/1.1.2.1",
+      "path": "watsonorm.core/1.2.0.4",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "LICENSE.md",
+        "lib/net461/WatsonORM.Core.dll",
+        "lib/net461/WatsonORM.Core.xml",
+        "lib/netcoreapp2.0/WatsonORM.Core.dll",
+        "lib/netcoreapp2.0/WatsonORM.Core.xml",
         "lib/netstandard2.0/WatsonORM.Core.dll",
         "lib/netstandard2.0/WatsonORM.Core.xml",
-        "watsonorm.core.1.1.2.1.nupkg.sha512",
+        "watsonorm.core.1.2.0.4.nupkg.sha512",
         "watsonorm.core.nuspec"
       ]
     },
-    "WatsonORM.Mysql/1.1.3": {
-      "sha512": "orlTtWXJ7gc5FPr+5OGuUBNDrCjyV9fddenNwLuNLLYtq8Hw9FbsEzKd91AH8JXM3ZxsgRYTpQLsyYK1te2S/Q==",
+    "WatsonORM.Mysql/1.3.0.3": {
+      "sha512": "e83NdqWKt+NIy8iD/jeQT+73RTRtIS3U8Oyfj5docmCKJLc2KF4TAsFA9Jt+EMe+kIvZ6eH/iEdOZdneHi2mxA==",
       "type": "package",
-      "path": "watsonorm.mysql/1.1.3",
+      "path": "watsonorm.mysql/1.3.0.3",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "LICENSE.md",
+        "lib/net461/WatsonORM.Mysql.dll",
+        "lib/net461/WatsonORM.Mysql.xml",
+        "lib/netcoreapp2.0/WatsonORM.Mysql.dll",
+        "lib/netcoreapp2.0/WatsonORM.Mysql.xml",
         "lib/netstandard2.0/WatsonORM.Mysql.dll",
         "lib/netstandard2.0/WatsonORM.Mysql.xml",
-        "watsonorm.mysql.1.1.3.nupkg.sha512",
+        "watsonorm.mysql.1.3.0.3.nupkg.sha512",
         "watsonorm.mysql.nuspec"
       ]
     },
-    "WatsonORM.Postgresql/1.1.3": {
-      "sha512": "cRvF3Pma+VZl2MF6Ji4ZBp/6TjroyYwWd+SQnVNs9VUS4itEAtk+o5am+3YS9Q6z4Js6uJiab/6hpO6LYEtSrQ==",
+    "WatsonORM.Postgresql/1.3.0.3": {
+      "sha512": "gLvUUpwrJcTgTM6x27cAsfxTKgXsA0dXaW0wiO38f+mIKV8F/0q3kHQ3dUhNbPVGmqtRZwbzgJE7dlox8HGkrw==",
       "type": "package",
-      "path": "watsonorm.postgresql/1.1.3",
+      "path": "watsonorm.postgresql/1.3.0.3",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "LICENSE.md",
+        "lib/net461/WatsonORM.Postgresql.dll",
+        "lib/net461/WatsonORM.Postgresql.xml",
+        "lib/netcoreapp2.0/WatsonORM.Postgresql.dll",
+        "lib/netcoreapp2.0/WatsonORM.Postgresql.xml",
         "lib/netstandard2.0/WatsonORM.Postgresql.dll",
         "lib/netstandard2.0/WatsonORM.Postgresql.xml",
-        "watsonorm.postgresql.1.1.3.nupkg.sha512",
+        "watsonorm.postgresql.1.3.0.3.nupkg.sha512",
         "watsonorm.postgresql.nuspec"
       ]
     },
-    "WatsonORM.Sqlite/1.1.3": {
-      "sha512": "c9cXyvEqYDggYJC1NQAQP6HOSIGhJmbxUDsyhiyJEHv+7zc5XRZlao7gJ4pY6csRIPtu5aYJhEazAfHmJg1L4g==",
+    "WatsonORM.Sqlite/1.3.0.5": {
+      "sha512": "MZNuy3u3b77cW4SZxdh02CJn6rR/A3WLTDUuiFUO/mD9H3SRwf5mLH4XdCFg1kKw/LoKqMSOGu98sUirPqJZ5w==",
       "type": "package",
-      "path": "watsonorm.sqlite/1.1.3",
+      "path": "watsonorm.sqlite/1.3.0.5",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "LICENSE.md",
+        "lib/net461/WatsonORM.Sqlite.dll",
+        "lib/net461/WatsonORM.Sqlite.xml",
+        "lib/netcoreapp2.0/WatsonORM.Sqlite.dll",
+        "lib/netcoreapp2.0/WatsonORM.Sqlite.xml",
         "lib/netstandard2.0/WatsonORM.Sqlite.dll",
         "lib/netstandard2.0/WatsonORM.Sqlite.xml",
-        "watsonorm.sqlite.1.1.3.nupkg.sha512",
+        "watsonorm.sqlite.1.3.0.5.nupkg.sha512",
         "watsonorm.sqlite.nuspec"
       ]
     },
-    "WatsonORM.SqlServer/1.1.3": {
-      "sha512": "c793w2emiyyja7hm8FED6xutC6DMcyomLAf2Gi1fqBuMiVCVu1TLuNVw0Wk2xGmK7mxjqk6QmL0vI9i2NycQPQ==",
+    "WatsonORM.SqlServer/1.3.0.3": {
+      "sha512": "VYqV8MYDalgB1dpYkksD/mVgR7wx6BNz4za7JyAYLWMt0g+dbv8fp7yNSD4zw5YB6sM6JHn1YZZNylt1Hg5epA==",
       "type": "package",
-      "path": "watsonorm.sqlserver/1.1.3",
+      "path": "watsonorm.sqlserver/1.3.0.3",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "LICENSE.md",
+        "lib/net461/WatsonORM.SqlServer.dll",
+        "lib/net461/WatsonORM.SqlServer.xml",
+        "lib/netcoreapp2.0/WatsonORM.SqlServer.dll",
+        "lib/netcoreapp2.0/WatsonORM.SqlServer.xml",
         "lib/netstandard2.0/WatsonORM.SqlServer.dll",
         "lib/netstandard2.0/WatsonORM.SqlServer.xml",
-        "watsonorm.sqlserver.1.1.3.nupkg.sha512",
+        "watsonorm.sqlserver.1.3.0.3.nupkg.sha512",
         "watsonorm.sqlserver.nuspec"
       ]
     },
@@ -7185,12 +7027,12 @@
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v3.1": [
-      "AWSSDK.S3 >= 3.3.111.10",
+      "AWSSDK.S3 >= 3.5.0.10",
       "Newtonsoft.Json >= 12.0.3",
-      "S3ServerInterface >= 2.0.1.19",
+      "S3ServerInterface >= 2.1.0.9",
       "SyslogLogging >= 1.3.2.2",
-      "Watson >= 3.0.11",
-      "WatsonORM >= 1.1.3",
+      "Watson >= 3.1.0.2",
+      "WatsonORM >= 1.3.0.5",
       "XmlToPox >= 1.0.2"
     ]
   },
@@ -7200,13 +7042,13 @@
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
-    "version": "1.3.0.6",
+    "version": "1.4.0",
     "restore": {
-      "projectUniqueName": "C:\\code\\KVPbase\\Less3-1.3\\Less3\\Less3.csproj",
+      "projectUniqueName": "C:\\code\\KVPbase\\Less3-1.4\\Less3\\Less3.csproj",
       "projectName": "Less3",
-      "projectPath": "C:\\code\\KVPbase\\Less3-1.3\\Less3\\Less3.csproj",
+      "projectPath": "C:\\code\\KVPbase\\Less3-1.4\\Less3\\Less3.csproj",
       "packagesPath": "C:\\Users\\joelc\\.nuget\\packages\\",
-      "outputPath": "C:\\code\\KVPbase\\Less3-1.3\\Less3\\obj\\",
+      "outputPath": "C:\\code\\KVPbase\\Less3-1.4\\Less3\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Microsoft\\Xamarin\\NuGet\\",
@@ -7221,8 +7063,6 @@
         "netcoreapp3.1"
       ],
       "sources": {
-        "C:\\NuGet": {},
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {},
         "https://nuget.pkg.github.com/jchristn/index.json": {}
       },
@@ -7242,7 +7082,7 @@
         "dependencies": {
           "AWSSDK.S3": {
             "target": "Package",
-            "version": "[3.3.111.10, )"
+            "version": "[3.5.0.10, )"
           },
           "Newtonsoft.Json": {
             "target": "Package",
@@ -7250,7 +7090,7 @@
           },
           "S3ServerInterface": {
             "target": "Package",
-            "version": "[2.0.1.19, )"
+            "version": "[2.1.0.9, )"
           },
           "SyslogLogging": {
             "target": "Package",
@@ -7258,11 +7098,11 @@
           },
           "Watson": {
             "target": "Package",
-            "version": "[3.0.11, )"
+            "version": "[3.1.0.2, )"
           },
           "WatsonORM": {
             "target": "Package",
-            "version": "[1.1.3, )"
+            "version": "[1.3.0.5, )"
           },
           "XmlToPox": {
             "target": "Package",

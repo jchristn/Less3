@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 using Watson.ORM;
@@ -74,8 +75,8 @@ namespace Less3.Classes
             _Logging = logging ?? throw new ArgumentNullException(nameof(logging));
             _Bucket = bucket ?? throw new ArgumentNullException(nameof(bucket));
             _ORM = orm ?? throw new ArgumentNullException(nameof(orm));
-
-            InitializeStorageDriver();
+             
+            InitializeStorageDriver(); 
         }
 
         #endregion
@@ -140,7 +141,7 @@ namespace Less3.Classes
                 obj.Version = 1;
             }
 
-            obj.Md5 = _StorageDriver.Write(obj.BlobFilename, obj.ContentLength, stream);
+            obj.Md5 = Common.BytesToHexString(_StorageDriver.Write(obj.BlobFilename, obj.ContentLength, stream));
 
             if (String.IsNullOrEmpty(obj.Etag)) obj.Etag = obj.Md5;
 
@@ -227,7 +228,7 @@ namespace Less3.Classes
             return true; 
         }
 
-        internal BucketStatistics GetStatistics()
+        internal BucketStatistics GetFullStatistics()
         {
             BucketStatistics ret = new BucketStatistics();
             ret.Name = _Bucket.Name;
@@ -253,6 +254,23 @@ namespace Less3.Classes
                 {
                     ret.Bytes = Convert.ToInt64(result.Rows[0]["totalbytes"]);
                 } 
+            }
+
+            return ret;
+        }
+
+        internal BucketStatistics GetStatistics(List<Obj> objects)
+        {
+            BucketStatistics ret = new BucketStatistics();
+            ret.Name = _Bucket.Name;
+            ret.GUID = _Bucket.GUID;
+            ret.Objects = 0;
+            ret.Bytes = 0;
+            
+            if (objects != null && objects.Count > 0)
+            {
+                ret.Objects = objects.Count;
+                ret.Bytes = objects.Sum(o => o.ContentLength);
             }
 
             return ret;
@@ -417,35 +435,92 @@ namespace Less3.Classes
             }
         }
 
-        internal List<Obj> Enumerate(string prefix, long startIndex, int maxResults)
-        { 
-            DbExpression eKey = null;
-
-            if (!String.IsNullOrEmpty(prefix))
+        internal void Enumerate(
+            string delimiter,
+            string prefix,
+            int startIndex,
+            int maxResults,
+            out List<Obj> objects,
+            out List<string> prefixes,
+            out int nextStartIndex,
+            out bool isTruncated)
+        {
+            objects = new List<Obj>();
+            prefixes = new List<string>();
+            nextStartIndex = startIndex;
+            isTruncated = false;
+             
+            while (true)
             {
-                eKey = new DbExpression(
+                #region Retrieve-Records
+
+                DbExpression e = new DbExpression(
+                    _ORM.GetColumnName<Obj>(nameof(Obj.BucketGUID)),
+                    DbOperators.Equals,
+                    _Bucket.GUID);
+
+                e.PrependAnd(
+                    _ORM.GetColumnName<Obj>(nameof(Obj.Id)),
+                    DbOperators.GreaterThanOrEqualTo,
+                    nextStartIndex);
+
+                if (!String.IsNullOrEmpty(prefix))
+                {
+                    e.PrependAnd(
                     _ORM.GetColumnName<Obj>(nameof(Obj.Key)),
                     DbOperators.StartsWith,
                     prefix);
-            }
-            else
-            {
-                eKey = new DbExpression(
-                    _ORM.GetColumnName<Obj>(nameof(Obj.Id)),
-                    DbOperators.GreaterThan,
-                    0);
-            }
-             
-            DbExpression eBucket = new DbExpression(
-                _ORM.GetColumnName<Obj>(nameof(Obj.BucketGUID)),
-                DbOperators.Equals,
-                _Bucket.GUID);
-             
-            eKey.PrependAnd(eBucket);
+                }
 
-            return _ORM.SelectMany<Obj>((int)startIndex, maxResults, eKey); 
+                List<Obj> tempObjects = _ORM.SelectMany<Obj>(null, maxResults, e);
+                if (tempObjects == null || tempObjects.Count < 1)
+                {
+                    break;
+                }
+
+                #endregion
+
+                #region Process-Records
+
+                foreach (Obj obj in tempObjects)
+                {
+                    string currPrefix = null;
+                    string tempKey = new string(obj.Key);
+                    if (!String.IsNullOrEmpty(prefix)) tempKey = tempKey.Replace(prefix, "");
+
+                    if (!String.IsNullOrEmpty(delimiter))
+                    {
+                        if (tempKey.Contains(delimiter))
+                        {
+                            int delimiterPos = tempKey.IndexOf(delimiter);
+                            currPrefix = tempKey.Substring(0, delimiterPos + delimiter.Length);
+                            if (!prefixes.Contains(currPrefix))
+                            {
+                                prefixes.Add(currPrefix);
+                            }
+                        }
+                    }
+
+                    if (String.IsNullOrEmpty(currPrefix) && objects.Count <= maxResults)
+                    {
+                        objects.Add(obj);
+                    }
+
+                    nextStartIndex = obj.Id + 1;
+                }
+
+                if (objects.Count >= maxResults)
+                {
+                    isTruncated = true;
+                    break;
+                }
+
+                #endregion
+            }
+
+            return;
         }
-         
+
         internal void AddBucketTags(List<BucketTag> tags)
         {
             DeleteBucketTags();
@@ -881,6 +956,11 @@ namespace Less3.Classes
                 default:
                     throw new ArgumentException("Unknown storage driver type '" + _Bucket.StorageType.ToString() + "' in bucket GUID " + _Bucket.GUID + ".");
             }
+        }
+         
+        private void Logger(string msg)
+        {
+            Console.WriteLine(msg);
         }
 
         #endregion

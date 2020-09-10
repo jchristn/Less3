@@ -17,15 +17,11 @@ Core use cases for Less3:
 
 ## New in This Version
 
-v1.3.0.1
+v1.4.0
 
-- Migrate database layer to ORM
-- Improved usability and console log messages
-- Simplification of objects
-- Centralized authentication and authorization
-- Virtualized storage layer to support new backend storage options
-- Updated Postman collection
-- Dockerfile for containerized deployments
+- Minor refactor
+- Fixes to enumeration including folder support
+- Request signature authentication
 
 ## Help and Feedback
 

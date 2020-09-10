@@ -237,7 +237,7 @@ namespace Less3
 
             if (_Settings.Debug.DatabaseQueries) _ORM.Debug.DatabaseQueries = true;
             if (_Settings.Debug.DatabaseResults) _ORM.Debug.DatabaseResults = true;
-            if (_Settings.Debug.DatabaseQueries || _Settings.Debug.DatabaseResults) _ORM.Logger = DatabaseLogger;
+            if (_Settings.Debug.DatabaseQueries || _Settings.Debug.DatabaseResults) _ORM.Logger = Logger;
             Console.WriteLine("[success]");
 
             //             0        1         2         3         4         5
@@ -294,10 +294,14 @@ namespace Less3
             //             0        1         2         3         4         5
             //             123456789012345678901234567890123456789012345678901234567890
             Console.Write("| Initializing S3 server APIs                    : ");
-            _S3Server.ConsoleDebug.Exceptions = true;
-            _S3Server.ConsoleDebug.S3Requests = _Settings.Debug.S3Requests;
+            _S3Server.Logging.Exceptions = true;
+            _S3Server.Logging.S3Requests = _Settings.Debug.S3Requests;
+            _S3Server.Logger = Logger;
+
             _S3Server.BaseDomain = _Settings.Server.BaseDomain;
             _S3Server.PreRequestHandler = PreRequestHandler;
+            _S3Server.AuthenticateSignatures = _Settings.Server.AuthenticateSignatures;
+            _S3Server.GetSecretKey = GetSecretKey;
 
             _S3Server.Service.ListBuckets = _ApiHandler.ServiceListBuckets;
 
@@ -563,9 +567,17 @@ namespace Less3
             await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
         }
 
-        private static void DatabaseLogger(string msg)
+        private static void Logger(string msg)
         {
             _Logging.Debug(msg);
+        }
+
+        private static byte[] GetSecretKey(string accessKey)
+        {
+            Credential cred = _Config.GetCredentialByAccessKey(accessKey);
+            if (cred == null) return null;
+            if (cred.IsBase64) return Common.Base64ToBytes(cred.SecretKey);
+            else return Encoding.UTF8.GetBytes(cred.SecretKey);
         }
     }
 }

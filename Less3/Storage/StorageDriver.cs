@@ -89,7 +89,7 @@ namespace Less3.Storage
         /// <param name="key">Key.</param>
         /// <param name="data">Data.</param> 
         /// <returns>MD5 hash.</returns>
-        public abstract string Write(string key, byte[] data);
+        public abstract byte[] Write(string key, byte[] data);
 
         /// <summary>
         /// Write an object asynchronously.
@@ -97,7 +97,7 @@ namespace Less3.Storage
         /// <param name="key">Key.</param>
         /// <param name="data">Data.</param> 
         /// <returns>MD5 hash.</returns>
-        public abstract Task<string> WriteAsync(string key, byte[] data);
+        public abstract Task<byte[]> WriteAsync(string key, byte[] data);
 
         /// <summary>
         /// Write an object.
@@ -106,7 +106,7 @@ namespace Less3.Storage
         /// <param name="contentLength">Number of bytes to read from the stream.</param>
         /// <param name="stream">Stream.</param> 
         /// <returns>MD5 hash.</returns>
-        public abstract string Write(string key, long contentLength, Stream stream);
+        public abstract byte[] Write(string key, long contentLength, Stream stream);
 
         /// <summary>
         /// Write an object asynchronously.
@@ -115,7 +115,7 @@ namespace Less3.Storage
         /// <param name="contentLength">Number of bytes to read from the stream.</param>
         /// <param name="stream">Stream.</param> 
         /// <returns>MD5 hash.</returns>
-        public abstract Task<string> WriteAsync(string key, long contentLength, Stream stream);
+        public abstract Task<byte[]> WriteAsync(string key, long contentLength, Stream stream);
          
         #endregion 
     }

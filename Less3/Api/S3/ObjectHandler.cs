@@ -524,7 +524,7 @@ namespace Less3.Api.S3
             {
                 if (versionId == 1)
                 {
-                    _Logging.Warn(header + "no such key");
+                    _Logging.Debug(header + "no such key");
                     await resp.Send(ErrorCode.NoSuchKey);
                     return;
                 }
@@ -973,7 +973,9 @@ namespace Less3.Api.S3
                 obj.ExpirationUtc = null;
                 obj.Key = req.Key;
                 obj.LastAccessUtc = ts;
-                obj.LastUpdateUtc = ts; 
+                obj.LastUpdateUtc = ts;
+
+                if (obj.ContentLength == 0 && obj.Key.EndsWith("/")) obj.IsFolder = true;
             }
             else
             {

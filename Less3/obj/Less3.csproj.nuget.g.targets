@@ -3,7 +3,4 @@
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
-  <ImportGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
-    <Import Project="$(NuGetPackageRoot)entityframework\6.3.0\buildTransitive\EntityFramework.targets" Condition="Exists('$(NuGetPackageRoot)entityframework\6.3.0\buildTransitive\EntityFramework.targets')" />
-  </ImportGroup>
 </Project>

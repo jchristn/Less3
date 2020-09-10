@@ -90,6 +90,7 @@ namespace Less3.Classes
             settings.Server.HeaderApiKey = "x-api-key"; 
             settings.Server.AdminApiKey = "less3admin";
             settings.Server.RegionString = "us-west-1";
+            settings.Server.AuthenticateSignatures = true;
              
             settings.Storage = new Settings.SettingsStorage();
             settings.Storage.TempDirectory = "./Temp/";
@@ -201,6 +202,7 @@ namespace Less3.Classes
             Watson.ORM.WatsonORM orm = new Watson.ORM.WatsonORM(settings.Database);
 
             orm.InitializeDatabase();
+            
             orm.InitializeTable(typeof(Bucket));
             orm.InitializeTable(typeof(BucketAcl));
             orm.InitializeTable(typeof(BucketTag));
@@ -214,7 +216,7 @@ namespace Less3.Classes
 
             string userGuid = "default";
             config.AddUser(new User(userGuid, "default", "default@default.com"));
-            config.AddCredential(userGuid, "My first access key", "default", "default");
+            config.AddCredential(userGuid, "My first access key", "default", "default", false);
 
             Bucket bucketConfig = new Bucket(
                 "default",
@@ -247,8 +249,10 @@ namespace Less3.Classes
             obj1.ContentLength = htmlFile.Length;
             obj1.ContentType = "text/html";
             obj1.Key = "hello.html";
-            obj1.Md5 = Common.Md5(Encoding.UTF8.GetBytes(htmlFile));
+            obj1.Md5 = Common.BytesToHexString(Common.Md5(Encoding.UTF8.GetBytes(htmlFile)));
             obj1.Version = 1;
+            obj1.IsFolder = false;
+            obj1.DeleteMarker = false;
             obj1.CreatedUtc = ts;
             obj1.LastUpdateUtc = ts;
             obj1.LastAccessUtc = ts;
@@ -260,8 +264,10 @@ namespace Less3.Classes
             obj2.ContentLength = htmlFile.Length;
             obj2.ContentType = "text/plain";
             obj2.Key = "hello.txt";
-            obj2.Md5 = Common.Md5(Encoding.UTF8.GetBytes(textFile));
+            obj2.Md5 = Common.BytesToHexString(Common.Md5(Encoding.UTF8.GetBytes(textFile)));
             obj2.Version = 1;
+            obj2.IsFolder = false;
+            obj2.DeleteMarker = false;
             obj2.CreatedUtc = ts;
             obj2.LastUpdateUtc = ts;
             obj2.LastAccessUtc = ts;
@@ -273,15 +279,17 @@ namespace Less3.Classes
             obj3.ContentLength = htmlFile.Length;
             obj3.ContentType = "application/json";
             obj3.Key = "hello.json";
-            obj3.Md5 = Common.Md5(Encoding.UTF8.GetBytes(jsonFile));
+            obj3.Md5 = Common.BytesToHexString(Common.Md5(Encoding.UTF8.GetBytes(jsonFile)));
             obj3.Version = 1;
+            obj3.IsFolder = false;
+            obj3.DeleteMarker = false;
             obj3.CreatedUtc = ts;
             obj3.LastUpdateUtc = ts;
             obj3.LastAccessUtc = ts;
-
+             
             bucket.AddObject(obj1, Encoding.UTF8.GetBytes(htmlFile));
             bucket.AddObject(obj2, Encoding.UTF8.GetBytes(textFile));
-            bucket.AddObject(obj3, Encoding.UTF8.GetBytes(jsonFile));
+            bucket.AddObject(obj3, Encoding.UTF8.GetBytes(jsonFile)); 
 
             Common.WriteFile("./system.json", Encoding.UTF8.GetBytes(Common.SerializeJson(settings, true)));
 
@@ -317,7 +325,7 @@ namespace Less3.Classes
 
             #endregion
         }
-
+         
         static string LogoPlain()
         {
             // http://loveascii.com/hearts.html
@@ -403,6 +411,11 @@ namespace Less3.Classes
                 "Find us on Github here: " + link + Environment.NewLine + Environment.NewLine;
 
             return text;
+        }
+
+        private void Logger(string msg)
+        {
+            Console.WriteLine(msg);
         }
 
         #endregion

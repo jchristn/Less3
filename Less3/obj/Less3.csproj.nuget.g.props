@@ -12,13 +12,8 @@
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
-  <ImportGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
-    <Import Project="$(NuGetPackageRoot)entityframework\6.3.0\buildTransitive\EntityFramework.props" Condition="Exists('$(NuGetPackageRoot)entityframework\6.3.0\buildTransitive\EntityFramework.props')" />
-  </ImportGroup>
   <PropertyGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
-    <PkgEntityFramework Condition=" '$(PkgEntityFramework)' == '' ">C:\Users\joelc\.nuget\packages\entityframework\6.3.0</PkgEntityFramework>
-    <PkgSystem_Data_SQLite_EF6 Condition=" '$(PkgSystem_Data_SQLite_EF6)' == '' ">C:\Users\joelc\.nuget\packages\system.data.sqlite.ef6\1.0.113</PkgSystem_Data_SQLite_EF6>
-    <PkgAWSSDK_Core Condition=" '$(PkgAWSSDK_Core)' == '' ">C:\Users\joelc\.nuget\packages\awssdk.core\3.3.107.9</PkgAWSSDK_Core>
-    <PkgAWSSDK_S3 Condition=" '$(PkgAWSSDK_S3)' == '' ">C:\Users\joelc\.nuget\packages\awssdk.s3\3.3.111.10</PkgAWSSDK_S3>
+    <PkgAWSSDK_Core Condition=" '$(PkgAWSSDK_Core)' == '' ">C:\Users\joelc\.nuget\packages\awssdk.core\3.5.1.8</PkgAWSSDK_Core>
+    <PkgAWSSDK_S3 Condition=" '$(PkgAWSSDK_S3)' == '' ">C:\Users\joelc\.nuget\packages\awssdk.s3\3.5.0.10</PkgAWSSDK_S3>
   </PropertyGroup>
 </Project>

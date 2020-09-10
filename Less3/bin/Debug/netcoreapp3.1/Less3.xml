@@ -390,6 +390,11 @@
             Secret key.
             </summary>
         </member>
+        <member name="P:Less3.Classes.Credential.IsBase64">
+            <summary>
+            Indicates if the secret key is base64 encoded.
+            </summary>
+        </member>
         <member name="M:Less3.Classes.Credential.#ctor">
             <summary>
             Instantiate the object.
@@ -458,6 +463,11 @@
         <member name="P:Less3.Classes.Obj.BlobFilename">
             <summary>
             BLOB filename.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Obj.IsFolder">
+            <summary>
+            Indicates if the object is a folder, i.e. ends with '/' and has a content length of 0.
             </summary>
         </member>
         <member name="P:Less3.Classes.Obj.DeleteMarker">
@@ -759,6 +769,11 @@
         <member name="F:Less3.Classes.Settings.SettingsServer.RegionString">
             <summary>
             AWS region string to use for location requests.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.Settings.SettingsServer.AuthenticateSignatures">
+            <summary>
+            Enable or disable signature authentication.
             </summary>
         </member>
         <member name="T:Less3.Classes.Settings.SettingsStorage">

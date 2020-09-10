@@ -88,6 +88,11 @@ namespace Less3.Classes
             /// AWS region string to use for location requests.
             /// </summary>
             public string RegionString;
+
+            /// <summary>
+            /// Enable or disable signature authentication.
+            /// </summary>
+            public bool AuthenticateSignatures = true;
         }
 
         /// <summary>

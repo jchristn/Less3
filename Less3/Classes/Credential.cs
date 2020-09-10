@@ -50,6 +50,12 @@ namespace Less3.Classes
         [Column("secretkey", false, DataTypes.Nvarchar, 256, false)]
         public string SecretKey { get; set; }
 
+        /// <summary>
+        /// Indicates if the secret key is base64 encoded.
+        /// </summary>
+        [Column("isbase64", false, DataTypes.Boolean, false)]
+        public bool IsBase64 { get; set; }
+
         #endregion
 
         #region Private-Members
@@ -66,7 +72,7 @@ namespace Less3.Classes
 
         }
 
-        internal Credential(string userGuid, string description, string accessKey, string secretKey)
+        internal Credential(string userGuid, string description, string accessKey, string secretKey, bool isBase64)
         {
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
             if (String.IsNullOrEmpty(accessKey)) throw new ArgumentNullException(nameof(accessKey));
@@ -77,9 +83,10 @@ namespace Less3.Classes
             Description = description;
             AccessKey = accessKey;
             SecretKey = secretKey;
+            IsBase64 = isBase64;
         }
 
-        internal Credential(string guid, string userGuid, string description, string accessKey, string secretKey)
+        internal Credential(string guid, string userGuid, string description, string accessKey, string secretKey, bool isBase64)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
@@ -91,6 +98,7 @@ namespace Less3.Classes
             Description = description;
             AccessKey = accessKey;
             SecretKey = secretKey;
+            IsBase64 = isBase64;
         }
          
         #endregion

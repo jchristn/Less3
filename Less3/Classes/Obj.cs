@@ -87,6 +87,12 @@ namespace Less3.Classes
         public string BlobFilename { get; set; }
 
         /// <summary>
+        /// Indicates if the object is a folder, i.e. ends with '/' and has a content length of 0.
+        /// </summary>
+        [Column("isfolder", false, DataTypes.Boolean, false)]
+        public bool IsFolder { get; set; }
+
+        /// <summary>
         /// Delete marker.
         /// </summary>
         [Column("deletemarker", false, DataTypes.Boolean, false)]

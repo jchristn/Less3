@@ -84,7 +84,7 @@ namespace Less3.Api.Admin
 
         private async Task PostBuckets(S3Request req, S3Response resp)
         {
-            if (req.RawUrlEntries.Count != 2)
+            if (req.RawUrlEntries.Length != 2)
             {
                 await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
                 return;
@@ -120,7 +120,7 @@ namespace Less3.Api.Admin
 
         private async Task PostUsers(S3Request req, S3Response resp)
         {
-            if (req.RawUrlEntries.Count != 2)
+            if (req.RawUrlEntries.Length != 2)
             {
                 await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
                 return;
@@ -167,7 +167,7 @@ namespace Less3.Api.Admin
 
         private async Task PostCredentials(S3Request req, S3Response resp)
         {
-            if (req.RawUrlEntries.Count != 2)
+            if (req.RawUrlEntries.Length != 2)
             {
                 await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
                 return;

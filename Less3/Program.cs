@@ -416,7 +416,7 @@ namespace Less3
 
             #region Misc-URLs
               
-            if (req.RawUrlEntries.Count == 1)
+            if (req.RawUrlEntries.Length == 1)
             { 
                 if (req.RawUrlEntries[0].Equals("favicon.ico"))
                 { 
@@ -443,7 +443,7 @@ namespace Less3
             { 
                 if (req.Method == WatsonWebserver.HttpMethod.GET)
                 {
-                    if (req.RawUrlEntries == null || req.RawUrlEntries.Count < 1)
+                    if (req.RawUrlEntries == null || req.RawUrlEntries.Length < 1)
                     {
                         resp.StatusCode = 200;
                         resp.ContentType = "text/html";
@@ -457,7 +457,7 @@ namespace Less3
              
             #region Admin-Requests
 
-            if (req.RawUrlEntries.Count >= 2 && req.RawUrlEntries[0].Equals("admin"))
+            if (req.RawUrlEntries.Length >= 2 && req.RawUrlEntries[0].Equals("admin"))
             {
                 if (req.Headers.ContainsKey(_Settings.Server.HeaderApiKey))
                 {
@@ -465,7 +465,7 @@ namespace Less3
                     {
                         _Logging.Warn(header + "invalid admin API key supplied: " + req.Headers[_Settings.Server.HeaderApiKey]);
                         resp.StatusCode = 401;
-                        req.ContentType = "text/plain";
+                        resp.ContentType = "text/plain";
                         await resp.Send();
                         return true;
                     }

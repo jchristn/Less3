@@ -84,7 +84,7 @@ namespace Less3.Api.Admin
 
         private async Task GetBuckets(S3Request req, S3Response resp)
         {
-            if (req.RawUrlEntries.Count >= 3)
+            if (req.RawUrlEntries.Length >= 3)
             {
                 Bucket bucket = _Buckets.Get(req.RawUrlEntries[2]);
                 if (bucket == null)
@@ -114,7 +114,7 @@ namespace Less3.Api.Admin
 
         private async Task GetUsers(S3Request req, S3Response resp)
         {
-            if (req.RawUrlEntries.Count >= 3)
+            if (req.RawUrlEntries.Length >= 3)
             {
                 User user = _Config.GetUserByName(req.RawUrlEntries[2]);
                 if (user == null)
@@ -144,7 +144,7 @@ namespace Less3.Api.Admin
 
         private async Task GetCredentials(S3Request req, S3Response resp)
         {
-            if (req.RawUrlEntries.Count >= 3)
+            if (req.RawUrlEntries.Length >= 3)
             {
                 Credential cred = _Config.GetCredentialByAccessKey(req.RawUrlEntries[2]);
                 if (cred == null)

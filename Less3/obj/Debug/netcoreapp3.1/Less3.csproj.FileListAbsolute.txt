@@ -116,7 +116,6 @@ C:\code\KVPbase\Less3-1.4\Less3\bin\Debug\netcoreapp3.1\K4os.Compression.LZ4.dll
 C:\code\KVPbase\Less3-1.4\Less3\bin\Debug\netcoreapp3.1\K4os.Compression.LZ4.Streams.dll
 C:\code\KVPbase\Less3-1.4\Less3\bin\Debug\netcoreapp3.1\K4os.Hash.xxHash.dll
 C:\code\KVPbase\Less3-1.4\Less3\bin\Debug\netcoreapp3.1\Microsoft.Data.Sqlite.dll
-C:\code\KVPbase\Less3-1.4\Less3\bin\Debug\netcoreapp3.1\Microsoft.Extensions.Configuration.dll
 C:\code\KVPbase\Less3-1.4\Less3\bin\Debug\netcoreapp3.1\Microsoft.Extensions.Configuration.Abstractions.dll
 C:\code\KVPbase\Less3-1.4\Less3\bin\Debug\netcoreapp3.1\Microsoft.Extensions.Configuration.Binder.dll
 C:\code\KVPbase\Less3-1.4\Less3\bin\Debug\netcoreapp3.1\Microsoft.Extensions.Primitives.dll
@@ -165,3 +164,6 @@ C:\code\KVPbase\Less3-1.4\Less3\bin\Debug\netcoreapp3.1\runtimes\unix\lib\netcor
 C:\code\KVPbase\Less3-1.4\Less3\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp3.0\System.Drawing.Common.dll
 C:\code\KVPbase\Less3-1.4\Less3\bin\Debug\netcoreapp3.1\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll
 C:\code\KVPbase\Less3-1.4\Less3\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp3.0\System.Windows.Extensions.dll
+C:\code\KVPbase\Less3-1.4\Less3\obj\Debug\netcoreapp3.1\Less3.csproj.CoreCompileInputs.cache
+C:\code\KVPbase\Less3-1.4\Less3\bin\Debug\netcoreapp3.1\Assets\favicon.png
+C:\code\KVPbase\Less3-1.4\Less3\bin\Debug\netcoreapp3.1\runtimes\linux-mips64\native\libe_sqlite3.so

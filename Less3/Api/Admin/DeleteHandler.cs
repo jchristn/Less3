@@ -84,7 +84,7 @@ namespace Less3.Api.Admin
 
         private async Task DeleteBuckets(S3Request req, S3Response resp)
         {
-            if (req.RawUrlEntries.Count != 3)
+            if (req.RawUrlEntries.Length != 3)
             {
                 await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
                 return;
@@ -111,7 +111,7 @@ namespace Less3.Api.Admin
 
         private async Task DeleteUsers(S3Request req, S3Response resp)
         {
-            if (req.RawUrlEntries.Count != 3)
+            if (req.RawUrlEntries.Length != 3)
             {
                 await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
                 return;
@@ -136,7 +136,7 @@ namespace Less3.Api.Admin
 
         private async Task DeleteCredentials(S3Request req, S3Response resp)
         {
-            if (req.RawUrlEntries.Count != 3)
+            if (req.RawUrlEntries.Length != 3)
             {
                 await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
                 return;

@@ -210,9 +210,7 @@ namespace Less3.Api.S3
                 Obj marker = md.BucketClient.GetObjectMetadata(req.Marker);
                 if (marker != null) startIndex = (marker.Id + 1);
             }
-             
-            if (req.MaxKeys < 1 || req.MaxKeys > 1000) req.MaxKeys = 1000;
-
+              
             List<Obj> objects = new List<Obj>();
             List<string> prefixes = new List<string>();
             int nextStartIndex = startIndex;
@@ -519,9 +517,7 @@ namespace Less3.Api.S3
                 Obj marker = md.BucketClient.GetObjectMetadata(req.Marker);
                 if (marker != null) startIndex = (marker.Id + 1);
             }
-             
-            if (req.MaxKeys < 1 || req.MaxKeys > 1000) req.MaxKeys = 1000;
-
+              
             List<Obj> objects = new List<Obj>();
             List<string> prefixes = new List<string>();
             int nextStartIndex = startIndex;

@@ -31,6 +31,7 @@
         },
         "frameworks": {
           "netcoreapp3.1": {
+            "targetAlias": "netcoreapp3.1",
             "projectReferences": {}
           }
         },
@@ -42,10 +43,11 @@
       },
       "frameworks": {
         "netcoreapp3.1": {
+          "targetAlias": "netcoreapp3.1",
           "dependencies": {
             "AWSSDK.S3": {
               "target": "Package",
-              "version": "[3.5.0.10, )"
+              "version": "[3.5.7.3, )"
             },
             "Newtonsoft.Json": {
               "target": "Package",
@@ -53,23 +55,23 @@
             },
             "S3ServerInterface": {
               "target": "Package",
-              "version": "[2.1.0.9, )"
+              "version": "[2.1.3.1, )"
             },
             "SyslogLogging": {
               "target": "Package",
-              "version": "[1.3.2.2, )"
+              "version": "[1.3.2.7, )"
             },
             "Watson": {
               "target": "Package",
-              "version": "[3.1.0.2, )"
+              "version": "[4.0.0.3, )"
             },
             "WatsonORM": {
               "target": "Package",
-              "version": "[1.3.0.5, )"
+              "version": "[1.3.0.21, )"
             },
             "XmlToPox": {
               "target": "Package",
-              "version": "[1.0.2, )"
+              "version": "[1.0.2.1, )"
             }
           },
           "imports": [
@@ -82,12 +84,22 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[3.1.10, 3.1.10]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Host.win-x64",
+              "version": "[3.1.10, 3.1.10]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.200\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.101\\RuntimeIdentifierGraph.json"
         }
       }
     }

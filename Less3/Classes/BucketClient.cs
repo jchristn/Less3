@@ -506,6 +506,11 @@ namespace Less3.Classes
                         objects.Add(obj);
                     }
 
+                    if (obj.IsFolder && obj.ContentLength == 0)
+                    {
+                        prefixes.Add(obj.Key);
+                    }
+
                     nextStartIndex = obj.Id + 1;
                 }
 

@@ -54,22 +54,22 @@ namespace Less3.Classes
         #region Internal-Methods
 
         internal bool Authenticate(
-            S3Request req,
+            S3Context ctx,
             out User user,
             out Credential cred)
         {
             user = null;
             cred = null;
-            if (req == null) throw new ArgumentNullException(nameof(req));
-            if (String.IsNullOrEmpty(req.AccessKey)) return false;
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            if (String.IsNullOrEmpty(ctx.Request.AccessKey)) return false;
 
-            user = _Config.GetUserByAccessKey(req.AccessKey);
+            user = _Config.GetUserByAccessKey(ctx.Request.AccessKey);
             if (user == null)
             {
                 return false;
             }
 
-            cred = _Config.GetCredentialByAccessKey(req.AccessKey);
+            cred = _Config.GetCredentialByAccessKey(ctx.Request.AccessKey);
             if (cred == null)
             {
                 return false;
@@ -78,24 +78,22 @@ namespace Less3.Classes
             return true;
         }
 
-        internal RequestMetadata AuthenticateAndBuildMetadata(S3Request req)
+        internal RequestMetadata AuthenticateAndBuildMetadata(S3Context ctx)
         {
-            if (req == null) throw new ArgumentNullException(nameof(req));
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
 
             RequestMetadata md = new RequestMetadata(); 
             md.Authentication = AuthenticationResult.NotAuthenticated;
-
-            if (req == null) throw new ArgumentNullException(nameof(req));
-
+             
             #region Credential-and-User
 
-            if (String.IsNullOrEmpty(req.AccessKey))
+            if (String.IsNullOrEmpty(ctx.Request.AccessKey))
             {
                 md.Authentication = AuthenticationResult.NoMaterialSupplied;
             }
             else
             {
-                Credential cred = _Config.GetCredentialByAccessKey(req.AccessKey);
+                Credential cred = _Config.GetCredentialByAccessKey(ctx.Request.AccessKey);
                 if (cred == null)
                 {
                     md.Authentication = AuthenticationResult.AccessKeyNotFound; 
@@ -104,7 +102,7 @@ namespace Less3.Classes
                 {
                     md.Credential = cred;
 
-                    User user = _Config.GetUserByAccessKey(req.AccessKey);
+                    User user = _Config.GetUserByAccessKey(ctx.Request.AccessKey);
                     if (user == null)
                     {
                         md.Authentication = AuthenticationResult.UserNotFound;
@@ -121,13 +119,13 @@ namespace Less3.Classes
 
             #region Bucket
 
-            if (!String.IsNullOrEmpty(req.Bucket))
+            if (!String.IsNullOrEmpty(ctx.Request.Bucket))
             {
-                md.Bucket = _Buckets.Get(req.Bucket);
+                md.Bucket = _Buckets.Get(ctx.Request.Bucket);
 
                 if (md.Bucket != null)
                 {
-                    md.BucketClient = _Buckets.GetClient(req.Bucket);
+                    md.BucketClient = _Buckets.GetClient(ctx.Request.Bucket);
 
                     if (md.BucketClient != null)
                     {
@@ -142,10 +140,10 @@ namespace Less3.Classes
             #region Object
 
             if (md.BucketClient != null 
-                && req.IsObjectRequest
-                && !String.IsNullOrEmpty(req.Key))
+                && ctx.Request.IsObjectRequest
+                && !String.IsNullOrEmpty(ctx.Request.Key))
             {
-                md.Obj = md.BucketClient.GetObjectMetadata(req.Key);
+                md.Obj = md.BucketClient.GetObjectMetadata(ctx.Request.Key);
 
                 if (md.Obj != null)
                 {
@@ -159,20 +157,20 @@ namespace Less3.Classes
             return md;
         }
 
-        internal RequestMetadata AuthorizeServiceRequest(S3Request req, RequestMetadata md)
+        internal RequestMetadata AuthorizeServiceRequest(S3Context ctx, RequestMetadata md)
         {
-            if (req == null) throw new ArgumentNullException(nameof(req));
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
             if (md == null) throw new ArgumentNullException(nameof(md));
 
             md.Authorization = AuthorizationResult.NotAuthorized;
 
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.Method.ToString() + " " + req.RawUrl + "] AuthorizeServiceRequest "; 
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Http.Request.Method.ToString() + " " + ctx.Http.Request.Url.RawWithoutQuery + "] AuthorizeServiceRequest "; 
 
             #region Check-for-Admin-API-Key
 
-            if (req.Headers.ContainsKey(_Settings.Server.HeaderApiKey))
+            if (ctx.Http.Request.Headers.ContainsKey(_Settings.Server.HeaderApiKey))
             {
-                if (req.Headers[_Settings.Server.HeaderApiKey].Equals(_Settings.Server.AdminApiKey))
+                if (ctx.Http.Request.Headers[_Settings.Server.HeaderApiKey].Equals(_Settings.Server.AdminApiKey))
                 {
                     if (_Settings.Debug.Authentication)
                     {
@@ -194,19 +192,19 @@ namespace Less3.Classes
             return md;
         }
 
-        internal RequestMetadata AuthorizeBucketRequest(S3Request req, RequestMetadata md)
+        internal RequestMetadata AuthorizeBucketRequest(S3Context ctx, RequestMetadata md)
         {
-            if (req == null) throw new ArgumentNullException(nameof(req));
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
             if (md == null) throw new ArgumentNullException(nameof(md));
 
             md.Authorization = AuthorizationResult.NotAuthorized;
 
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.Method.ToString() + " " + req.RawUrl + "] AuthorizeBucketRequest ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Http.Request.Method.ToString() + " " + ctx.Http.Request.Url.RawWithoutQuery + "] AuthorizeBucketRequest ";
             bool allowed = false;
 
             #region Check-for-Bucket-Write
 
-            if (req.RequestType == S3RequestType.BucketWrite && md.Authentication == AuthenticationResult.Authenticated)
+            if (ctx.Request.RequestType == S3RequestType.BucketWrite && md.Authentication == AuthenticationResult.Authenticated)
             {
                 md.Authorization = AuthorizationResult.PermitBucketOwnership;
                 return md;
@@ -216,9 +214,9 @@ namespace Less3.Classes
 
             #region Check-for-Admin-API-Key
 
-            if (req.Headers.ContainsKey(_Settings.Server.HeaderApiKey))
+            if (ctx.Http.Request.Headers.ContainsKey(_Settings.Server.HeaderApiKey))
             {
-                if (req.Headers[_Settings.Server.HeaderApiKey].Equals(_Settings.Server.AdminApiKey))
+                if (ctx.Http.Request.Headers[_Settings.Server.HeaderApiKey].Equals(_Settings.Server.AdminApiKey))
                 {
                     if (_Settings.Debug.Authentication)
                     {
@@ -236,7 +234,7 @@ namespace Less3.Classes
 
             if (md.Bucket != null)
             {
-                switch (req.RequestType)
+                switch (ctx.Request.RequestType)
                 {
                     case S3RequestType.BucketExists:
                     case S3RequestType.BucketRead:
@@ -268,7 +266,7 @@ namespace Less3.Classes
 
             if (md.BucketAcls != null && md.BucketAcls.Count > 0)
             {
-                switch (req.RequestType)
+                switch (ctx.Request.RequestType)
                 {
                     case S3RequestType.BucketExists:
                     case S3RequestType.BucketRead:
@@ -342,7 +340,7 @@ namespace Less3.Classes
 
             if (md.BucketAcls != null && md.BucketAcls.Count > 0)
             {
-                switch (req.RequestType)
+                switch (ctx.Request.RequestType)
                 {
                     case S3RequestType.BucketExists:
                     case S3RequestType.BucketRead:
@@ -393,7 +391,7 @@ namespace Less3.Classes
 
             if (md.BucketAcls != null && md.BucketAcls.Count > 0)
             {
-                switch (req.RequestType)
+                switch (ctx.Request.RequestType)
                 {
                     case S3RequestType.BucketExists:
                     case S3RequestType.BucketRead:
@@ -443,22 +441,22 @@ namespace Less3.Classes
             return md;
         }
 
-        internal RequestMetadata AuthorizeObjectRequest(S3Request req, RequestMetadata md)
+        internal RequestMetadata AuthorizeObjectRequest(S3Context ctx, RequestMetadata md)
         {
-            if (req == null) throw new ArgumentNullException(nameof(req));
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
             if (md == null) throw new ArgumentNullException(nameof(md));
 
             md.Authorization = AuthorizationResult.NotAuthorized;
 
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.Method.ToString() + " " + req.RawUrl + "] AuthorizeObjectWriteRequest ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Http.Request.Method.ToString() + " " + ctx.Http.Request.Url.RawWithoutQuery + "] AuthorizeObjectWriteRequest ";
             bool allowed = false;
 
             #region Get-Version-ID
 
             long versionId = 1;
-            if (!String.IsNullOrEmpty(req.VersionId))
+            if (!String.IsNullOrEmpty(ctx.Request.VersionId))
             {
-                if (!Int64.TryParse(req.VersionId, out versionId))
+                if (!Int64.TryParse(ctx.Request.VersionId, out versionId))
                 {
 
                 }
@@ -468,9 +466,9 @@ namespace Less3.Classes
 
             #region Check-for-Admin-API-Key
 
-            if (req.Headers.ContainsKey(_Settings.Server.HeaderApiKey))
+            if (ctx.Http.Request.Headers.ContainsKey(_Settings.Server.HeaderApiKey))
             {
-                if (req.Headers[_Settings.Server.HeaderApiKey].Equals(_Settings.Server.AdminApiKey))
+                if (ctx.Http.Request.Headers[_Settings.Server.HeaderApiKey].Equals(_Settings.Server.AdminApiKey))
                 {
                     if (_Settings.Debug.Authentication)
                     {
@@ -488,7 +486,7 @@ namespace Less3.Classes
 
             if (md.Bucket != null)
             {
-                switch (req.RequestType)
+                switch (ctx.Request.RequestType)
                 {
                     case S3RequestType.ObjectExists:
                     case S3RequestType.ObjectRead:
@@ -523,7 +521,7 @@ namespace Less3.Classes
 
             if (md.BucketAcls != null && md.BucketAcls.Count > 0)
             {
-                switch (req.RequestType)
+                switch (ctx.Request.RequestType)
                 {
                     case S3RequestType.ObjectExists:
                     case S3RequestType.ObjectRead:
@@ -578,7 +576,7 @@ namespace Less3.Classes
 
             if (md.ObjectAcls != null && md.ObjectAcls.Count > 0)
             {
-                switch (req.RequestType)
+                switch (ctx.Request.RequestType)
                 {
                     case S3RequestType.ObjectExists:
                     case S3RequestType.ObjectRead:
@@ -669,7 +667,7 @@ namespace Less3.Classes
 
             if (md.BucketAcls != null && md.BucketAcls.Count > 0)
             {
-                switch (req.RequestType)
+                switch (ctx.Request.RequestType)
                 {
                     case S3RequestType.ObjectExists:
                     case S3RequestType.ObjectRead:
@@ -724,7 +722,7 @@ namespace Less3.Classes
 
             if (md.ObjectAcls != null && md.ObjectAcls.Count > 0)
             {
-                switch (req.RequestType)
+                switch (ctx.Request.RequestType)
                 {
                     case S3RequestType.ObjectExists:
                     case S3RequestType.ObjectRead:
@@ -779,7 +777,7 @@ namespace Less3.Classes
 
             if (md.BucketAcls != null && md.BucketAcls.Count > 0)
             {
-                switch (req.RequestType)
+                switch (ctx.Request.RequestType)
                 {
                     case S3RequestType.ObjectExists:
                     case S3RequestType.ObjectRead:
@@ -834,7 +832,7 @@ namespace Less3.Classes
 
             if (md.ObjectAcls != null && md.ObjectAcls.Count > 0)
             {
-                switch (req.RequestType)
+                switch (ctx.Request.RequestType)
                 {
                     case S3RequestType.ObjectExists:
                     case S3RequestType.ObjectRead:

@@ -57,105 +57,105 @@ namespace Less3.Api.Admin
 
         #region Internal-Methods
 
-        internal async Task Process(S3Request req, S3Response resp)
+        internal async Task Process(S3Context ctx)
         {
-            if (req.RawUrlEntries[1].Equals("buckets"))
+            if (ctx.Http.Request.Url.Elements[1].Equals("buckets"))
             {
-                await DeleteBuckets(req, resp);
+                await DeleteBuckets(ctx);
                 return;
             }
-            else if (req.RawUrlEntries[1].Equals("users"))
+            else if (ctx.Http.Request.Url.Elements[1].Equals("users"))
             {
-                await DeleteUsers(req, resp);
+                await DeleteUsers(ctx);
                 return;
             }
-            else if (req.RawUrlEntries[1].Equals("credentials"))
+            else if (ctx.Http.Request.Url.Elements[1].Equals("credentials"))
             {
-                await DeleteCredentials(req, resp);
+                await DeleteCredentials(ctx);
                 return;
             }
 
-            await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+            await ctx.Response.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
         }
 
         #endregion
 
         #region Private-Methods
 
-        private async Task DeleteBuckets(S3Request req, S3Response resp)
+        private async Task DeleteBuckets(S3Context ctx)
         {
-            if (req.RawUrlEntries.Length != 3)
+            if (ctx.Http.Request.Url.Elements.Length != 3)
             {
-                await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+                await ctx.Response.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
                 return;
             }
 
-            Bucket bucket = _Config.GetBucketByName(req.RawUrlEntries[2]);
+            Bucket bucket = _Config.GetBucketByName(ctx.Http.Request.Url.Elements[2]);
             if (bucket == null)
             {
-                resp.StatusCode = 404;
-                resp.ContentType = "text/plain";
-                await resp.Send();
+                ctx.Response.StatusCode = 404;
+                ctx.Response.ContentType = "text/plain";
+                await ctx.Response.Send();
                 return;
             }
 
             bool destroy = false;
-            if (req.Querystring.ContainsKey("destroy")) destroy = true; 
+            if (ctx.Http.Request.Query.Elements.ContainsKey("destroy")) destroy = true; 
             _Buckets.Remove(bucket, destroy); 
 
-            resp.StatusCode = 204;
-            resp.ContentType = "text/plain";
-            await resp.Send();
+            ctx.Response.StatusCode = 204;
+            ctx.Response.ContentType = "text/plain";
+            await ctx.Response.Send();
             return;
         }
 
-        private async Task DeleteUsers(S3Request req, S3Response resp)
+        private async Task DeleteUsers(S3Context ctx)
         {
-            if (req.RawUrlEntries.Length != 3)
+            if (ctx.Http.Request.Url.Elements.Length != 3)
             {
-                await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+                await ctx.Response.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
                 return;
             }
 
-            User user = _Config.GetUserByGuid(req.RawUrlEntries[2]);
+            User user = _Config.GetUserByGuid(ctx.Http.Request.Url.Elements[2]);
             if (user == null)
             {
-                resp.StatusCode = 404;
-                resp.ContentType = "text/plain";
-                await resp.Send();
+                ctx.Response.StatusCode = 404;
+                ctx.Response.ContentType = "text/plain";
+                await ctx.Response.Send();
                 return;
             }
 
             _Config.DeleteUser(user.GUID);
 
-            resp.StatusCode = 204;
-            resp.ContentType = "text/plain";
-            await resp.Send();
+            ctx.Response.StatusCode = 204;
+            ctx.Response.ContentType = "text/plain";
+            await ctx.Response.Send();
             return;
         }
 
-        private async Task DeleteCredentials(S3Request req, S3Response resp)
+        private async Task DeleteCredentials(S3Context ctx)
         {
-            if (req.RawUrlEntries.Length != 3)
+            if (ctx.Http.Request.Url.Elements.Length != 3)
             {
-                await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+                await ctx.Response.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
                 return;
             }
 
-            Credential cred = _Config.GetCredentialByAccessKey(req.RawUrlEntries[2]);
+            Credential cred = _Config.GetCredentialByAccessKey(ctx.Http.Request.Url.Elements[2]);
             if (cred == null)
             {
-                resp.StatusCode = 404;
-                resp.ContentType = "text/plain";
-                await resp.Send();
+                ctx.Response.StatusCode = 404;
+                ctx.Response.ContentType = "text/plain";
+                await ctx.Response.Send();
                 return;
             }
 
             _Config.DeleteCredential(cred.GUID);
 
-            resp.StatusCode = 204;
-            resp.ContentType = "text/plain";
-            await resp.Send();
+            ctx.Response.StatusCode = 204;
+            ctx.Response.ContentType = "text/plain";
+            await ctx.Response.Send();
             return;
         }
 

@@ -69,22 +69,22 @@ namespace Less3.Api.Admin
 
         #region Internal-Methods
 
-        internal async Task Process(S3Request req, S3Response resp)
+        internal async Task Process(S3Context ctx)
         {
-            switch (req.Method)
+            switch (ctx.Http.Request.Method)
             {
                 case HttpMethod.GET:
-                    await _GetHandler.Process(req, resp);
+                    await _GetHandler.Process(ctx);
                     return;
                 case HttpMethod.POST:
-                    await _PostHandler.Process(req, resp);
+                    await _PostHandler.Process(ctx);
                     return;
                 case HttpMethod.DELETE:
-                    await _DeleteHandler.Process(req, resp);
+                    await _DeleteHandler.Process(ctx);
                     return;
             }
 
-            await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+            await ctx.Response.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
             return;
         }
 

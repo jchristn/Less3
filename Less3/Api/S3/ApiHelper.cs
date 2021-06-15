@@ -9,19 +9,18 @@ namespace Less3.Api.S3
 {
     internal static class ApiHelper
     {
-        internal static RequestMetadata GetRequestMetadata(S3Request req)
+        internal static RequestMetadata GetRequestMetadata(S3Context ctx)
         {
-            if (req == null) return null;
-            if (req.UserMetadata == null) return null;
-            if (!req.UserMetadata.ContainsKey("RequestMetadata")) return null;
-            return (RequestMetadata)(req.UserMetadata["RequestMetadata"]);
+            if (ctx == null) return null;
+            if (ctx.Metadata == null) return null;
+            return (RequestMetadata)(ctx.Metadata);
         } 
 
-        internal static async Task SendSerializedResponse<T>(S3Request req, S3Response resp, T obj)
+        internal static async Task SendSerializedResponse<T>(S3Context ctx, T obj)
         {
-            resp.StatusCode = 200;
-            resp.ContentType = "application/xml";
-            await resp.Send(Common.SerializeXml<T>(obj, false));
+            ctx.Response.StatusCode = 200;
+            ctx.Response.ContentType = "application/xml";
+            await ctx.Response.Send(Common.SerializeXml<T>(obj, false));
         }
          
         internal static string AmazonTimestamp(DateTime dt)

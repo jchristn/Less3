@@ -17,11 +17,13 @@ Core use cases for Less3:
 
 ## New in This Version
 
-v1.4.0
+v1.5.0
 
-- Minor refactor
-- Fixes to enumeration including folder support
-- Request signature authentication
+- Breaking change; signatures no longer being validated
+- Dependency updates
+- Folder fixes
+- Owner information included in enumeration
+- Better alerts on startup about request requirements (virtual hosting vs path style URLs)
 
 ## Help and Feedback
 
@@ -95,12 +97,16 @@ Should you find any incompatibilities or behavioral issues with the APIs listed 
 ## Bucket in Hostname vs URL
 
 Less3 supports cases where having the bucket name as:
-- Part of the URL (```http://hostname.com/bucket/key```)
-- Part of the hostname (```http://bucket.hostname.com/key```)  
+- **Path style URLs** - the bucket name is part of the URL (```http://[hostname]/[bucket]/[key]```)
+- **Virtual hosted URLs** - the bucket name is part of the hostname (```http://[bucket].[hostname]/[key]```)  
 
-To support the latter cases where the bucket should be part of the hostname, set the ```Server.BaseDomain``` to an appropriate value.  For instance, if the bucket name is ```bucket``` and you would like it to be accessible via ```bucket.hostname.com```, set ```Server.BaseDomain``` to ```.hostname.com``` within ```System.json```.
+To use **path style URLs** do **not** set ```Server.BaseDomain```.  This is the default configuration.
 
-If this parameter is not set, Less3 will always assume the bucket name is part of the URL.  If this parameter is set, and the base domain cannot be found within the incoming request hostname, Less3 will assume the bucket name is part of the URL.
+To use **virtual hosted URLs**, you must:
+- Set ```Server.BaseDomain``` - if your hostname is ```localhost```, set this value to ```.localhost``` (prepend with a period)
+- Set ```Server.DnsHostname``` to ```*```
+- Run Less3 as administrator
+- Ensure your hosted hostnames (i.e. ```[bucket].[hostname]```) are resolvable through DNS to your machine
 
 ## Administrative APIs
 

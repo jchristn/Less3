@@ -68,6 +68,7 @@ namespace Less3
                 while (!waitHandleSignal);
             }
 
+            _S3Server.Stop();
             _Logging.Info("Less3 exiting");
 
             #endregion
@@ -197,18 +198,11 @@ namespace Less3
 
             //             0        1         2         3         4         5
             //             123456789012345678901234567890123456789012345678901234567890
-            Console.Write("| Initializing logging                           : ");
+            Console.WriteLine("| Initializing logging");
             _Logging = new LoggingModule(
                 _Settings.Logging.SyslogServerIp,
                 _Settings.Logging.SyslogServerPort,
-                _Settings.Logging.ConsoleLogging,
-                (Severity)_Settings.Logging.MinimumLevel,
-                false,
-                true,
-                true,
-                false,
-                false,
-                false); 
+                _Settings.Logging.ConsoleLogging); 
 
             if (_Settings.Logging.DiskLogging && !String.IsNullOrEmpty(_Settings.Logging.DiskDirectory))
             {
@@ -216,14 +210,13 @@ namespace Less3
                 if (!_Settings.Logging.DiskDirectory.EndsWith("/")) _Settings.Logging.DiskDirectory += "/";
                 if (!Directory.Exists(_Settings.Logging.DiskDirectory)) Directory.CreateDirectory(_Settings.Logging.DiskDirectory);
 
-                _Logging.FileLogging = FileLoggingMode.FileWithDate;
-                _Logging.LogFilename = _Settings.Logging.DiskDirectory + "Less3.Log";
+                _Logging.Settings.FileLogging = FileLoggingMode.FileWithDate;
+                _Logging.Settings.LogFilename = _Settings.Logging.DiskDirectory + "less3.log";
             } 
-            Console.WriteLine("[success]");
 
             //             0        1         2         3         4         5
             //             123456789012345678901234567890123456789012345678901234567890
-            Console.Write("| Initializing database                          : ");
+            Console.WriteLine("| Initializing database");
             _ORM = new WatsonORM(_Settings.Database);
             _ORM.InitializeDatabase();
             _ORM.InitializeTable(typeof(Bucket));
@@ -238,53 +231,45 @@ namespace Less3
             if (_Settings.Debug.DatabaseQueries) _ORM.Debug.DatabaseQueries = true;
             if (_Settings.Debug.DatabaseResults) _ORM.Debug.DatabaseResults = true;
             if (_Settings.Debug.DatabaseQueries || _Settings.Debug.DatabaseResults) _ORM.Logger = Logger;
-            Console.WriteLine("[success]");
 
             //             0        1         2         3         4         5
             //             123456789012345678901234567890123456789012345678901234567890
-            Console.Write("| Initializing configuration manager             : ");
+            Console.WriteLine("| Initializing configuration manager");
             _Config = new ConfigManager(_Settings, _Logging, _ORM);
-            Console.WriteLine("[success]");
 
             //             0        1         2         3         4         5
             //             123456789012345678901234567890123456789012345678901234567890
-            Console.Write("| Initializing bucket manager                    : ");
+            Console.WriteLine("| Initializing bucket manager");
             _Buckets = new BucketManager(_Settings, _Logging, _Config, _ORM);
-            Console.WriteLine("[success]");
 
             //             0        1         2         3         4         5
             //             123456789012345678901234567890123456789012345678901234567890
-            Console.Write("| Initializing authentication manager            : ");
+            Console.WriteLine("| Initializing authentication manager");
             _Auth = new AuthManager(_Settings, _Logging, _Config, _Buckets);
-            Console.WriteLine("[success]");
 
             //             0        1         2         3         4         5
             //             123456789012345678901234567890123456789012345678901234567890
-            Console.Write("| Initializing API handler                       : ");
+            Console.WriteLine("| Initializing API handler");
             _ApiHandler = new ApiHandler(_Settings, _Logging, _Config, _Buckets, _Auth);
-            Console.WriteLine("[success]");
 
             //             0        1         2         3         4         5
             //             123456789012345678901234567890123456789012345678901234567890
-            Console.Write("| Initializing admin API handler                 : ");
+            Console.WriteLine("| Initializing admin API handler");
             _AdminApiHandler = new AdminApiHandler(_Settings, _Logging, _Config, _Buckets, _Auth);
-            Console.WriteLine("[success]");
 
             //             0        1         2         3         4         5
             //             123456789012345678901234567890123456789012345678901234567890
-            Console.Write("| Initializing console manager                   : ");
+            Console.WriteLine("| Initializing console manager");
             _Console = new ConsoleManager(_Settings, _Logging);
-            Console.WriteLine("[success]");
 
             //             0        1         2         3         4         5
             //             123456789012345678901234567890123456789012345678901234567890
-            Console.Write("| Initializing S3 server interface               : ");
+            Console.WriteLine("| Initializing S3 server interface");
             _S3Server = new S3Server(
                 _Settings.Server.DnsHostname,
                 _Settings.Server.ListenerPort,
                 _Settings.Server.Ssl,
                 DefaultRequestHandler);
-            Console.WriteLine("[success]");
 
             if (_Settings.Server.Ssl) 
                 Console.WriteLine("| https://" + _Settings.Server.DnsHostname + ":" + _Settings.Server.ListenerPort); 
@@ -293,15 +278,26 @@ namespace Less3
 
             //             0        1         2         3         4         5
             //             123456789012345678901234567890123456789012345678901234567890
-            Console.Write("| Initializing S3 server APIs                    : ");
+            Console.WriteLine("| Initializing S3 server APIs");
             _S3Server.Logging.Exceptions = true;
             _S3Server.Logging.S3Requests = _Settings.Debug.S3Requests;
             _S3Server.Logger = Logger;
 
-            _S3Server.BaseDomain = _Settings.Server.BaseDomain;
+            if (!String.IsNullOrEmpty(_Settings.Server.BaseDomain))
+            {
+                Console.WriteLine("| Base domain " + _Settings.Server.BaseDomain);
+                Console.WriteLine("  | Requests must use virtual-hosted URLs, i.e. [bucket].[hostname]/[key]");
+                Console.WriteLine("  | Run as administrator/root and listen on a wildcard hostname, i.e. '*'");
+                _S3Server.BaseDomains.Add(_Settings.Server.BaseDomain);
+            }
+            else
+            {
+                Console.WriteLine("| No base domain specified");
+                Console.WriteLine("  | Requests must use path-style hosted URLs, i.e. [hostname]/[bucket]/[key]");
+            }
+
             _S3Server.PreRequestHandler = PreRequestHandler;
-            _S3Server.AuthenticateSignatures = _Settings.Server.AuthenticateSignatures;
-            _S3Server.GetSecretKey = GetSecretKey;
+            _S3Server.PostRequestHandler = PostRequestHandler;
 
             _S3Server.Service.ListBuckets = _ApiHandler.ServiceListBuckets;
 
@@ -330,7 +326,7 @@ namespace Less3
             _S3Server.Object.Write = _ApiHandler.ObjectWrite;
             _S3Server.Object.WriteAcl = _ApiHandler.ObjectWriteAcl;
             _S3Server.Object.WriteTags = _ApiHandler.ObjectWriteTags;
-            Console.WriteLine("[success]");
+            _S3Server.Start();
 
             Console.ForegroundColor = prior;
             Console.WriteLine("");
@@ -394,43 +390,44 @@ namespace Less3
             return true;
         }
 
-        private static async Task<bool> PreRequestHandler(S3Request req, S3Response resp)
+        private static async Task<bool> PreRequestHandler(S3Context ctx)
         {
             /*
              * Return true if a response was sent
              * 
              */
 
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.Method.ToString() + " " + req.RawUrl + "] ";
+            
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Http.Request.Method.ToString() + " " + ctx.Http.Request.Url.RawWithoutQuery + "] ";
 
-            while (req.RawUrl.Contains("\\\\")) req.RawUrl.Replace("\\\\", "\\");
+            while (ctx.Http.Request.Url.RawWithoutQuery.Contains("\\\\")) ctx.Http.Request.Url.RawWithoutQuery.Replace("\\\\", "\\");
 
             #region Enumerate
 
             if (_Settings.Logging.LogHttpRequests)
             {
-                _Logging.Debug(Environment.NewLine + req.ToString());
+                _Logging.Debug(Environment.NewLine + ctx.Http.Request.ToString());
             }
 
             #endregion
 
             #region Misc-URLs
               
-            if (req.RawUrlEntries.Length == 1)
+            if (ctx.Http.Request.Url.Elements.Length == 1)
             { 
-                if (req.RawUrlEntries[0].Equals("favicon.ico"))
+                if (ctx.Http.Request.Url.Elements[0].Equals("favicon.ico"))
                 { 
                     byte[] favicon = Common.ReadBinaryFile("assets/favicon.ico");
-                    resp.ContentType = "image/x-icon";
-                    resp.StatusCode = 200;
-                    await resp.Send(favicon);
+                    ctx.Response.ContentType = "image/x-icon";
+                    ctx.Response.StatusCode = 200;
+                    await ctx.Response.Send(favicon);
                     return true;
                 }
-                else if (req.RawUrlEntries[0].Equals("robots.txt"))
+                else if (ctx.Http.Request.Url.Elements[0].Equals("robots.txt"))
                 {
-                    resp.ContentType = "text/plain";
-                    resp.StatusCode = 200;
-                    await resp.Send("User-Agent: *\r\nDisallow:\r\n");
+                    ctx.Response.ContentType = "text/plain";
+                    ctx.Response.StatusCode = 200;
+                    await ctx.Response.Send("User-Agent: *\r\nDisallow:\r\n");
                     return true;
                 }
             }
@@ -439,15 +436,15 @@ namespace Less3
              
             #region Unauthenticated-Requests
 
-            if (!req.Headers.ContainsKey("Authorization"))
+            if (!ctx.Http.Request.Headers.ContainsKey("Authorization"))
             { 
-                if (req.Method == WatsonWebserver.HttpMethod.GET)
+                if (ctx.Http.Request.Method == WatsonWebserver.HttpMethod.GET)
                 {
-                    if (req.RawUrlEntries == null || req.RawUrlEntries.Length < 1)
+                    if (ctx.Http.Request.Url.Elements == null || ctx.Http.Request.Url.Elements.Length < 1)
                     {
-                        resp.StatusCode = 200;
-                        resp.ContentType = "text/html";
-                        await resp.Send(DefaultPage("https://github.com/jchristn/less3"));
+                        ctx.Response.StatusCode = 200;
+                        ctx.Response.ContentType = "text/html";
+                        await ctx.Response.Send(DefaultPage("https://github.com/jchristn/less3"));
                         return true;
                     } 
                 } 
@@ -457,26 +454,26 @@ namespace Less3
              
             #region Admin-Requests
 
-            if (req.RawUrlEntries.Length >= 2 && req.RawUrlEntries[0].Equals("admin"))
+            if (ctx.Http.Request.Url.Elements.Length >= 2 && ctx.Http.Request.Url.Elements[0].Equals("admin"))
             {
-                if (req.Headers.ContainsKey(_Settings.Server.HeaderApiKey))
+                if (ctx.Http.Request.Headers.ContainsKey(_Settings.Server.HeaderApiKey))
                 {
-                    if (!req.Headers[_Settings.Server.HeaderApiKey].Equals(_Settings.Server.AdminApiKey))
+                    if (!ctx.Http.Request.Headers[_Settings.Server.HeaderApiKey].Equals(_Settings.Server.AdminApiKey))
                     {
-                        _Logging.Warn(header + "invalid admin API key supplied: " + req.Headers[_Settings.Server.HeaderApiKey]);
-                        resp.StatusCode = 401;
-                        resp.ContentType = "text/plain";
-                        await resp.Send();
+                        _Logging.Warn(header + "invalid admin API key supplied: " + ctx.Http.Request.Headers[_Settings.Server.HeaderApiKey]);
+                        ctx.Response.StatusCode = 401;
+                        ctx.Response.ContentType = "text/plain";
+                        await ctx.Response.Send();
                         return true;
                     }
 
-                    switch (req.Method)
+                    switch (ctx.Http.Request.Method)
                     {
                         case HttpMethod.GET:
                         case HttpMethod.PUT:
                         case HttpMethod.POST:
                         case HttpMethod.DELETE:
-                            await _AdminApiHandler.Process(req, resp);
+                            await _AdminApiHandler.Process(ctx);
                             return true;
                     } 
                 }
@@ -486,12 +483,12 @@ namespace Less3
 
             #region Authenticate-and-Authorize
 
-            RequestMetadata md = _Auth.AuthenticateAndBuildMetadata(req);
+            RequestMetadata md = _Auth.AuthenticateAndBuildMetadata(ctx);
 
-            switch (req.RequestType)
+            switch (ctx.Request.RequestType)
             {
                 case S3RequestType.ListBuckets:
-                    md = _Auth.AuthorizeServiceRequest(req, md);
+                    md = _Auth.AuthorizeServiceRequest(ctx, md);
                     break;
 
                 case S3RequestType.BucketDelete:
@@ -512,7 +509,7 @@ namespace Less3
                 case S3RequestType.BucketWriteTags:
                 case S3RequestType.BucketWriteVersioning:
                 case S3RequestType.BucketWriteWebsite:
-                    md = _Auth.AuthorizeBucketRequest(req, md);
+                    md = _Auth.AuthorizeBucketRequest(ctx, md);
                     break;
 
                 case S3RequestType.ObjectDelete:
@@ -530,30 +527,30 @@ namespace Less3
                 case S3RequestType.ObjectWriteLegalHold:
                 case S3RequestType.ObjectWriteRetention:
                 case S3RequestType.ObjectWriteTags:
-                    md = _Auth.AuthorizeObjectRequest(req, md);
+                    md = _Auth.AuthorizeObjectRequest(ctx, md);
                     break; 
             }
 
             if (_Settings.Debug.Authentication)
             {
-                resp.Headers.Add("X-Request-Type", req.RequestType.ToString());
-                resp.Headers.Add("X-Authentication-Result", md.Authentication.ToString());
-                resp.Headers.Add("X-Authorized-By", md.Authorization.ToString());
+                ctx.Response.Headers.Add("X-Request-Type", ctx.Request.RequestType.ToString());
+                ctx.Response.Headers.Add("X-Authentication-Result", md.Authentication.ToString());
+                ctx.Response.Headers.Add("X-Authorized-By", md.Authorization.ToString());
 
                 _Logging.Info(
-                    header + req.RequestType.ToString() + " " +
+                    header + ctx.Request.RequestType.ToString() + " " +
                     "auth result: " + 
                     md.Authentication.ToString() + "/" + md.Authorization.ToString());
             }
 
-            req.UserMetadata.Add("RequestMetadata", md);
+            ctx.Metadata = md;
 
             #endregion
 
-            if (req.Querystring != null && req.Querystring.ContainsKey("metadata"))
+            if (ctx.Http.Request.Query.Elements != null && ctx.Http.Request.Query.Elements.ContainsKey("metadata"))
             {
-                resp.ContentType = "application/json";
-                await resp.Send(Common.SerializeJson(md, true));
+                ctx.Response.ContentType = "application/json";
+                await ctx.Response.Send(Common.SerializeJson(md, true));
                 return true;
             }
             else
@@ -562,22 +559,21 @@ namespace Less3
             }
         }
 
-        private static async Task DefaultRequestHandler(S3Request req, S3Response resp)
+        private static async Task DefaultRequestHandler(S3Context ctx)
         {
-            await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+            await ctx.Response.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+        }
+
+        private static async Task PostRequestHandler(S3Context ctx)
+        {
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Http.Request.Method.ToString() + " " + ctx.Http.Request.Url.RawWithoutQuery + "] ";
+            _Logging.Debug(header + ctx.Http.Response.StatusCode);
+            // _Logging.Debug(header + ctx.Http.Response.StatusCode + Environment.NewLine + Common.SerializeJson(ctx.Response, true) + Environment.NewLine + ctx.Response.DataAsString);
         }
 
         private static void Logger(string msg)
         {
             _Logging.Debug(msg);
-        }
-
-        private static byte[] GetSecretKey(string accessKey)
-        {
-            Credential cred = _Config.GetCredentialByAccessKey(accessKey);
-            if (cred == null) return null;
-            if (cred.IsBase64) return Common.Base64ToBytes(cred.SecretKey);
-            else return Encoding.UTF8.GetBytes(cred.SecretKey);
         }
     }
 }

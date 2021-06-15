@@ -79,40 +79,6 @@ namespace Less3.Classes
 
             #endregion
 
-            #region Initial-Settings
-
-            settings.EnableConsole = true;
-
-            settings.Server = new Settings.SettingsServer();
-            settings.Server.DnsHostname = "localhost";
-            settings.Server.ListenerPort = 8000;
-            settings.Server.Ssl = false; 
-            settings.Server.HeaderApiKey = "x-api-key"; 
-            settings.Server.AdminApiKey = "less3admin";
-            settings.Server.RegionString = "us-west-1";
-            settings.Server.AuthenticateSignatures = true;
-             
-            settings.Storage = new Settings.SettingsStorage();
-            settings.Storage.TempDirectory = "./Temp/";
-            settings.Storage.StorageType = StorageDriverType.Disk;
-            settings.Storage.DiskDirectory = "./Storage/";
-             
-            settings.Logging = new Settings.SettingsLogging();
-            settings.Logging.ConsoleLogging = true;
-            settings.Logging.Header = "less3";
-            settings.Logging.SyslogServerIp = "127.0.0.1";
-            settings.Logging.SyslogServerPort = 514;
-            settings.Logging.LogHttpRequests = false; 
-            settings.Logging.MinimumLevel = Severity.Info;
-
-            settings.Debug = new Settings.SettingsDebug();
-            settings.Debug.DatabaseQueries = false;
-            settings.Debug.DatabaseResults = false;
-            settings.Debug.Authentication = false;
-            settings.Debug.S3Requests = false;
-
-            #endregion
-
             #region Database-and-ORM
 
             //                          1         2         3         4         5         6         7
@@ -215,7 +181,7 @@ namespace Less3.Classes
             ConfigManager config = new ConfigManager(settings, logging, orm);
 
             string userGuid = "default";
-            config.AddUser(new User(userGuid, "default", "default@default.com"));
+            config.AddUser(new User(userGuid, "Default user", "default@default.com"));
             config.AddCredential(userGuid, "My first access key", "default", "default", false);
 
             Bucket bucketConfig = new Bucket(
@@ -326,22 +292,6 @@ namespace Less3.Classes
             #endregion
         }
          
-        static string LogoPlain()
-        {
-            // http://loveascii.com/hearts.html
-            // http://patorjk.com/software/taag/#p=display&f=Small&t=less3 
-
-            string ret = Environment.NewLine;
-            ret +=
-                "  ,d88b.d88b,   " + @"   _           ____  " + Environment.NewLine +
-                "  88888888888   " + @"  | |___ _____|__ /  " + Environment.NewLine +
-                "  `Y8888888Y'   " + @"  | / -_|_-<_-<|_ \  " + Environment.NewLine +
-                "    `Y888Y'     " + @"  |_\___/__/__/___/  " + Environment.NewLine +
-                "      `Y'       " + Environment.NewLine;
-
-            return ret;
-        }
-
         private string SampleHtmlFile(string link)
         {
             string html =
@@ -381,7 +331,7 @@ namespace Less3.Classes
                  "   </head>" + Environment.NewLine +
                 "   <body>" + Environment.NewLine +
                 "      <pre>" + Environment.NewLine +
-                WebUtility.HtmlEncode(LogoPlain()) +
+                WebUtility.HtmlEncode(Constants.Logo) +
                 "      </pre>" + Environment.NewLine +
                 "      <p>Congratulations, your Less3 node is running!</p>" + Environment.NewLine +
                 "      <p>" + Environment.NewLine +

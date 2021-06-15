@@ -61,22 +61,22 @@ namespace Less3.Api.S3
 
         #region Internal-Methods
          
-        internal async Task ListBuckets(S3Request req, S3Response resp)
+        internal async Task ListBuckets(S3Context ctx)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
             if (md.Authentication != AuthenticationResult.Authenticated)
             {
                 _Logging.Warn(header + "requestor not authenticated");
-                await resp.Send(ErrorCode.AccessDenied);
+                await ctx.Response.Send(ErrorCode.AccessDenied);
                 return;
             } 
             else
@@ -102,7 +102,7 @@ namespace Less3.Api.S3
                 listBucketsResult.Buckets.Bucket.Add(b);
             }
 
-            await ApiHelper.SendSerializedResponse<ListAllMyBucketsResult>(req, resp, listBucketsResult);
+            await ApiHelper.SendSerializedResponse<ListAllMyBucketsResult>(ctx, listBucketsResult);
             return;
         }
 

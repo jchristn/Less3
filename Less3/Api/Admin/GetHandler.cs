@@ -57,117 +57,117 @@ namespace Less3.Api.Admin
 
         #region Internal-Methods
          
-        internal async Task Process(S3Request req, S3Response resp)
+        internal async Task Process(S3Context ctx)
         { 
-            if (req.RawUrlEntries[1].Equals("buckets"))
+            if (ctx.Http.Request.Url.Elements[1].Equals("buckets"))
             {
-                await GetBuckets(req, resp);
+                await GetBuckets(ctx);
                 return;
             }
-            else if (req.RawUrlEntries[1].Equals("users"))
+            else if (ctx.Http.Request.Url.Elements[1].Equals("users"))
             {
-                await GetUsers(req, resp);
+                await GetUsers(ctx);
                 return;
             }
-            else if (req.RawUrlEntries[1].Equals("credentials"))
+            else if (ctx.Http.Request.Url.Elements[1].Equals("credentials"))
             {
-                await GetCredentials(req, resp);
+                await GetCredentials(ctx);
                 return;
             }
 
-            await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+            await ctx.Response.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
         }
 
         #endregion
 
         #region Private-Methods
 
-        private async Task GetBuckets(S3Request req, S3Response resp)
+        private async Task GetBuckets(S3Context ctx)
         {
-            if (req.RawUrlEntries.Length >= 3)
+            if (ctx.Http.Request.Url.Elements.Length >= 3)
             {
-                Bucket bucket = _Buckets.Get(req.RawUrlEntries[2]);
+                Bucket bucket = _Buckets.Get(ctx.Http.Request.Url.Elements[2]);
                 if (bucket == null)
                 {
-                    resp.StatusCode = 404;
-                    resp.ContentType = "text/plain";
-                    await resp.Send();
+                    ctx.Response.StatusCode = 404;
+                    ctx.Response.ContentType = "text/plain";
+                    await ctx.Response.Send();
                     return;
                 }
                 else
                 {
-                    resp.StatusCode = 200;
-                    resp.ContentType = "application/json";
-                    await resp.Send(Common.SerializeJson(bucket, true));
+                    ctx.Response.StatusCode = 200;
+                    ctx.Response.ContentType = "application/json";
+                    await ctx.Response.Send(Common.SerializeJson(bucket, true));
                     return;
                 }
             }
             else
             {
                 List<Bucket> buckets = _Config.GetBuckets();
-                resp.StatusCode = 200;
-                resp.ContentType = "application/json";
-                await resp.Send(Common.SerializeJson(buckets, true));
+                ctx.Response.StatusCode = 200;
+                ctx.Response.ContentType = "application/json";
+                await ctx.Response.Send(Common.SerializeJson(buckets, true));
                 return;
             }
         }
 
-        private async Task GetUsers(S3Request req, S3Response resp)
+        private async Task GetUsers(S3Context ctx)
         {
-            if (req.RawUrlEntries.Length >= 3)
+            if (ctx.Http.Request.Url.Elements.Length >= 3)
             {
-                User user = _Config.GetUserByName(req.RawUrlEntries[2]);
+                User user = _Config.GetUserByName(ctx.Http.Request.Url.Elements[2]);
                 if (user == null)
                 {
-                    resp.StatusCode = 404;
-                    resp.ContentType = "text/plain";
-                    await resp.Send();
+                    ctx.Response.StatusCode = 404;
+                    ctx.Response.ContentType = "text/plain";
+                    await ctx.Response.Send();
                     return;
                 }
                 else
                 {
-                    resp.StatusCode = 200;
-                    resp.ContentType = "application/json";
-                    await resp.Send(Common.SerializeJson(user, true));
+                    ctx.Response.StatusCode = 200;
+                    ctx.Response.ContentType = "application/json";
+                    await ctx.Response.Send(Common.SerializeJson(user, true));
                     return;
                 }
             }
             else
             {
                 List<User> users = _Config.GetUsers(); 
-                resp.StatusCode = 200;
-                resp.ContentType = "application/json";
-                await resp.Send(Common.SerializeJson(users, true));
+                ctx.Response.StatusCode = 200;
+                ctx.Response.ContentType = "application/json";
+                await ctx.Response.Send(Common.SerializeJson(users, true));
                 return;
             }
         }
 
-        private async Task GetCredentials(S3Request req, S3Response resp)
+        private async Task GetCredentials(S3Context ctx)
         {
-            if (req.RawUrlEntries.Length >= 3)
+            if (ctx.Http.Request.Url.Elements.Length >= 3)
             {
-                Credential cred = _Config.GetCredentialByAccessKey(req.RawUrlEntries[2]);
+                Credential cred = _Config.GetCredentialByAccessKey(ctx.Http.Request.Url.Elements[2]);
                 if (cred == null)
                 {
-                    resp.StatusCode = 404;
-                    resp.ContentType = "text/plain";
-                    await resp.Send();
+                    ctx.Response.StatusCode = 404;
+                    ctx.Response.ContentType = "text/plain";
+                    await ctx.Response.Send();
                     return;
                 }
                 else
                 {
-                    resp.StatusCode = 200;
-                    resp.ContentType = "application/json";
-                    await resp.Send(Common.SerializeJson(cred, true));
+                    ctx.Response.StatusCode = 200;
+                    ctx.Response.ContentType = "application/json";
+                    await ctx.Response.Send(Common.SerializeJson(cred, true));
                     return;
                 }
             }
             else
             {
                 List<Credential> creds = _Config.GetCredentials(); 
-                resp.StatusCode = 200;
-                resp.ContentType = "application/json";
-                await resp.Send(Common.SerializeJson(creds, true));
+                ctx.Response.StatusCode = 200;
+                ctx.Response.ContentType = "application/json";
+                await ctx.Response.Send(Common.SerializeJson(creds, true));
                 return;
             }
         }

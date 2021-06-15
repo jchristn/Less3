@@ -57,36 +57,36 @@ namespace Less3.Api.Admin
 
         #region Internal-Methods
 
-        internal async Task Process(S3Request req, S3Response resp)
+        internal async Task Process(S3Context ctx)
         { 
-            if (req.RawUrlEntries[1].Equals("buckets"))
+            if (ctx.Http.Request.Url.Elements[1].Equals("buckets"))
             {
-                await PostBuckets(req, resp);
+                await PostBuckets(ctx);
                 return;
             }
-            else if (req.RawUrlEntries[1].Equals("users"))
+            else if (ctx.Http.Request.Url.Elements[1].Equals("users"))
             {
-                await PostUsers(req, resp);
+                await PostUsers(ctx);
                 return;
             }
-            else if (req.RawUrlEntries[1].Equals("credentials"))
+            else if (ctx.Http.Request.Url.Elements[1].Equals("credentials"))
             {
-                await PostCredentials(req, resp);
+                await PostCredentials(ctx);
                 return;
             }
 
-            await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+            await ctx.Response.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
         }
 
         #endregion
 
         #region Private-Methods
 
-        private async Task PostBuckets(S3Request req, S3Response resp)
+        private async Task PostBuckets(S3Context ctx)
         {
-            if (req.RawUrlEntries.Length != 2)
+            if (ctx.Http.Request.Url.Elements.Length != 2)
             {
-                await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+                await ctx.Response.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
                 return;
             }
 
@@ -95,34 +95,34 @@ namespace Less3.Api.Admin
 
             try
             {
-                data = Common.StreamToBytes(req.Data);
+                data = Common.StreamToBytes(ctx.Request.Data);
                 bucket = Common.DeserializeJson<Bucket>(data);
             }
             catch (Exception)
             {
-                await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+                await ctx.Response.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
                 return;
             }
 
             Bucket tempBucket = _Config.GetBucketByName(bucket.Name);
             if (tempBucket != null)
             {
-                await resp.Send(S3ServerInterface.S3Objects.ErrorCode.BucketAlreadyExists);
+                await ctx.Response.Send(S3ServerInterface.S3Objects.ErrorCode.BucketAlreadyExists);
                 return;
             }
              
             _Buckets.Add(bucket);
 
-            resp.StatusCode = 201;
-            resp.ContentType = "text/plain";
-            await resp.Send();
+            ctx.Response.StatusCode = 201;
+            ctx.Response.ContentType = "text/plain";
+            await ctx.Response.Send();
         }
 
-        private async Task PostUsers(S3Request req, S3Response resp)
+        private async Task PostUsers(S3Context ctx)
         {
-            if (req.RawUrlEntries.Length != 2)
+            if (ctx.Http.Request.Url.Elements.Length != 2)
             {
-                await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+                await ctx.Response.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
                 return;
             }
 
@@ -131,45 +131,45 @@ namespace Less3.Api.Admin
 
             try
             {
-                data = Common.StreamToBytes(req.Data);
+                data = Common.StreamToBytes(ctx.Request.Data);
                 user = Common.DeserializeJson<User>(data);
             }
             catch (Exception)
             {
-                await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+                await ctx.Response.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
                 return;
             }
 
             User tempUser = _Config.GetUserByEmail(user.Email);
             if (tempUser != null)
             {
-                resp.StatusCode = 409;
-                resp.ContentType = "text/plain";
-                await resp.Send();
+                ctx.Response.StatusCode = 409;
+                ctx.Response.ContentType = "text/plain";
+                await ctx.Response.Send();
                 return;
             }
 
             tempUser = _Config.GetUserByGuid(user.GUID);
             if (tempUser != null)
             {
-                resp.StatusCode = 409;
-                resp.ContentType = "text/plain";
-                await resp.Send();
+                ctx.Response.StatusCode = 409;
+                ctx.Response.ContentType = "text/plain";
+                await ctx.Response.Send();
                 return;
             }
 
             _Config.AddUser(user);
 
-            resp.StatusCode = 201;
-            resp.ContentType = "text/plain";
-            await resp.Send();
+            ctx.Response.StatusCode = 201;
+            ctx.Response.ContentType = "text/plain";
+            await ctx.Response.Send();
         }
 
-        private async Task PostCredentials(S3Request req, S3Response resp)
+        private async Task PostCredentials(S3Context ctx)
         {
-            if (req.RawUrlEntries.Length != 2)
+            if (ctx.Http.Request.Url.Elements.Length != 2)
             {
-                await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+                await ctx.Response.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
                 return;
             }
 
@@ -178,29 +178,29 @@ namespace Less3.Api.Admin
 
             try
             {
-                data = Common.StreamToBytes(req.Data);
+                data = Common.StreamToBytes(ctx.Request.Data);
                 cred = Common.DeserializeJson<Credential>(data);
             }
             catch (Exception)
             {
-                await resp.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+                await ctx.Response.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
                 return;
             }
 
             Credential tempCred = _Config.GetCredentialByAccessKey(cred.AccessKey);
             if (tempCred != null)
             {
-                resp.StatusCode = 409;
-                resp.ContentType = "text/plain";
-                await resp.Send();
+                ctx.Response.StatusCode = 409;
+                ctx.Response.ContentType = "text/plain";
+                await ctx.Response.Send();
                 return;
             }
 
             _Config.AddCredential(cred);
 
-            resp.StatusCode = 201;
-            resp.ContentType = "text/plain";
-            await resp.Send();
+            ctx.Response.StatusCode = 201;
+            ctx.Response.ContentType = "text/plain";
+            await ctx.Response.Send();
         }
 
         #endregion

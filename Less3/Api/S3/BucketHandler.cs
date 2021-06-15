@@ -64,29 +64,29 @@ namespace Less3.Api.S3
 
         #region Internal-Methods
 
-        internal async Task Delete(S3Request req, S3Response resp)
+        internal async Task Delete(S3Context ctx)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
              
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await resp.Send(ErrorCode.AccessDenied);
+                await ctx.Response.Send(ErrorCode.AccessDenied);
                 return;
             }
              
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await resp.Send(ErrorCode.NoSuchBucket);
+                await ctx.Response.Send(ErrorCode.NoSuchBucket);
                 return;
             }
 
@@ -94,120 +94,120 @@ namespace Less3.Api.S3
             if (stats.Objects > 0 || stats.Bytes > 0)
             {
                 _Logging.Warn(header + "bucket " + md.Bucket.Name + " is not empty");
-                await resp.Send(ErrorCode.BucketNotEmpty);
+                await ctx.Response.Send(ErrorCode.BucketNotEmpty);
                 return;
             }
 
-            _Logging.Info(header + "deleting bucket " + req.Bucket);
+            _Logging.Info(header + "deleting bucket " + ctx.Request.Bucket);
             _Buckets.Remove(md.Bucket, true);
 
-            resp.StatusCode = 204;
-            resp.ContentType = "application/xml";
-            await resp.Send();
+            ctx.Response.StatusCode = 204;
+            ctx.Response.ContentType = "application/xml";
+            await ctx.Response.Send();
             return;
         }
 
-        internal async Task DeleteTags(S3Request req, S3Response resp)
+        internal async Task DeleteTags(S3Context ctx)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await resp.Send(ErrorCode.AccessDenied);
+                await ctx.Response.Send(ErrorCode.AccessDenied);
                 return;
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await resp.Send(ErrorCode.NoSuchBucket);
+                await ctx.Response.Send(ErrorCode.NoSuchBucket);
                 return;
             }
 
             md.BucketClient.DeleteBucketTags();
 
-            resp.StatusCode = 204;
-            resp.ContentType = "application/xml";
-            await resp.Send();
+            ctx.Response.StatusCode = 204;
+            ctx.Response.ContentType = "application/xml";
+            await ctx.Response.Send();
             return;
         }
 
-        internal async Task Exists(S3Request req, S3Response resp)
+        internal async Task Exists(S3Context ctx)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await resp.Send(ErrorCode.AccessDenied);
+                await ctx.Response.Send(ErrorCode.AccessDenied);
                 return;
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await resp.Send(ErrorCode.NoSuchBucket);
+                await ctx.Response.Send(ErrorCode.NoSuchBucket);
                 return;
             }
 
-            resp.StatusCode = 200;
-            resp.ContentType = "text/plain";
-            await resp.Send();
+            ctx.Response.StatusCode = 200;
+            ctx.Response.ContentType = "text/plain";
+            await ctx.Response.Send();
             return;
         }
 
-        internal async Task Read(S3Request req, S3Response resp)
+        internal async Task Read(S3Context ctx)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await resp.Send(ErrorCode.AccessDenied);
+                await ctx.Response.Send(ErrorCode.AccessDenied);
                 return;
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await resp.Send(ErrorCode.NoSuchBucket);
+                await ctx.Response.Send(ErrorCode.NoSuchBucket);
                 return;
             }
              
             int startIndex = 0;
-            if (!String.IsNullOrEmpty(req.ContinuationToken))
+            if (!String.IsNullOrEmpty(ctx.Request.ContinuationToken))
             {
-                startIndex = ParseContinuationToken(req.ContinuationToken);
+                startIndex = ParseContinuationToken(ctx.Request.ContinuationToken);
             }
 
-            if (!String.IsNullOrEmpty(req.Marker))
+            if (!String.IsNullOrEmpty(ctx.Request.Marker))
             {
-                Obj marker = md.BucketClient.GetObjectMetadata(req.Marker);
+                Obj marker = md.BucketClient.GetObjectMetadata(ctx.Request.Marker);
                 if (marker != null) startIndex = (marker.Id + 1);
             }
               
@@ -215,18 +215,18 @@ namespace Less3.Api.S3
             List<string> prefixes = new List<string>();
             int nextStartIndex = startIndex;
             bool isTruncated = false;
-            md.BucketClient.Enumerate(req.Delimiter, req.Prefix, startIndex, (int)req.MaxKeys, out objects, out prefixes, out nextStartIndex, out isTruncated);
+            md.BucketClient.Enumerate(ctx.Request.Delimiter, ctx.Request.Prefix, startIndex, (int)ctx.Request.MaxKeys, out objects, out prefixes, out nextStartIndex, out isTruncated);
              
             ListBucketResult listBucketResult = new ListBucketResult();
             listBucketResult.Contents = new List<Contents>();
 
-            listBucketResult.Prefix = req.Prefix;
-            listBucketResult.Delimiter = req.Delimiter;
+            listBucketResult.Prefix = ctx.Request.Prefix;
+            listBucketResult.Delimiter = ctx.Request.Delimiter;
             listBucketResult.KeyCount = objects.Count;
-            listBucketResult.MaxKeys = req.MaxKeys;
-            listBucketResult.Name = req.Bucket;
-            listBucketResult.Marker = req.Marker;
-            listBucketResult.Prefix = req.Prefix; 
+            listBucketResult.MaxKeys = ctx.Request.MaxKeys;
+            listBucketResult.Name = ctx.Request.Bucket;
+            listBucketResult.Marker = ctx.Request.Marker;
+            listBucketResult.Prefix = ctx.Request.Prefix; 
             listBucketResult.CommonPrefixes.Prefix = prefixes;
             listBucketResult.IsTruncated = false;
 
@@ -236,6 +236,8 @@ namespace Less3.Api.S3
                 listBucketResult.NextContinuationToken = BuildContinuationToken(nextStartIndex); 
             }
 
+            Dictionary<string, S3ServerInterface.S3Objects.Owner> ownerCache = new Dictionary<string, S3ServerInterface.S3Objects.Owner>();
+
             foreach (Obj curr in objects)
             {
                 Contents c = new Contents();
@@ -244,48 +246,62 @@ namespace Less3.Api.S3
                 c.LastModified = curr.LastUpdateUtc;
                 c.Size = curr.ContentLength;
                 c.StorageClass = "STANDARD";
+                
+                c.Owner = new S3ServerInterface.S3Objects.Owner();
+                if (ownerCache.ContainsKey(curr.OwnerGUID))
+                {
+                    c.Owner = ownerCache[curr.OwnerGUID];
+                }
+                else
+                {
+                    User u = _Config.GetUserByGuid(curr.OwnerGUID);
+                    c.Owner.DisplayName = u.Name;
+                    c.Owner.ID = u.GUID;
+                    ownerCache.Add(u.GUID, c.Owner);
+                }
+
                 listBucketResult.Contents.Add(c);
             }
 
-            await ApiHelper.SendSerializedResponse<ListBucketResult>(req, resp, listBucketResult);
+            await ApiHelper.SendSerializedResponse<ListBucketResult>(ctx, listBucketResult);
             return;
         }
 
-        internal async Task ReadLocation(S3Request req, S3Response resp)
+        internal async Task ReadLocation(S3Context ctx)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + "] ";
-            resp.Chunked = false;
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + "] ";
+            ctx.Response.Chunked = false;
 
             LocationConstraint loc = new LocationConstraint();
             loc.Text = _Settings.Server.RegionString;
 
-            await ApiHelper.SendSerializedResponse<LocationConstraint>(req, resp, loc);
+            await ApiHelper.SendSerializedResponse<LocationConstraint>(ctx, loc);
             return;
         }
 
-        internal async Task ReadAcl(S3Request req, S3Response resp)
+        internal async Task ReadAcl(S3Context ctx)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await resp.Send(ErrorCode.AccessDenied);
+                await ctx.Response.Send(ErrorCode.AccessDenied);
                 return;
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await resp.Send(ErrorCode.NoSuchBucket);
+                await ctx.Response.Send(ErrorCode.NoSuchBucket);
                 return;
             }
 
@@ -293,7 +309,7 @@ namespace Less3.Api.S3
             if (owner == null)
             {
                 _Logging.Warn(header + "unable to find owner GUID " + md.Bucket.OwnerGUID + " for bucket GUID " + md.Bucket.GUID);
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
@@ -432,33 +448,33 @@ namespace Less3.Api.S3
                 }
             }
 
-            await ApiHelper.SendSerializedResponse<AccessControlPolicy>(req, resp, ret);
+            await ApiHelper.SendSerializedResponse<AccessControlPolicy>(ctx, ret);
             return; 
         }
 
-        internal async Task ReadTags(S3Request req, S3Response resp)
+        internal async Task ReadTags(S3Context ctx)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await resp.Send(ErrorCode.AccessDenied);
+                await ctx.Response.Send(ErrorCode.AccessDenied);
                 return;
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await resp.Send(ErrorCode.NoSuchBucket);
+                await ctx.Response.Send(ErrorCode.NoSuchBucket);
                 return;
             }
              
@@ -476,45 +492,45 @@ namespace Less3.Api.S3
                 }
             }
 
-            await ApiHelper.SendSerializedResponse<Tagging>(req, resp, tags);
+            await ApiHelper.SendSerializedResponse<Tagging>(ctx, tags);
             return; 
         }
 
-        internal async Task ReadVersions(S3Request req, S3Response resp)
+        internal async Task ReadVersions(S3Context ctx)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await resp.Send(ErrorCode.AccessDenied);
+                await ctx.Response.Send(ErrorCode.AccessDenied);
                 return;
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await resp.Send(ErrorCode.NoSuchBucket);
+                await ctx.Response.Send(ErrorCode.NoSuchBucket);
                 return;
             }
              
             int startIndex = 0;
-            if (!String.IsNullOrEmpty(req.ContinuationToken))
+            if (!String.IsNullOrEmpty(ctx.Request.ContinuationToken))
             {
-                startIndex = ParseContinuationToken(req.ContinuationToken);
+                startIndex = ParseContinuationToken(ctx.Request.ContinuationToken);
             }
 
-            if (!String.IsNullOrEmpty(req.Marker))
+            if (!String.IsNullOrEmpty(ctx.Request.Marker))
             {
-                Obj marker = md.BucketClient.GetObjectMetadata(req.Marker);
+                Obj marker = md.BucketClient.GetObjectMetadata(ctx.Request.Marker);
                 if (marker != null) startIndex = (marker.Id + 1);
             }
               
@@ -522,7 +538,7 @@ namespace Less3.Api.S3
             List<string> prefixes = new List<string>();
             int nextStartIndex = startIndex;
             bool isTruncated = false;
-            md.BucketClient.Enumerate(req.Delimiter, req.Prefix, startIndex, (int)req.MaxKeys, out objects, out prefixes, out nextStartIndex, out isTruncated);
+            md.BucketClient.Enumerate(ctx.Request.Delimiter, ctx.Request.Prefix, startIndex, (int)ctx.Request.MaxKeys, out objects, out prefixes, out nextStartIndex, out isTruncated);
              
             string lastKey = null; 
             if (objects.Count > 0)
@@ -534,10 +550,12 @@ namespace Less3.Api.S3
             ListVersionsResult listVersionsResult = new ListVersionsResult();
             listVersionsResult.IsTruncated = isTruncated;
             listVersionsResult.KeyMarker = lastKey;
-            listVersionsResult.MaxKeys = req.MaxKeys;
-            listVersionsResult.Name = req.Bucket;
-            listVersionsResult.Prefix = req.Prefix;
-            
+            listVersionsResult.MaxKeys = ctx.Request.MaxKeys;
+            listVersionsResult.Name = ctx.Request.Bucket;
+            listVersionsResult.Prefix = ctx.Request.Prefix;
+
+            Dictionary<string, S3ServerInterface.S3Objects.Owner> ownerCache = new Dictionary<string, S3ServerInterface.S3Objects.Owner>();
+
             foreach (Obj curr in objects)
             {
                 if (curr.DeleteMarker)
@@ -546,10 +564,21 @@ namespace Less3.Api.S3
                     d.IsLatest = IsLatest(objects, curr.Key, curr.LastAccessUtc);
                     d.Key = curr.Key;
                     d.LastModified = curr.LastUpdateUtc;
-                    d.Owner = new S3ServerInterface.S3Objects.Owner();
-                    d.Owner.DisplayName = curr.OwnerGUID;
-                    d.Owner.ID = curr.OwnerGUID;
                     d.VersionId = curr.Version.ToString();
+
+                    d.Owner = new S3ServerInterface.S3Objects.Owner();
+                    if (ownerCache.ContainsKey(curr.OwnerGUID))
+                    {
+                        d.Owner = ownerCache[curr.OwnerGUID];
+                    }
+                    else
+                    {
+                        User u = _Config.GetUserByGuid(curr.OwnerGUID);
+                        d.Owner.DisplayName = u.Name;
+                        d.Owner.ID = u.GUID;
+                        ownerCache.Add(u.GUID, d.Owner);
+                    }
+
                     listVersionsResult.DeleteMarker.Add(d);
                 }
                 else
@@ -560,42 +589,53 @@ namespace Less3.Api.S3
                     v.Key = curr.Key;
                     v.ETag = "\"" + curr.Md5 + "\"";
                     v.LastModified = curr.LastUpdateUtc;
-                    v.Owner = new S3ServerInterface.S3Objects.Owner();
-                    v.Owner.DisplayName = curr.OwnerGUID;
-                    v.Owner.ID = curr.OwnerGUID;
                     v.Size = curr.ContentLength;
                     v.StorageClass = "STANDARD";
+
+                    v.Owner = new S3ServerInterface.S3Objects.Owner();
+                    if (ownerCache.ContainsKey(curr.OwnerGUID))
+                    {
+                        v.Owner = ownerCache[curr.OwnerGUID];
+                    }
+                    else
+                    {
+                        User u = _Config.GetUserByGuid(curr.OwnerGUID);
+                        v.Owner.DisplayName = u.Name;
+                        v.Owner.ID = u.GUID;
+                        ownerCache.Add(u.GUID, v.Owner);
+                    }
+
                     listVersionsResult.Version.Add(v);
                 }
             }
 
-            await ApiHelper.SendSerializedResponse<ListVersionsResult>(req, resp, listVersionsResult);
+            await ApiHelper.SendSerializedResponse<ListVersionsResult>(ctx, listVersionsResult);
             return; 
         }
 
-        internal async Task ReadVersioning(S3Request req, S3Response resp)
+        internal async Task ReadVersioning(S3Context ctx)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await resp.Send(ErrorCode.AccessDenied);
+                await ctx.Response.Send(ErrorCode.AccessDenied);
                 return;
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await resp.Send(ErrorCode.NoSuchBucket);
+                await ctx.Response.Send(ErrorCode.NoSuchBucket);
                 return;
             }
 
@@ -609,68 +649,68 @@ namespace Less3.Api.S3
                 ret.MfaDelete = "Disabled";
             }
 
-            await ApiHelper.SendSerializedResponse<VersioningConfiguration>(req, resp, ret);
+            await ApiHelper.SendSerializedResponse<VersioningConfiguration>(ctx, ret);
             return; 
         }
 
-        internal async Task Write(S3Request req, S3Response resp)
+        internal async Task Write(S3Context ctx)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
             if (md.User == null || md.Credential == null)
             {
                 _Logging.Warn(header + "not authorized");
-                await resp.Send(ErrorCode.AccessDenied);
+                await ctx.Response.Send(ErrorCode.AccessDenied);
                 return;
             }
 
             if (md.Bucket != null || md.BucketClient != null)
             {
                 _Logging.Warn(header + "bucket already exists");
-                await resp.Send(ErrorCode.BucketAlreadyExists);
+                await ctx.Response.Send(ErrorCode.BucketAlreadyExists);
                 return;
             }
                
-            if (IsInvalidBucketName(req.Bucket))
+            if (IsInvalidBucketName(ctx.Request.Bucket))
             {
-                _Logging.Warn(header + "invalid bucket name: " + req.Bucket);
-                await resp.Send(ErrorCode.InvalidRequest);
+                _Logging.Warn(header + "invalid bucket name: " + ctx.Request.Bucket);
+                await ctx.Response.Send(ErrorCode.InvalidRequest);
                 return;
             }
              
             Classes.Bucket bucket = new Classes.Bucket(
                 Guid.NewGuid().ToString(),
-                req.Bucket,
+                ctx.Request.Bucket,
                 md.User.GUID, 
                 _Settings.Storage.StorageType, 
-                _Settings.Storage.DiskDirectory + req.Bucket + "/Objects/");
+                _Settings.Storage.DiskDirectory + ctx.Request.Bucket + "/Objects/");
              
             if (!_Buckets.Add(bucket))
             {
-                _Logging.Warn(header + "unable to write bucket " + req.Bucket);
-                await resp.Send(ErrorCode.InternalError);
+                _Logging.Warn(header + "unable to write bucket " + ctx.Request.Bucket);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
-            BucketClient client = _Buckets.GetClient(req.Bucket);
+            BucketClient client = _Buckets.GetClient(ctx.Request.Bucket);
             if (client == null)
             {
-                _Logging.Warn(header + "unable to retrieve bucket client for bucket " + req.Bucket);
-                await resp.Send(ErrorCode.InternalError);
+                _Logging.Warn(header + "unable to retrieve bucket client for bucket " + ctx.Request.Bucket);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
             #region Permissions-in-Headers
 
-            List<Grant> grants = GrantsFromHeaders(md.User, req.Headers);
+            List<Grant> grants = GrantsFromHeaders(md.User, ctx.Http.Request.Headers);
             if (grants != null && grants.Count > 0)
             {
                 foreach (Grant curr in grants)
@@ -748,62 +788,62 @@ namespace Less3.Api.S3
 
             #endregion
 
-            resp.StatusCode = 200;
-            resp.ContentType = "text/plain";
-            await resp.Send();
+            ctx.Response.StatusCode = 200;
+            ctx.Response.ContentType = "text/plain";
+            await ctx.Response.Send();
             return;
         }
 
-        internal async Task WriteAcl(S3Request req, S3Response resp)
+        internal async Task WriteAcl(S3Context ctx)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await resp.Send(ErrorCode.AccessDenied);
+                await ctx.Response.Send(ErrorCode.AccessDenied);
                 return;
             }
              
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await resp.Send(ErrorCode.NoSuchBucket);
+                await ctx.Response.Send(ErrorCode.NoSuchBucket);
                 return;
             }
 
-            resp.Chunked = false;
+            ctx.Response.Chunked = false;
 
             byte[] data = null;
             AccessControlPolicy reqBody = null;
 
-            if (req.Data != null)
+            if (ctx.Request.Data != null)
             {
                 try
                 {
-                    data = Common.StreamToBytes(req.Data); 
+                    data = Common.StreamToBytes(ctx.Request.Data); 
                     string xmlString = Encoding.UTF8.GetString(data); 
                     reqBody = Common.DeserializeXml<AccessControlPolicy>(xmlString); 
                 }
                 catch (Exception e)
                 {
-                    _Logging.Exception(header + "BucketHandler", "WriteAcl", e);
-                    await resp.Send(ErrorCode.InvalidRequest);
+                    _Logging.Exception(e, header + "BucketHandler", "WriteAcl");
+                    await ctx.Response.Send(ErrorCode.InvalidRequest);
                     return;
                 }
             }
              
             md.BucketClient.DeleteBucketAcl();
 
-            List<Grant> headerGrants = GrantsFromHeaders(md.User, req.Headers);
+            List<Grant> headerGrants = GrantsFromHeaders(md.User, ctx.Http.Request.Headers);
             if (headerGrants != null && headerGrants.Count > 0)
             {
                 if (reqBody.AccessControlList.Grant != null)
@@ -872,54 +912,54 @@ namespace Less3.Api.S3
                 }
             }
 
-            resp.StatusCode = 200;
-            resp.ContentType = "text/plain";
-            await resp.Send();
+            ctx.Response.StatusCode = 200;
+            ctx.Response.ContentType = "text/plain";
+            await ctx.Response.Send();
             return;
         }
 
-        internal async Task WriteTags(S3Request req, S3Response resp)
+        internal async Task WriteTags(S3Context ctx)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await resp.Send(ErrorCode.AccessDenied);
+                await ctx.Response.Send(ErrorCode.AccessDenied);
                 return;
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await resp.Send(ErrorCode.NoSuchBucket);
+                await ctx.Response.Send(ErrorCode.NoSuchBucket);
                 return;
             }
 
-            resp.Chunked = false;
+            ctx.Response.Chunked = false;
 
             byte[] data = null;
             Tagging reqBody = null;
 
-            if (req.Data!= null)
+            if (ctx.Request.Data!= null)
             {
                 try
                 {
-                    data = Common.StreamToBytes(req.Data);
+                    data = Common.StreamToBytes(ctx.Request.Data);
                     reqBody = Common.DeserializeXml<Tagging>(Encoding.UTF8.GetString(data));
                 }
                 catch (Exception e)
                 {
-                    _Logging.Exception(header + "BucketHandler", "WriteTags", e);
-                    await resp.Send(ErrorCode.InvalidRequest);
+                    _Logging.Exception(e, header + "BucketHandler", "WriteTags");
+                    await ctx.Response.Send(ErrorCode.InvalidRequest);
                     return;
                 }
             }
@@ -941,54 +981,54 @@ namespace Less3.Api.S3
 
             md.BucketClient.AddBucketTags(tags);
 
-            resp.StatusCode = 204;
-            resp.ContentType = "text/plain";
-            await resp.Send();
+            ctx.Response.StatusCode = 204;
+            ctx.Response.ContentType = "text/plain";
+            await ctx.Response.Send();
             return;
         }
 
-        internal async Task WriteVersioning(S3Request req, S3Response resp)
+        internal async Task WriteVersioning(S3Context ctx)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await resp.Send(ErrorCode.AccessDenied);
+                await ctx.Response.Send(ErrorCode.AccessDenied);
                 return;
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await resp.Send(ErrorCode.NoSuchBucket);
+                await ctx.Response.Send(ErrorCode.NoSuchBucket);
                 return;
             }
 
-            resp.Chunked = false;
+            ctx.Response.Chunked = false;
 
             byte[] data = null;
             VersioningConfiguration reqBody = null;
 
-            if (req.Data != null)
+            if (ctx.Request.Data != null)
             {
                 try
                 {
-                    data = Common.StreamToBytes(req.Data); 
+                    data = Common.StreamToBytes(ctx.Request.Data); 
                     reqBody = Common.DeserializeXml<VersioningConfiguration>(Encoding.UTF8.GetString(data));
                 }
                 catch (Exception e)
                 {
-                    _Logging.Exception(header + "BucketHandler", "WriteVersioning", e);
-                    await resp.Send(ErrorCode.InvalidRequest);
+                    _Logging.Exception(e, header + "BucketHandler", "WriteVersioning");
+                    await ctx.Response.Send(ErrorCode.InvalidRequest);
                     return;
                 }
             }
@@ -1006,9 +1046,9 @@ namespace Less3.Api.S3
                 _Buckets.Add(md.Bucket);
             }
 
-            resp.StatusCode = 200;
-            resp.ContentType = "text/plain";
-            await resp.Send();
+            ctx.Response.StatusCode = 200;
+            ctx.Response.ContentType = "text/plain";
+            await ctx.Response.Send();
             return;
         }
 

@@ -71,137 +71,137 @@ namespace Less3.Api.S3
 
         #region Service-Callbacks
 
-        internal async Task ServiceListBuckets(S3Request req, S3Response resp)
+        internal async Task ServiceListBuckets(S3Context ctx)
         {
-            await _ServiceHandler.ListBuckets(req, resp);
+            await _ServiceHandler.ListBuckets(ctx);
         }
 
         #endregion
 
         #region Bucket-Callbacks
 
-        internal async Task BucketDelete(S3Request req, S3Response resp)
+        internal async Task BucketDelete(S3Context ctx)
         {
-            await _BucketHandler.Delete(req, resp); 
+            await _BucketHandler.Delete(ctx); 
         }
 
-        internal async Task BucketDeleteTags(S3Request req, S3Response resp)
+        internal async Task BucketDeleteTags(S3Context ctx)
         {
-            await _BucketHandler.DeleteTags(req, resp);
+            await _BucketHandler.DeleteTags(ctx);
         }
 
-        internal async Task BucketExists(S3Request req, S3Response resp)
+        internal async Task BucketExists(S3Context ctx)
         {
-            await _BucketHandler.Exists(req, resp);
+            await _BucketHandler.Exists(ctx);
         }
 
-        internal async Task BucketReadLocation(S3Request req, S3Response resp)
+        internal async Task BucketReadLocation(S3Context ctx)
         {
-            await _BucketHandler.ReadLocation(req, resp);
+            await _BucketHandler.ReadLocation(ctx);
         }
 
-        internal async Task BucketRead(S3Request req, S3Response resp)
+        internal async Task BucketRead(S3Context ctx)
         {
-            await _BucketHandler.Read(req, resp);
+            await _BucketHandler.Read(ctx);
         }
 
-        internal async Task BucketReadAcl(S3Request req, S3Response resp)
+        internal async Task BucketReadAcl(S3Context ctx)
         {
-            await _BucketHandler.ReadAcl(req, resp);
+            await _BucketHandler.ReadAcl(ctx);
         }
 
-        internal async Task BucketReadTags(S3Request req, S3Response resp)
+        internal async Task BucketReadTags(S3Context ctx)
         {
-            await _BucketHandler.ReadTags(req, resp);
+            await _BucketHandler.ReadTags(ctx);
         }
 
-        internal async Task BucketReadVersions(S3Request req, S3Response resp)
+        internal async Task BucketReadVersions(S3Context ctx)
         {
-            await _BucketHandler.ReadVersions(req, resp);
+            await _BucketHandler.ReadVersions(ctx);
         }
 
-        internal async Task BucketReadVersioning(S3Request req, S3Response resp)
+        internal async Task BucketReadVersioning(S3Context ctx)
         {
-            await _BucketHandler.ReadVersioning(req, resp);
+            await _BucketHandler.ReadVersioning(ctx);
         }
 
-        internal async Task BucketWrite(S3Request req, S3Response resp)
+        internal async Task BucketWrite(S3Context ctx)
         {
-            await _BucketHandler.Write(req, resp);
+            await _BucketHandler.Write(ctx);
         }
 
-        internal async Task BucketWriteAcl(S3Request req, S3Response resp)
+        internal async Task BucketWriteAcl(S3Context ctx)
         {
-            await _BucketHandler.WriteAcl(req, resp);
+            await _BucketHandler.WriteAcl(ctx);
         }
 
-        internal async Task BucketWriteTags(S3Request req, S3Response resp)
+        internal async Task BucketWriteTags(S3Context ctx)
         {
-            await _BucketHandler.WriteTags(req, resp);
+            await _BucketHandler.WriteTags(ctx);
         }
 
-        internal async Task BucketWriteVersioning(S3Request req, S3Response resp)
+        internal async Task BucketWriteVersioning(S3Context ctx)
         {  
-            await _BucketHandler.WriteVersioning(req, resp);
+            await _BucketHandler.WriteVersioning(ctx);
         }
 
         #endregion
 
         #region Object-Callbacks
 
-        internal async Task ObjectDelete(S3Request req, S3Response resp)
+        internal async Task ObjectDelete(S3Context ctx)
         {
-            await _ObjectHandler.Delete(req, resp);
+            await _ObjectHandler.Delete(ctx);
         }
 
-        internal async Task ObjectDeleteMultiple(S3Request req, S3Response resp)
+        internal async Task ObjectDeleteMultiple(S3Context ctx)
         {
-            await _ObjectHandler.DeleteMultiple(req, resp);
+            await _ObjectHandler.DeleteMultiple(ctx);
         }
 
-        internal async Task ObjectDeleteTags(S3Request req, S3Response resp)
+        internal async Task ObjectDeleteTags(S3Context ctx)
         {
-            await _ObjectHandler.DeleteTags(req, resp);
+            await _ObjectHandler.DeleteTags(ctx);
         }
 
-        internal async Task ObjectExists(S3Request req, S3Response resp)
+        internal async Task ObjectExists(S3Context ctx)
         {
-            await _ObjectHandler.Exists(req, resp);
+            await _ObjectHandler.Exists(ctx);
         }
 
-        internal async Task ObjectRead(S3Request req, S3Response resp)
+        internal async Task ObjectRead(S3Context ctx)
         {
-            await _ObjectHandler.Read(req, resp);
+            await _ObjectHandler.Read(ctx);
         }
 
-        internal async Task ObjectReadAcl(S3Request req, S3Response resp)
+        internal async Task ObjectReadAcl(S3Context ctx)
         {
-            await _ObjectHandler.ReadAcl(req, resp);
+            await _ObjectHandler.ReadAcl(ctx);
         }
 
-        internal async Task ObjectReadRange(S3Request req, S3Response resp)
+        internal async Task ObjectReadRange(S3Context ctx)
         {
-            await _ObjectHandler.ReadRange(req, resp);
+            await _ObjectHandler.ReadRange(ctx);
         }
 
-        internal async Task ObjectReadTags(S3Request req, S3Response resp)
+        internal async Task ObjectReadTags(S3Context ctx)
         {
-            await _ObjectHandler.ReadTags(req, resp);
+            await _ObjectHandler.ReadTags(ctx);
         }
 
-        internal async Task ObjectWrite(S3Request req, S3Response resp)
+        internal async Task ObjectWrite(S3Context ctx)
         {
-            await _ObjectHandler.Write(req, resp);
+            await _ObjectHandler.Write(ctx);
         }
 
-        internal async Task ObjectWriteAcl(S3Request req, S3Response resp)
+        internal async Task ObjectWriteAcl(S3Context ctx)
         {
-            await _ObjectHandler.WriteAcl(req, resp);
+            await _ObjectHandler.WriteAcl(ctx);
         }
 
-        internal async Task ObjectWriteTags(S3Request req, S3Response resp)
+        internal async Task ObjectWriteTags(S3Context ctx)
         {
-            await _ObjectHandler.WriteTags(req, resp);
+            await _ObjectHandler.WriteTags(ctx);
         }
 
         #endregion

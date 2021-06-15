@@ -64,38 +64,38 @@ namespace Less3.Api.S3
 
         #region Internal-Methods
 
-        internal async Task Delete(S3Request req, S3Response resp)
+        internal async Task Delete(S3Context ctx)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await resp.Send(ErrorCode.AccessDenied);
+                await ctx.Response.Send(ErrorCode.AccessDenied);
                 return;
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await resp.Send(ErrorCode.NoSuchBucket);
+                await ctx.Response.Send(ErrorCode.NoSuchBucket);
                 return;
             }
              
             long versionId = 1;
-            if (!String.IsNullOrEmpty(req.VersionId))
+            if (!String.IsNullOrEmpty(ctx.Request.VersionId))
             {
-                if (!Int64.TryParse(req.VersionId, out versionId))
+                if (!Int64.TryParse(ctx.Request.VersionId, out versionId))
                 {
-                    await resp.Send(ErrorCode.NoSuchVersion);
+                    await ctx.Response.Send(ErrorCode.NoSuchVersion);
                     return;
                 }
             }
@@ -105,72 +105,74 @@ namespace Less3.Api.S3
                 if (versionId == 1)
                 {
                     _Logging.Warn(header + "no such key");
-                    await resp.Send(ErrorCode.NoSuchKey);
+                    await ctx.Response.Send(ErrorCode.NoSuchKey);
                     return;
                 }
                 else
                 {
                     _Logging.Warn(header + "no such version");
-                    await resp.Send(ErrorCode.NoSuchVersion);
+                    await ctx.Response.Send(ErrorCode.NoSuchVersion);
                     return;
                 }
             }
              
             if (md.Obj.DeleteMarker)
             {
-                resp.Headers.Add("X-Amz-Delete-Marker", "true");
-                await resp.Send(ErrorCode.NoSuchKey);
+                ctx.Response.Headers.Add("X-Amz-Delete-Marker", "true");
+                await ctx.Response.Send(ErrorCode.NoSuchKey);
                 return;
             }
 
             md.BucketClient.DeleteObject(md.Obj.Key, versionId);
+            md.BucketClient.DeleteObjectAcl(md.Obj.Key, versionId);
+            md.BucketClient.DeleteObjectTags(md.Obj.Key, versionId);
 
-            resp.StatusCode = 204;
-            resp.ContentType = "text/plain";
-            await resp.Send();
+            ctx.Response.StatusCode = 204;
+            ctx.Response.ContentType = "text/plain";
+            await ctx.Response.Send();
             return;
         }
 
-        internal async Task DeleteMultiple(S3Request req, S3Response resp)
+        internal async Task DeleteMultiple(S3Context ctx)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await resp.Send(ErrorCode.AccessDenied);
+                await ctx.Response.Send(ErrorCode.AccessDenied);
                 return;
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await resp.Send(ErrorCode.NoSuchBucket);
+                await ctx.Response.Send(ErrorCode.NoSuchBucket);
                 return;
             }
              
             byte[] data = null;
             DeleteMultiple reqBody = null;
 
-            if (req.Data != null)
+            if (ctx.Request.Data != null)
             {
                 try
                 {
-                    data = Common.StreamToBytes(req.Data);
+                    data = Common.StreamToBytes(ctx.Request.Data);
                     reqBody = Common.DeserializeXml<DeleteMultiple>(Encoding.UTF8.GetString(data));
                 }
                 catch (Exception e)
                 {
-                    _Logging.Exception("ObjectHandler", "DeleteMultiple", e);
-                    await resp.Send(ErrorCode.InvalidRequest);
+                    _Logging.Exception(e, "ObjectHandler", "DeleteMultiple");
+                    await ctx.Response.Send(ErrorCode.InvalidRequest);
                     return;
                 }
             }
@@ -187,7 +189,7 @@ namespace Less3.Api.S3
                     Obj obj = md.BucketClient.GetObjectMetadata(curr.Key, versionId);
                     if (obj == null)
                     {
-                        _Logging.Warn(header + "unable to find metadata for " + req.Bucket + "/" + curr.Key);
+                        _Logging.Warn(header + "unable to find metadata for " + ctx.Request.Bucket + "/" + curr.Key);
                         Error error = null;
 
                         if (versionId > 1)
@@ -231,44 +233,44 @@ namespace Less3.Api.S3
                 }
             }
 
-            resp.StatusCode = 200;
-            resp.ContentType = "application/xml";
-            await resp.Send(Common.SerializeXml<DeleteResult>(deleteResult, false));
+            ctx.Response.StatusCode = 200;
+            ctx.Response.ContentType = "application/xml";
+            await ctx.Response.Send(Common.SerializeXml<DeleteResult>(deleteResult, false));
             return;
         }
 
-        internal async Task DeleteTags(S3Request req, S3Response resp)
+        internal async Task DeleteTags(S3Context ctx)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await resp.Send(ErrorCode.AccessDenied);
+                await ctx.Response.Send(ErrorCode.AccessDenied);
                 return;
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await resp.Send(ErrorCode.NoSuchBucket);
+                await ctx.Response.Send(ErrorCode.NoSuchBucket);
                 return;
             }
              
             long versionId = 1;
-            if (!String.IsNullOrEmpty(req.VersionId))
+            if (!String.IsNullOrEmpty(ctx.Request.VersionId))
             {
-                if (!Int64.TryParse(req.VersionId, out versionId))
+                if (!Int64.TryParse(ctx.Request.VersionId, out versionId))
                 {
-                    await resp.Send(ErrorCode.NoSuchVersion);
+                    await ctx.Response.Send(ErrorCode.NoSuchVersion);
                     return;
                 }
             }
@@ -278,64 +280,64 @@ namespace Less3.Api.S3
                 if (versionId == 1)
                 {
                     _Logging.Warn(header + "no such key");
-                    await resp.Send(ErrorCode.NoSuchKey);
+                    await ctx.Response.Send(ErrorCode.NoSuchKey);
                     return;
                 }
                 else
                 {
                     _Logging.Warn(header + "no such version");
-                    await resp.Send(ErrorCode.NoSuchVersion);
+                    await ctx.Response.Send(ErrorCode.NoSuchVersion);
                     return;
                 }
             }
 
             if (md.Obj.DeleteMarker)
             {
-                resp.Headers.Add("X-Amz-Delete-Marker", "true");
-                await resp.Send(ErrorCode.NoSuchKey);
+                ctx.Response.Headers.Add("X-Amz-Delete-Marker", "true");
+                await ctx.Response.Send(ErrorCode.NoSuchKey);
                 return;
             }
              
-            md.BucketClient.DeleteObjectTags(req.Key, versionId);
+            md.BucketClient.DeleteObjectTags(ctx.Request.Key, versionId);
 
-            resp.StatusCode = 204;
-            resp.ContentType = "text/plain";
-            await resp.Send();
+            ctx.Response.StatusCode = 204;
+            ctx.Response.ContentType = "text/plain";
+            await ctx.Response.Send();
             return;
         }
 
-        internal async Task Exists(S3Request req, S3Response resp)
+        internal async Task Exists(S3Context ctx)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await resp.Send(ErrorCode.AccessDenied);
+                await ctx.Response.Send(ErrorCode.AccessDenied);
                 return;
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await resp.Send(ErrorCode.NoSuchBucket);
+                await ctx.Response.Send(ErrorCode.NoSuchBucket);
                 return;
             }
 
             long versionId = 1;
-            if (!String.IsNullOrEmpty(req.VersionId))
+            if (!String.IsNullOrEmpty(ctx.Request.VersionId))
             {
-                if (!Int64.TryParse(req.VersionId, out versionId))
+                if (!Int64.TryParse(ctx.Request.VersionId, out versionId))
                 {
-                    await resp.Send(ErrorCode.NoSuchVersion);
+                    await ctx.Response.Send(ErrorCode.NoSuchVersion);
                     return;
                 }
             }
@@ -345,63 +347,63 @@ namespace Less3.Api.S3
                 if (versionId == 1)
                 {
                     _Logging.Warn(header + "no such key");
-                    await resp.Send(ErrorCode.NoSuchKey);
+                    await ctx.Response.Send(ErrorCode.NoSuchKey);
                     return;
                 }
                 else
                 {
                     _Logging.Warn(header + "no such version");
-                    await resp.Send(ErrorCode.NoSuchVersion);
+                    await ctx.Response.Send(ErrorCode.NoSuchVersion);
                     return;
                 }
             }
 
             if (md.Obj.DeleteMarker)
             {
-                resp.Headers.Add("X-Amz-Delete-Marker", "true");
-                await resp.Send(ErrorCode.NoSuchKey);
+                ctx.Response.Headers.Add("X-Amz-Delete-Marker", "true");
+                await ctx.Response.Send(ErrorCode.NoSuchKey);
                 return;
             }
 
-            resp.StatusCode = 200;
-            resp.ContentType = "text/plain";
-            resp.ContentLength = md.Obj.ContentLength;
-            await resp.Send();
+            ctx.Response.StatusCode = 200;
+            ctx.Response.ContentType = "text/plain";
+            ctx.Response.ContentLength = md.Obj.ContentLength;
+            await ctx.Response.Send();
             return;
         }
 
-        internal async Task Read(S3Request req, S3Response resp)
+        internal async Task Read(S3Context ctx)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await resp.Send(ErrorCode.AccessDenied);
+                await ctx.Response.Send(ErrorCode.AccessDenied);
                 return;
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await resp.Send(ErrorCode.NoSuchBucket);
+                await ctx.Response.Send(ErrorCode.NoSuchBucket);
                 return;
             }
 
             long versionId = 1;
-            if (!String.IsNullOrEmpty(req.VersionId))
+            if (!String.IsNullOrEmpty(ctx.Request.VersionId))
             {
-                if (!Int64.TryParse(req.VersionId, out versionId))
+                if (!Int64.TryParse(ctx.Request.VersionId, out versionId))
                 {
-                    await resp.Send(ErrorCode.NoSuchVersion);
+                    await ctx.Response.Send(ErrorCode.NoSuchVersion);
                     return;
                 }
             }
@@ -411,35 +413,35 @@ namespace Less3.Api.S3
                 if (versionId == 1)
                 {
                     _Logging.Warn(header + "no such key");
-                    await resp.Send(ErrorCode.NoSuchKey);
+                    await ctx.Response.Send(ErrorCode.NoSuchKey);
                     return;
                 }
                 else
                 {
                     _Logging.Warn(header + "no such version");
-                    await resp.Send(ErrorCode.NoSuchVersion);
+                    await ctx.Response.Send(ErrorCode.NoSuchVersion);
                     return;
                 }
             }
 
             if (md.Obj.DeleteMarker)
             {
-                resp.Headers.Add("X-Amz-Delete-Marker", "true");
-                await resp.Send(ErrorCode.NoSuchKey);
+                ctx.Response.Headers.Add("X-Amz-Delete-Marker", "true");
+                await ctx.Response.Send(ErrorCode.NoSuchKey);
                 return;
             }
 
-            resp.StatusCode = 200;
-            resp.ContentType = md.Obj.ContentType;
+            ctx.Response.StatusCode = 200;
+            ctx.Response.ContentType = md.Obj.ContentType;
 
-            if (req.Chunked)
+            if (ctx.Request.Chunked)
             {
-                resp.Chunked = true;
+                ctx.Response.Chunked = true;
             }
 
             using (FileStream fs = new FileStream(GetObjectBlobFile(md.Bucket, md.Obj), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
-                if (resp.Chunked)
+                if (ctx.Response.Chunked)
                 {
                     long bytesRemaining = md.Obj.ContentLength; 
                     byte[] buffer = new byte[65536];
@@ -462,11 +464,11 @@ namespace Less3.Api.S3
 
                             if (bytesRemaining > 0)
                             { 
-                                await resp.SendChunk(buffer);
+                                await ctx.Response.SendChunk(buffer);
                             }
                             else
                             { 
-                                await resp.SendFinalChunk(buffer);
+                                await ctx.Response.SendFinalChunk(buffer);
                             }
                         }
                     }
@@ -475,47 +477,47 @@ namespace Less3.Api.S3
                 }
                 else
                 {
-                    resp.StatusCode = 200;
-                    resp.ContentType = md.Obj.ContentType;
-                    resp.ContentLength = md.Obj.ContentLength;
-                    await resp.Send(resp.ContentLength, fs);
+                    ctx.Response.StatusCode = 200;
+                    ctx.Response.ContentType = md.Obj.ContentType;
+                    ctx.Response.ContentLength = md.Obj.ContentLength;
+                    await ctx.Response.Send(ctx.Response.ContentLength, fs);
                     return;
                 } 
             }
         }
 
-        internal async Task ReadAcl(S3Request req, S3Response resp)
+        internal async Task ReadAcl(S3Context ctx)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await resp.Send(ErrorCode.AccessDenied);
+                await ctx.Response.Send(ErrorCode.AccessDenied);
                 return;
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await resp.Send(ErrorCode.NoSuchBucket);
+                await ctx.Response.Send(ErrorCode.NoSuchBucket);
                 return;
             }
 
             long versionId = 1;
-            if (!String.IsNullOrEmpty(req.VersionId))
+            if (!String.IsNullOrEmpty(ctx.Request.VersionId))
             {
-                if (!Int64.TryParse(req.VersionId, out versionId))
+                if (!Int64.TryParse(ctx.Request.VersionId, out versionId))
                 {
-                    await resp.Send(ErrorCode.NoSuchVersion);
+                    await ctx.Response.Send(ErrorCode.NoSuchVersion);
                     return;
                 }
             }
@@ -525,21 +527,21 @@ namespace Less3.Api.S3
                 if (versionId == 1)
                 {
                     _Logging.Debug(header + "no such key");
-                    await resp.Send(ErrorCode.NoSuchKey);
+                    await ctx.Response.Send(ErrorCode.NoSuchKey);
                     return;
                 }
                 else
                 {
                     _Logging.Warn(header + "no such version");
-                    await resp.Send(ErrorCode.NoSuchVersion);
+                    await ctx.Response.Send(ErrorCode.NoSuchVersion);
                     return;
                 }
             }
 
             if (md.Obj.DeleteMarker)
             {
-                resp.Headers.Add("X-Amz-Delete-Marker", "true");
-                await resp.Send(ErrorCode.NoSuchKey);
+                ctx.Response.Headers.Add("X-Amz-Delete-Marker", "true");
+                await ctx.Response.Send(ErrorCode.NoSuchKey);
                 return;
             }
 
@@ -547,7 +549,7 @@ namespace Less3.Api.S3
             if (owner == null)
             {
                 _Logging.Warn(header + "unable to find owner GUID " + md.Obj.OwnerGUID + " for object GUID " + md.Obj.GUID);
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
@@ -686,42 +688,42 @@ namespace Less3.Api.S3
                 }
             }
              
-            await ApiHelper.SendSerializedResponse<AccessControlPolicy>(req, resp, ret);
+            await ApiHelper.SendSerializedResponse<AccessControlPolicy>(ctx, ret);
             return; 
         }
 
-        internal async Task ReadRange(S3Request req, S3Response resp)
+        internal async Task ReadRange(S3Context ctx)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await resp.Send(ErrorCode.AccessDenied);
+                await ctx.Response.Send(ErrorCode.AccessDenied);
                 return;
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await resp.Send(ErrorCode.NoSuchBucket);
+                await ctx.Response.Send(ErrorCode.NoSuchBucket);
                 return;
             }
 
             long versionId = 1;
-            if (!String.IsNullOrEmpty(req.VersionId))
+            if (!String.IsNullOrEmpty(ctx.Request.VersionId))
             {
-                if (!Int64.TryParse(req.VersionId, out versionId))
+                if (!Int64.TryParse(ctx.Request.VersionId, out versionId))
                 {
-                    await resp.Send(ErrorCode.NoSuchVersion);
+                    await ctx.Response.Send(ErrorCode.NoSuchVersion);
                     return;
                 }
             }
@@ -731,32 +733,32 @@ namespace Less3.Api.S3
                 if (versionId == 1)
                 {
                     _Logging.Warn(header + "no such key");
-                    await resp.Send(ErrorCode.NoSuchKey);
+                    await ctx.Response.Send(ErrorCode.NoSuchKey);
                     return;
                 }
                 else
                 {
                     _Logging.Warn(header + "no such version");
-                    await resp.Send(ErrorCode.NoSuchVersion);
+                    await ctx.Response.Send(ErrorCode.NoSuchVersion);
                     return;
                 }
             }
 
             if (md.Obj.DeleteMarker)
             {
-                resp.Headers.Add("X-Amz-Delete-Marker", "true");
-                await resp.Send(ErrorCode.NoSuchKey);
+                ctx.Response.Headers.Add("X-Amz-Delete-Marker", "true");
+                await ctx.Response.Send(ErrorCode.NoSuchKey);
                 return;
             }
 
-            if (req.RangeStart == null || req.RangeEnd == null)
+            if (ctx.Request.RangeStart == null || ctx.Request.RangeEnd == null)
             {
-                await Read(req, resp);
+                await Read(ctx);
                 return;
             }
 
-            long endPosition = (long)req.RangeEnd;
-            long startPosition = (long)req.RangeStart;
+            long endPosition = (long)ctx.Request.RangeEnd;
+            long startPosition = (long)ctx.Request.RangeStart;
             long readLen = endPosition - startPosition;
 
             if (endPosition > 0)
@@ -764,7 +766,7 @@ namespace Less3.Api.S3
                 if (readLen < 1)
                 {
                     _Logging.Warn(header + "invalid range supplied, start " + startPosition + " end " + endPosition);
-                    await resp.Send(ErrorCode.InvalidRange);
+                    await ctx.Response.Send(ErrorCode.InvalidRange);
                     return;
                 }
             }
@@ -775,14 +777,14 @@ namespace Less3.Api.S3
 
             if (endPosition > md.Obj.ContentLength)
             {
-                _Logging.Warn(header + "out of range " + req.Bucket + "/" + req.Key + " version " + versionId);
-                await resp.Send(ErrorCode.InvalidRange);
+                _Logging.Warn(header + "out of range " + ctx.Request.Bucket + "/" + ctx.Request.Key + " version " + versionId);
+                await ctx.Response.Send(ErrorCode.InvalidRange);
                 return;
             }
 
-            resp.StatusCode = 200;
-            resp.ContentType = md.Obj.ContentType;
-            if (req.Chunked) resp.Chunked = true;
+            ctx.Response.StatusCode = 200;
+            ctx.Response.ContentType = md.Obj.ContentType;
+            if (ctx.Request.Chunked) ctx.Response.Chunked = true;
 
             using (FileStream fs = new FileStream(GetObjectBlobFile(md.Bucket, md.Obj), FileMode.Open))
             {
@@ -792,7 +794,7 @@ namespace Less3.Api.S3
                 byte[] buffer = new byte[65536];
                 int bytesRead = 0;
 
-                if (resp.Chunked)
+                if (ctx.Response.Chunked)
                 {
                     while (bytesRemaining > 0)
                     {
@@ -804,63 +806,63 @@ namespace Less3.Api.S3
 
                             if (bytesRead == buffer.Length)
                             {
-                                await resp.SendChunk(buffer);
+                                await ctx.Response.SendChunk(buffer);
                             }
                             else
                             {
                                 byte[] tempBuffer = new byte[bytesRead];
                                 Buffer.BlockCopy(buffer, 0, tempBuffer, 0, bytesRead);
-                                await resp.SendChunk(tempBuffer);
+                                await ctx.Response.SendChunk(tempBuffer);
                             }
                         }
                     }
 
-                    await resp.SendFinalChunk(null);
+                    await ctx.Response.SendFinalChunk(null);
                     return;
                 }
                 else
                 {
                     byte[] respData = new byte[readLen];
                     await fs.ReadAsync (respData, 0, respData.Length);
-                    resp.ContentLength = respData.Length;
-                    await resp.Send(respData);
+                    ctx.Response.ContentLength = respData.Length;
+                    await ctx.Response.Send(respData);
                     return;
                 }
             }
         }
 
-        internal async Task ReadTags(S3Request req, S3Response resp)
+        internal async Task ReadTags(S3Context ctx)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await resp.Send(ErrorCode.AccessDenied);
+                await ctx.Response.Send(ErrorCode.AccessDenied);
                 return;
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await resp.Send(ErrorCode.NoSuchBucket);
+                await ctx.Response.Send(ErrorCode.NoSuchBucket);
                 return;
             }
 
             long versionId = 1;
-            if (!String.IsNullOrEmpty(req.VersionId))
+            if (!String.IsNullOrEmpty(ctx.Request.VersionId))
             {
-                if (!Int64.TryParse(req.VersionId, out versionId))
+                if (!Int64.TryParse(ctx.Request.VersionId, out versionId))
                 {
-                    await resp.Send(ErrorCode.NoSuchVersion);
+                    await ctx.Response.Send(ErrorCode.NoSuchVersion);
                     return;
                 }
             }
@@ -870,21 +872,21 @@ namespace Less3.Api.S3
                 if (versionId == 1)
                 {
                     _Logging.Warn(header + "no such key");
-                    await resp.Send(ErrorCode.NoSuchKey);
+                    await ctx.Response.Send(ErrorCode.NoSuchKey);
                     return;
                 }
                 else
                 {
                     _Logging.Warn(header + "no such version");
-                    await resp.Send(ErrorCode.NoSuchVersion);
+                    await ctx.Response.Send(ErrorCode.NoSuchVersion);
                     return;
                 }
             }
 
             if (md.Obj.DeleteMarker)
             {
-                resp.Headers.Add("X-Amz-Delete-Marker", "true");
-                await resp.Send(ErrorCode.NoSuchKey);
+                ctx.Response.Headers.Add("X-Amz-Delete-Marker", "true");
+                await ctx.Response.Send(ErrorCode.NoSuchKey);
                 return;
             }
              
@@ -902,43 +904,43 @@ namespace Less3.Api.S3
                 }
             }
 
-            await ApiHelper.SendSerializedResponse<Tagging>(req, resp, tags);
+            await ApiHelper.SendSerializedResponse<Tagging>(ctx, tags);
             return; 
         }
 
-        internal async Task Write(S3Request req, S3Response resp)
+        internal async Task Write(S3Context ctx)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await resp.Send(ErrorCode.AccessDenied);
+                await ctx.Response.Send(ErrorCode.AccessDenied);
                 return;
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await resp.Send(ErrorCode.NoSuchBucket);
+                await ctx.Response.Send(ErrorCode.NoSuchBucket);
                 return;
             }
 
-            Obj obj = md.BucketClient.GetObjectMetadata(req.Key);
+            Obj obj = md.BucketClient.GetObjectMetadata(ctx.Request.Key);
             if (obj != null)
             {
                 if (!md.Bucket.EnableVersioning)
                 {
-                    _Logging.Warn(header + "metadata already exists for " + req.Bucket + "/" + req.Key);
-                    await resp.Send(ErrorCode.InvalidBucketState);
+                    _Logging.Warn(header + "metadata already exists for " + ctx.Request.Bucket + "/" + ctx.Request.Key);
+                    await ctx.Response.Send(ErrorCode.InvalidBucketState);
                     return;
                 }
             }
@@ -959,19 +961,19 @@ namespace Less3.Api.S3
                 }
                 else
                 {
-                    obj.AuthorGUID = req.SourceIp + ":" + req.SourcePort;
-                    obj.OwnerGUID = req.SourceIp + ":" + req.SourcePort;
+                    obj.AuthorGUID = ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port;
+                    obj.OwnerGUID = ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port;
                 }
                  
                 obj.GUID = Guid.NewGuid().ToString();
                 obj.Version = 1;
                 obj.BlobFilename = obj.GUID;
-                obj.ContentLength = req.ContentLength;
-                obj.ContentType = req.ContentType;
+                obj.ContentLength = ctx.Http.Request.ContentLength;
+                obj.ContentType = ctx.Http.Request.ContentType;
                 obj.CreatedUtc = ts;
                 obj.DeleteMarker = false;
                 obj.ExpirationUtc = null;
-                obj.Key = req.Key;
+                obj.Key = ctx.Request.Key;
                 obj.LastAccessUtc = ts;
                 obj.LastUpdateUtc = ts;
 
@@ -987,19 +989,19 @@ namespace Less3.Api.S3
                 }
                 else
                 {
-                    obj.AuthorGUID = req.SourceIp + ":" + req.SourcePort;
-                    obj.OwnerGUID = req.SourceIp + ":" + req.SourcePort;
+                    obj.AuthorGUID = ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port;
+                    obj.OwnerGUID = ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port;
                 }
 
                 obj.GUID = Guid.NewGuid().ToString();
                 obj.Version = obj.Version + 1;
                 obj.BlobFilename = obj.GUID;
-                obj.ContentLength = req.ContentLength;
-                obj.ContentType = req.ContentType;
+                obj.ContentLength = ctx.Http.Request.ContentLength;
+                obj.ContentType = ctx.Http.Request.ContentType;
                 obj.CreatedUtc = ts;
                 obj.DeleteMarker = false;
                 obj.ExpirationUtc = null;
-                obj.Key = req.Key;
+                obj.Key = ctx.Request.Key;
                 obj.LastAccessUtc = ts;
                 obj.LastUpdateUtc = ts; 
             }
@@ -1016,11 +1018,11 @@ namespace Less3.Api.S3
             {
                 using (FileStream fs = new FileStream(tempFilename, FileMode.Create))
                 {
-                    if (req.Chunked)
+                    if (ctx.Request.Chunked)
                     {
                         while (true)
                         {
-                            Chunk chunk = await req.ReadChunk();
+                            Chunk chunk = await ctx.Request.ReadChunk();
                             if (chunk == null) break;
 
                             if (chunk.Data != null && chunk.Data.Length > 0)
@@ -1034,15 +1036,15 @@ namespace Less3.Api.S3
                     }
                     else
                     {
-                        if (req.Data != null && req.ContentLength > 0)
+                        if (ctx.Request.Data != null && ctx.Http.Request.ContentLength > 0)
                         {
-                            long bytesRemaining = req.ContentLength;
+                            long bytesRemaining = ctx.Http.Request.ContentLength;
                             byte[] buffer = new byte[65536];
                             int bytesRead = 0;
 
                             while (bytesRemaining > 0)
                             {
-                                bytesRead = await req.Data.ReadAsync(buffer, 0, buffer.Length);
+                                bytesRead = await ctx.Request.Data.ReadAsync(buffer, 0, buffer.Length);
                                 if (bytesRead > 0)
                                 {
                                     bytesRemaining -= bytesRead;
@@ -1072,9 +1074,9 @@ namespace Less3.Api.S3
             }
             catch (Exception e)
             {
-                _Logging.Warn(header + "failure while writing " + req.Bucket + "/" + req.Key + " using tempfile " + tempFilename);
-                _Logging.Exception("ObjectHandler", "Write", e);
-                await resp.Send(ErrorCode.InternalError);
+                _Logging.Warn(header + "failure while writing " + ctx.Request.Bucket + "/" + ctx.Request.Key + " using tempfile " + tempFilename);
+                _Logging.Exception(e, "ObjectHandler", "Write");
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
             finally
@@ -1084,8 +1086,8 @@ namespace Less3.Api.S3
 
             if (!writeSuccess)
             {
-                _Logging.Warn(header + "failed to write object " + req.Bucket + "/" + req.Key);
-                await resp.Send(ErrorCode.InternalError);
+                _Logging.Warn(header + "failed to write object " + ctx.Request.Bucket + "/" + ctx.Request.Key);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
@@ -1095,7 +1097,7 @@ namespace Less3.Api.S3
 
             if (md.User != null)
             {
-                List<Grant> grants = GrantsFromHeaders(md.User, req.Headers);
+                List<Grant> grants = GrantsFromHeaders(md.User, ctx.Http.Request.Headers);
                 if (grants != null && grants.Count > 0)
                 {
                     foreach (Grant curr in grants)
@@ -1115,13 +1117,13 @@ namespace Less3.Api.S3
                                 tempUser = _Config.GetUserByGuid(curr.Grantee.ID);
                                 if (tempUser == null)
                                 {
-                                    _Logging.Warn(header + "unable to retrieve user " + curr.Grantee.ID + " to add ACL to object " + req.Bucket + "/" + req.Key + " version " + obj.Version);
+                                    _Logging.Warn(header + "unable to retrieve user " + curr.Grantee.ID + " to add ACL to object " + ctx.Request.Bucket + "/" + ctx.Request.Key + " version " + obj.Version);
                                     continue;
                                 }
 
                                 if (String.IsNullOrEmpty(curr.Permission))
                                 {
-                                    _Logging.Warn(header + "no permissions specified for user " + curr.Grantee.ID + " in ACL for object " + req.Bucket + "/" + req.Key);
+                                    _Logging.Warn(header + "no permissions specified for user " + curr.Grantee.ID + " in ACL for object " + ctx.Request.Bucket + "/" + ctx.Request.Key);
                                     continue;
                                 }
 
@@ -1148,7 +1150,7 @@ namespace Less3.Api.S3
                             {
                                 if (String.IsNullOrEmpty(curr.Permission))
                                 {
-                                    _Logging.Warn(header + "no permissions specified for user " + curr.Grantee.ID + " in ACL for object " + req.Bucket + "/" + req.Key + " version " + obj.Version);
+                                    _Logging.Warn(header + "no permissions specified for user " + curr.Grantee.ID + " in ACL for object " + ctx.Request.Bucket + "/" + ctx.Request.Key + " version " + obj.Version);
                                     continue;
                                 }
 
@@ -1178,51 +1180,51 @@ namespace Less3.Api.S3
 
             #endregion
              
-            resp.StatusCode = 200;
-            resp.ContentType = "text/plain";
-            await resp.Send();
+            ctx.Response.StatusCode = 200;
+            ctx.Response.ContentType = "text/plain";
+            await ctx.Response.Send();
             return;
         }
 
-        internal async Task WriteAcl(S3Request req, S3Response resp)
+        internal async Task WriteAcl(S3Context ctx)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await resp.Send(ErrorCode.AccessDenied);
+                await ctx.Response.Send(ErrorCode.AccessDenied);
                 return;
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await resp.Send(ErrorCode.NoSuchBucket);
+                await ctx.Response.Send(ErrorCode.NoSuchBucket);
                 return;
             }
 
             if (md.User == null || md.Credential == null)
             {
                 _Logging.Warn(header + "not authorized");
-                await resp.Send(ErrorCode.AccessDenied);
+                await ctx.Response.Send(ErrorCode.AccessDenied);
                 return;
             }
 
             long versionId = 1;
-            if (!String.IsNullOrEmpty(req.VersionId))
+            if (!String.IsNullOrEmpty(ctx.Request.VersionId))
             {
-                if (!Int64.TryParse(req.VersionId, out versionId))
+                if (!Int64.TryParse(ctx.Request.VersionId, out versionId))
                 {
-                    await resp.Send(ErrorCode.NoSuchVersion);
+                    await ctx.Response.Send(ErrorCode.NoSuchVersion);
                     return;
                 }
             }
@@ -1232,46 +1234,46 @@ namespace Less3.Api.S3
                 if (versionId == 1)
                 {
                     _Logging.Warn(header + "no such key");
-                    await resp.Send(ErrorCode.NoSuchKey);
+                    await ctx.Response.Send(ErrorCode.NoSuchKey);
                     return;
                 }
                 else
                 {
                     _Logging.Warn(header + "no such version");
-                    await resp.Send(ErrorCode.NoSuchVersion);
+                    await ctx.Response.Send(ErrorCode.NoSuchVersion);
                     return;
                 }
             }
 
             if (md.Obj.DeleteMarker)
             {
-                resp.Headers.Add("X-Amz-Delete-Marker", "true");
-                await resp.Send(ErrorCode.NoSuchKey);
+                ctx.Response.Headers.Add("X-Amz-Delete-Marker", "true");
+                await ctx.Response.Send(ErrorCode.NoSuchKey);
                 return;
             }
 
             byte[] data = null;
             AccessControlPolicy reqBody = null;
 
-            if (req.Data != null)
+            if (ctx.Request.Data != null)
             {
                 try
                 {
-                    data = Common.StreamToBytes(req.Data);
+                    data = Common.StreamToBytes(ctx.Request.Data);
                     string xmlString = Encoding.UTF8.GetString(data);
                     reqBody = Common.DeserializeXml<AccessControlPolicy>(xmlString);
                 }
                 catch (Exception e)
                 {
-                    _Logging.Exception("ObjectHandler", "WriteAcl", e);
-                    await resp.Send(ErrorCode.InvalidRequest);
+                    _Logging.Exception(e, "ObjectHandler", "WriteAcl");
+                    await ctx.Response.Send(ErrorCode.InvalidRequest);
                     return;
                 }
             }
              
-            md.BucketClient.DeleteObjectAcl(req.Key, versionId);
+            md.BucketClient.DeleteObjectAcl(ctx.Request.Key, versionId);
 
-            List<Grant> headerGrants = GrantsFromHeaders(md.User, req.Headers);
+            List<Grant> headerGrants = GrantsFromHeaders(md.User, ctx.Http.Request.Headers);
             if (headerGrants != null && headerGrants.Count > 0)
             {
                 if (reqBody.AccessControlList.Grant != null)
@@ -1409,44 +1411,44 @@ namespace Less3.Api.S3
                 }
             }
 
-            resp.StatusCode = 200;
-            resp.ContentType = "text/plain";
-            await resp.Send();
+            ctx.Response.StatusCode = 200;
+            ctx.Response.ContentType = "text/plain";
+            await ctx.Response.Send();
             return;
         }
 
-        internal async Task WriteTags(S3Request req, S3Response resp)
+        internal async Task WriteTags(S3Context ctx)
         {
-            string header = "[" + req.SourceIp + ":" + req.SourcePort + " " + req.RequestType.ToString() + "] ";
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(req);
+            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await resp.Send(ErrorCode.InternalError);
+                await ctx.Response.Send(ErrorCode.InternalError);
                 return;
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await resp.Send(ErrorCode.AccessDenied);
+                await ctx.Response.Send(ErrorCode.AccessDenied);
                 return;
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await resp.Send(ErrorCode.NoSuchBucket);
+                await ctx.Response.Send(ErrorCode.NoSuchBucket);
                 return;
             }
              
             long versionId = 1;
-            if (!String.IsNullOrEmpty(req.VersionId))
+            if (!String.IsNullOrEmpty(ctx.Request.VersionId))
             {
-                if (!Int64.TryParse(req.VersionId, out versionId))
+                if (!Int64.TryParse(ctx.Request.VersionId, out versionId))
                 {
-                    await resp.Send(ErrorCode.NoSuchVersion);
+                    await ctx.Response.Send(ErrorCode.NoSuchVersion);
                     return;
                 }
             }
@@ -1456,38 +1458,38 @@ namespace Less3.Api.S3
                 if (versionId == 1)
                 {
                     _Logging.Warn(header + "no such key");
-                    await resp.Send(ErrorCode.NoSuchKey);
+                    await ctx.Response.Send(ErrorCode.NoSuchKey);
                     return;
                 }
                 else
                 {
                     _Logging.Warn(header + "no such version");
-                    await resp.Send(ErrorCode.NoSuchVersion);
+                    await ctx.Response.Send(ErrorCode.NoSuchVersion);
                     return;
                 }
             }
 
             if (md.Obj.DeleteMarker)
             {
-                resp.Headers.Add("X-Amz-Delete-Marker", "true");
-                await resp.Send(ErrorCode.NoSuchKey);
+                ctx.Response.Headers.Add("X-Amz-Delete-Marker", "true");
+                await ctx.Response.Send(ErrorCode.NoSuchKey);
                 return;
             }
 
             byte[] data = null;
             Tagging reqBody = null;
 
-            if (req.Data != null)
+            if (ctx.Request.Data != null)
             {
                 try
                 {
-                    data = Common.StreamToBytes(req.Data);
+                    data = Common.StreamToBytes(ctx.Request.Data);
                     reqBody = Common.DeserializeXml<Tagging>(Encoding.UTF8.GetString(data));
                 }
                 catch (Exception e)
                 {
-                    _Logging.Exception("ObjectHandler", "WriteTags", e);
-                    await resp.Send(ErrorCode.InvalidRequest);
+                    _Logging.Exception(e, "ObjectHandler", "WriteTags");
+                    await ctx.Response.Send(ErrorCode.InvalidRequest);
                     return;
                 }
             }
@@ -1497,7 +1499,7 @@ namespace Less3.Api.S3
                 reqBody.TagSet = new List<Tag>();
             }
              
-            md.BucketClient.DeleteObjectTags(req.Key, versionId);
+            md.BucketClient.DeleteObjectTags(ctx.Request.Key, versionId);
 
             List<ObjectTag> tags = new List<ObjectTag>();
             if (reqBody.TagSet != null && reqBody.TagSet.Count > 0)
@@ -1513,11 +1515,11 @@ namespace Less3.Api.S3
                 }
             }
 
-            md.BucketClient.AddObjectTags(req.Key, versionId, tags);
+            md.BucketClient.AddObjectTags(ctx.Request.Key, versionId, tags);
 
-            resp.StatusCode = 204;
-            resp.ContentType = "text/plain";
-            await resp.Send();
+            ctx.Response.StatusCode = 204;
+            ctx.Response.ContentType = "text/plain";
+            await ctx.Response.Send();
             return;
         }
 

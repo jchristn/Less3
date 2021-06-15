@@ -18,32 +18,32 @@ namespace Less3.Classes
         /// <summary>
         /// Enable or disable the console.
         /// </summary>
-        public bool EnableConsole;
+        public bool EnableConsole { get; set; } = true;
 
         /// <summary>
         /// Database settings.
         /// </summary>
-        public DatabaseSettings Database;
+        public DatabaseSettings Database { get; set; } = new DatabaseSettings("./less3.db");
 
         /// <summary>
         /// Web server settings.
         /// </summary>
-        public SettingsServer Server;
+        public SettingsServer Server { get; set; } = new SettingsServer();
 
         /// <summary>
         /// Storage settings.
         /// </summary>
-        public SettingsStorage Storage;
+        public SettingsStorage Storage { get; set; } = new SettingsStorage();
 
         /// <summary>
         /// Logging settings.
         /// </summary>
-        public SettingsLogging Logging;
+        public SettingsLogging Logging { get; set; } = new SettingsLogging();
 
         /// <summary>
         /// Debugging settings.
         /// </summary>
-        public SettingsDebug Debug;
+        public SettingsDebug Debug { get; set; } = new SettingsDebug();
 
         #endregion
 
@@ -57,42 +57,37 @@ namespace Less3.Classes
             /// <summary>
             /// Hostname on which to listen.
             /// </summary>
-            public string DnsHostname;
+            public string DnsHostname { get; set; } = "localhost";
 
             /// <summary>
             /// TCP port on which to listen.
             /// </summary>
-            public int ListenerPort;
+            public int ListenerPort { get; set; } = 8000;
 
             /// <summary>
             /// Enable or disable SSL.
             /// </summary>
-            public bool Ssl;
+            public bool Ssl { get; set; } = false;
 
             /// <summary>
             /// Base domain.  
             /// </summary>
-            public string BaseDomain;
+            public string BaseDomain { get; set; } = null;
 
             /// <summary>
             /// Header to use for the admin API key.
             /// </summary>
-            public string HeaderApiKey;
+            public string HeaderApiKey { get; set; } = "x-api-key";
 
             /// <summary>
             /// Admin API key.
             /// </summary>
-            public string AdminApiKey;
+            public string AdminApiKey { get; set; } = "less3admin";
 
             /// <summary>
             /// AWS region string to use for location requests.
             /// </summary>
-            public string RegionString;
-
-            /// <summary>
-            /// Enable or disable signature authentication.
-            /// </summary>
-            public bool AuthenticateSignatures = true;
+            public string RegionString { get; set; } = "us-west-1";
         }
 
         /// <summary>
@@ -103,17 +98,17 @@ namespace Less3.Classes
             /// <summary>
             /// Temporary storage directory.
             /// </summary>
-            public string TempDirectory;
+            public string TempDirectory { get; set; } = "./temp/";
 
             /// <summary>
             /// Type of storage driver.
             /// </summary>
-            public StorageDriverType StorageType;
+            public StorageDriverType StorageType { get; set; } = StorageDriverType.Disk;
 
             /// <summary>
             /// Storage directory for 'Disk' StorageType.
             /// </summary>
-            public string DiskDirectory;
+            public string DiskDirectory { get; set; } = "./disk/";
         }
 
         /// <summary>
@@ -124,42 +119,37 @@ namespace Less3.Classes
             /// <summary>
             /// IP address or hostname of the syslog server.
             /// </summary>
-            public string SyslogServerIp;
+            public string SyslogServerIp { get; set; } = "127.0.0.1";
 
             /// <summary>
             /// Syslog server port number.
             /// </summary>
-            public int SyslogServerPort;
-
-            /// <summary>
-            /// Header to prepend to log messages.
-            /// </summary>
-            public string Header;
+            public int SyslogServerPort { get; set; } = 514;
 
             /// <summary>
             /// Minimum log level severity.
             /// </summary>
-            public Severity MinimumLevel;
+            public Severity MinimumLevel { get; set; } = Severity.Info;
 
             /// <summary>
             /// Enable or disable logging of HTTP requests.
             /// </summary>
-            public bool LogHttpRequests; 
+            public bool LogHttpRequests { get; set; } = false;
 
             /// <summary>
             /// Enable or disable logging to the console.
             /// </summary>
-            public bool ConsoleLogging;
+            public bool ConsoleLogging { get; set; } = true;
 
             /// <summary>
             /// Enable or disable logging to disk.
             /// </summary>
-            public bool DiskLogging;
+            public bool DiskLogging { get; set; } = true;
 
             /// <summary>
             /// Directory on disk to write log files.
             /// </summary>
-            public string DiskDirectory;
+            public string DiskDirectory { get; set; } = "./logs/";
         }
 
         /// <summary>
@@ -170,22 +160,22 @@ namespace Less3.Classes
             /// <summary>
             /// Enable or disable debugging of database queries.
             /// </summary>
-            public bool DatabaseQueries;
+            public bool DatabaseQueries { get; set; } = false;
 
             /// <summary>
             /// Enable or disable debugging of database query results.
             /// </summary>
-            public bool DatabaseResults;
+            public bool DatabaseResults { get; set; } = false;
 
             /// <summary>
             /// Enable or disable debugging of authentication logic.
             /// </summary>
-            public bool Authentication;
+            public bool Authentication { get; set; } = false;
 
             /// <summary>
             /// Enable or disable debugging of S3 request parsing.
             /// </summary>
-            public bool S3Requests;
+            public bool S3Requests { get; set; } = false;
         }
 
         #endregion

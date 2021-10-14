@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using S3ServerInterface;
+using S3ServerLibrary;
 using SyslogLogging;
 
 using Less3.Classes;
@@ -75,7 +75,7 @@ namespace Less3.Api.Admin
                 return;
             }
 
-            await ctx.Response.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+            await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest);
         }
 
         #endregion
@@ -86,11 +86,11 @@ namespace Less3.Api.Admin
         {
             if (ctx.Http.Request.Url.Elements.Length != 3)
             {
-                await ctx.Response.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+                await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest);
                 return;
             }
 
-            Bucket bucket = _Config.GetBucketByName(ctx.Http.Request.Url.Elements[2]);
+            Bucket bucket = _Config.GetBucketByGuid(ctx.Http.Request.Url.Elements[2]);
             if (bucket == null)
             {
                 ctx.Response.StatusCode = 404;
@@ -113,7 +113,7 @@ namespace Less3.Api.Admin
         {
             if (ctx.Http.Request.Url.Elements.Length != 3)
             {
-                await ctx.Response.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+                await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest);
                 return;
             }
 
@@ -138,11 +138,11 @@ namespace Less3.Api.Admin
         {
             if (ctx.Http.Request.Url.Elements.Length != 3)
             {
-                await ctx.Response.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+                await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest);
                 return;
             }
 
-            Credential cred = _Config.GetCredentialByAccessKey(ctx.Http.Request.Url.Elements[2]);
+            Credential cred = _Config.GetCredentialByGuid(ctx.Http.Request.Url.Elements[2]);
             if (cred == null)
             {
                 ctx.Response.StatusCode = 404;

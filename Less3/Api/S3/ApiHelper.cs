@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using S3ServerInterface;
+using S3ServerLibrary;
 using Less3.Classes;
 
 namespace Less3.Api.S3

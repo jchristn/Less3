@@ -9,15 +9,17 @@ namespace Less3.Classes
     /// </summary>
     public class BucketStatistics
     {
+        #region Public-Members
+
         /// <summary>
         /// The name of the bucket.
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = null;
 
         /// <summary>
         /// GUID of the bucket.
         /// </summary>
-        public string GUID { get; set; }
+        public string GUID { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// The number of objects in the bucket including all versions.
@@ -29,12 +31,42 @@ namespace Less3.Classes
         /// </summary>
         public long Bytes = 0;
 
+        #endregion
+
+        #region Private-Members
+
+        #endregion
+
+        #region Constructors-and-Factories
+
         /// <summary>
-        /// Instantiate the object.
+        /// Instantiate.
         /// </summary>
         public BucketStatistics()
         {
 
         }
+
+        /// <summary>
+        /// Instantiate.
+        /// </summary>
+        /// <param name="name">Name.</param>
+        /// <param name="guid">GUID.</param>
+        /// <param name="objects">Number of objects.</param>
+        /// <param name="bytes">Number of bytes.</param>
+        public BucketStatistics(string name, string guid, long objects, long bytes)
+        {
+
+        }
+
+        #endregion
+
+        #region Public-Methods
+
+        #endregion
+
+        #region Private-Methods
+
+        #endregion
     }
 }

@@ -248,3 +248,9 @@ C:\Code\Less3\Less3-1.5\Less3\obj\Release\netcoreapp3.1\Less3.csproj.CopyComplet
 C:\Code\Less3\Less3-1.5\Less3\obj\Release\netcoreapp3.1\Less3.dll
 C:\Code\Less3\Less3-1.5\Less3\obj\Release\netcoreapp3.1\Less3.pdb
 C:\Code\Less3\Less3-1.5\Less3\obj\Release\netcoreapp3.1\Less3.genruntimeconfig.cache
+C:\code\less3\Less3-2.0\Less3\obj\Release\netcoreapp3.1\Less3.csproj.AssemblyReference.cache
+C:\code\less3\Less3-2.0\Less3\obj\Release\netcoreapp3.1\Less3.AssemblyInfoInputs.cache
+C:\code\less3\Less3-2.0\Less3\obj\Release\netcoreapp3.1\Less3.AssemblyInfo.cs
+C:\code\less3\Less3-2.0\Less3\obj\Release\netcoreapp3.1\Less3.csproj.CoreCompileInputs.cache
+C:\code\less3\Less3-2.0\Less3\obj\Release\netcoreapp3.1\Less3.dll
+C:\code\less3\Less3-2.0\Less3\obj\Release\netcoreapp3.1\Less3.pdb

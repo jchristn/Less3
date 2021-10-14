@@ -116,12 +116,18 @@ namespace Less3.Classes
             }
         }
 
-        internal Bucket Get(string bucketName)
+        internal Bucket GetByName(string bucketName)
         {
             if (String.IsNullOrEmpty(bucketName)) throw new ArgumentNullException(nameof(bucketName));
             return _Config.GetBucketByName(bucketName);
         }
-         
+
+        internal Bucket GetByGuid(string guid)
+        {
+            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
+            return _Config.GetBucketByGuid(guid);
+        }
+
         internal BucketClient GetClient(string bucketName)
         { 
             if (String.IsNullOrEmpty(bucketName)) throw new ArgumentNullException(nameof(bucketName));

@@ -287,7 +287,7 @@
         </member>
         <member name="M:Less3.Classes.Settings.#ctor">
             <summary>
-            Instantiate the object.
+            Instantiate.
             </summary>
         </member>
         <member name="M:Less3.Classes.Settings.FromFile(System.String)">

@@ -2,27 +2,6 @@
   "version": 3,
   "targets": {
     ".NETCoreApp,Version=v3.1": {
-      "AWSSDK.Core/3.7.0.32": {
-        "type": "package",
-        "compile": {
-          "lib/netcoreapp3.1/AWSSDK.Core.dll": {}
-        },
-        "runtime": {
-          "lib/netcoreapp3.1/AWSSDK.Core.dll": {}
-        }
-      },
-      "AWSSDK.S3/3.7.1.2": {
-        "type": "package",
-        "dependencies": {
-          "AWSSDK.Core": "[3.7.0.32, 4.0.0)"
-        },
-        "compile": {
-          "lib/netcoreapp3.1/AWSSDK.S3.dll": {}
-        },
-        "runtime": {
-          "lib/netcoreapp3.1/AWSSDK.S3.dll": {}
-        }
-      },
       "BouncyCastle.NetCore/1.8.5": {
         "type": "package",
         "compile": {
@@ -375,18 +354,17 @@
           }
         }
       },
-      "S3Server/3.2.4": {
+      "S3Server/4.0.1.2": {
         "type": "package",
         "dependencies": {
-          "AWSSDK.S3": "3.7.1.2",
           "Newtonsoft.Json": "13.0.1",
-          "Watson": "4.2.0.1"
+          "Watson": "4.2.2"
         },
         "compile": {
-          "lib/netcoreapp3.1/S3ServerInterface.dll": {}
+          "lib/netcoreapp3.1/S3Server.dll": {}
         },
         "runtime": {
-          "lib/netcoreapp3.1/S3ServerInterface.dll": {}
+          "lib/netcoreapp3.1/S3Server.dll": {}
         }
       },
       "SQLitePCLRaw.bundle_e_sqlite3/2.0.4": {
@@ -513,7 +491,7 @@
           "lib/netstandard2.0/SshNet.Security.Cryptography.dll": {}
         }
       },
-      "SyslogLogging/2.0.1.4": {
+      "SyslogLogging/2.0.1.5": {
         "type": "package",
         "compile": {
           "lib/netcoreapp3.1/LoggingModule.dll": {}
@@ -719,7 +697,7 @@
           "lib/netcoreapp3.1/UrlMatcher.dll": {}
         }
       },
-      "Watson/4.2.0.1": {
+      "Watson/4.2.2": {
         "type": "package",
         "dependencies": {
           "IpMatcher": "1.0.4.1",
@@ -734,13 +712,13 @@
           "lib/netcoreapp3.1/WatsonWebserver.dll": {}
         }
       },
-      "WatsonORM/1.3.2": {
+      "WatsonORM/1.3.5.1": {
         "type": "package",
         "dependencies": {
-          "WatsonORM.Mysql": "1.3.2",
-          "WatsonORM.Postgresql": "1.3.2",
-          "WatsonORM.SqlServer": "1.3.2",
-          "WatsonORM.Sqlite": "1.3.2"
+          "WatsonORM.Mysql": "1.3.5.1",
+          "WatsonORM.Postgresql": "1.3.5.1",
+          "WatsonORM.SqlServer": "1.3.5.1",
+          "WatsonORM.Sqlite": "1.3.5.1"
         },
         "compile": {
           "lib/netcoreapp3.1/WatsonORM.dll": {}
@@ -761,7 +739,7 @@
           "lib/netcoreapp3.1/WatsonORM.Core.dll": {}
         }
       },
-      "WatsonORM.Mysql/1.3.2": {
+      "WatsonORM.Mysql/1.3.5.1": {
         "type": "package",
         "dependencies": {
           "DatabaseWrapper.Mysql": "3.3.1.1",
@@ -774,7 +752,7 @@
           "lib/netcoreapp3.1/WatsonORM.Mysql.dll": {}
         }
       },
-      "WatsonORM.Postgresql/1.3.2": {
+      "WatsonORM.Postgresql/1.3.5.1": {
         "type": "package",
         "dependencies": {
           "DatabaseWrapper.Postgresql": "3.3.1.1",
@@ -787,7 +765,7 @@
           "lib/netcoreapp3.1/WatsonORM.Postgresql.dll": {}
         }
       },
-      "WatsonORM.Sqlite/1.3.2": {
+      "WatsonORM.Sqlite/1.3.5.1": {
         "type": "package",
         "dependencies": {
           "DatabaseWrapper.Sqlite": "3.3.1.1",
@@ -800,7 +778,7 @@
           "lib/netcoreapp3.1/WatsonORM.Sqlite.dll": {}
         }
       },
-      "WatsonORM.SqlServer/1.3.2": {
+      "WatsonORM.SqlServer/1.3.5.1": {
         "type": "package",
         "dependencies": {
           "DatabaseWrapper.SqlServer": "3.3.1.1",
@@ -824,27 +802,6 @@
       }
     },
     "net5.0": {
-      "AWSSDK.Core/3.7.0.32": {
-        "type": "package",
-        "compile": {
-          "lib/netcoreapp3.1/AWSSDK.Core.dll": {}
-        },
-        "runtime": {
-          "lib/netcoreapp3.1/AWSSDK.Core.dll": {}
-        }
-      },
-      "AWSSDK.S3/3.7.1.2": {
-        "type": "package",
-        "dependencies": {
-          "AWSSDK.Core": "[3.7.0.32, 4.0.0)"
-        },
-        "compile": {
-          "lib/netcoreapp3.1/AWSSDK.S3.dll": {}
-        },
-        "runtime": {
-          "lib/netcoreapp3.1/AWSSDK.S3.dll": {}
-        }
-      },
       "BouncyCastle.NetCore/1.8.5": {
         "type": "package",
         "compile": {
@@ -1197,18 +1154,17 @@
           }
         }
       },
-      "S3Server/3.2.4": {
+      "S3Server/4.0.1.2": {
         "type": "package",
         "dependencies": {
-          "AWSSDK.S3": "3.7.1.2",
           "Newtonsoft.Json": "13.0.1",
-          "Watson": "4.2.0.1"
+          "Watson": "4.2.2"
         },
         "compile": {
-          "lib/net5.0/S3ServerInterface.dll": {}
+          "lib/net5.0/S3Server.dll": {}
         },
         "runtime": {
-          "lib/net5.0/S3ServerInterface.dll": {}
+          "lib/net5.0/S3Server.dll": {}
         }
       },
       "SQLitePCLRaw.bundle_e_sqlite3/2.0.4": {
@@ -1335,7 +1291,7 @@
           "lib/netstandard2.0/SshNet.Security.Cryptography.dll": {}
         }
       },
-      "SyslogLogging/2.0.1.4": {
+      "SyslogLogging/2.0.1.5": {
         "type": "package",
         "compile": {
           "lib/net5.0/LoggingModule.dll": {}
@@ -1541,7 +1497,7 @@
           "lib/net5.0/UrlMatcher.dll": {}
         }
       },
-      "Watson/4.2.0.1": {
+      "Watson/4.2.2": {
         "type": "package",
         "dependencies": {
           "IpMatcher": "1.0.4.1",
@@ -1556,13 +1512,13 @@
           "lib/net5.0/WatsonWebserver.dll": {}
         }
       },
-      "WatsonORM/1.3.2": {
+      "WatsonORM/1.3.5.1": {
         "type": "package",
         "dependencies": {
-          "WatsonORM.Mysql": "1.3.2",
-          "WatsonORM.Postgresql": "1.3.2",
-          "WatsonORM.SqlServer": "1.3.2",
-          "WatsonORM.Sqlite": "1.3.2"
+          "WatsonORM.Mysql": "1.3.5.1",
+          "WatsonORM.Postgresql": "1.3.5.1",
+          "WatsonORM.SqlServer": "1.3.5.1",
+          "WatsonORM.Sqlite": "1.3.5.1"
         },
         "compile": {
           "lib/net5.0/WatsonORM.dll": {}
@@ -1583,7 +1539,7 @@
           "lib/net5.0/WatsonORM.Core.dll": {}
         }
       },
-      "WatsonORM.Mysql/1.3.2": {
+      "WatsonORM.Mysql/1.3.5.1": {
         "type": "package",
         "dependencies": {
           "DatabaseWrapper.Mysql": "3.3.1.1",
@@ -1596,7 +1552,7 @@
           "lib/net5.0/WatsonORM.Mysql.dll": {}
         }
       },
-      "WatsonORM.Postgresql/1.3.2": {
+      "WatsonORM.Postgresql/1.3.5.1": {
         "type": "package",
         "dependencies": {
           "DatabaseWrapper.Postgresql": "3.3.1.1",
@@ -1609,7 +1565,7 @@
           "lib/net5.0/WatsonORM.Postgresql.dll": {}
         }
       },
-      "WatsonORM.Sqlite/1.3.2": {
+      "WatsonORM.Sqlite/1.3.5.1": {
         "type": "package",
         "dependencies": {
           "DatabaseWrapper.Sqlite": "3.3.1.1",
@@ -1622,7 +1578,7 @@
           "lib/net5.0/WatsonORM.Sqlite.dll": {}
         }
       },
-      "WatsonORM.SqlServer/1.3.2": {
+      "WatsonORM.SqlServer/1.3.5.1": {
         "type": "package",
         "dependencies": {
           "DatabaseWrapper.SqlServer": "3.3.1.1",
@@ -1647,58 +1603,6 @@
     }
   },
   "libraries": {
-    "AWSSDK.Core/3.7.0.32": {
-      "sha512": "4p5xrY5uSfUKiexYQYwcL/qBDi0WcqbPZm9Lp4Ta7ONGwzy3h2lFjXghwzqScGmh6/Zo2pfJVa9gavSGj4Frkg==",
-      "type": "package",
-      "path": "awssdk.core/3.7.0.32",
-      "hasTools": true,
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "awssdk.core.3.7.0.32.nupkg.sha512",
-        "awssdk.core.nuspec",
-        "lib/net35/AWSSDK.Core.dll",
-        "lib/net35/AWSSDK.Core.pdb",
-        "lib/net35/AWSSDK.Core.xml",
-        "lib/net45/AWSSDK.Core.dll",
-        "lib/net45/AWSSDK.Core.pdb",
-        "lib/net45/AWSSDK.Core.xml",
-        "lib/netcoreapp3.1/AWSSDK.Core.dll",
-        "lib/netcoreapp3.1/AWSSDK.Core.pdb",
-        "lib/netcoreapp3.1/AWSSDK.Core.xml",
-        "lib/netstandard2.0/AWSSDK.Core.dll",
-        "lib/netstandard2.0/AWSSDK.Core.pdb",
-        "lib/netstandard2.0/AWSSDK.Core.xml",
-        "tools/account-management.ps1"
-      ]
-    },
-    "AWSSDK.S3/3.7.1.2": {
-      "sha512": "FmZAiQGS8ZHCJ7Qfew2imGbEE+3l/HMf869eXHMRooMqJX8BKtOF61FY8NKCdn9t2sG9RStypXKjgIqfjrj5TQ==",
-      "type": "package",
-      "path": "awssdk.s3/3.7.1.2",
-      "hasTools": true,
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "analyzers/dotnet/cs/AWSSDK.S3.CodeAnalysis.dll",
-        "awssdk.s3.3.7.1.2.nupkg.sha512",
-        "awssdk.s3.nuspec",
-        "lib/net35/AWSSDK.S3.dll",
-        "lib/net35/AWSSDK.S3.pdb",
-        "lib/net35/AWSSDK.S3.xml",
-        "lib/net45/AWSSDK.S3.dll",
-        "lib/net45/AWSSDK.S3.pdb",
-        "lib/net45/AWSSDK.S3.xml",
-        "lib/netcoreapp3.1/AWSSDK.S3.dll",
-        "lib/netcoreapp3.1/AWSSDK.S3.pdb",
-        "lib/netcoreapp3.1/AWSSDK.S3.xml",
-        "lib/netstandard2.0/AWSSDK.S3.dll",
-        "lib/netstandard2.0/AWSSDK.S3.pdb",
-        "lib/netstandard2.0/AWSSDK.S3.xml",
-        "tools/install.ps1",
-        "tools/uninstall.ps1"
-      ]
-    },
     "BouncyCastle.NetCore/1.8.5": {
       "sha512": "6uxsQw2UXrt82VQAWC2td3oBSJjUZ3P4u4DliagB8wf67KsU53V8sW9xwdF+IwZOOZFR0TCZuv/YKZ2BlrfAag==",
       "type": "package",
@@ -2342,25 +2246,25 @@
         "version.txt"
       ]
     },
-    "S3Server/3.2.4": {
-      "sha512": "PEoYhrnMzCA1tuft0yrvFe7U8qfKFJ2vMhi/b0LsoU4SRWrHBSeaU+hvise/OB4fpe4lrkFZXF991dt8y09moA==",
+    "S3Server/4.0.1.2": {
+      "sha512": "t2GlRdLUd7OrizUhpE0ZzmObMyUQgzqLqGt4DybOI0pvYaBnRTQrtNGDyELDfD9ok+inH2zXwUS5cGT2ju1/cw==",
       "type": "package",
-      "path": "s3server/3.2.4",
+      "path": "s3server/4.0.1.2",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "LICENSE.md",
-        "lib/net462/S3ServerInterface.dll",
-        "lib/net462/S3ServerInterface.xml",
-        "lib/net5.0/S3ServerInterface.dll",
-        "lib/netcoreapp3.1/S3ServerInterface.dll",
-        "lib/netcoreapp3.1/S3ServerInterface.xml",
-        "lib/netstandard2.0/S3ServerInterface.dll",
-        "lib/netstandard2.0/S3ServerInterface.xml",
-        "lib/netstandard2.1/S3ServerInterface.dll",
-        "lib/netstandard2.1/S3ServerInterface.xml",
+        "lib/net462/S3Server.dll",
+        "lib/net462/S3Server.xml",
+        "lib/net5.0/S3Server.dll",
+        "lib/netcoreapp3.1/S3Server.dll",
+        "lib/netcoreapp3.1/S3Server.xml",
+        "lib/netstandard2.0/S3Server.dll",
+        "lib/netstandard2.0/S3Server.xml",
+        "lib/netstandard2.1/S3Server.dll",
+        "lib/netstandard2.1/S3Server.xml",
         "logo.png",
-        "s3server.3.2.4.nupkg.sha512",
+        "s3server.4.0.1.2.nupkg.sha512",
         "s3server.nuspec"
       ]
     },
@@ -2501,10 +2405,10 @@
         "sshnet.security.cryptography.nuspec"
       ]
     },
-    "SyslogLogging/2.0.1.4": {
-      "sha512": "q7VWoi7O5Vg/DoKpz5XsNAuVC4Ln53rQ6n+s0wkdgq7NEuwJXV1MpSJrZe0Mp/fuoe/eZ8ZXRXc/RldUHd2TOQ==",
+    "SyslogLogging/2.0.1.5": {
+      "sha512": "twQneqEW8SNU8+gr86QWmq1/ftfswB6w9MkNxh38NPTngJxlkj33jXbvjY4D5fZSV4LftMre0kVt46JsDH4jJA==",
       "type": "package",
-      "path": "sysloglogging/2.0.1.4",
+      "path": "sysloglogging/2.0.1.5",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2515,7 +2419,8 @@
         "lib/netcoreapp3.1/LoggingModule.xml",
         "lib/netstandard2.0/LoggingModule.dll",
         "lib/netstandard2.1/LoggingModule.dll",
-        "sysloglogging.2.0.1.4.nupkg.sha512",
+        "logo.png",
+        "sysloglogging.2.0.1.5.nupkg.sha512",
         "sysloglogging.nuspec"
       ]
     },
@@ -3002,10 +2907,10 @@
         "urlmatcher.nuspec"
       ]
     },
-    "Watson/4.2.0.1": {
-      "sha512": "COYAse2C78bE8aLJRCXYtJL7GN5XTip990JxAnL0ghaZf/FSaANeqYQORey9OyOvL8UKumAd23jXvYYPKp9VUA==",
+    "Watson/4.2.2": {
+      "sha512": "eVHKvRGZ7x6q83X1FqnMJbQBwQ0hNIw8qc9xTkaOEK5w1turP0CnsQVGjYhGM5TjJIjNIHIz350vFE05aeJdvQ==",
       "type": "package",
-      "path": "watson/4.2.0.1",
+      "path": "watson/4.2.2",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3016,15 +2921,15 @@
         "lib/netcoreapp3.1/WatsonWebserver.xml",
         "lib/netstandard2.0/WatsonWebserver.dll",
         "lib/netstandard2.1/WatsonWebserver.dll",
-        "watson.4.2.0.1.nupkg.sha512",
+        "watson.4.2.2.nupkg.sha512",
         "watson.nuspec",
         "watson.png"
       ]
     },
-    "WatsonORM/1.3.2": {
-      "sha512": "aSUlQTiaTB5fHWp8fdJ2mvaLtXgT/5nSwlHTjSBEsVeBx1cdD9tk+6pWQfKPDUeBDNSbPXLm9VMRKyJHrckAhA==",
+    "WatsonORM/1.3.5.1": {
+      "sha512": "B/mtpnca75/wBCJG/fIOweCt60fqPEdBuxE4689EpHQ3Txo6DcHHzLe+VjG+LdGgAAGviNKru35DD4Nhx9tc+Q==",
       "type": "package",
-      "path": "watsonorm/1.3.2",
+      "path": "watsonorm/1.3.5.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3040,7 +2945,7 @@
         "lib/netstandard2.1/WatsonORM.dll",
         "lib/netstandard2.1/WatsonORM.xml",
         "watson.png",
-        "watsonorm.1.3.2.nupkg.sha512",
+        "watsonorm.1.3.5.1.nupkg.sha512",
         "watsonorm.nuspec"
       ]
     },
@@ -3067,10 +2972,10 @@
         "watsonorm.core.nuspec"
       ]
     },
-    "WatsonORM.Mysql/1.3.2": {
-      "sha512": "9YbGvWICVhCwdLzel/1j3505FEvg8rRgRlE9IIVhaGestqMxd++9h0S/t+xN7p1nb+1JF3lu3WuLlfA0DRT0ng==",
+    "WatsonORM.Mysql/1.3.5.1": {
+      "sha512": "asvPpeewkm4Ifau6g/H6EOQbOnd/PE9zgK4/9ssRZKQvtkjqkgdzzHbo+N4cq/mD6rhJpsqEh5OpMD7QPB34qA==",
       "type": "package",
-      "path": "watsonorm.mysql/1.3.2",
+      "path": "watsonorm.mysql/1.3.5.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3086,14 +2991,14 @@
         "lib/netstandard2.1/WatsonORM.Mysql.dll",
         "lib/netstandard2.1/WatsonORM.Mysql.xml",
         "watson.png",
-        "watsonorm.mysql.1.3.2.nupkg.sha512",
+        "watsonorm.mysql.1.3.5.1.nupkg.sha512",
         "watsonorm.mysql.nuspec"
       ]
     },
-    "WatsonORM.Postgresql/1.3.2": {
-      "sha512": "G3/dqyKU5XCvGQX5EPi7TiNgZyoCxnCZM/r1zsZuKFcFyckoon/gNOpSz8N/VFTKZGnyfQ90QTBNpmDtjpmEFA==",
+    "WatsonORM.Postgresql/1.3.5.1": {
+      "sha512": "O2WnrraLJu2LcTSV/GDJowW4J6BTpSNIQO6RkWbJKWmV55PDZUFQ5jsw2flVSpvZQA4ONbVr6me8rq8rNsq8OA==",
       "type": "package",
-      "path": "watsonorm.postgresql/1.3.2",
+      "path": "watsonorm.postgresql/1.3.5.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3109,14 +3014,14 @@
         "lib/netstandard2.1/WatsonORM.Postgresql.dll",
         "lib/netstandard2.1/WatsonORM.Postgresql.xml",
         "watson.png",
-        "watsonorm.postgresql.1.3.2.nupkg.sha512",
+        "watsonorm.postgresql.1.3.5.1.nupkg.sha512",
         "watsonorm.postgresql.nuspec"
       ]
     },
-    "WatsonORM.Sqlite/1.3.2": {
-      "sha512": "D2ER9hWcfOhp9ceirDAw6xWOi7caa9X/e/lX7XFbUS8/r0pU1XuLEmVJ3KyI/e4EAW2XbpYhNS5f7hqlIPZrKA==",
+    "WatsonORM.Sqlite/1.3.5.1": {
+      "sha512": "nIqyD8qvWPJnUwbxvjl78rxAsDPTGQBwfvYHx8MQHUtMwysbmxDqHv0DcOl73b7eo4vfZCkK/YiS3AhyYrfIyg==",
       "type": "package",
-      "path": "watsonorm.sqlite/1.3.2",
+      "path": "watsonorm.sqlite/1.3.5.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3132,14 +3037,14 @@
         "lib/netstandard2.1/WatsonORM.Sqlite.dll",
         "lib/netstandard2.1/WatsonORM.Sqlite.xml",
         "watson.png",
-        "watsonorm.sqlite.1.3.2.nupkg.sha512",
+        "watsonorm.sqlite.1.3.5.1.nupkg.sha512",
         "watsonorm.sqlite.nuspec"
       ]
     },
-    "WatsonORM.SqlServer/1.3.2": {
-      "sha512": "Ru6Gsk8FmGXtQkfhA836NuV/pw9PgaMrTzGRHCWbQZO1h4snpHZj7EKc1ld+Hb+HGatwyk++qT06g7eJAUh4/g==",
+    "WatsonORM.SqlServer/1.3.5.1": {
+      "sha512": "jP9FjwwOcHGTp/qa21eBTbaHTo84h2KSiXncRFhUb2QF7tTw4CoQP8uEqavKSnrblmK3wmDDqZ61n1IQUB0qbw==",
       "type": "package",
-      "path": "watsonorm.sqlserver/1.3.2",
+      "path": "watsonorm.sqlserver/1.3.5.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3155,7 +3060,7 @@
         "lib/netstandard2.1/WatsonORM.SqlServer.dll",
         "lib/netstandard2.1/WatsonORM.SqlServer.xml",
         "watson.png",
-        "watsonorm.sqlserver.1.3.2.nupkg.sha512",
+        "watsonorm.sqlserver.1.3.5.1.nupkg.sha512",
         "watsonorm.sqlserver.nuspec"
       ]
     },
@@ -3179,39 +3084,42 @@
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v3.1": [
-      "S3Server >= 3.2.4",
-      "SyslogLogging >= 2.0.1.4",
-      "WatsonORM >= 1.3.2",
+      "S3Server >= 4.0.1.2",
+      "SyslogLogging >= 2.0.1.5",
+      "WatsonORM >= 1.3.5.1",
       "XmlToPox >= 1.0.2.1"
     ],
     "net5.0": [
-      "S3Server >= 3.2.4",
-      "SyslogLogging >= 2.0.1.4",
-      "WatsonORM >= 1.3.2",
+      "S3Server >= 4.0.1.2",
+      "SyslogLogging >= 2.0.1.5",
+      "WatsonORM >= 1.3.5.1",
       "XmlToPox >= 1.0.2.1"
     ]
   },
   "packageFolders": {
     "C:\\Users\\joelc\\.nuget\\packages\\": {},
-    "C:\\Microsoft\\Xamarin\\NuGet\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {},
+    "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\": {},
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
-    "version": "1.5.0",
+    "version": "2.0.1",
     "restore": {
-      "projectUniqueName": "C:\\Code\\Less3\\Less3-1.5\\Less3\\Less3.csproj",
+      "projectUniqueName": "C:\\code\\less3\\Less3-2.0\\Less3\\Less3.csproj",
       "projectName": "Less3",
-      "projectPath": "C:\\Code\\Less3\\Less3-1.5\\Less3\\Less3.csproj",
+      "projectPath": "C:\\code\\less3\\Less3-2.0\\Less3\\Less3.csproj",
       "packagesPath": "C:\\Users\\joelc\\.nuget\\packages\\",
-      "outputPath": "C:\\Code\\Less3\\Less3-1.5\\Less3\\obj\\",
+      "outputPath": "C:\\code\\less3\\Less3-2.0\\Less3\\obj\\",
       "projectStyle": "PackageReference",
       "crossTargeting": true,
       "fallbackFolders": [
-        "C:\\Microsoft\\Xamarin\\NuGet\\",
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
+        "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\",
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
       ],
       "configFilePaths": [
         "C:\\Users\\joelc\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
       ],
@@ -3245,15 +3153,15 @@
         "dependencies": {
           "S3Server": {
             "target": "Package",
-            "version": "[3.2.4, )"
+            "version": "[4.0.1.2, )"
           },
           "SyslogLogging": {
             "target": "Package",
-            "version": "[2.0.1.4, )"
+            "version": "[2.0.1.5, )"
           },
           "WatsonORM": {
             "target": "Package",
-            "version": "[1.3.2, )"
+            "version": "[1.3.5.1, )"
           },
           "XmlToPox": {
             "target": "Package",
@@ -3273,7 +3181,7 @@
         "downloadDependencies": [
           {
             "name": "Microsoft.NETCore.App.Host.win-x64",
-            "version": "[3.1.13, 3.1.13]"
+            "version": "[3.1.18, 3.1.18]"
           }
         ],
         "frameworkReferences": {
@@ -3281,22 +3189,22 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.104\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.303\\RuntimeIdentifierGraph.json"
       },
       "net5.0": {
         "targetAlias": "net5.0",
         "dependencies": {
           "S3Server": {
             "target": "Package",
-            "version": "[3.2.4, )"
+            "version": "[4.0.1.2, )"
           },
           "SyslogLogging": {
             "target": "Package",
-            "version": "[2.0.1.4, )"
+            "version": "[2.0.1.5, )"
           },
           "WatsonORM": {
             "target": "Package",
-            "version": "[1.3.2, )"
+            "version": "[1.3.5.1, )"
           },
           "XmlToPox": {
             "target": "Package",
@@ -3318,7 +3226,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.104\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.303\\RuntimeIdentifierGraph.json"
       }
     }
   }

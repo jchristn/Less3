@@ -17,13 +17,9 @@ Core use cases for Less3:
 
 ## New in This Version
 
-v1.5.0
+v2.0.0
 
-- Breaking change; signatures no longer being validated
-- Dependency updates
-- Folder fixes
-- Owner information included in enumeration
-- Better alerts on startup about request requirements (virtual hosting vs path style URLs)
+- Dependency updates, internal refactor
 
 ## Help and Feedback
 
@@ -59,34 +55,35 @@ I tested Less3 using the AWS SDK for C#, a live account on S3, CloudBerry Explor
 Please refer to the compatibility matrix found in 'assets' for a full list of supported APIs and caveats.
 
 The following APIs are supported with Less3:
+
 - Service APIs
   - ListBuckets
 
 - Bucket APIs
   - Write
   - WriteAcl
-  - WriteTags
+  - WriteTagging
   - WriteVersioning (no MFA delete support)
   - Delete
-  - DeleteTags
+  - DeleteTagging
   - Exists
   - Read (list objects v2)
   - ReadAcl
   - ReadVersions
-  - ReadTags
+  - ReadTagging
 
 - Object APIs
   - Write
   - WriteAcl
-  - WriteTags
+  - WriteTagging
   - Delete
   - DeleteMultiple
-  - DeleteTags
+  - DeleteTagging
   - Exists
   - Read
   - ReadAcl
   - ReadRange
-  - ReadTags
+  - ReadTagging
 
 ## API Support
 
@@ -103,6 +100,7 @@ Less3 supports cases where having the bucket name as:
 To use **path style URLs** do **not** set ```Server.BaseDomain```.  This is the default configuration.
 
 To use **virtual hosted URLs**, you must:
+
 - Set ```Server.BaseDomain``` - if your hostname is ```localhost```, set this value to ```.localhost``` (prepend with a period)
 - Set ```Server.DnsHostname``` to ```*```
 - Run Less3 as administrator
@@ -117,7 +115,7 @@ Please refer to the 'wiki' for helpful notes including how to use the administra
 Less3 is built using a series of open-source packages, including:
 
 - AWS SDK - https://github.com/aws/aws-sdk-net
-- S3 Server Interface - https://github.com/jchristn/s3serverinterface
+- S3 Server - https://github.com/jchristn/s3server
 - Watson Webserver - https://github.com/jchristn/WatsonWebserver
 
 ## Deployment in Docker

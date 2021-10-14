@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Text;
 using Watson.ORM.Core;
+using Newtonsoft.Json;
 
 namespace Less3.Classes
 {
@@ -17,68 +18,81 @@ namespace Less3.Classes
         /// <summary>
         /// Database identifier.
         /// </summary>
+        [JsonIgnore]
         [Column("id", true, DataTypes.Int, false)]
-        public int Id { get; set; }
+        public int Id { get; set; } = 0;
+
+        /// <summary>
+        /// GUID.
+        /// </summary>
+        [Column("guid", false, DataTypes.Nvarchar, 64, false)]
+        public string GUID { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// User group.
         /// </summary>
         [Column("usergroup", false, DataTypes.Nvarchar, 256, true)]
-        public string UserGroup { get; set; }
+        public string UserGroup { get; set; } = null;
 
         /// <summary>
         /// User GUID.
         /// </summary>
         [Column("userguid", false, DataTypes.Nvarchar, 64, true)]
-        public string UserGUID { get; set; }
+        public string UserGUID { get; set; } = null;
 
         /// <summary>
         /// GUID of the issuing user.
         /// </summary>
         [Column("issuedbyuserguid", false, DataTypes.Nvarchar, 64, true)]
-        public string IssuedByUserGUID { get; set; }
+        public string IssuedByUserGUID { get; set; } = null;
 
         /// <summary>
         /// GUID of the bucket.
         /// </summary>
         [Column("bucketguid", false, DataTypes.Nvarchar, 64, false)]
-        public string BucketGUID { get; set; }
+        public string BucketGUID { get; set; } = null;
 
         /// <summary>
         /// GUID of the object.
         /// </summary>
         [Column("objectguid", false, DataTypes.Nvarchar, 64, false)]
-        public string ObjectGUID { get; set; }
+        public string ObjectGUID { get; set; } = null;
 
         /// <summary>
         /// Permit read operations.
         /// </summary>
         [Column("permitread", false, DataTypes.Boolean, false)]
-        public bool PermitRead { get; set; }
+        public bool PermitRead { get; set; } = false;
 
         /// <summary>
         /// Permit write operations.
         /// </summary>
         [Column("permitwrite", false, DataTypes.Boolean, false)]
-        public bool PermitWrite { get; set; }
+        public bool PermitWrite { get; set; } = false;
 
         /// <summary>
         /// Permit access control read operations.
         /// </summary>
         [Column("permitreadacp", false, DataTypes.Boolean, false)]
-        public bool PermitReadAcp { get; set; }
+        public bool PermitReadAcp { get; set; } = false;
 
         /// <summary>
         /// Permit access control write operations.
         /// </summary>
         [Column("permitwriteacp", false, DataTypes.Boolean, false)]
-        public bool PermitWriteAcp { get; set; }
+        public bool PermitWriteAcp { get; set; } = false;
 
         /// <summary>
         /// Permit full control.
         /// </summary>
         [Column("permitfullcontrol", false, DataTypes.Boolean, false)]
-        public bool FullControl { get; set; }
+        public bool FullControl { get; set; } = false;
+
+        /// <summary>
+        /// Timestamp from record creation, in UTC time.
+        /// </summary>
+        [Column("createdutc", false, DataTypes.DateTime, 6, 6, false)]
+        public DateTime CreatedUtc { get; set; } = DateTime.Now.ToUniversalTime();
 
         #endregion
 
@@ -87,16 +101,29 @@ namespace Less3.Classes
         #endregion
 
         #region Constructors-and-Factories
-         
+
         /// <summary>
-        /// Instantiate the object.
+        /// Instantiate.
         /// </summary>
         public ObjectAcl()
         {
 
         }
          
-        internal static ObjectAcl ObjectGroupAcl(
+        /// <summary>
+        /// Create a group ACL.
+        /// </summary>
+        /// <param name="groupName">Group name.</param>
+        /// <param name="issuedByUserGuid">Issued by user GUID.</param>
+        /// <param name="bucketGuid">Bucket GUID.</param>
+        /// <param name="objectGuid">Object GUID.</param>
+        /// <param name="permitRead">Permit read.</param>
+        /// <param name="permitWrite">Permit write.</param>
+        /// <param name="permitReadAcp">Permit access control read.</param>
+        /// <param name="permitWriteAcp">Permit access control write.</param>
+        /// <param name="fullControl">Full control.</param>
+        /// <returns>Instance.</returns>
+        public static ObjectAcl GroupAcl(
             string groupName, 
             string issuedByUserGuid, 
             string bucketGuid,
@@ -128,8 +155,21 @@ namespace Less3.Classes
 
             return ret;
         }
-         
-        internal static ObjectAcl ObjectUserAcl(
+
+        /// <summary>
+        /// Create a user ACL.
+        /// </summary>
+        /// <param name="userGuid">User GUID.</param>
+        /// <param name="issuedByUserGuid">Issued by user GUID.</param>
+        /// <param name="bucketGuid">Bucket GUID.</param>
+        /// <param name="objectGuid">Object GUID.</param>
+        /// <param name="permitRead">Permit read.</param>
+        /// <param name="permitWrite">Permit write.</param>
+        /// <param name="permitReadAcp">Permit access control read.</param>
+        /// <param name="permitWriteAcp">Permit access control write.</param>
+        /// <param name="fullControl">Full control.</param>
+        /// <returns>Instance.</returns>
+        public static ObjectAcl UserAcl(
             string userGuid, 
             string issuedByUserGuid, 
             string bucketGuid,

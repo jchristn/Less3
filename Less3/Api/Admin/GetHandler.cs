@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using S3ServerInterface;
+using S3ServerLibrary;
 using SyslogLogging;
 
 using Less3.Classes;
@@ -75,7 +75,7 @@ namespace Less3.Api.Admin
                 return;
             }
 
-            await ctx.Response.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+            await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest);
         }
 
         #endregion
@@ -86,7 +86,7 @@ namespace Less3.Api.Admin
         {
             if (ctx.Http.Request.Url.Elements.Length >= 3)
             {
-                Bucket bucket = _Buckets.Get(ctx.Http.Request.Url.Elements[2]);
+                Bucket bucket = _Buckets.GetByGuid(ctx.Http.Request.Url.Elements[2]);
                 if (bucket == null)
                 {
                     ctx.Response.StatusCode = 404;
@@ -116,7 +116,7 @@ namespace Less3.Api.Admin
         {
             if (ctx.Http.Request.Url.Elements.Length >= 3)
             {
-                User user = _Config.GetUserByName(ctx.Http.Request.Url.Elements[2]);
+                User user = _Config.GetUserByGuid(ctx.Http.Request.Url.Elements[2]);
                 if (user == null)
                 {
                     ctx.Response.StatusCode = 404;
@@ -146,7 +146,7 @@ namespace Less3.Api.Admin
         {
             if (ctx.Http.Request.Url.Elements.Length >= 3)
             {
-                Credential cred = _Config.GetCredentialByAccessKey(ctx.Http.Request.Url.Elements[2]);
+                Credential cred = _Config.GetCredentialByGuid(ctx.Http.Request.Url.Elements[2]);
                 if (cred == null)
                 {
                     ctx.Response.StatusCode = 404;

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using S3ServerInterface;
+using S3ServerLibrary;
 
 namespace Less3.Classes
 {
@@ -9,7 +9,9 @@ namespace Less3.Classes
     /// Less3 request metadata.
     /// </summary>
     public class RequestMetadata
-    { 
+    {
+        #region Public-Members
+
         /// <summary>
         /// User.
         /// </summary>
@@ -65,12 +67,30 @@ namespace Less3.Classes
         /// </summary>
         public AuthorizationResult Authorization = AuthorizationResult.NotAuthorized;
 
+        #endregion
+
+        #region Private-Members
+
+        #endregion
+
+        #region Constructors-and-Factories
+
         /// <summary>
-        /// Instantiate the object.
+        /// Instantiate.
         /// </summary>
         public RequestMetadata()
         {
 
         }
+
+        #endregion
+
+        #region Public-Methods
+
+        #endregion
+
+        #region Private-Methods
+
+        #endregion
     }
 }

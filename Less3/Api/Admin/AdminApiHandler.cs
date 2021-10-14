@@ -4,11 +4,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Amazon;
-using Amazon.S3;
-using Amazon.S3.Model;
-
-using S3ServerInterface; 
+using S3ServerLibrary; 
 using SyslogLogging;
 using WatsonWebserver;
 
@@ -84,7 +80,7 @@ namespace Less3.Api.Admin
                     return;
             }
 
-            await ctx.Response.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+            await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest);
             return;
         }
 

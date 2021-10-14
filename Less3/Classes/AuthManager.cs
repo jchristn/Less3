@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-using S3ServerInterface;
+using S3ServerLibrary;
 using SyslogLogging;
 
 namespace Less3.Classes
@@ -121,7 +121,7 @@ namespace Less3.Classes
 
             if (!String.IsNullOrEmpty(ctx.Request.Bucket))
             {
-                md.Bucket = _Buckets.Get(ctx.Request.Bucket);
+                md.Bucket = _Buckets.GetByName(ctx.Request.Bucket);
 
                 if (md.Bucket != null)
                 {
@@ -143,8 +143,20 @@ namespace Less3.Classes
                 && ctx.Request.IsObjectRequest
                 && !String.IsNullOrEmpty(ctx.Request.Key))
             {
-                md.Obj = md.BucketClient.GetObjectMetadata(ctx.Request.Key);
-
+                if (String.IsNullOrEmpty(ctx.Request.VersionId))
+                {
+                    md.Obj = md.BucketClient.GetObjectLatestMetadata(ctx.Request.Key);
+                }
+                else
+                {
+                    long versionId = 1;
+                    if (!String.IsNullOrEmpty(ctx.Request.VersionId))
+                    {
+                        Int64.TryParse(ctx.Request.VersionId, out versionId);
+                    }
+                    md.Obj = md.BucketClient.GetObjectVersionMetadata(ctx.Request.Key, versionId);
+                }
+                                
                 if (md.Obj != null)
                 {
                     md.ObjectAcls = md.BucketClient.GetObjectAcl(md.Obj.GUID);

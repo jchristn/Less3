@@ -46,7 +46,7 @@ namespace Less3.Storage
         #region Constructors-and-Factories
 
         /// <summary>
-        /// Instantiate the object.
+        /// Instantiate.
         /// </summary>
         /// <param name="baseDirectory">Base directory.</param>
         public DiskStorageDriver(string baseDirectory)

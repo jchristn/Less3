@@ -8,11 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Amazon;
-using Amazon.S3;
-using Amazon.S3.Model;
-
-using S3ServerInterface; 
+using S3ServerLibrary; 
 using SyslogLogging;
 using Watson.ORM;
 using WatsonWebserver;
@@ -302,30 +298,30 @@ namespace Less3
             _S3Server.Service.ListBuckets = _ApiHandler.ServiceListBuckets;
 
             _S3Server.Bucket.Delete = _ApiHandler.BucketDelete;
-            _S3Server.Bucket.DeleteTags = _ApiHandler.BucketDeleteTags;
+            _S3Server.Bucket.DeleteTagging = _ApiHandler.BucketDeleteTagging;
             _S3Server.Bucket.Exists = _ApiHandler.BucketExists;
             _S3Server.Bucket.Read = _ApiHandler.BucketRead;
             _S3Server.Bucket.ReadAcl = _ApiHandler.BucketReadAcl;
             _S3Server.Bucket.ReadLocation = _ApiHandler.BucketReadLocation;
-            _S3Server.Bucket.ReadTags = _ApiHandler.BucketReadTags;
+            _S3Server.Bucket.ReadTagging = _ApiHandler.BucketReadTagging;
             _S3Server.Bucket.ReadVersions = _ApiHandler.BucketReadVersions;
             _S3Server.Bucket.ReadVersioning = _ApiHandler.BucketReadVersioning;
             _S3Server.Bucket.Write = _ApiHandler.BucketWrite;
             _S3Server.Bucket.WriteAcl = _ApiHandler.BucketWriteAcl;
-            _S3Server.Bucket.WriteTags = _ApiHandler.BucketWriteTags;
+            _S3Server.Bucket.WriteTagging = _ApiHandler.BucketWriteTagging;
             _S3Server.Bucket.WriteVersioning = _ApiHandler.BucketWriteVersioning;
 
             _S3Server.Object.Delete = _ApiHandler.ObjectDelete;
             _S3Server.Object.DeleteMultiple = _ApiHandler.ObjectDeleteMultiple;
-            _S3Server.Object.DeleteTags = _ApiHandler.ObjectDeleteTags;
+            _S3Server.Object.DeleteTagging = _ApiHandler.ObjectDeleteTagging;
             _S3Server.Object.Exists = _ApiHandler.ObjectExists;
             _S3Server.Object.Read = _ApiHandler.ObjectRead;
             _S3Server.Object.ReadAcl = _ApiHandler.ObjectReadAcl;
             _S3Server.Object.ReadRange = _ApiHandler.ObjectReadRange;
-            _S3Server.Object.ReadTags = _ApiHandler.ObjectReadTags;
+            _S3Server.Object.ReadTagging = _ApiHandler.ObjectReadTagging;
             _S3Server.Object.Write = _ApiHandler.ObjectWrite;
             _S3Server.Object.WriteAcl = _ApiHandler.ObjectWriteAcl;
-            _S3Server.Object.WriteTags = _ApiHandler.ObjectWriteTags;
+            _S3Server.Object.WriteTagging = _ApiHandler.ObjectWriteTagging;
             _S3Server.Start();
 
             Console.ForegroundColor = prior;
@@ -561,12 +557,14 @@ namespace Less3
 
         private static async Task DefaultRequestHandler(S3Context ctx)
         {
-            await ctx.Response.Send(S3ServerInterface.S3Objects.ErrorCode.InvalidRequest);
+            await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest);
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         private static async Task PostRequestHandler(S3Context ctx)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
-            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Http.Request.Method.ToString() + " " + ctx.Http.Request.Url.RawWithoutQuery + "] ";
+            string header = ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Http.Request.Method.ToString() + " " + ctx.Http.Request.Url.RawWithQuery + " ";
             _Logging.Debug(header + ctx.Http.Response.StatusCode);
             // _Logging.Debug(header + ctx.Http.Response.StatusCode + Environment.NewLine + Common.SerializeJson(ctx.Response, true) + Environment.NewLine + ctx.Response.DataAsString);
         }

@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using Watson.ORM.Core;
 using Less3.Storage;
+using Newtonsoft.Json;
  
 namespace Less3.Classes
 {
@@ -19,62 +20,63 @@ namespace Less3.Classes
         /// <summary>
         /// Database identifier.
         /// </summary>
+        [JsonIgnore]
         [Column("id", true, DataTypes.Int, false)]
-        public int Id { get; set; }
+        public int Id { get; set; } = 0;
 
         /// <summary>
         /// GUID of the bucket.
         /// </summary>
         [Column("guid", false, DataTypes.Nvarchar, 64, false)]
-        public string GUID { get; set; }
+        public string GUID { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// GUID of the owner.
         /// </summary>
         [Column("ownerguid", false, DataTypes.Nvarchar, 64, false)]
-        public string OwnerGUID { get; set; }
+        public string OwnerGUID { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Name of the bucket.
         /// </summary>
         [Column("name", false, DataTypes.Nvarchar, 256, false)]
-        public string Name { get; set; }
-        
+        public string Name { get; set; } = null;
+
         /// <summary>
         /// Type of storage driver.
         /// </summary>
         [Column("storagetype", false, DataTypes.Enum, 16, false)]
-        public StorageDriverType StorageType { get; set; }
+        public StorageDriverType StorageType { get; set; } = StorageDriverType.Disk;
 
         /// <summary>
         /// Objects directory.
         /// </summary>
         [Column("diskdirectory", false, DataTypes.Nvarchar, 256, false)]
-        public string DiskDirectory { get; set; }
+        public string DiskDirectory { get; set; } = "./disk/";
 
         /// <summary>
         /// Enable or disable versioning.
         /// </summary>
         [Column("enableversioning", false, DataTypes.Boolean, false)]
-        public bool EnableVersioning { get; set; }
+        public bool EnableVersioning { get; set; } = false;
 
         /// <summary>
         /// Enable or disable public write.
         /// </summary>
         [Column("enablepublicwrite", false, DataTypes.Boolean, false)]
-        public bool EnablePublicWrite { get; set; }
+        public bool EnablePublicWrite { get; set; } = false;
 
         /// <summary>
         /// Enable or disable public read.
         /// </summary>
         [Column("enablepublicread", false, DataTypes.Boolean, false)]
-        public bool EnablePublicRead { get; set; }
+        public bool EnablePublicRead { get; set; } = false;
 
         /// <summary>
         /// Creation timestamp.
         /// </summary>
         [Column("createdutc", false, DataTypes.DateTime, false)]
-        public DateTime CreatedUtc { get; set; }
+        public DateTime CreatedUtc { get; set; } = DateTime.Now.ToUniversalTime();
 
         #endregion
 
@@ -85,23 +87,55 @@ namespace Less3.Classes
         #region Constructors-and-Factories
 
         /// <summary>
-        /// Instantiate the object.
+        /// Instantiate.
         /// </summary>
         public Bucket()
         {
 
         }
-         
-        internal Bucket(
+
+        /// <summary>
+        /// Instantiate.
+        /// </summary>
+        /// <param name="name">Name.</param>
+        /// <param name="owner">Owner GUID.</param>
+        /// <param name="storageType">Storage type.</param>
+        /// <param name="diskDirectory">Disk directory.</param>
+        public Bucket(
+            string name,
+            string owner,
+            StorageDriverType storageType,
+            string diskDirectory)
+        {
+            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+            if (String.IsNullOrEmpty(owner)) throw new ArgumentNullException(nameof(owner));
+            if (String.IsNullOrEmpty(diskDirectory)) throw new ArgumentNullException(nameof(diskDirectory));
+
+            Name = name;
+            StorageType = storageType;
+            DiskDirectory = diskDirectory;
+            OwnerGUID = owner;
+            CreatedUtc = DateTime.Now.ToUniversalTime();
+        }
+
+        /// <summary>
+        /// Instantiate.
+        /// </summary>
+        /// <param name="guid">GUID.</param>
+        /// <param name="name">Name.</param>
+        /// <param name="owner">Owner GUID.</param>
+        /// <param name="storageType">Storage type.</param>
+        /// <param name="diskDirectory">Disk directory.</param>
+        public Bucket(
             string guid,
             string name,
-            string owner, 
+            string owner,
             StorageDriverType storageType,
             string diskDirectory)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
-            if (String.IsNullOrEmpty(owner)) throw new ArgumentNullException(nameof(owner)); 
+            if (String.IsNullOrEmpty(owner)) throw new ArgumentNullException(nameof(owner));
             if (String.IsNullOrEmpty(diskDirectory)) throw new ArgumentNullException(nameof(diskDirectory));
 
             GUID = guid;
@@ -111,7 +145,7 @@ namespace Less3.Classes
             OwnerGUID = owner;
             CreatedUtc = DateTime.Now.ToUniversalTime();
         }
-         
+
         #endregion
 
         #region Public-Methods

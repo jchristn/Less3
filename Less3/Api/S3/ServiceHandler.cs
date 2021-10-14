@@ -4,13 +4,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Amazon;
-using Amazon.S3;
-using Amazon.S3.Model;
-
 using SyslogLogging;
-using S3ServerInterface;
-using S3ServerInterface.S3Objects;
+using S3ServerLibrary;
+using S3ServerLibrary.S3Objects;
 
 using Less3.Classes; 
 
@@ -60,8 +56,10 @@ namespace Less3.Api.S3
         #endregion
 
         #region Internal-Methods
-         
-        internal async Task ListBuckets(S3Context ctx)
+
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        internal async Task<ListAllMyBucketsResult> ListBuckets(S3Context ctx)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
@@ -69,15 +67,13 @@ namespace Less3.Api.S3
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await ctx.Response.Send(ErrorCode.InternalError);
-                return;
+                throw new S3Exception(new Error(ErrorCode.InternalError));
             }
 
             if (md.Authentication != AuthenticationResult.Authenticated)
             {
                 _Logging.Warn(header + "requestor not authenticated");
-                await ctx.Response.Send(ErrorCode.AccessDenied);
-                return;
+                throw new S3Exception(new Error(ErrorCode.AccessDenied));
             } 
             else
             {
@@ -87,23 +83,22 @@ namespace Less3.Api.S3
             List<Classes.Bucket> buckets = _Buckets.GetUserBuckets(md.User.GUID);
 
             ListAllMyBucketsResult listBucketsResult = new ListAllMyBucketsResult();
-            listBucketsResult.Owner = new S3ServerInterface.S3Objects.Owner();
+            listBucketsResult.Owner = new S3ServerLibrary.S3Objects.Owner();
             listBucketsResult.Owner.DisplayName = md.User.Name;
             listBucketsResult.Owner.ID = md.User.Name;
 
             listBucketsResult.Buckets = new Buckets();
-            listBucketsResult.Buckets.Bucket = new List<S3ServerInterface.S3Objects.Bucket>();
+            listBucketsResult.Buckets.BucketList = new List<S3ServerLibrary.S3Objects.Bucket>();
 
             foreach (Classes.Bucket curr in buckets)
             {
-                S3ServerInterface.S3Objects.Bucket b = new S3ServerInterface.S3Objects.Bucket();
+                S3ServerLibrary.S3Objects.Bucket b = new S3ServerLibrary.S3Objects.Bucket();
                 b.Name = curr.Name;
                 b.CreationDate = curr.CreatedUtc;
-                listBucketsResult.Buckets.Bucket.Add(b);
+                listBucketsResult.Buckets.BucketList.Add(b);
             }
 
-            await ApiHelper.SendSerializedResponse<ListAllMyBucketsResult>(ctx, listBucketsResult);
-            return;
+            return listBucketsResult;
         }
 
         #endregion

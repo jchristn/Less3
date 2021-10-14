@@ -2,6 +2,12 @@
 
 ## Current Version
 
+v2.0.0
+
+- Dependency updates, internal refactor
+
+## Previous Versions
+
 v1.5.0
 
 - Breaking change; signatures no longer being validated
@@ -9,8 +15,6 @@ v1.5.0
 - Folder fixes
 - Owner information included in enumeration
 - Better alerts on startup about request requirements (virtual hosting vs path style URLs)
-
-## Previous Versions
 
 v1.4.0
 

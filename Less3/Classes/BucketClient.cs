@@ -85,12 +85,6 @@ namespace Less3.Classes
 
         public void Dispose()
         {
-            if (_ORM != null)
-            {
-                _ORM.Dispose();
-                _ORM = null;
-            }
-
             if (_StorageDriver != null)
             { 
                 _StorageDriver = null;
@@ -125,7 +119,7 @@ namespace Less3.Classes
             if (String.IsNullOrEmpty(obj.GUID)) obj.GUID = Guid.NewGuid().ToString();
             obj.BucketGUID = _Bucket.GUID;
 
-            Obj test = GetObjectMetadata(obj.Key);
+            Obj test = GetObjectLatestMetadata(obj.Key);
             if (test != null)
             {
                 if (!_Bucket.EnableVersioning)
@@ -160,7 +154,7 @@ namespace Less3.Classes
             if (obj == null) throw new ArgumentNullException(nameof(obj));
             obj.BucketGUID = _Bucket.GUID;
 
-            Obj test = GetObjectMetadata(obj.Key);
+            Obj test = GetObjectLatestMetadata(obj.Key);
             if (test != null)
             {
                 if (!_Bucket.EnableVersioning)
@@ -186,25 +180,25 @@ namespace Less3.Classes
             return true;
         }
 
-        internal bool GetObject(string key, out byte[] data)
+        internal bool GetObjectLatest(string key, out byte[] data)
         {
             data = null;
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            Obj obj = GetObjectMetadata(key);
+            Obj obj = GetObjectLatestMetadata(key);
             if (obj == null) return false;
 
             data = _StorageDriver.Read(obj.BlobFilename);
             return true;
         }
          
-        internal bool GetObject(string key, out long contentLength, out Stream stream)
+        internal bool GetObjectLatest(string key, out long contentLength, out Stream stream)
         {
             contentLength = 0;
             stream = null;
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            Obj obj = GetObjectMetadata(key);
+            Obj obj = GetObjectLatestMetadata(key);
             if (obj == null) return false;
 
             ObjectStream objStream = _StorageDriver.ReadStream(obj.BlobFilename);
@@ -213,14 +207,14 @@ namespace Less3.Classes
             return true;
         }
 
-        internal bool GetObject(string key, long startPosition, long length, out Stream stream)
+        internal bool GetObjectLatestRange(string key, long startPosition, long length, out Stream stream)
         {
             stream = null;
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
             if (startPosition < 0) throw new ArgumentNullException(nameof(startPosition));
             if (length < 0) throw new ArgumentNullException(nameof(length));
 
-            Obj obj = GetObjectMetadata(key);
+            Obj obj = GetObjectLatestMetadata(key);
             if (obj == null) return false;
 
             ObjectStream objStream = _StorageDriver.ReadRangeStream(obj.BlobFilename, startPosition, length);
@@ -228,13 +222,23 @@ namespace Less3.Classes
             return true; 
         }
 
+        internal long GetObjectLatestVersion(string key)
+        {
+            if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
+
+            DbResultOrder[] ro = new DbResultOrder[1];
+            ro[0] = new DbResultOrder(_ORM.GetColumnName<Obj>(nameof(Obj.Version)), DbOrderDirection.Descending);
+
+            DbExpression e = new DbExpression(_ORM.GetColumnName<Obj>(nameof(Obj.Key)), DbOperators.Equals, key);
+            List<Obj> versions = _ORM.SelectMany<Obj>(null, null, e, ro);
+
+            if (versions != null && versions.Count > 0) return versions[0].Version;
+            return 0;
+        }
+
         internal BucketStatistics GetFullStatistics()
         {
-            BucketStatistics ret = new BucketStatistics();
-            ret.Name = _Bucket.Name;
-            ret.GUID = _Bucket.GUID;
-            ret.Objects = 0;
-            ret.Bytes = 0;
+            BucketStatistics ret = new BucketStatistics(_Bucket.Name, _Bucket.GUID, 0, 0);
 
             string countQuery = "SELECT COUNT(*) AS numobjects, SUM(contentlength) AS totalbytes FROM objects WHERE bucketguid = '" + _Bucket.GUID + "'";
             DataTable result = _ORM.Query(countQuery);
@@ -261,11 +265,7 @@ namespace Less3.Classes
 
         internal BucketStatistics GetStatistics(List<Obj> objects)
         {
-            BucketStatistics ret = new BucketStatistics();
-            ret.Name = _Bucket.Name;
-            ret.GUID = _Bucket.GUID;
-            ret.Objects = 0;
-            ret.Bytes = 0;
+            BucketStatistics ret = new BucketStatistics(_Bucket.Name, _Bucket.GUID, 0, 0);
             
             if (objects != null && objects.Count > 0)
             {
@@ -276,90 +276,86 @@ namespace Less3.Classes
             return ret;
         }
 
-        internal Obj GetObjectMetadata(string key)
+        internal Obj GetObjectLatestMetadata(string key)
         { 
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            DbExpression eKey = new DbExpression(
+            DbResultOrder[] ro = new DbResultOrder[1];
+            ro[0] = new DbResultOrder(_ORM.GetColumnName<Obj>(nameof(Obj.Version)), DbOrderDirection.Descending);
+
+            DbExpression e = new DbExpression(
                 _ORM.GetColumnName<Obj>(nameof(Obj.Key)),
                 DbOperators.Equals,
                 key);
 
-            DbExpression eBucket = new DbExpression(
+            e.PrependAnd(
                 _ORM.GetColumnName<Obj>(nameof(Obj.BucketGUID)),
                 DbOperators.Equals,
                 _Bucket.GUID);
 
-            eKey.PrependAnd(eBucket);
-
-            return _ORM.SelectFirst<Obj>(eKey);
+            return _ORM.SelectFirst<Obj>(e, ro);
         }
 
-        internal Obj GetObjectMetadata(string key, long version)
+        internal Obj GetObjectVersionMetadata(string key, long version = 1)
         { 
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            DbExpression eKey = new DbExpression(
+            DbExpression e = new DbExpression(
                 _ORM.GetColumnName<Obj>(nameof(Obj.Key)),
                 DbOperators.Equals,
                 key);
 
-            DbExpression eVersion = new DbExpression(
+            e.PrependAnd(
                 _ORM.GetColumnName<Obj>(nameof(Obj.Version)),
                 DbOperators.Equals,
                 version);
 
-            DbExpression eBucket = new DbExpression(
+            e.PrependAnd(
                 _ORM.GetColumnName<Obj>(nameof(Obj.BucketGUID)),
                 DbOperators.Equals,
                 _Bucket.GUID);
-
-            eKey.PrependAnd(eVersion);
-            eKey.PrependAnd(eBucket);
-
-            return _ORM.SelectFirst<Obj>(eKey);
+             
+            return _ORM.SelectFirst<Obj>(e);
         }
 
         internal Obj GetObjectMetadataByGuid(string guid)
         { 
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
 
-            DbExpression eGuid = new DbExpression(
+            DbExpression e = new DbExpression(
                 _ORM.GetColumnName<Obj>(nameof(Obj.GUID)),
                 DbOperators.Equals,
                 guid);
 
-            DbExpression eBucket = new DbExpression(
+            e.PrependAnd(
                 _ORM.GetColumnName<Obj>(nameof(Obj.BucketGUID)),
                 DbOperators.Equals,
                 _Bucket.GUID);
 
-            eGuid.PrependAnd(eBucket);
-
-            return _ORM.SelectFirst<Obj>(eGuid);
+            return _ORM.SelectFirst<Obj>(e);
         }
 
         internal bool ObjectExists(string key)
         { 
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-            Obj obj = GetObjectMetadata(key);
+            Obj obj = GetObjectLatestMetadata(key);
             if (obj != null) return true;
             return false;
         }
 
-        internal bool ObjectExists(string key, long version)
+        internal bool ObjectVersionExists(string key, long version)
         { 
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-            Obj obj = GetObjectMetadata(key, version);
+            Obj obj = GetObjectVersionMetadata(key, version);
             if (obj != null) return true;
             return false;
         }
 
-        internal bool DeleteObject(string key)
+        internal bool DeleteLatestObject(string key)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            Obj obj = GetObjectMetadata(key);
+            Obj obj = GetObjectLatestMetadata(key);
             if (obj == null)
             {
                 _Logging.Debug("Delete unable to find key " + _Bucket.Name + "/" + key);
@@ -382,11 +378,11 @@ namespace Less3.Classes
             }
         }
 
-        internal bool DeleteObject(string key, long version)
+        internal bool DeleteObjectVersion(string key, long version)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            Obj obj = GetObjectMetadata(key, version);
+            Obj obj = GetObjectVersionMetadata(key, version);
             if (obj == null)
             {
                 _Logging.Debug("Delete unable to find key " + _Bucket.Name + "/" + key + " version " + version);
@@ -409,11 +405,11 @@ namespace Less3.Classes
             }
         }
 
-        internal bool DeleteObjectMetadata(string key, long version)
+        internal bool DeleteObjectVersionMetadata(string key, long version)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            Obj obj = GetObjectMetadata(key, version);
+            Obj obj = GetObjectVersionMetadata(key, version);
             if (obj == null)
             {
                 _Logging.Debug("Delete unable to find key " + _Bucket.Name + "/" + key + " version " + version);
@@ -540,12 +536,12 @@ namespace Less3.Classes
             } 
         }
 
-        internal void AddObjectTags(string key, long version, List<ObjectTag> tags)
+        internal void AddObjectVersionTags(string key, long version, List<ObjectTag> tags)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
             if (version < 1) throw new ArgumentException("Version ID must be one or greater.");
 
-            DeleteObjectTags(key, version);
+            DeleteObjectVersionTags(key, version);
 
             if (tags != null && tags.Count > 0)
             {
@@ -559,12 +555,12 @@ namespace Less3.Classes
 
         internal List<BucketTag> GetBucketTags()
         {
-            DbExpression eBucket = new DbExpression(
+            DbExpression e = new DbExpression(
                 _ORM.GetColumnName<Obj>(nameof(Obj.BucketGUID)),
                 DbOperators.Equals,
                 _Bucket.GUID);
 
-            return _ORM.SelectMany<BucketTag>(eBucket); 
+            return _ORM.SelectMany<BucketTag>(e); 
         }
 
         internal List<ObjectTag> GetObjectTags(string key, long version)
@@ -572,51 +568,46 @@ namespace Less3.Classes
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
             if (version < 1) throw new ArgumentException("Version ID must be one or greater.");
 
-            Obj obj = GetObjectMetadata(key, version);
+            Obj obj = GetObjectVersionMetadata(key, version);
             if (obj == null)
             {
                 _Logging.Debug("GetTags unable to find key " + _Bucket.Name + "/" + key + " version " + version);
                 return null;
             }
 
-            DbExpression eKey = new DbExpression(
+            DbExpression e = new DbExpression(
                 _ORM.GetColumnName<Obj>(nameof(Obj.Key)),
                 DbOperators.Equals,
                 key);
 
-            DbExpression eVersion = new DbExpression(
+            e.PrependAnd(
                 _ORM.GetColumnName<Obj>(nameof(Obj.Version)),
                 DbOperators.Equals,
                 version);
 
-            DbExpression eBucket = new DbExpression(
+            e.PrependAnd(
                 _ORM.GetColumnName<Obj>(nameof(Obj.BucketGUID)),
                 DbOperators.Equals,
                 _Bucket.GUID);
 
-            eKey.PrependAnd(eVersion);
-            eKey.PrependAnd(eBucket);
-
-            return _ORM.SelectMany<ObjectTag>(eKey);
+            return _ORM.SelectMany<ObjectTag>(e);
         }
 
         internal List<ObjectTag> GetObjectTags(string guid)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid)); 
              
-            DbExpression eObj = new DbExpression(
+            DbExpression e = new DbExpression(
                 _ORM.GetColumnName<ObjectTag>(nameof(ObjectTag.ObjectGUID)),
                 DbOperators.Equals,
                 guid);
 
-            DbExpression eBucket = new DbExpression(
+            e.PrependAnd(
                 _ORM.GetColumnName<Obj>(nameof(ObjectTag.BucketGUID)),
                 DbOperators.Equals,
                 _Bucket.GUID);
-             
-            eObj.PrependAnd(eBucket);
-
-            return _ORM.SelectMany<ObjectTag>(eObj);
+            
+            return _ORM.SelectMany<ObjectTag>(e);
         }
 
         internal void DeleteBucketTags()
@@ -629,30 +620,28 @@ namespace Less3.Classes
             _ORM.DeleteMany<BucketTag>(eBucket);
         }
 
-        internal void DeleteObjectTags(string key, long version)
+        internal void DeleteObjectVersionTags(string key, long version)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            Obj obj = GetObjectMetadata(key, version);
+            Obj obj = GetObjectVersionMetadata(key, version);
             if (obj == null)
             {
                 _Logging.Debug("Exists unable to find key " + _Bucket.Name + "/" + key + " version " + version);
                 return;
             }
 
-            DbExpression eBucket = new DbExpression(
+            DbExpression e = new DbExpression(
                 _ORM.GetColumnName<ObjectTag>(nameof(ObjectTag.BucketGUID)),
                 DbOperators.Equals,
                 _Bucket.GUID);
 
-            DbExpression eObj = new DbExpression(
+            e.PrependAnd(
                 _ORM.GetColumnName<ObjectTag>(nameof(ObjectTag.ObjectGUID)),
                 DbOperators.Equals,
                 obj.GUID);
              
-            eBucket.PrependAnd(eObj); 
-
-            _ORM.DeleteMany<ObjectTag>(eBucket);
+            _ORM.DeleteMany<ObjectTag>(e);
         }
 
         internal bool ObjectGroupAclExists(string groupName, string key, long version)
@@ -660,34 +649,29 @@ namespace Less3.Classes
             if (String.IsNullOrEmpty(groupName)) throw new ArgumentNullException(nameof(groupName));
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            Obj obj = GetObjectMetadata(key, version);
+            Obj obj = GetObjectVersionMetadata(key, version);
             if (obj == null)
             {
                 _Logging.Debug("Exists unable to find key " + _Bucket.Name + "/" + key + " version " + version);
                 return false;
             }
 
-            DbExpression expr = new DbExpression(
+            DbExpression e = new DbExpression(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
                 DbOperators.Equals,
                 _Bucket.GUID);
 
-            DbExpression eGroup = new DbExpression(
+            e.PrependAnd(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.UserGroup)),
                 DbOperators.Equals,
                 groupName);
 
-            DbExpression eObj = new DbExpression(
+            e.PrependAnd(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.ObjectGUID)),
                 DbOperators.Equals,
                 obj.GUID);
-             
-            expr.PrependAnd(eGroup);
-            expr.PrependAnd(eObj);
 
-            List<ObjectAcl> acls = _ORM.SelectMany<ObjectAcl>(expr);
-            if (acls != null && acls.Count > 0) return true;
-            return false;
+            return _ORM.Exists<ObjectAcl>(e);
         }
 
         internal bool ObjectUserAclExists(string userGuid, string key, long version)
@@ -695,131 +679,114 @@ namespace Less3.Classes
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            Obj obj = GetObjectMetadata(key, version);
+            Obj obj = GetObjectVersionMetadata(key, version);
             if (obj == null)
             {
                 _Logging.Debug("Exists unable to find key " + _Bucket.Name + "/" + key + " version " + version);
                 return false;
             }
 
-            DbExpression expr = new DbExpression(
+            DbExpression e = new DbExpression(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
                 DbOperators.Equals,
                 _Bucket.GUID);
 
-            DbExpression eUser = new DbExpression(
+            e.PrependAnd(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.UserGUID)),
                 DbOperators.Equals,
                 userGuid);
 
-            DbExpression eObj = new DbExpression(
+            e.PrependAnd(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.ObjectGUID)),
                 DbOperators.Equals,
                 obj.GUID);
 
-            expr.PrependAnd(eUser);
-            expr.PrependAnd(eObj);
-
-            List<ObjectAcl> acls = _ORM.SelectMany<ObjectAcl>(expr);
-            if (acls != null && acls.Count > 0) return true;
-            return false;
+            return _ORM.Exists<ObjectAcl>(e);
         }
 
         internal bool BucketGroupAclExists(string groupName)
         {
             if (String.IsNullOrEmpty(groupName)) throw new ArgumentNullException(nameof(groupName)); 
              
-            DbExpression expr = new DbExpression(
+            DbExpression e = new DbExpression(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
                 DbOperators.Equals,
                 _Bucket.GUID);
 
-            DbExpression eGroup = new DbExpression(
+            e.PrependAnd(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.UserGroup)),
                 DbOperators.Equals,
                 groupName);
-             
-            expr.PrependAnd(eGroup); 
 
-            List<BucketAcl> acls = _ORM.SelectMany<BucketAcl>(expr);
-            if (acls != null && acls.Count > 0) return true;
-            return false;
+            return _ORM.Exists<BucketAcl>(e);
         }
 
         internal bool BucketUserAclExists(string userGuid)
         {
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
 
-            DbExpression expr = new DbExpression(
+            DbExpression e = new DbExpression(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
                 DbOperators.Equals,
                 _Bucket.GUID);
 
-            DbExpression eUser = new DbExpression(
+            e.PrependAnd(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.UserGUID)),
                 DbOperators.Equals,
                 userGuid);
-             
-            expr.PrependAnd(eUser); 
 
-            List<BucketAcl> acls = _ORM.SelectMany<BucketAcl>(expr);
-            if (acls != null && acls.Count > 0) return true;
-            return false;
+            return _ORM.Exists<BucketAcl>(e);
         }
 
         internal List<BucketAcl> GetBucketAcl()
         {
-            DbExpression expr = new DbExpression(
+            DbExpression e = new DbExpression(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
                 DbOperators.Equals,
                 _Bucket.GUID);
 
-            return _ORM.SelectMany<BucketAcl>(expr); 
+            return _ORM.SelectMany<BucketAcl>(e); 
         }
 
-        internal List<ObjectAcl> GetObjectAcl(string key, long version)
+        internal List<ObjectAcl> GetObjectVersionAcl(string key, long version)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            Obj obj = GetObjectMetadata(key, version);
+            Obj obj = GetObjectVersionMetadata(key, version);
             if (obj == null)
             {
                 _Logging.Debug("GetAcl unable to find key " + _Bucket.Name + "/" + key + " version " + version);
                 return null;
             }
 
-            DbExpression expr = new DbExpression(
+            DbExpression e = new DbExpression(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
                 DbOperators.Equals,
                 _Bucket.GUID);
 
-            DbExpression eObj = new DbExpression(
+            e.PrependAnd(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.ObjectGUID)),
                 DbOperators.Equals,
                 obj.GUID);
 
-            expr.PrependAnd(eObj);
-
-            return _ORM.SelectMany<ObjectAcl>(expr);
+            return _ORM.SelectMany<ObjectAcl>(e);
         }
 
         internal List<ObjectAcl> GetObjectAcl(string guid)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
               
-            DbExpression expr = new DbExpression(
+            DbExpression e = new DbExpression(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
                 DbOperators.Equals,
                 _Bucket.GUID);
 
-            DbExpression eObj = new DbExpression(
+            e.PrependAnd(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.ObjectGUID)),
                 DbOperators.Equals,
                 guid);
 
-            expr.PrependAnd(eObj);
-
-            return _ORM.SelectMany<ObjectAcl>(expr);
+            return _ORM.SelectMany<ObjectAcl>(e);
         }
 
         internal void AddBucketAcl(BucketAcl acl)
@@ -847,32 +814,33 @@ namespace Less3.Classes
 
         internal void AddObjectAcl(ObjectAcl acl)
         {
-            if (acl == null) return;
-
-            Obj obj = GetObjectMetadataByGuid(acl.ObjectGUID);
-            if (obj == null)
+            if (acl != null)
             {
-                _Logging.Debug("SetAcl unable to find object GUID " + acl.ObjectGUID + " in bucket " + _Bucket.Name);
-                return;
-            }
+                Obj obj = GetObjectMetadataByGuid(acl.ObjectGUID);
+                if (obj == null)
+                {
+                    _Logging.Debug("SetAcl unable to find object GUID " + acl.ObjectGUID + " in bucket " + _Bucket.Name);
+                    return;
+                }
 
-            acl.BucketGUID = _Bucket.GUID;
-            acl.ObjectGUID = obj.GUID;
-            _ORM.Insert<ObjectAcl>(acl);
+                acl.BucketGUID = _Bucket.GUID;
+                acl.ObjectGUID = obj.GUID;
+                _ORM.Insert<ObjectAcl>(acl);
+            }
         }
 
         internal void SetObjectAcls(string key, long version, List<ObjectAcl> acls)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            Obj obj = GetObjectMetadata(key, version);
+            Obj obj = GetObjectVersionMetadata(key, version);
             if (obj == null)
             {
                 _Logging.Debug("SetAcl unable to find key " + _Bucket.Name + "/" + key + " version " + version);
                 return;
             }
 
-            DeleteObjectAcl(key, version);
+            DeleteObjectVersionAcl(key, version);
 
             if (acls != null && acls.Count > 0)
             {
@@ -887,62 +855,60 @@ namespace Less3.Classes
 
         internal void DeleteBucketAcl()
         {
-            DbExpression expr = new DbExpression(
+            DbExpression e = new DbExpression(
                 _ORM.GetColumnName<BucketAcl>(nameof(BucketAcl.BucketGUID)),
                 DbOperators.Equals,
                 _Bucket.GUID);
 
-            _ORM.DeleteMany<BucketAcl>(expr);
+            _ORM.DeleteMany<BucketAcl>(e);
         }
 
-        internal void DeleteObjectAcl(string key, long version)
+        internal void DeleteObjectVersionAcl(string key, long version)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            Obj obj = GetObjectMetadata(key, version);
+            Obj obj = GetObjectVersionMetadata(key, version);
             if (obj == null)
             {
                 _Logging.Debug("DeleteAcl unable to find key " + _Bucket.Name + "/" + key + " version " + version);
                 return;
             }
 
-            DbExpression expr = new DbExpression(
+            DbExpression e = new DbExpression(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
                 DbOperators.Equals,
                 _Bucket.GUID);
 
-            DbExpression eObjGuid = new DbExpression(
+            e.PrependAnd(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.ObjectGUID)),
                 DbOperators.Equals,
                 obj.GUID);
 
-            expr.PrependAnd(eObjGuid);
-            _ORM.DeleteMany<ObjectAcl>(expr);
+            _ORM.DeleteMany<ObjectAcl>(e);
         }
 
         internal void DeleteObjectAcl(string key)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            Obj obj = GetObjectMetadata(key);
+            Obj obj = GetObjectLatestMetadata(key);
             if (obj == null)
             {
                 _Logging.Debug("DeleteAcl unable to find key " + _Bucket.Name + "/" + key);
                 return;
             }
 
-            DbExpression expr = new DbExpression(
+            DbExpression e = new DbExpression(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
                 DbOperators.Equals,
                 _Bucket.GUID);
 
-            DbExpression eObjGuid = new DbExpression(
+            e.PrependAnd(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.ObjectGUID)),
                 DbOperators.Equals,
                 obj.GUID);
 
-            expr.PrependAnd(eObjGuid);
-            _ORM.DeleteMany<ObjectAcl>(expr);
+            _ORM.DeleteMany<ObjectAcl>(e);
         }
 
         #endregion

@@ -183,7 +183,7 @@ namespace Less3.Classes
         #region Constructors-and-Factories
 
         /// <summary>
-        /// Instantiate the object.
+        /// Instantiate.
         /// </summary>
         public Settings()
         {

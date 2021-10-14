@@ -7,13 +7,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Amazon;
-using Amazon.S3;
-using Amazon.S3.Model;
-
 using SyslogLogging;
-using S3ServerInterface;
-using S3ServerInterface.S3Objects;
+using S3ServerLibrary;
+using S3ServerLibrary.S3Objects;
 
 using Less3.Classes;
 
@@ -141,7 +137,9 @@ namespace Less3.Api.S3
             return;
         }
 
-        internal async Task Exists(S3Context ctx)
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        internal async Task<bool> Exists(S3Context ctx)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
@@ -149,31 +147,27 @@ namespace Less3.Api.S3
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await ctx.Response.Send(ErrorCode.InternalError);
-                return;
+                throw new S3Exception(new Error(ErrorCode.InternalError));
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await ctx.Response.Send(ErrorCode.AccessDenied);
-                return;
+                throw new S3Exception(new Error(ErrorCode.AccessDenied));
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await ctx.Response.Send(ErrorCode.NoSuchBucket);
-                return;
+                return false;
             }
 
-            ctx.Response.StatusCode = 200;
-            ctx.Response.ContentType = "text/plain";
-            await ctx.Response.Send();
-            return;
+            return true;
         }
 
-        internal async Task Read(S3Context ctx)
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        internal async Task<ListBucketResult> Read(S3Context ctx)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
@@ -181,22 +175,19 @@ namespace Less3.Api.S3
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await ctx.Response.Send(ErrorCode.InternalError);
-                return;
+                throw new S3Exception(new Error(ErrorCode.InternalError));
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await ctx.Response.Send(ErrorCode.AccessDenied);
-                return;
+                throw new S3Exception(new Error(ErrorCode.AccessDenied));
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await ctx.Response.Send(ErrorCode.NoSuchBucket);
-                return;
+                throw new S3Exception(new Error(ErrorCode.NoSuchBucket));
             }
              
             int startIndex = 0;
@@ -207,7 +198,7 @@ namespace Less3.Api.S3
 
             if (!String.IsNullOrEmpty(ctx.Request.Marker))
             {
-                Obj marker = md.BucketClient.GetObjectMetadata(ctx.Request.Marker);
+                Obj marker = md.BucketClient.GetObjectLatestMetadata(ctx.Request.Marker);
                 if (marker != null) startIndex = (marker.Id + 1);
             }
               
@@ -218,7 +209,7 @@ namespace Less3.Api.S3
             md.BucketClient.Enumerate(ctx.Request.Delimiter, ctx.Request.Prefix, startIndex, (int)ctx.Request.MaxKeys, out objects, out prefixes, out nextStartIndex, out isTruncated);
              
             ListBucketResult listBucketResult = new ListBucketResult();
-            listBucketResult.Contents = new List<Contents>();
+            listBucketResult.Contents = new List<ObjectMetadata>();
 
             listBucketResult.Prefix = ctx.Request.Prefix;
             listBucketResult.Delimiter = ctx.Request.Delimiter;
@@ -227,7 +218,7 @@ namespace Less3.Api.S3
             listBucketResult.Name = ctx.Request.Bucket;
             listBucketResult.Marker = ctx.Request.Marker;
             listBucketResult.Prefix = ctx.Request.Prefix; 
-            listBucketResult.CommonPrefixes.Prefix = prefixes;
+            listBucketResult.CommonPrefixes.Prefixes = prefixes;
             listBucketResult.IsTruncated = false;
 
             if (isTruncated)
@@ -236,18 +227,19 @@ namespace Less3.Api.S3
                 listBucketResult.NextContinuationToken = BuildContinuationToken(nextStartIndex); 
             }
 
-            Dictionary<string, S3ServerInterface.S3Objects.Owner> ownerCache = new Dictionary<string, S3ServerInterface.S3Objects.Owner>();
+            Dictionary<string, S3ServerLibrary.S3Objects.Owner> ownerCache = new Dictionary<string, S3ServerLibrary.S3Objects.Owner>();
 
             foreach (Obj curr in objects)
             {
-                Contents c = new Contents();
+                ObjectMetadata c = new ObjectMetadata();
                 c.ETag = "\"" + curr.Md5 + "\"";
                 c.Key = curr.Key;
                 c.LastModified = curr.LastUpdateUtc;
                 c.Size = curr.ContentLength;
+                c.ContentType = curr.ContentType;
                 c.StorageClass = "STANDARD";
                 
-                c.Owner = new S3ServerInterface.S3Objects.Owner();
+                c.Owner = new S3ServerLibrary.S3Objects.Owner();
                 if (ownerCache.ContainsKey(curr.OwnerGUID))
                 {
                     c.Owner = ownerCache[curr.OwnerGUID];
@@ -263,23 +255,19 @@ namespace Less3.Api.S3
                 listBucketResult.Contents.Add(c);
             }
 
-            await ApiHelper.SendSerializedResponse<ListBucketResult>(ctx, listBucketResult);
-            return;
+            return listBucketResult;
         }
 
-        internal async Task ReadLocation(S3Context ctx)
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        internal async Task<LocationConstraint> ReadLocation(S3Context ctx)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
-            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + "] ";
-            ctx.Response.Chunked = false;
-
-            LocationConstraint loc = new LocationConstraint();
-            loc.Text = _Settings.Server.RegionString;
-
-            await ApiHelper.SendSerializedResponse<LocationConstraint>(ctx, loc);
-            return;
+            return new LocationConstraint(_Settings.Server.RegionString);
         }
 
-        internal async Task ReadAcl(S3Context ctx)
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        internal async Task<AccessControlPolicy> ReadAcl(S3Context ctx)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
@@ -287,39 +275,35 @@ namespace Less3.Api.S3
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await ctx.Response.Send(ErrorCode.InternalError);
-                return;
+                throw new S3Exception(new Error(ErrorCode.InternalError));
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await ctx.Response.Send(ErrorCode.AccessDenied);
-                return;
+                throw new S3Exception(new Error(ErrorCode.AccessDenied));
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await ctx.Response.Send(ErrorCode.NoSuchBucket);
-                return;
+                throw new S3Exception(new Error(ErrorCode.NoSuchBucket));
             }
 
             User owner = _Config.GetUserByGuid(md.Bucket.OwnerGUID);
             if (owner == null)
             {
                 _Logging.Warn(header + "unable to find owner GUID " + md.Bucket.OwnerGUID + " for bucket GUID " + md.Bucket.GUID);
-                await ctx.Response.Send(ErrorCode.InternalError);
-                return;
+                throw new S3Exception(new Error(ErrorCode.InternalError));
             }
 
-            AccessControlPolicy ret = new AccessControlPolicy();
-            ret.Owner = new S3ServerInterface.S3Objects.Owner();
-            ret.Owner.DisplayName = owner.Name;
-            ret.Owner.ID = owner.GUID;
+            AccessControlPolicy acp = new AccessControlPolicy();
+            acp.Owner = new S3ServerLibrary.S3Objects.Owner();
+            acp.Owner.DisplayName = owner.Name;
+            acp.Owner.ID = owner.GUID;
 
-            ret.AccessControlList = new AccessControlList(); 
-            ret.AccessControlList.Grant = new List<Grant>();
+            acp.Acl = new AccessControlList(); 
+            acp.Acl.Grants = new List<Grant>();
 
             foreach (BucketAcl curr in md.BucketAcls)
             { 
@@ -341,7 +325,7 @@ namespace Less3.Api.S3
                         grant.Grantee.DisplayName = tempUser.Name;
                         grant.Grantee.ID = curr.UserGUID;
                         grant.Permission = "READ"; 
-                        ret.AccessControlList.Grant.Add(grant);
+                        acp.Acl.Grants.Add(grant);
                     }
 
                     if (curr.PermitReadAcp)
@@ -351,7 +335,7 @@ namespace Less3.Api.S3
                         grant.Grantee.DisplayName = tempUser.Name;
                         grant.Grantee.ID = curr.UserGUID;
                         grant.Permission = "READ_ACP";
-                        ret.AccessControlList.Grant.Add(grant);
+                        acp.Acl.Grants.Add(grant);
                     }
 
                     if (curr.PermitWrite)
@@ -361,7 +345,7 @@ namespace Less3.Api.S3
                         grant.Grantee.DisplayName = tempUser.Name;
                         grant.Grantee.ID = curr.UserGUID;
                         grant.Permission = "WRITE";
-                        ret.AccessControlList.Grant.Add(grant);
+                        acp.Acl.Grants.Add(grant);
                     }
 
                     if (curr.PermitWriteAcp)
@@ -371,7 +355,7 @@ namespace Less3.Api.S3
                         grant.Grantee.DisplayName = tempUser.Name;
                         grant.Grantee.ID = curr.UserGUID;
                         grant.Permission = "WRITE_ACP";
-                        ret.AccessControlList.Grant.Add(grant);
+                        acp.Acl.Grants.Add(grant);
                     }
 
                     if (curr.FullControl)
@@ -381,7 +365,7 @@ namespace Less3.Api.S3
                         grant.Grantee.DisplayName = tempUser.Name;
                         grant.Grantee.ID = curr.UserGUID;
                         grant.Permission = "FULL_CONTROL";
-                        ret.AccessControlList.Grant.Add(grant);
+                        acp.Acl.Grants.Add(grant);
                     }
 
                     #endregion
@@ -397,7 +381,7 @@ namespace Less3.Api.S3
                         grant.Grantee.DisplayName = curr.UserGroup;
                         grant.Grantee.URI = curr.UserGroup;
                         grant.Permission = "READ";
-                        ret.AccessControlList.Grant.Add(grant);
+                        acp.Acl.Grants.Add(grant);
                     }
 
                     if (curr.PermitReadAcp)
@@ -407,7 +391,7 @@ namespace Less3.Api.S3
                         grant.Grantee.DisplayName = curr.UserGroup;
                         grant.Grantee.URI = curr.UserGroup;
                         grant.Permission = "READ_ACP";
-                        ret.AccessControlList.Grant.Add(grant);
+                        acp.Acl.Grants.Add(grant);
                     }
 
                     if (curr.PermitWrite)
@@ -417,7 +401,7 @@ namespace Less3.Api.S3
                         grant.Grantee.DisplayName = curr.UserGroup;
                         grant.Grantee.URI = curr.UserGroup;
                         grant.Permission = "WRITE";
-                        ret.AccessControlList.Grant.Add(grant);
+                        acp.Acl.Grants.Add(grant);
                     }
 
                     if (curr.PermitWriteAcp)
@@ -427,7 +411,7 @@ namespace Less3.Api.S3
                         grant.Grantee.DisplayName = curr.UserGroup;
                         grant.Grantee.URI = curr.UserGroup;
                         grant.Permission = "WRITE_ACP";
-                        ret.AccessControlList.Grant.Add(grant);
+                        acp.Acl.Grants.Add(grant);
                     }
 
                     if (curr.FullControl)
@@ -437,7 +421,7 @@ namespace Less3.Api.S3
                         grant.Grantee.DisplayName = curr.UserGroup;
                         grant.Grantee.URI = curr.UserGroup;
                         grant.Permission = "FULL_CONTROL";
-                        ret.AccessControlList.Grant.Add(grant);
+                        acp.Acl.Grants.Add(grant);
                     }
 
                     #endregion
@@ -448,11 +432,12 @@ namespace Less3.Api.S3
                 }
             }
 
-            await ApiHelper.SendSerializedResponse<AccessControlPolicy>(ctx, ret);
-            return; 
+            return acp;
         }
 
-        internal async Task ReadTags(S3Context ctx)
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        internal async Task<Tagging> ReadTags(S3Context ctx)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
@@ -460,26 +445,24 @@ namespace Less3.Api.S3
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await ctx.Response.Send(ErrorCode.InternalError);
-                return;
+                throw new S3Exception(new Error(ErrorCode.InternalError));
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await ctx.Response.Send(ErrorCode.AccessDenied);
-                return;
+                throw new S3Exception(new Error(ErrorCode.AccessDenied));
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await ctx.Response.Send(ErrorCode.NoSuchBucket);
-                return;
+                throw new S3Exception(new Error(ErrorCode.NoSuchBucket));
             }
              
             Tagging tags = new Tagging();
-            tags.TagSet = new List<Tag>();
+            tags.Tags = new TagSet();
+            tags.Tags.Tags = new List<Tag>();
 
             if (md.BucketTags != null && md.BucketTags.Count > 0)
             {
@@ -488,15 +471,16 @@ namespace Less3.Api.S3
                     Tag currTag = new Tag();
                     currTag.Key = curr.Key;
                     currTag.Value = curr.Value;
-                    tags.TagSet.Add(currTag);
+                    tags.Tags.Tags.Add(currTag);
                 }
             }
 
-            await ApiHelper.SendSerializedResponse<Tagging>(ctx, tags);
-            return; 
+            return tags;
         }
 
-        internal async Task ReadVersions(S3Context ctx)
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        internal async Task<ListVersionsResult> ReadVersions(S3Context ctx)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
@@ -504,22 +488,19 @@ namespace Less3.Api.S3
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await ctx.Response.Send(ErrorCode.InternalError);
-                return;
+                throw new S3Exception(new Error(ErrorCode.InternalError));
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await ctx.Response.Send(ErrorCode.AccessDenied);
-                return;
+                throw new S3Exception(new Error(ErrorCode.AccessDenied));
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await ctx.Response.Send(ErrorCode.NoSuchBucket);
-                return;
+                throw new S3Exception(new Error(ErrorCode.NoSuchBucket));
             }
              
             int startIndex = 0;
@@ -530,7 +511,7 @@ namespace Less3.Api.S3
 
             if (!String.IsNullOrEmpty(ctx.Request.Marker))
             {
-                Obj marker = md.BucketClient.GetObjectMetadata(ctx.Request.Marker);
+                Obj marker = md.BucketClient.GetObjectLatestMetadata(ctx.Request.Marker);
                 if (marker != null) startIndex = (marker.Id + 1);
             }
               
@@ -547,14 +528,14 @@ namespace Less3.Api.S3
                 lastKey = objects[objects.Count - 1].Key; 
             }
              
-            ListVersionsResult listVersionsResult = new ListVersionsResult();
-            listVersionsResult.IsTruncated = isTruncated;
-            listVersionsResult.KeyMarker = lastKey;
-            listVersionsResult.MaxKeys = ctx.Request.MaxKeys;
-            listVersionsResult.Name = ctx.Request.Bucket;
-            listVersionsResult.Prefix = ctx.Request.Prefix;
+            ListVersionsResult lvr = new ListVersionsResult();
+            lvr.IsTruncated = isTruncated;
+            lvr.KeyMarker = lastKey;
+            lvr.MaxKeys = ctx.Request.MaxKeys;
+            lvr.Name = ctx.Request.Bucket;
+            lvr.Prefix = ctx.Request.Prefix;
 
-            Dictionary<string, S3ServerInterface.S3Objects.Owner> ownerCache = new Dictionary<string, S3ServerInterface.S3Objects.Owner>();
+            Dictionary<string, S3ServerLibrary.S3Objects.Owner> ownerCache = new Dictionary<string, S3ServerLibrary.S3Objects.Owner>();
 
             foreach (Obj curr in objects)
             {
@@ -566,7 +547,7 @@ namespace Less3.Api.S3
                     d.LastModified = curr.LastUpdateUtc;
                     d.VersionId = curr.Version.ToString();
 
-                    d.Owner = new S3ServerInterface.S3Objects.Owner();
+                    d.Owner = new S3ServerLibrary.S3Objects.Owner();
                     if (ownerCache.ContainsKey(curr.OwnerGUID))
                     {
                         d.Owner = ownerCache[curr.OwnerGUID];
@@ -579,11 +560,11 @@ namespace Less3.Api.S3
                         ownerCache.Add(u.GUID, d.Owner);
                     }
 
-                    listVersionsResult.DeleteMarker.Add(d);
+                    lvr.DeleteMarkers.Add(d);
                 }
                 else
                 {
-                    S3ServerInterface.S3Objects.Version v = new S3ServerInterface.S3Objects.Version();
+                    S3ServerLibrary.S3Objects.ObjectVersion v = new S3ServerLibrary.S3Objects.ObjectVersion();
                     v.ETag = null;
                     v.IsLatest = IsLatest(objects, curr.Key, curr.LastAccessUtc);
                     v.Key = curr.Key;
@@ -592,7 +573,7 @@ namespace Less3.Api.S3
                     v.Size = curr.ContentLength;
                     v.StorageClass = "STANDARD";
 
-                    v.Owner = new S3ServerInterface.S3Objects.Owner();
+                    v.Owner = new S3ServerLibrary.S3Objects.Owner();
                     if (ownerCache.ContainsKey(curr.OwnerGUID))
                     {
                         v.Owner = ownerCache[curr.OwnerGUID];
@@ -605,15 +586,16 @@ namespace Less3.Api.S3
                         ownerCache.Add(u.GUID, v.Owner);
                     }
 
-                    listVersionsResult.Version.Add(v);
+                    lvr.Versions.Add(v);
                 }
             }
 
-            await ApiHelper.SendSerializedResponse<ListVersionsResult>(ctx, listVersionsResult);
-            return; 
+            return lvr;
         }
 
-        internal async Task ReadVersioning(S3Context ctx)
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        internal async Task<VersioningConfiguration> ReadVersioning(S3Context ctx)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
@@ -621,39 +603,33 @@ namespace Less3.Api.S3
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await ctx.Response.Send(ErrorCode.InternalError);
-                return;
+                throw new S3Exception(new Error(ErrorCode.InternalError));
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await ctx.Response.Send(ErrorCode.AccessDenied);
-                return;
+                throw new S3Exception(new Error(ErrorCode.AccessDenied));
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await ctx.Response.Send(ErrorCode.NoSuchBucket);
-                return;
+                throw new S3Exception(new Error(ErrorCode.NoSuchBucket));
             }
 
-            VersioningConfiguration ret = new VersioningConfiguration();
-            ret.Status = "Off";
-            ret.MfaDelete = "Disabled";
+            VersioningConfiguration vc = new VersioningConfiguration();
+            vc.Status = null;
+            vc.MfaDelete = null;
                  
-            if (md.Bucket.EnableVersioning)
-            {
-                ret.Status = "Enabled";
-                ret.MfaDelete = "Disabled";
-            }
+            if (md.Bucket.EnableVersioning) vc.Status = "Enabled";
 
-            await ApiHelper.SendSerializedResponse<VersioningConfiguration>(ctx, ret);
-            return; 
+            return vc;
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         internal async Task Write(S3Context ctx)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
@@ -661,33 +637,28 @@ namespace Less3.Api.S3
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await ctx.Response.Send(ErrorCode.InternalError);
-                return;
+                throw new S3Exception(new Error(ErrorCode.InternalError));
             }
 
             if (md.User == null || md.Credential == null)
             {
                 _Logging.Warn(header + "not authorized");
-                await ctx.Response.Send(ErrorCode.AccessDenied);
-                return;
+                throw new S3Exception(new Error(ErrorCode.AccessDenied));
             }
 
             if (md.Bucket != null || md.BucketClient != null)
             {
                 _Logging.Warn(header + "bucket already exists");
-                await ctx.Response.Send(ErrorCode.BucketAlreadyExists);
-                return;
+                throw new S3Exception(new Error(ErrorCode.BucketAlreadyExists));
             }
                
             if (IsInvalidBucketName(ctx.Request.Bucket))
             {
                 _Logging.Warn(header + "invalid bucket name: " + ctx.Request.Bucket);
-                await ctx.Response.Send(ErrorCode.InvalidRequest);
-                return;
+                throw new S3Exception(new Error(ErrorCode.InvalidRequest));
             }
              
             Classes.Bucket bucket = new Classes.Bucket(
-                Guid.NewGuid().ToString(),
                 ctx.Request.Bucket,
                 md.User.GUID, 
                 _Settings.Storage.StorageType, 
@@ -696,16 +667,14 @@ namespace Less3.Api.S3
             if (!_Buckets.Add(bucket))
             {
                 _Logging.Warn(header + "unable to write bucket " + ctx.Request.Bucket);
-                await ctx.Response.Send(ErrorCode.InternalError);
-                return;
+                throw new S3Exception(new Error(ErrorCode.InternalError));
             }
 
             BucketClient client = _Buckets.GetClient(ctx.Request.Bucket);
             if (client == null)
             {
                 _Logging.Warn(header + "unable to retrieve bucket client for bucket " + ctx.Request.Bucket);
-                await ctx.Response.Send(ErrorCode.InternalError);
-                return;
+                throw new S3Exception(new Error(ErrorCode.InternalError));
             }
 
             #region Permissions-in-Headers
@@ -746,9 +715,10 @@ namespace Less3.Api.S3
                             else if (curr.Permission.Equals("WRITE_ACP")) permitWriteAcp = true;
                             else if (curr.Permission.Equals("FULL_CONTROL")) fullControl = true;
 
-                            bucketAcl = BucketAcl.BucketUserAcl(
+                            bucketAcl = BucketAcl.UserAcl(
                                 curr.Grantee.ID, 
                                 md.User.GUID, 
+                                bucket.GUID,
                                 permitRead, 
                                 permitWrite, 
                                 permitReadAcp, 
@@ -771,9 +741,10 @@ namespace Less3.Api.S3
                             else if (curr.Permission.Equals("WRITE_ACP")) permitWriteAcp = true;
                             else if (curr.Permission.Equals("FULL_CONTROL")) fullControl = true;
 
-                            bucketAcl = BucketAcl.BucketGroupAcl(
+                            bucketAcl = BucketAcl.GroupAcl(
                                 curr.Grantee.URI, 
                                 md.User.GUID, 
+                                bucket.GUID,
                                 permitRead, 
                                 permitWrite, 
                                 permitReadAcp, 
@@ -787,14 +758,11 @@ namespace Less3.Api.S3
             }
 
             #endregion
-
-            ctx.Response.StatusCode = 200;
-            ctx.Response.ContentType = "text/plain";
-            await ctx.Response.Send();
-            return;
         }
 
-        internal async Task WriteAcl(S3Context ctx)
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        internal async Task WriteAcl(S3Context ctx, AccessControlPolicy acp)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
@@ -802,69 +770,45 @@ namespace Less3.Api.S3
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await ctx.Response.Send(ErrorCode.InternalError);
-                return;
+                throw new S3Exception(new Error(ErrorCode.InternalError));
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await ctx.Response.Send(ErrorCode.AccessDenied);
-                return;
+                throw new S3Exception(new Error(ErrorCode.AccessDenied));
             }
              
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await ctx.Response.Send(ErrorCode.NoSuchBucket);
-                return;
+                throw new S3Exception(new Error(ErrorCode.NoSuchBucket));
             }
 
-            ctx.Response.Chunked = false;
-
-            byte[] data = null;
-            AccessControlPolicy reqBody = null;
-
-            if (ctx.Request.Data != null)
-            {
-                try
-                {
-                    data = Common.StreamToBytes(ctx.Request.Data); 
-                    string xmlString = Encoding.UTF8.GetString(data); 
-                    reqBody = Common.DeserializeXml<AccessControlPolicy>(xmlString); 
-                }
-                catch (Exception e)
-                {
-                    _Logging.Exception(e, header + "BucketHandler", "WriteAcl");
-                    await ctx.Response.Send(ErrorCode.InvalidRequest);
-                    return;
-                }
-            }
-             
             md.BucketClient.DeleteBucketAcl();
 
             List<Grant> headerGrants = GrantsFromHeaders(md.User, ctx.Http.Request.Headers);
             if (headerGrants != null && headerGrants.Count > 0)
             {
-                if (reqBody.AccessControlList.Grant != null)
+                if (acp.Acl.Grants != null)
                 {
                     foreach (Grant curr in headerGrants)
                     {
-                        reqBody.AccessControlList.Grant.Add(curr);
+                        acp.Acl.Grants.Add(curr);
                     }
                 }
                 else
                 {
-                    reqBody.AccessControlList.Grant = new List<Grant>(headerGrants);
+                    acp.Acl.Grants = new List<Grant>(headerGrants);
                 }
             }
 
-            foreach (Grant curr in reqBody.AccessControlList.Grant)
+            foreach (Grant curr in acp.Acl.Grants)
             {
                 BucketAcl acl = null;
                 User tempUser = null;
                  
-                if (curr.Grantee is CanonicalUser)
+                if (!String.IsNullOrEmpty(curr.Grantee.ID))
                 {
                     #region User-ACL
 
@@ -876,32 +820,32 @@ namespace Less3.Api.S3
                     }
 
                     if (curr.Permission.Equals("READ"))
-                        acl = BucketAcl.BucketUserAcl(curr.Grantee.ID, md.Bucket.OwnerGUID, true, false, false, false, false);
+                        acl = BucketAcl.UserAcl(curr.Grantee.ID, md.Bucket.OwnerGUID, md.Bucket.GUID, true, false, false, false, false);
                     else if (curr.Permission.Equals("WRITE"))
-                        acl = BucketAcl.BucketUserAcl(curr.Grantee.ID, md.Bucket.OwnerGUID, false, true, false, false, false);
+                        acl = BucketAcl.UserAcl(curr.Grantee.ID, md.Bucket.OwnerGUID, md.Bucket.GUID, false, true, false, false, false);
                     else if (curr.Permission.Equals("READ_ACP"))
-                        acl = BucketAcl.BucketUserAcl(curr.Grantee.ID, md.Bucket.OwnerGUID, false, false, true, false, false);
+                        acl = BucketAcl.UserAcl(curr.Grantee.ID, md.Bucket.OwnerGUID, md.Bucket.GUID, false, false, true, false, false);
                     else if (curr.Permission.Equals("WRITE_ACP"))
-                        acl = BucketAcl.BucketUserAcl(curr.Grantee.ID, md.Bucket.OwnerGUID, false, false, false, true, false);
+                        acl = BucketAcl.UserAcl(curr.Grantee.ID, md.Bucket.OwnerGUID, md.Bucket.GUID, false, false, false, true, false);
                     else if (curr.Permission.Equals("FULL_CONTROL"))
-                        acl = BucketAcl.BucketUserAcl(curr.Grantee.ID, md.Bucket.OwnerGUID, false, false, false, false, true);
+                        acl = BucketAcl.UserAcl(curr.Grantee.ID, md.Bucket.OwnerGUID, md.Bucket.GUID, false, false, false, false, true);
 
                     #endregion
                 }
-                else if (curr.Grantee is Group)
+                else if (!String.IsNullOrEmpty(curr.Grantee.URI))
                 {
                     #region Group-ACL
                      
                     if (curr.Permission.Equals("READ"))
-                        acl = BucketAcl.BucketGroupAcl(curr.Grantee.URI, md.Bucket.OwnerGUID, true, false, false, false, false);
+                        acl = BucketAcl.GroupAcl(curr.Grantee.URI, md.Bucket.OwnerGUID, md.Bucket.GUID, true, false, false, false, false);
                     else if (curr.Permission.Equals("WRITE"))
-                        acl = BucketAcl.BucketGroupAcl(curr.Grantee.URI, md.Bucket.OwnerGUID, false, true, false, false, false);
+                        acl = BucketAcl.GroupAcl(curr.Grantee.URI, md.Bucket.OwnerGUID, md.Bucket.GUID, false, true, false, false, false);
                     else if (curr.Permission.Equals("READ_ACP"))
-                        acl = BucketAcl.BucketGroupAcl(curr.Grantee.URI, md.Bucket.OwnerGUID, false, false, true, false, false);
+                        acl = BucketAcl.GroupAcl(curr.Grantee.URI, md.Bucket.OwnerGUID, md.Bucket.GUID, false, false, true, false, false);
                     else if (curr.Permission.Equals("WRITE_ACP"))
-                        acl = BucketAcl.BucketGroupAcl(curr.Grantee.URI, md.Bucket.OwnerGUID, false, false, false, true, false);
+                        acl = BucketAcl.GroupAcl(curr.Grantee.URI, md.Bucket.OwnerGUID, md.Bucket.GUID, false, false, false, true, false);
                     else if (curr.Permission.Equals("FULL_CONTROL"))
-                        acl = BucketAcl.BucketGroupAcl(curr.Grantee.URI, md.Bucket.OwnerGUID, false, false, false, false, true);
+                        acl = BucketAcl.GroupAcl(curr.Grantee.URI, md.Bucket.OwnerGUID, md.Bucket.GUID, false, false, false, false, true);
 
                     #endregion
                 }
@@ -911,14 +855,11 @@ namespace Less3.Api.S3
                     md.BucketClient.AddBucketAcl(acl);
                 }
             }
-
-            ctx.Response.StatusCode = 200;
-            ctx.Response.ContentType = "text/plain";
-            await ctx.Response.Send();
-            return;
         }
 
-        internal async Task WriteTags(S3Context ctx)
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        internal async Task WriteTagging(S3Context ctx, Tagging tagging)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
@@ -926,50 +867,27 @@ namespace Less3.Api.S3
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await ctx.Response.Send(ErrorCode.InternalError);
-                return;
+                throw new S3Exception(new Error(ErrorCode.InternalError));
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await ctx.Response.Send(ErrorCode.AccessDenied);
-                return;
+                throw new S3Exception(new Error(ErrorCode.AccessDenied));
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await ctx.Response.Send(ErrorCode.NoSuchBucket);
-                return;
+                throw new S3Exception(new Error(ErrorCode.InternalError));
             }
 
-            ctx.Response.Chunked = false;
-
-            byte[] data = null;
-            Tagging reqBody = null;
-
-            if (ctx.Request.Data!= null)
-            {
-                try
-                {
-                    data = Common.StreamToBytes(ctx.Request.Data);
-                    reqBody = Common.DeserializeXml<Tagging>(Encoding.UTF8.GetString(data));
-                }
-                catch (Exception e)
-                {
-                    _Logging.Exception(e, header + "BucketHandler", "WriteTags");
-                    await ctx.Response.Send(ErrorCode.InvalidRequest);
-                    return;
-                }
-            }
-             
             md.BucketClient.DeleteBucketTags();
 
             List<BucketTag> tags = new List<BucketTag>(); 
-            if (reqBody.TagSet != null && reqBody.TagSet.Count > 0)
+            if (tagging.Tags != null && tagging.Tags.Tags != null && tagging.Tags.Tags.Count > 0)
             {
-                foreach (Tag curr in reqBody.TagSet)
+                foreach (Tag curr in tagging.Tags.Tags)
                 {
                     BucketTag tag = new BucketTag();
                     tag.BucketGUID = md.Bucket.GUID;
@@ -980,14 +898,11 @@ namespace Less3.Api.S3
             }
 
             md.BucketClient.AddBucketTags(tags);
-
-            ctx.Response.StatusCode = 204;
-            ctx.Response.ContentType = "text/plain";
-            await ctx.Response.Send();
-            return;
         }
 
-        internal async Task WriteVersioning(S3Context ctx)
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        internal async Task WriteVersioning(S3Context ctx, VersioningConfiguration vc)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
@@ -995,61 +910,33 @@ namespace Less3.Api.S3
             if (md == null)
             {
                 _Logging.Warn(header + "unable to retrieve metadata");
-                await ctx.Response.Send(ErrorCode.InternalError);
-                return;
+                throw new S3Exception(new Error(ErrorCode.InternalError));
             }
 
             if (md.Authorization == AuthorizationResult.NotAuthorized)
             {
                 _Logging.Warn(header + "not authorized");
-                await ctx.Response.Send(ErrorCode.AccessDenied);
-                return;
+                throw new S3Exception(new Error(ErrorCode.AccessDenied));
             }
 
             if (md.Bucket == null || md.BucketClient == null)
             {
                 _Logging.Warn(header + "no such bucket");
-                await ctx.Response.Send(ErrorCode.NoSuchBucket);
-                return;
+                throw new S3Exception(new Error(ErrorCode.NoSuchBucket));
             }
 
-            ctx.Response.Chunked = false;
-
-            byte[] data = null;
-            VersioningConfiguration reqBody = null;
-
-            if (ctx.Request.Data != null)
-            {
-                try
-                {
-                    data = Common.StreamToBytes(ctx.Request.Data); 
-                    reqBody = Common.DeserializeXml<VersioningConfiguration>(Encoding.UTF8.GetString(data));
-                }
-                catch (Exception e)
-                {
-                    _Logging.Exception(e, header + "BucketHandler", "WriteVersioning");
-                    await ctx.Response.Send(ErrorCode.InvalidRequest);
-                    return;
-                }
-            }
-             
-            if (reqBody.Status.Equals("Enabled") && !md.Bucket.EnableVersioning)
+            if (!String.IsNullOrEmpty(vc.Status) && vc.Status.Equals("Enabled") && !md.Bucket.EnableVersioning)
             {
                 md.Bucket.EnableVersioning = true;
                 _Buckets.Remove(md.Bucket, false);
                 _Buckets.Add(md.Bucket);
             }
-            else if (!reqBody.Status.Equals("Enabled") && md.Bucket.EnableVersioning)
+            else if (!String.IsNullOrEmpty(vc.Status) && !vc.Status.Equals("Enabled") && md.Bucket.EnableVersioning)
             {
                 md.Bucket.EnableVersioning = false;
                 _Buckets.Remove(md.Bucket, false);
                 _Buckets.Add(md.Bucket);
             }
-
-            ctx.Response.StatusCode = 200;
-            ctx.Response.ContentType = "text/plain";
-            await ctx.Response.Send();
-            return;
         }
 
         #endregion

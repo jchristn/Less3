@@ -12,7 +12,7 @@ namespace Less3.Classes
     /// <summary>
     /// Configuration manager.
     /// </summary>
-    internal class ConfigManager : IDisposable
+    internal class ConfigManager
     {
         #region Public-Members
 
@@ -38,18 +38,6 @@ namespace Less3.Classes
         #endregion
 
         #region Public-Methods
-
-        /// <summary>
-        /// Tear down the client and dispose of background workers.
-        /// </summary>
-        public void Dispose()
-        {
-            if (_ORM != null)
-            {
-                _ORM.Dispose();
-                _ORM = null;
-            }
-        }
 
         #endregion
 
@@ -306,6 +294,7 @@ namespace Less3.Classes
                 _ORM.GetColumnName<Bucket>(nameof(Bucket.Id)),
                 DbOperators.GreaterThan,
                 0);
+
             return _ORM.SelectMany<Bucket>(e); 
         }
 

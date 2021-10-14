@@ -4,11 +4,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Amazon;
-using Amazon.S3;
-using Amazon.S3.Model;
-
-using S3ServerInterface;
+using S3ServerLibrary;
+using S3ServerLibrary.S3Objects;
 
 using SyslogLogging;
 
@@ -71,9 +68,9 @@ namespace Less3.Api.S3
 
         #region Service-Callbacks
 
-        internal async Task ServiceListBuckets(S3Context ctx)
+        internal async Task<ListAllMyBucketsResult> ServiceListBuckets(S3Context ctx)
         {
-            await _ServiceHandler.ListBuckets(ctx);
+            return await _ServiceHandler.ListBuckets(ctx);
         }
 
         #endregion
@@ -85,44 +82,44 @@ namespace Less3.Api.S3
             await _BucketHandler.Delete(ctx); 
         }
 
-        internal async Task BucketDeleteTags(S3Context ctx)
+        internal async Task BucketDeleteTagging(S3Context ctx)
         {
             await _BucketHandler.DeleteTags(ctx);
         }
 
-        internal async Task BucketExists(S3Context ctx)
+        internal async Task<bool> BucketExists(S3Context ctx)
         {
-            await _BucketHandler.Exists(ctx);
+            return await _BucketHandler.Exists(ctx);
         }
 
-        internal async Task BucketReadLocation(S3Context ctx)
+        internal async Task<LocationConstraint> BucketReadLocation(S3Context ctx)
         {
-            await _BucketHandler.ReadLocation(ctx);
+            return await _BucketHandler.ReadLocation(ctx);
         }
 
-        internal async Task BucketRead(S3Context ctx)
+        internal async Task<ListBucketResult> BucketRead(S3Context ctx)
         {
-            await _BucketHandler.Read(ctx);
+            return await _BucketHandler.Read(ctx);
         }
 
-        internal async Task BucketReadAcl(S3Context ctx)
+        internal async Task<AccessControlPolicy> BucketReadAcl(S3Context ctx)
         {
-            await _BucketHandler.ReadAcl(ctx);
+            return await _BucketHandler.ReadAcl(ctx);
         }
 
-        internal async Task BucketReadTags(S3Context ctx)
+        internal async Task<Tagging> BucketReadTagging(S3Context ctx)
         {
-            await _BucketHandler.ReadTags(ctx);
+            return await _BucketHandler.ReadTags(ctx);
         }
 
-        internal async Task BucketReadVersions(S3Context ctx)
+        internal async Task<ListVersionsResult> BucketReadVersions(S3Context ctx)
         {
-            await _BucketHandler.ReadVersions(ctx);
+            return await _BucketHandler.ReadVersions(ctx);
         }
 
-        internal async Task BucketReadVersioning(S3Context ctx)
+        internal async Task<VersioningConfiguration> BucketReadVersioning(S3Context ctx)
         {
-            await _BucketHandler.ReadVersioning(ctx);
+            return await _BucketHandler.ReadVersioning(ctx);
         }
 
         internal async Task BucketWrite(S3Context ctx)
@@ -130,19 +127,19 @@ namespace Less3.Api.S3
             await _BucketHandler.Write(ctx);
         }
 
-        internal async Task BucketWriteAcl(S3Context ctx)
+        internal async Task BucketWriteAcl(S3Context ctx, AccessControlPolicy acp)
         {
-            await _BucketHandler.WriteAcl(ctx);
+            await _BucketHandler.WriteAcl(ctx, acp);
         }
 
-        internal async Task BucketWriteTags(S3Context ctx)
+        internal async Task BucketWriteTagging(S3Context ctx, Tagging tagging)
         {
-            await _BucketHandler.WriteTags(ctx);
+            await _BucketHandler.WriteTagging(ctx, tagging);
         }
 
-        internal async Task BucketWriteVersioning(S3Context ctx)
+        internal async Task BucketWriteVersioning(S3Context ctx, VersioningConfiguration versioning)
         {  
-            await _BucketHandler.WriteVersioning(ctx);
+            await _BucketHandler.WriteVersioning(ctx, versioning);
         }
 
         #endregion
@@ -154,39 +151,39 @@ namespace Less3.Api.S3
             await _ObjectHandler.Delete(ctx);
         }
 
-        internal async Task ObjectDeleteMultiple(S3Context ctx)
+        internal async Task<DeleteResult> ObjectDeleteMultiple(S3Context ctx, DeleteMultiple dm)
         {
-            await _ObjectHandler.DeleteMultiple(ctx);
+            return await _ObjectHandler.DeleteMultiple(ctx, dm);
         }
 
-        internal async Task ObjectDeleteTags(S3Context ctx)
+        internal async Task ObjectDeleteTagging(S3Context ctx)
         {
             await _ObjectHandler.DeleteTags(ctx);
         }
 
-        internal async Task ObjectExists(S3Context ctx)
+        internal async Task<long> ObjectExists(S3Context ctx)
         {
-            await _ObjectHandler.Exists(ctx);
+            return await _ObjectHandler.Exists(ctx);
         }
 
-        internal async Task ObjectRead(S3Context ctx)
+        internal async Task<S3Object> ObjectRead(S3Context ctx)
         {
-            await _ObjectHandler.Read(ctx);
+            return await _ObjectHandler.Read(ctx);
         }
 
-        internal async Task ObjectReadAcl(S3Context ctx)
+        internal async Task<AccessControlPolicy> ObjectReadAcl(S3Context ctx)
         {
-            await _ObjectHandler.ReadAcl(ctx);
+            return await _ObjectHandler.ReadAcl(ctx);
         }
 
-        internal async Task ObjectReadRange(S3Context ctx)
+        internal async Task<S3Object> ObjectReadRange(S3Context ctx)
         {
-            await _ObjectHandler.ReadRange(ctx);
+            return await _ObjectHandler.ReadRange(ctx);
         }
 
-        internal async Task ObjectReadTags(S3Context ctx)
+        internal async Task<Tagging> ObjectReadTagging(S3Context ctx)
         {
-            await _ObjectHandler.ReadTags(ctx);
+            return await _ObjectHandler.ReadTags(ctx);
         }
 
         internal async Task ObjectWrite(S3Context ctx)
@@ -194,14 +191,14 @@ namespace Less3.Api.S3
             await _ObjectHandler.Write(ctx);
         }
 
-        internal async Task ObjectWriteAcl(S3Context ctx)
+        internal async Task ObjectWriteAcl(S3Context ctx, AccessControlPolicy acp)
         {
-            await _ObjectHandler.WriteAcl(ctx);
+            await _ObjectHandler.WriteAcl(ctx, acp);
         }
 
-        internal async Task ObjectWriteTags(S3Context ctx)
+        internal async Task ObjectWriteTagging(S3Context ctx, Tagging tagging)
         {
-            await _ObjectHandler.WriteTags(ctx);
+            await _ObjectHandler.WriteTagging(ctx, tagging);
         }
 
         #endregion

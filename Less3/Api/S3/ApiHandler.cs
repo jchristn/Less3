@@ -161,7 +161,7 @@ namespace Less3.Api.S3
             await _ObjectHandler.DeleteTags(ctx);
         }
 
-        internal async Task<long> ObjectExists(S3Context ctx)
+        internal async Task<ObjectMetadata> ObjectExists(S3Context ctx)
         {
             return await _ObjectHandler.Exists(ctx);
         }

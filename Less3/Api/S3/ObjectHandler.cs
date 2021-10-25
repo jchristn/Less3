@@ -261,7 +261,7 @@ namespace Less3.Api.S3
         }
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        internal async Task<long> Exists(S3Context ctx)
+        internal async Task<ObjectMetadata> Exists(S3Context ctx)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
@@ -305,7 +305,7 @@ namespace Less3.Api.S3
                 throw new S3Exception(new Error(ErrorCode.NoSuchKey));
             }
 
-            return md.Obj.ContentLength;
+            return new ObjectMetadata(md.Obj.Key, md.Obj.LastUpdateUtc, md.Obj.Md5, md.Obj.ContentLength, new Owner(md.Obj.OwnerGUID, null));
         }
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously

@@ -6,7 +6,7 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v3.1": {
-      "Less3/2.0.1.1": {
+      "Less3/2.0.1.2": {
         "dependencies": {
           "S3Server": "4.0.1.6",
           "SyslogLogging": "2.0.1.5",
@@ -693,7 +693,7 @@
     }
   },
   "libraries": {
-    "Less3/2.0.1.1": {
+    "Less3/2.0.1.2": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

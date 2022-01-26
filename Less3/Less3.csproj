@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Joel Christner</Authors>
     <Company>Joel Christner</Company>
@@ -17,7 +17,7 @@
     <PackageTags>S3 storage blob object storage rest restful</PackageTags>
     <PackageReleaseNotes>Updated dependencies, refer to README</PackageReleaseNotes>
     <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
-    <Version>2.0.1.1</Version>
+    <Version>2.0.1.2</Version>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <PackageIcon>favicon.png</PackageIcon>
   </PropertyGroup>

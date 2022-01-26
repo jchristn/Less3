@@ -426,3 +426,4 @@ C:\code\less3\Less3-2.0\Less3\obj\Debug\netcoreapp3.1\Less3.dll
 C:\code\less3\Less3-2.0\Less3\obj\Debug\netcoreapp3.1\Less3.pdb
 C:\code\less3\Less3-2.0\Less3\obj\Debug\netcoreapp3.1\Less3.genruntimeconfig.cache
 C:\code\less3\Less3-2.0\Less3\obj\Debug\netcoreapp3.1\Less3.csproj.AssemblyReference.cache
+C:\code\less3\Less3-2.0\Less3\obj\Debug\netcoreapp3.1\Less3.GeneratedMSBuildEditorConfig.editorconfig

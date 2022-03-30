@@ -117,6 +117,7 @@ Less3 is built using a series of open-source packages, including:
 - AWS SDK - https://github.com/aws/aws-sdk-net
 - S3 Server - https://github.com/jchristn/s3server
 - Watson Webserver - https://github.com/jchristn/WatsonWebserver
+- WatsonORM - https://github.com/jchristn/watsonorm
 
 ## Deployment in Docker
 

@@ -1019,16 +1019,6 @@
             Debug settings.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Settings.SettingsDebug.DatabaseQueries">
-            <summary>
-            Enable or disable debugging of database queries.
-            </summary>
-        </member>
-        <member name="P:Less3.Classes.Settings.SettingsDebug.DatabaseResults">
-            <summary>
-            Enable or disable debugging of database query results.
-            </summary>
-        </member>
         <member name="P:Less3.Classes.Settings.SettingsDebug.Authentication">
             <summary>
             Enable or disable debugging of authentication logic.

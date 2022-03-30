@@ -1,0 +1,34 @@
+{
+  "EnableConsole": true,
+  "Database": {
+    "Filename": "./less3.db",
+    "Type": 3,
+    "Port": 0
+  },
+  "Server": {
+    "DnsHostname": "localhost",
+    "ListenerPort": 8000,
+    "Ssl": false,
+    "HeaderApiKey": "x-api-key",
+    "AdminApiKey": "less3admin",
+    "RegionString": "us-west-1"
+  },
+  "Storage": {
+    "TempDirectory": "./temp/",
+    "StorageType": "Disk",
+    "DiskDirectory": "./disk/"
+  },
+  "Logging": {
+    "SyslogServerIp": "127.0.0.1",
+    "SyslogServerPort": 514,
+    "MinimumLevel": 1,
+    "LogHttpRequests": false,
+    "ConsoleLogging": true,
+    "DiskLogging": true,
+    "DiskDirectory": "./logs/"
+  },
+  "Debug": {
+    "Authentication": false,
+    "S3Requests": false
+  }
+}

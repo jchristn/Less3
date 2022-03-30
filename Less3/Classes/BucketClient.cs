@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
+using DatabaseWrapper.Core;
+using ExpressionTree;
 using Watson.ORM;
 using Watson.ORM.Core;
 using SyslogLogging;
@@ -226,10 +228,10 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            DbResultOrder[] ro = new DbResultOrder[1];
-            ro[0] = new DbResultOrder(_ORM.GetColumnName<Obj>(nameof(Obj.Version)), DbOrderDirection.Descending);
+            ResultOrder[] ro = new ResultOrder[1];
+            ro[0] = new ResultOrder(_ORM.GetColumnName<Obj>(nameof(Obj.Version)), OrderDirection.Descending);
 
-            DbExpression e = new DbExpression(_ORM.GetColumnName<Obj>(nameof(Obj.Key)), DbOperators.Equals, key);
+            Expr e = new Expr(_ORM.GetColumnName<Obj>(nameof(Obj.Key)), OperatorEnum.Equals, key);
             List<Obj> versions = _ORM.SelectMany<Obj>(null, null, e, ro);
 
             if (versions != null && versions.Count > 0) return versions[0].Version;
@@ -280,17 +282,17 @@ namespace Less3.Classes
         { 
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            DbResultOrder[] ro = new DbResultOrder[1];
-            ro[0] = new DbResultOrder(_ORM.GetColumnName<Obj>(nameof(Obj.Version)), DbOrderDirection.Descending);
+            ResultOrder[] ro = new ResultOrder[1];
+            ro[0] = new ResultOrder(_ORM.GetColumnName<Obj>(nameof(Obj.Version)), OrderDirection.Descending);
 
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<Obj>(nameof(Obj.Key)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 key);
 
             e.PrependAnd(
                 _ORM.GetColumnName<Obj>(nameof(Obj.BucketGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 _Bucket.GUID);
 
             return _ORM.SelectFirst<Obj>(e, ro);
@@ -300,19 +302,19 @@ namespace Less3.Classes
         { 
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<Obj>(nameof(Obj.Key)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 key);
 
             e.PrependAnd(
                 _ORM.GetColumnName<Obj>(nameof(Obj.Version)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 version);
 
             e.PrependAnd(
                 _ORM.GetColumnName<Obj>(nameof(Obj.BucketGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 _Bucket.GUID);
              
             return _ORM.SelectFirst<Obj>(e);
@@ -322,14 +324,14 @@ namespace Less3.Classes
         { 
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
 
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<Obj>(nameof(Obj.GUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 guid);
 
             e.PrependAnd(
                 _ORM.GetColumnName<Obj>(nameof(Obj.BucketGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 _Bucket.GUID);
 
             return _ORM.SelectFirst<Obj>(e);
@@ -450,21 +452,21 @@ namespace Less3.Classes
             {
                 #region Retrieve-Records
 
-                DbExpression e = new DbExpression(
+                Expr e = new Expr(
                     _ORM.GetColumnName<Obj>(nameof(Obj.BucketGUID)),
-                    DbOperators.Equals,
+                    OperatorEnum.Equals,
                     _Bucket.GUID);
 
                 e.PrependAnd(
                     _ORM.GetColumnName<Obj>(nameof(Obj.Id)),
-                    DbOperators.GreaterThanOrEqualTo,
+                    OperatorEnum.GreaterThanOrEqualTo,
                     nextStartIndex);
 
                 if (!String.IsNullOrEmpty(prefix))
                 {
                     e.PrependAnd(
                     _ORM.GetColumnName<Obj>(nameof(Obj.Key)),
-                    DbOperators.StartsWith,
+                    OperatorEnum.StartsWith,
                     prefix);
                 }
 
@@ -555,9 +557,9 @@ namespace Less3.Classes
 
         internal List<BucketTag> GetBucketTags()
         {
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<Obj>(nameof(Obj.BucketGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 _Bucket.GUID);
 
             return _ORM.SelectMany<BucketTag>(e); 
@@ -575,19 +577,19 @@ namespace Less3.Classes
                 return null;
             }
 
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<Obj>(nameof(Obj.Key)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 key);
 
             e.PrependAnd(
                 _ORM.GetColumnName<Obj>(nameof(Obj.Version)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 version);
 
             e.PrependAnd(
                 _ORM.GetColumnName<Obj>(nameof(Obj.BucketGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 _Bucket.GUID);
 
             return _ORM.SelectMany<ObjectTag>(e);
@@ -597,14 +599,14 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid)); 
              
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<ObjectTag>(nameof(ObjectTag.ObjectGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 guid);
 
             e.PrependAnd(
                 _ORM.GetColumnName<Obj>(nameof(ObjectTag.BucketGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 _Bucket.GUID);
             
             return _ORM.SelectMany<ObjectTag>(e);
@@ -612,9 +614,9 @@ namespace Less3.Classes
 
         internal void DeleteBucketTags()
         {
-            DbExpression eBucket = new DbExpression(
+            Expr eBucket = new Expr(
                 _ORM.GetColumnName<BucketTag>(nameof(BucketTag.BucketGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 _Bucket.GUID);
 
             _ORM.DeleteMany<BucketTag>(eBucket);
@@ -631,14 +633,14 @@ namespace Less3.Classes
                 return;
             }
 
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<ObjectTag>(nameof(ObjectTag.BucketGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 _Bucket.GUID);
 
             e.PrependAnd(
                 _ORM.GetColumnName<ObjectTag>(nameof(ObjectTag.ObjectGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 obj.GUID);
              
             _ORM.DeleteMany<ObjectTag>(e);
@@ -656,19 +658,19 @@ namespace Less3.Classes
                 return false;
             }
 
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 _Bucket.GUID);
 
             e.PrependAnd(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.UserGroup)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 groupName);
 
             e.PrependAnd(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.ObjectGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 obj.GUID);
 
             return _ORM.Exists<ObjectAcl>(e);
@@ -686,19 +688,19 @@ namespace Less3.Classes
                 return false;
             }
 
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 _Bucket.GUID);
 
             e.PrependAnd(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.UserGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 userGuid);
 
             e.PrependAnd(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.ObjectGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 obj.GUID);
 
             return _ORM.Exists<ObjectAcl>(e);
@@ -708,14 +710,14 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(groupName)) throw new ArgumentNullException(nameof(groupName)); 
              
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 _Bucket.GUID);
 
             e.PrependAnd(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.UserGroup)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 groupName);
 
             return _ORM.Exists<BucketAcl>(e);
@@ -725,14 +727,14 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
 
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 _Bucket.GUID);
 
             e.PrependAnd(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.UserGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 userGuid);
 
             return _ORM.Exists<BucketAcl>(e);
@@ -740,9 +742,9 @@ namespace Less3.Classes
 
         internal List<BucketAcl> GetBucketAcl()
         {
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 _Bucket.GUID);
 
             return _ORM.SelectMany<BucketAcl>(e); 
@@ -759,14 +761,14 @@ namespace Less3.Classes
                 return null;
             }
 
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 _Bucket.GUID);
 
             e.PrependAnd(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.ObjectGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 obj.GUID);
 
             return _ORM.SelectMany<ObjectAcl>(e);
@@ -776,14 +778,14 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
               
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 _Bucket.GUID);
 
             e.PrependAnd(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.ObjectGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 guid);
 
             return _ORM.SelectMany<ObjectAcl>(e);
@@ -855,9 +857,9 @@ namespace Less3.Classes
 
         internal void DeleteBucketAcl()
         {
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<BucketAcl>(nameof(BucketAcl.BucketGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 _Bucket.GUID);
 
             _ORM.DeleteMany<BucketAcl>(e);
@@ -874,14 +876,14 @@ namespace Less3.Classes
                 return;
             }
 
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 _Bucket.GUID);
 
             e.PrependAnd(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.ObjectGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 obj.GUID);
 
             _ORM.DeleteMany<ObjectAcl>(e);
@@ -898,14 +900,14 @@ namespace Less3.Classes
                 return;
             }
 
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 _Bucket.GUID);
 
             e.PrependAnd(
                 _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.ObjectGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 obj.GUID);
 
             _ORM.DeleteMany<ObjectAcl>(e);

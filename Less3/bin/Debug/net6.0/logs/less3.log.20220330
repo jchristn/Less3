@@ -1,0 +1,7 @@
+2022-03-30 15:32:31 ALIENWAREM15 10 Debug ::1:57986 GET / 200
+2022-03-30 15:32:31 ALIENWAREM15 10 Debug ::1:57986 GET /default/?delimiter=%2F&max-keys=1000&prefix= 200
+2022-03-30 15:32:59 ALIENWAREM15 3 Debug ::1:57986 HEAD /default/hello.txt 200
+2022-03-30 15:32:59 ALIENWAREM15 3 Debug ::1:57986 GET /default/hello.txt 200
+2022-03-30 15:33:12 ALIENWAREM15 3 Debug ::1:57986 GET /default/?object-lock= 200
+2022-03-30 15:33:12 ALIENWAREM15 3 Debug ::1:57986 PUT /default/hello2.txt 200
+2022-03-30 15:33:12 ALIENWAREM15 3 Debug ::1:57986 GET /default/?delimiter=%2F&max-keys=1000&prefix= 200

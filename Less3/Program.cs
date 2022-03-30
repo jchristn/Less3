@@ -224,10 +224,6 @@ namespace Less3
             _ORM.InitializeTable(typeof(ObjectTag));
             _ORM.InitializeTable(typeof(User));
 
-            if (_Settings.Debug.DatabaseQueries) _ORM.Debug.DatabaseQueries = true;
-            if (_Settings.Debug.DatabaseResults) _ORM.Debug.DatabaseResults = true;
-            if (_Settings.Debug.DatabaseQueries || _Settings.Debug.DatabaseResults) _ORM.Logger = Logger;
-
             //             0        1         2         3         4         5
             //             123456789012345678901234567890123456789012345678901234567890
             Console.WriteLine("| Initializing configuration manager");

@@ -25,17 +25,12 @@ C:\code\less3\Less3-2.0\Less3\bin\Debug\net6.0\Microsoft.Extensions.Primitives.d
 C:\code\less3\Less3-2.0\Less3\bin\Debug\net6.0\Microsoft.Win32.SystemEvents.dll
 C:\code\less3\Less3-2.0\Less3\bin\Debug\net6.0\MySql.Data.dll
 C:\code\less3\Less3-2.0\Less3\bin\Debug\net6.0\Ubiety.Dns.Core.dll
-C:\code\less3\Less3-2.0\Less3\bin\Debug\net6.0\Zstandard.Net.dll
 C:\code\less3\Less3-2.0\Less3\bin\Debug\net6.0\Newtonsoft.Json.dll
 C:\code\less3\Less3-2.0\Less3\bin\Debug\net6.0\Npgsql.dll
 C:\code\less3\Less3-2.0\Less3\bin\Debug\net6.0\RegexMatcher.dll
 C:\code\less3\Less3-2.0\Less3\bin\Debug\net6.0\S3Server.dll
 C:\code\less3\Less3-2.0\Less3\bin\Debug\net6.0\SQLitePCLRaw.batteries_v2.dll
-C:\code\less3\Less3-2.0\Less3\bin\Debug\net6.0\SQLitePCLRaw.nativelibrary.dll
 C:\code\less3\Less3-2.0\Less3\bin\Debug\net6.0\SQLitePCLRaw.core.dll
-C:\code\less3\Less3-2.0\Less3\bin\Debug\net6.0\SQLitePCLRaw.provider.dynamic_cdecl.dll
-C:\code\less3\Less3-2.0\Less3\bin\Debug\net6.0\Renci.SshNet.dll
-C:\code\less3\Less3-2.0\Less3\bin\Debug\net6.0\SshNet.Security.Cryptography.dll
 C:\code\less3\Less3-2.0\Less3\bin\Debug\net6.0\LoggingModule.dll
 C:\code\less3\Less3-2.0\Less3\bin\Debug\net6.0\System.Configuration.ConfigurationManager.dll
 C:\code\less3\Less3-2.0\Less3\bin\Debug\net6.0\System.Data.SqlClient.dll
@@ -85,3 +80,8 @@ C:\code\less3\Less3-2.0\Less3\obj\Debug\net6.0\Less3.dll
 C:\code\less3\Less3-2.0\Less3\obj\Debug\net6.0\ref\Less3.dll
 C:\code\less3\Less3-2.0\Less3\obj\Debug\net6.0\Less3.pdb
 C:\code\less3\Less3-2.0\Less3\obj\Debug\net6.0\Less3.genruntimeconfig.cache
+C:\Code\Less3\Less3-2.0\Less3\bin\Debug\net6.0\ExpressionTree.dll
+C:\Code\Less3\Less3-2.0\Less3\bin\Debug\net6.0\ZstdNet.dll
+C:\Code\Less3\Less3-2.0\Less3\bin\Debug\net6.0\SQLitePCLRaw.provider.e_sqlite3.dll
+C:\Code\Less3\Less3-2.0\Less3\bin\Debug\net6.0\runtimes\linux-s390x\native\libe_sqlite3.so
+C:\Code\Less3\Less3-2.0\Less3\bin\Debug\net6.0\runtimes\osx-arm64\native\libe_sqlite3.dylib

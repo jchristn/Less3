@@ -5,6 +5,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using SyslogLogging;
+using DatabaseWrapper.Core;
 using Watson.ORM.Core;
 using Less3.Storage;
 
@@ -361,11 +362,6 @@ namespace Less3.Classes
                 "Find us on Github here: " + link + Environment.NewLine + Environment.NewLine;
 
             return text;
-        }
-
-        private void Logger(string msg)
-        {
-            Console.WriteLine(msg);
         }
 
         #endregion

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using SyslogLogging;
+using DatabaseWrapper.Core;
 using Watson.ORM.Core;
 using Less3.Storage;
 
@@ -157,16 +158,6 @@ namespace Less3.Classes
         /// </summary>
         public class SettingsDebug
         {
-            /// <summary>
-            /// Enable or disable debugging of database queries.
-            /// </summary>
-            public bool DatabaseQueries { get; set; } = false;
-
-            /// <summary>
-            /// Enable or disable debugging of database query results.
-            /// </summary>
-            public bool DatabaseResults { get; set; } = false;
-
             /// <summary>
             /// Enable or disable debugging of authentication logic.
             /// </summary>

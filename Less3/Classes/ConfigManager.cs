@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Text;
 
+using DatabaseWrapper.Core;
+using ExpressionTree;
 using SyslogLogging;
 using Watson.ORM;
 using Watson.ORM.Core;
@@ -45,9 +47,9 @@ namespace Less3.Classes
 
         internal List<User> GetUsers()
         {
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<User>(nameof(User.Id)),
-                DbOperators.GreaterThan,
+                OperatorEnum.GreaterThan,
                 0);
             return _ORM.SelectMany<User>(e);
         }
@@ -56,9 +58,9 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
 
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<User>(nameof(User.GUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 guid);
 
             User user = _ORM.SelectFirst<User>(e);
@@ -70,9 +72,9 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(email)) throw new ArgumentNullException(nameof(email));
 
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<User>(nameof(User.Email)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 email);
 
             User user = _ORM.SelectFirst<User>(e);
@@ -84,9 +86,9 @@ namespace Less3.Classes
         { 
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
 
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<User>(nameof(User.GUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 guid);
 
             return _ORM.SelectFirst<User>(e);
@@ -96,9 +98,9 @@ namespace Less3.Classes
         { 
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<User>(nameof(User.Name)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 name);
 
             return _ORM.SelectFirst<User>(e);
@@ -108,9 +110,9 @@ namespace Less3.Classes
         { 
             if (String.IsNullOrEmpty(email)) throw new ArgumentNullException(nameof(email));
 
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<User>(nameof(User.Email)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 email);
 
             return _ORM.SelectFirst<User>(e);
@@ -185,9 +187,9 @@ namespace Less3.Classes
 
         internal List<Credential> GetCredentials()
         {
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<Credential>(nameof(Credential.Id)),
-                DbOperators.GreaterThan,
+                OperatorEnum.GreaterThan,
                 0);
             return _ORM.SelectMany<Credential>(e); 
         }
@@ -196,9 +198,9 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
 
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<Credential>(nameof(Credential.GUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 guid);
 
             Credential cred = _ORM.SelectFirst<Credential>(e);
@@ -210,9 +212,9 @@ namespace Less3.Classes
         { 
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
 
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<Credential>(nameof(Credential.GUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 guid);
 
             return _ORM.SelectFirst<Credential>(e);
@@ -222,9 +224,9 @@ namespace Less3.Classes
         { 
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
 
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<Credential>(nameof(Credential.UserGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 userGuid);
 
             return _ORM.SelectMany<Credential>(e);
@@ -234,9 +236,9 @@ namespace Less3.Classes
         { 
             if (String.IsNullOrEmpty(accessKey)) throw new ArgumentNullException(nameof(accessKey));
              
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<Credential>(nameof(Credential.AccessKey)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 accessKey);
 
             return _ORM.SelectFirst<Credential>(e);
@@ -290,9 +292,9 @@ namespace Less3.Classes
 
         internal List<Bucket> GetBuckets()
         {
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<Bucket>(nameof(Bucket.Id)),
-                DbOperators.GreaterThan,
+                OperatorEnum.GreaterThan,
                 0);
 
             return _ORM.SelectMany<Bucket>(e); 
@@ -302,9 +304,9 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<Bucket>(nameof(Bucket.Name)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 name);
 
             Bucket bucket = _ORM.SelectFirst<Bucket>(e);
@@ -316,9 +318,9 @@ namespace Less3.Classes
         { 
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
 
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<Bucket>(nameof(Bucket.OwnerGUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 userGuid);
 
             return _ORM.SelectMany<Bucket>(e); 
@@ -328,9 +330,9 @@ namespace Less3.Classes
         { 
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
 
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<Bucket>(nameof(Bucket.GUID)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 guid);
 
             return _ORM.SelectFirst<Bucket>(e);
@@ -340,9 +342,9 @@ namespace Less3.Classes
         { 
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
-            DbExpression e = new DbExpression(
+            Expr e = new Expr(
                 _ORM.GetColumnName<Bucket>(nameof(Bucket.Name)),
-                DbOperators.Equals,
+                OperatorEnum.Equals,
                 name);
 
             return _ORM.SelectFirst<Bucket>(e);

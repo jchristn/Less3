@@ -1125,30 +1125,36 @@ namespace Less3
             }
         }
 
-        public static byte[] HmacSha1(byte[] input, byte[] key)
+        public static byte[] HmacSha1(byte[] data, byte[] key)
         {
-            if (input == null) return null;
+            if (data == null) return null;
             if (key == null || key.Length < 1) return null;
-            return new HMACSHA1(key).ComputeHash(input);
+            return new HMACSHA1(key).ComputeHash(data);
         }
 
-        public static byte[] HmacSha256(byte[] input, byte[] key)
+        public static byte[] HmacSha256(byte[] data, byte[] key)
         {
-            if (input == null) return null;
+            if (data == null) return null;
             if (key == null || key.Length < 1) return null;
-            return new HMACSHA256(key).ComputeHash(input);
+            return new HMACSHA256(key).ComputeHash(data);
         }
 
-        public static byte[] Sha1(byte[] input)
+        public static byte[] Sha1(byte[] data)
         {
-            if (input == null) return null;
-            return new SHA1Managed().ComputeHash(input);
+            if (data == null) return null;
+            using (SHA1 hash = SHA1.Create())
+            {
+                return hash.ComputeHash(data);
+            }
         }
 
         public static byte[] Sha256(byte[] data)
         {
             if (data == null) return null;
-            return new SHA256Managed().ComputeHash(data);
+            using (SHA256 hash = SHA256.Create())
+            {
+                return hash.ComputeHash(data);
+            }
         }
 
         #endregion

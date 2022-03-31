@@ -66,7 +66,7 @@ namespace Less3.Api.S3
 
         #region Internal-Methods
 
-        #region Service-Callbacks
+        #region Service-APIs
 
         internal async Task<ListAllMyBucketsResult> ServiceListBuckets(S3Context ctx)
         {
@@ -75,7 +75,7 @@ namespace Less3.Api.S3
 
         #endregion
 
-        #region Bucket-Callbacks
+        #region Bucket-APIs
 
         internal async Task BucketDelete(S3Context ctx)
         {
@@ -144,7 +144,7 @@ namespace Less3.Api.S3
 
         #endregion
 
-        #region Object-Callbacks
+        #region Object-APIs
 
         internal async Task ObjectDelete(S3Context ctx)
         {

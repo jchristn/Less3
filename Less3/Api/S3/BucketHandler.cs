@@ -16,7 +16,7 @@ using Less3.Classes;
 namespace Less3.Api.S3
 {
     /// <summary>
-    /// Bucket API callbacks.
+    /// Bucket APIs.
     /// </summary>
     internal class BucketHandler
     {
@@ -26,11 +26,11 @@ namespace Less3.Api.S3
 
         #region Private-Members
 
-        private Settings _Settings;
-        private LoggingModule _Logging;
-        private ConfigManager _Config;
-        private BucketManager _Buckets;
-        private AuthManager _Auth; 
+        private Settings _Settings = null;
+        private LoggingModule _Logging = null;
+        private ConfigManager _Config = null;
+        private BucketManager _Buckets = null;
+        private AuthManager _Auth = null;
 
         #endregion
 

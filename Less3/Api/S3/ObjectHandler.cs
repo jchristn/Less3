@@ -16,7 +16,7 @@ using Less3.Classes;
 namespace Less3.Api.S3
 {
     /// <summary>
-    /// Object API callbacks.
+    /// Object APIs.
     /// </summary>
     public class ObjectHandler
     {
@@ -26,11 +26,11 @@ namespace Less3.Api.S3
 
         #region Private-Members
 
-        private Settings _Settings;
-        private LoggingModule _Logging;
-        private ConfigManager _Config;
-        private BucketManager _Buckets;
-        private AuthManager _Auth;
+        private Settings _Settings = null;
+        private LoggingModule _Logging = null;
+        private ConfigManager _Config = null;
+        private BucketManager _Buckets = null;
+        private AuthManager _Auth = null;
 
         #endregion
 
@@ -783,13 +783,10 @@ namespace Less3.Api.S3
             }
 
             Obj obj = md.BucketClient.GetObjectLatestMetadata(ctx.Request.Key);
-            if (obj != null)
+            if (obj != null && !md.Bucket.EnableVersioning)
             {
-                if (!md.Bucket.EnableVersioning)
-                {
-                    _Logging.Warn(header + "metadata already exists for " + ctx.Request.Bucket + "/" + ctx.Request.Key);
-                    throw new S3Exception(new Error(ErrorCode.InvalidBucketState));
-                }
+                _Logging.Warn(header + "versioning disabled, prohibiting write to " + ctx.Request.Bucket + "/" + ctx.Request.Key);
+                throw new S3Exception(new Error(ErrorCode.InvalidBucketState));
             }
 
             #region Populate-Metadata

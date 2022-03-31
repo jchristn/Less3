@@ -31,17 +31,17 @@
         </member>
         <member name="T:Less3.Api.S3.BucketHandler">
             <summary>
-            Bucket API callbacks.
+            Bucket APIs.
             </summary>
         </member>
         <member name="T:Less3.Api.S3.ObjectHandler">
             <summary>
-            Object API callbacks.
+            Object APIs.
             </summary>
         </member>
         <member name="T:Less3.Api.S3.ServiceHandler">
             <summary>
-            Service API callbacks.
+            Service APIs.
             </summary>
         </member>
         <member name="T:Less3.Classes.AuthenticationResult">

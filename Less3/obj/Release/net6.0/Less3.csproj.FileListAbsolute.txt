@@ -83,3 +83,4 @@ C:\Code\Less3\Less3-2.0\Less3\obj\Release\net6.0\Less3.dll
 C:\Code\Less3\Less3-2.0\Less3\obj\Release\net6.0\ref\Less3.dll
 C:\Code\Less3\Less3-2.0\Less3\obj\Release\net6.0\Less3.pdb
 C:\Code\Less3\Less3-2.0\Less3\obj\Release\net6.0\Less3.genruntimeconfig.cache
+C:\Code\Less3\Less3-2.0\Less3\obj\Release\net6.0\Less3.csproj.AssemblyReference.cache

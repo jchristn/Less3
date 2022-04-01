@@ -25,6 +25,10 @@ v2.0.0
 
 First things first - do you need help or have feedback?  Please file an issue here. 
 
+## Special Thanks
+
+Thanks to @iain-cyborn for helping make the platform better!
+
 ## Initial Setup
 
 The binaries for Less3 can be created by compiling from source.  Executing the binary will create a system configuration in the ```system.json``` file along with the configuration database ```less3.db```. 

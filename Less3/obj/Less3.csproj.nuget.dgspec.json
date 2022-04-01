@@ -5,7 +5,7 @@
   },
   "projects": {
     "C:\\Code\\Less3\\Less3-2.0\\Less3\\Less3.csproj": {
-      "version": "2.0.1.4",
+      "version": "2.0.1.5",
       "restore": {
         "projectUniqueName": "C:\\Code\\Less3\\Less3-2.0\\Less3\\Less3.csproj",
         "projectName": "Less3",
@@ -57,7 +57,7 @@
           "dependencies": {
             "S3Server": {
               "target": "Package",
-              "version": "[4.0.1.11, )"
+              "version": "[4.0.1.12, )"
             },
             "SyslogLogging": {
               "target": "Package",
@@ -100,7 +100,7 @@
           "dependencies": {
             "S3Server": {
               "target": "Package",
-              "version": "[4.0.1.11, )"
+              "version": "[4.0.1.12, )"
             },
             "SyslogLogging": {
               "target": "Package",
@@ -143,7 +143,7 @@
           "dependencies": {
             "S3Server": {
               "target": "Package",
-              "version": "[4.0.1.11, )"
+              "version": "[4.0.1.12, )"
             },
             "SyslogLogging": {
               "target": "Package",

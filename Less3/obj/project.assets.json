@@ -371,11 +371,11 @@
           }
         }
       },
-      "S3Server/4.0.1.12": {
+      "S3Server/4.0.1.13": {
         "type": "package",
         "dependencies": {
           "Newtonsoft.Json": "13.0.1",
-          "Watson": "4.2.2.10"
+          "Watson": "4.2.2.11"
         },
         "compile": {
           "lib/netcoreapp3.1/S3Server.dll": {}
@@ -718,7 +718,7 @@
           "lib/netcoreapp3.1/UrlMatcher.dll": {}
         }
       },
-      "Watson/4.2.2.10": {
+      "Watson/4.2.2.11": {
         "type": "package",
         "dependencies": {
           "IpMatcher": "1.0.4.4",
@@ -1191,11 +1191,11 @@
           }
         }
       },
-      "S3Server/4.0.1.12": {
+      "S3Server/4.0.1.13": {
         "type": "package",
         "dependencies": {
           "Newtonsoft.Json": "13.0.1",
-          "Watson": "4.2.2.10"
+          "Watson": "4.2.2.11"
         },
         "compile": {
           "lib/net5.0/S3Server.dll": {}
@@ -1522,7 +1522,7 @@
           "lib/net5.0/UrlMatcher.dll": {}
         }
       },
-      "Watson/4.2.2.10": {
+      "Watson/4.2.2.11": {
         "type": "package",
         "dependencies": {
           "IpMatcher": "1.0.4.4",
@@ -1995,11 +1995,11 @@
           }
         }
       },
-      "S3Server/4.0.1.12": {
+      "S3Server/4.0.1.13": {
         "type": "package",
         "dependencies": {
           "Newtonsoft.Json": "13.0.1",
-          "Watson": "4.2.2.10"
+          "Watson": "4.2.2.11"
         },
         "compile": {
           "lib/net6.0/S3Server.dll": {}
@@ -2326,7 +2326,7 @@
           "lib/net6.0/UrlMatcher.dll": {}
         }
       },
-      "Watson/4.2.2.10": {
+      "Watson/4.2.2.11": {
         "type": "package",
         "dependencies": {
           "IpMatcher": "1.0.4.4",
@@ -3144,10 +3144,10 @@
         "version.txt"
       ]
     },
-    "S3Server/4.0.1.12": {
-      "sha512": "VL//YzALXr9IbdiTkGcVwGd8jKzgD0B1DgffPFSMP9YL334bO55ldC+YHvfONbrZD/TWwK0RPI2RxYfJ6gHVrw==",
+    "S3Server/4.0.1.13": {
+      "sha512": "aDVEXAiPNVbTP02Nw4uvIoddIZhSzocW4df0tQFYH1dz5tL8DgeYsu69r4XqdknZh167m/wfOOZBJLzXhBTF0Q==",
       "type": "package",
-      "path": "s3server/4.0.1.12",
+      "path": "s3server/4.0.1.13",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3163,7 +3163,7 @@
         "lib/netstandard2.1/S3Server.dll",
         "lib/netstandard2.1/S3Server.xml",
         "logo.png",
-        "s3server.4.0.1.12.nupkg.sha512",
+        "s3server.4.0.1.13.nupkg.sha512",
         "s3server.nuspec"
       ]
     },
@@ -3773,10 +3773,10 @@
         "urlmatcher.nuspec"
       ]
     },
-    "Watson/4.2.2.10": {
-      "sha512": "faXuZR4XlrojICd9XTqar79XpnW/O18gML/eSxeV30LtTiLI/sidKxC+8k+UlfdnNFCZyVZli2zF4uA6B+AkAA==",
+    "Watson/4.2.2.11": {
+      "sha512": "OJdOkqNugnxU8whru3XQl6IZrTs9jGVtnydUufPphsrXbNLtjb3/+fRrv3yaO3FC+hwkXIjhE3UCsvjIhZEbVA==",
       "type": "package",
-      "path": "watson/4.2.2.10",
+      "path": "watson/4.2.2.11",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3791,7 +3791,7 @@
         "lib/netcoreapp3.1/WatsonWebserver.xml",
         "lib/netstandard2.1/WatsonWebserver.dll",
         "lib/netstandard2.1/WatsonWebserver.xml",
-        "watson.4.2.2.10.nupkg.sha512",
+        "watson.4.2.2.11.nupkg.sha512",
         "watson.nuspec",
         "watson.png"
       ]
@@ -3954,19 +3954,19 @@
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v3.1": [
-      "S3Server >= 4.0.1.12",
+      "S3Server >= 4.0.1.13",
       "SyslogLogging >= 2.0.1.7",
       "WatsonORM >= 2.0.0.1",
       "XmlToPox >= 1.0.2.2"
     ],
     "net5.0": [
-      "S3Server >= 4.0.1.12",
+      "S3Server >= 4.0.1.13",
       "SyslogLogging >= 2.0.1.7",
       "WatsonORM >= 2.0.0.1",
       "XmlToPox >= 1.0.2.2"
     ],
     "net6.0": [
-      "S3Server >= 4.0.1.12",
+      "S3Server >= 4.0.1.13",
       "SyslogLogging >= 2.0.1.7",
       "WatsonORM >= 2.0.0.1",
       "XmlToPox >= 1.0.2.2"
@@ -3977,7 +3977,7 @@
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
-    "version": "2.0.1.5",
+    "version": "2.0.1.6",
     "restore": {
       "projectUniqueName": "C:\\Code\\Less3\\Less3-2.0\\Less3\\Less3.csproj",
       "projectName": "Less3",
@@ -4029,7 +4029,7 @@
         "dependencies": {
           "S3Server": {
             "target": "Package",
-            "version": "[4.0.1.12, )"
+            "version": "[4.0.1.13, )"
           },
           "SyslogLogging": {
             "target": "Package",
@@ -4072,7 +4072,7 @@
         "dependencies": {
           "S3Server": {
             "target": "Package",
-            "version": "[4.0.1.12, )"
+            "version": "[4.0.1.13, )"
           },
           "SyslogLogging": {
             "target": "Package",
@@ -4115,7 +4115,7 @@
         "dependencies": {
           "S3Server": {
             "target": "Package",
-            "version": "[4.0.1.12, )"
+            "version": "[4.0.1.13, )"
           },
           "SyslogLogging": {
             "target": "Package",

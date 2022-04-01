@@ -17,7 +17,7 @@
     <PackageTags>S3 storage blob object storage rest restful</PackageTags>
     <PackageReleaseNotes>Updated dependencies, refer to README</PackageReleaseNotes>
     <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
-    <Version>2.0.1.5</Version>
+    <Version>2.0.1.6</Version>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <PackageIcon>favicon.png</PackageIcon>
   </PropertyGroup>
@@ -27,7 +27,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="S3Server" Version="4.0.1.12" />
+    <PackageReference Include="S3Server" Version="4.0.1.13" />
     <PackageReference Include="SyslogLogging" Version="2.0.1.7" />
     <PackageReference Include="WatsonORM" Version="2.0.0.1" />
     <PackageReference Include="XmlToPox" Version="1.0.2.2" />

@@ -6,9 +6,9 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v3.1": {
-      "Less3/2.0.1.5": {
+      "Less3/2.0.1.6": {
         "dependencies": {
-          "S3Server": "4.0.1.12",
+          "S3Server": "4.0.1.13",
           "SyslogLogging": "2.0.1.7",
           "WatsonORM": "2.0.0.1",
           "XmlToPox": "1.0.2.2"
@@ -313,15 +313,15 @@
           }
         }
       },
-      "S3Server/4.0.1.12": {
+      "S3Server/4.0.1.13": {
         "dependencies": {
           "Newtonsoft.Json": "13.0.1",
-          "Watson": "4.2.2.10"
+          "Watson": "4.2.2.11"
         },
         "runtime": {
           "lib/netcoreapp3.1/S3Server.dll": {
-            "assemblyVersion": "4.0.1.12",
-            "fileVersion": "4.0.1.12"
+            "assemblyVersion": "4.0.1.13",
+            "fileVersion": "4.0.1.13"
           }
         }
       },
@@ -600,7 +600,7 @@
           }
         }
       },
-      "Watson/4.2.2.10": {
+      "Watson/4.2.2.11": {
         "dependencies": {
           "IpMatcher": "1.0.4.4",
           "Newtonsoft.Json": "13.0.1",
@@ -609,8 +609,8 @@
         },
         "runtime": {
           "lib/netcoreapp3.1/WatsonWebserver.dll": {
-            "assemblyVersion": "4.2.2.10",
-            "fileVersion": "4.2.2.10"
+            "assemblyVersion": "4.2.2.11",
+            "fileVersion": "4.2.2.11"
           }
         }
       },
@@ -698,7 +698,7 @@
     }
   },
   "libraries": {
-    "Less3/2.0.1.5": {
+    "Less3/2.0.1.6": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -906,12 +906,12 @@
       "path": "runtime.win-x86.runtime.native.system.data.sqlclient.sni/4.4.0",
       "hashPath": "runtime.win-x86.runtime.native.system.data.sqlclient.sni.4.4.0.nupkg.sha512"
     },
-    "S3Server/4.0.1.12": {
+    "S3Server/4.0.1.13": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-VL//YzALXr9IbdiTkGcVwGd8jKzgD0B1DgffPFSMP9YL334bO55ldC+YHvfONbrZD/TWwK0RPI2RxYfJ6gHVrw==",
-      "path": "s3server/4.0.1.12",
-      "hashPath": "s3server.4.0.1.12.nupkg.sha512"
+      "sha512": "sha512-aDVEXAiPNVbTP02Nw4uvIoddIZhSzocW4df0tQFYH1dz5tL8DgeYsu69r4XqdknZh167m/wfOOZBJLzXhBTF0Q==",
+      "path": "s3server/4.0.1.13",
+      "hashPath": "s3server.4.0.1.13.nupkg.sha512"
     },
     "SQLitePCLRaw.bundle_e_sqlite3/2.0.6": {
       "type": "package",
@@ -1046,12 +1046,12 @@
       "path": "urlmatcher/1.0.0.3",
       "hashPath": "urlmatcher.1.0.0.3.nupkg.sha512"
     },
-    "Watson/4.2.2.10": {
+    "Watson/4.2.2.11": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-faXuZR4XlrojICd9XTqar79XpnW/O18gML/eSxeV30LtTiLI/sidKxC+8k+UlfdnNFCZyVZli2zF4uA6B+AkAA==",
-      "path": "watson/4.2.2.10",
-      "hashPath": "watson.4.2.2.10.nupkg.sha512"
+      "sha512": "sha512-OJdOkqNugnxU8whru3XQl6IZrTs9jGVtnydUufPphsrXbNLtjb3/+fRrv3yaO3FC+hwkXIjhE3UCsvjIhZEbVA==",
+      "path": "watson/4.2.2.11",
+      "hashPath": "watson.4.2.2.11.nupkg.sha512"
     },
     "WatsonORM/2.0.0.1": {
       "type": "package",

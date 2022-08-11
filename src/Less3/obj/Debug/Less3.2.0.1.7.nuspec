@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Less3</id>
+    <version>2.0.1.7</version>
+    <authors>Joel Christner</authors>
+    <license type="file">LICENSE.md</license>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <icon>favicon.png</icon>
+    <projectUrl>https://github.com/jchristn/less3</projectUrl>
+    <description>&lt;3 Less3 is S3-compatible object storage that you can run on your laptop, server, or anywhere you like.</description>
+    <releaseNotes>Dependency update</releaseNotes>
+    <copyright>(c)2022 Joel Christner</copyright>
+    <tags>S3 storage blob object storage rest restful</tags>
+    <repository type="Github" url="https://github.com/jchristn/less3" />
+    <dependencies>
+      <group targetFramework=".NETCoreApp3.1">
+        <dependency id="S3Server" version="4.0.1.13" exclude="Build,Analyzers" />
+        <dependency id="SyslogLogging" version="2.0.1.7" exclude="Build,Analyzers" />
+        <dependency id="WatsonORM" version="2.0.1" exclude="Build,Analyzers" />
+        <dependency id="XmlToPox" version="1.0.2.2" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net5.0">
+        <dependency id="S3Server" version="4.0.1.13" exclude="Build,Analyzers" />
+        <dependency id="SyslogLogging" version="2.0.1.7" exclude="Build,Analyzers" />
+        <dependency id="WatsonORM" version="2.0.1" exclude="Build,Analyzers" />
+        <dependency id="XmlToPox" version="1.0.2.2" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net6.0">
+        <dependency id="S3Server" version="4.0.1.13" exclude="Build,Analyzers" />
+        <dependency id="SyslogLogging" version="2.0.1.7" exclude="Build,Analyzers" />
+        <dependency id="WatsonORM" version="2.0.1" exclude="Build,Analyzers" />
+        <dependency id="XmlToPox" version="1.0.2.2" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="C:\Code\Less3\Less3-2.0\src\Less3\bin\Debug\net5.0\Less3.runtimeconfig.json" target="lib\net5.0\Less3.runtimeconfig.json" />
+    <file src="C:\Code\Less3\Less3-2.0\src\Less3\bin\Debug\net5.0\Less3.dll" target="lib\net5.0\Less3.dll" />
+    <file src="C:\Code\Less3\Less3-2.0\src\Less3\bin\Debug\net5.0\Less3.xml" target="lib\net5.0\Less3.xml" />
+    <file src="C:\Code\Less3\Less3-2.0\src\Less3\bin\Debug\net6.0\Less3.runtimeconfig.json" target="lib\net6.0\Less3.runtimeconfig.json" />
+    <file src="C:\Code\Less3\Less3-2.0\src\Less3\bin\Debug\net6.0\Less3.dll" target="lib\net6.0\Less3.dll" />
+    <file src="C:\Code\Less3\Less3-2.0\src\Less3\bin\Debug\net6.0\Less3.xml" target="lib\net6.0\Less3.xml" />
+    <file src="C:\Code\Less3\Less3-2.0\src\Less3\bin\Debug\netcoreapp3.1\Less3.runtimeconfig.json" target="lib\netcoreapp3.1\Less3.runtimeconfig.json" />
+    <file src="C:\Code\Less3\Less3-2.0\src\Less3\bin\Debug\netcoreapp3.1\Less3.dll" target="lib\netcoreapp3.1\Less3.dll" />
+    <file src="C:\Code\Less3\Less3-2.0\src\Less3\bin\Debug\netcoreapp3.1\Less3.xml" target="lib\netcoreapp3.1\Less3.xml" />
+    <file src="C:\Code\Less3\Less3-2.0\src\Less3\Assets\favicon.png" target="favicon.png" />
+    <file src="C:\Code\Less3\Less3-2.0\src\Less3\LICENSE.md" target="LICENSE.md" />
+  </files>
+</package>

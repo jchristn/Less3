@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Code\\Less3\\Less3-2.0\\Less3\\Less3.csproj": {}
+    "C:\\Code\\Less3\\Less3-2.0\\src\\Less3\\Less3.csproj": {}
   },
   "projects": {
-    "C:\\Code\\Less3\\Less3-2.0\\Less3\\Less3.csproj": {
-      "version": "2.0.1.6",
+    "C:\\Code\\Less3\\Less3-2.0\\src\\Less3\\Less3.csproj": {
+      "version": "2.0.1.7",
       "restore": {
-        "projectUniqueName": "C:\\Code\\Less3\\Less3-2.0\\Less3\\Less3.csproj",
+        "projectUniqueName": "C:\\Code\\Less3\\Less3-2.0\\src\\Less3\\Less3.csproj",
         "projectName": "Less3",
-        "projectPath": "C:\\Code\\Less3\\Less3-2.0\\Less3\\Less3.csproj",
+        "projectPath": "C:\\Code\\Less3\\Less3-2.0\\src\\Less3\\Less3.csproj",
         "packagesPath": "C:\\Users\\joelc\\.nuget\\packages\\",
-        "outputPath": "C:\\Code\\Less3\\Less3-2.0\\Less3\\obj\\",
+        "outputPath": "C:\\Code\\Less3\\Less3-2.0\\src\\Less3\\obj\\",
         "projectStyle": "PackageReference",
         "crossTargeting": true,
         "fallbackFolders": [
@@ -65,7 +65,7 @@
             },
             "WatsonORM": {
               "target": "Package",
-              "version": "[2.0.0.1, )"
+              "version": "[2.0.1, )"
             },
             "XmlToPox": {
               "target": "Package",
@@ -85,7 +85,7 @@
           "downloadDependencies": [
             {
               "name": "Microsoft.NETCore.App.Host.win-x64",
-              "version": "[3.1.21, 3.1.21]"
+              "version": "[3.1.25, 3.1.25]"
             }
           ],
           "frameworkReferences": {
@@ -93,7 +93,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.100\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.203\\RuntimeIdentifierGraph.json"
         },
         "net5.0": {
           "targetAlias": "net5.0",
@@ -108,7 +108,7 @@
             },
             "WatsonORM": {
               "target": "Package",
-              "version": "[2.0.0.1, )"
+              "version": "[2.0.1, )"
             },
             "XmlToPox": {
               "target": "Package",
@@ -125,18 +125,12 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.NETCore.App.Host.win-x64",
-              "version": "[5.0.12, 5.0.12]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.100\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.203\\RuntimeIdentifierGraph.json"
         },
         "net6.0": {
           "targetAlias": "net6.0",
@@ -151,7 +145,7 @@
             },
             "WatsonORM": {
               "target": "Package",
-              "version": "[2.0.0.1, )"
+              "version": "[2.0.1, )"
             },
             "XmlToPox": {
               "target": "Package",
@@ -173,7 +167,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.100\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.203\\RuntimeIdentifierGraph.json"
         }
       }
     }

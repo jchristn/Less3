@@ -16,13 +16,6 @@ namespace Less3.Api.S3
             return (RequestMetadata)(ctx.Metadata);
         } 
 
-        internal static async Task SendSerializedResponse<T>(S3Context ctx, T obj)
-        {
-            ctx.Response.StatusCode = 200;
-            ctx.Response.ContentType = "application/xml";
-            await ctx.Response.Send(Common.SerializeXml<T>(obj, false));
-        }
-         
         internal static string AmazonTimestamp(DateTime dt)
         {
             return dt.ToString("yyyy-MM-ddTHH:mm:ss.fffz");

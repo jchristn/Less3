@@ -169,6 +169,11 @@
             Name of the bucket.
             </summary>
         </member>
+        <member name="P:Less3.Classes.Bucket.RegionString">
+            <summary>
+            Bucket region string.
+            </summary>
+        </member>
         <member name="P:Less3.Classes.Bucket.StorageType">
             <summary>
             Type of storage driver.
@@ -204,7 +209,7 @@
             Instantiate.
             </summary>
         </member>
-        <member name="M:Less3.Classes.Bucket.#ctor(System.String,System.String,Less3.Storage.StorageDriverType,System.String)">
+        <member name="M:Less3.Classes.Bucket.#ctor(System.String,System.String,Less3.Storage.StorageDriverType,System.String,System.String)">
             <summary>
             Instantiate.
             </summary>
@@ -212,8 +217,9 @@
             <param name="owner">Owner GUID.</param>
             <param name="storageType">Storage type.</param>
             <param name="diskDirectory">Disk directory.</param>
+            <param name="region">Region.</param>
         </member>
-        <member name="M:Less3.Classes.Bucket.#ctor(System.String,System.String,System.String,Less3.Storage.StorageDriverType,System.String)">
+        <member name="M:Less3.Classes.Bucket.#ctor(System.String,System.String,System.String,Less3.Storage.StorageDriverType,System.String,System.String)">
             <summary>
             Instantiate.
             </summary>
@@ -222,6 +228,7 @@
             <param name="owner">Owner GUID.</param>
             <param name="storageType">Storage type.</param>
             <param name="diskDirectory">Disk directory.</param>
+            <param name="region">Region.</param>
         </member>
         <member name="T:Less3.Classes.BucketAcl">
             <summary>

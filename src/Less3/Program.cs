@@ -542,7 +542,7 @@ namespace Less3
             if (ctx.Http.Request.Query.Elements != null && ctx.Http.Request.Query.Elements.ContainsKey("metadata"))
             {
                 ctx.Response.ContentType = "application/json";
-                await ctx.Response.Send(Common.SerializeJson(md, true));
+                await ctx.Response.Send(SerializationHelper.SerializeJson(md, true));
                 return true;
             }
             else
@@ -562,7 +562,7 @@ namespace Less3
         {
             string header = ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Http.Request.Method.ToString() + " " + ctx.Http.Request.Url.RawWithQuery + " ";
             _Logging.Debug(header + ctx.Http.Response.StatusCode);
-            // _Logging.Debug(header + ctx.Http.Response.StatusCode + Environment.NewLine + Common.SerializeJson(ctx.Response, true) + Environment.NewLine + ctx.Response.DataAsString);
+            // _Logging.Debug(header + ctx.Http.Response.StatusCode + Environment.NewLine + SerializationHelper.SerializeJson(ctx.Response, true) + Environment.NewLine + ctx.Response.DataAsString);
         }
 
         private static void Logger(string msg)

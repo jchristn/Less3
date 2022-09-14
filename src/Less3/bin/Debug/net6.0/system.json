@@ -3,7 +3,11 @@
   "Database": {
     "Filename": "./less3.db",
     "Type": 3,
-    "Port": 0
+    "Port": 0,
+    "Debug": {
+      "EnableForQueries": false,
+      "EnableForResults": false
+    }
   },
   "Server": {
     "DnsHostname": "localhost",

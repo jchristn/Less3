@@ -98,7 +98,7 @@ namespace Less3.Api.Admin
                 {
                     ctx.Response.StatusCode = 200;
                     ctx.Response.ContentType = "application/json";
-                    await ctx.Response.Send(Common.SerializeJson(bucket, true));
+                    await ctx.Response.Send(SerializationHelper.SerializeJson(bucket, true));
                     return;
                 }
             }
@@ -107,7 +107,7 @@ namespace Less3.Api.Admin
                 List<Bucket> buckets = _Config.GetBuckets();
                 ctx.Response.StatusCode = 200;
                 ctx.Response.ContentType = "application/json";
-                await ctx.Response.Send(Common.SerializeJson(buckets, true));
+                await ctx.Response.Send(SerializationHelper.SerializeJson(buckets, true));
                 return;
             }
         }
@@ -128,7 +128,7 @@ namespace Less3.Api.Admin
                 {
                     ctx.Response.StatusCode = 200;
                     ctx.Response.ContentType = "application/json";
-                    await ctx.Response.Send(Common.SerializeJson(user, true));
+                    await ctx.Response.Send(SerializationHelper.SerializeJson(user, true));
                     return;
                 }
             }
@@ -137,7 +137,7 @@ namespace Less3.Api.Admin
                 List<User> users = _Config.GetUsers(); 
                 ctx.Response.StatusCode = 200;
                 ctx.Response.ContentType = "application/json";
-                await ctx.Response.Send(Common.SerializeJson(users, true));
+                await ctx.Response.Send(SerializationHelper.SerializeJson(users, true));
                 return;
             }
         }
@@ -158,7 +158,7 @@ namespace Less3.Api.Admin
                 {
                     ctx.Response.StatusCode = 200;
                     ctx.Response.ContentType = "application/json";
-                    await ctx.Response.Send(Common.SerializeJson(cred, true));
+                    await ctx.Response.Send(SerializationHelper.SerializeJson(cred, true));
                     return;
                 }
             }
@@ -167,7 +167,7 @@ namespace Less3.Api.Admin
                 List<Credential> creds = _Config.GetCredentials(); 
                 ctx.Response.StatusCode = 200;
                 ctx.Response.ContentType = "application/json";
-                await ctx.Response.Send(Common.SerializeJson(creds, true));
+                await ctx.Response.Send(SerializationHelper.SerializeJson(creds, true));
                 return;
             }
         }

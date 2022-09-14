@@ -2,17 +2,15 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text;
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Converters;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Less3.Classes
 {
     /// <summary>
     /// Type of object retention.
     /// </summary>
-    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum RetentionType
     {
         /// <summary>

@@ -216,6 +216,7 @@ namespace Less3.Api.S3
             listBucketResult.KeyCount = objects.Count;
             listBucketResult.MaxKeys = ctx.Request.MaxKeys;
             listBucketResult.Name = ctx.Request.Bucket;
+            listBucketResult.BucketRegion = md.Bucket.RegionString;
             listBucketResult.Marker = ctx.Request.Marker;
             listBucketResult.Prefix = ctx.Request.Prefix; 
             listBucketResult.CommonPrefixes.Prefixes = prefixes;
@@ -533,6 +534,7 @@ namespace Less3.Api.S3
             lvr.KeyMarker = lastKey;
             lvr.MaxKeys = ctx.Request.MaxKeys;
             lvr.Name = ctx.Request.Bucket;
+            lvr.BucketRegion = md.Bucket.RegionString;
             lvr.Prefix = ctx.Request.Prefix;
 
             Dictionary<string, S3ServerLibrary.S3Objects.Owner> ownerCache = new Dictionary<string, S3ServerLibrary.S3Objects.Owner>();
@@ -662,7 +664,8 @@ namespace Less3.Api.S3
                 ctx.Request.Bucket,
                 md.User.GUID, 
                 _Settings.Storage.StorageType, 
-                _Settings.Storage.DiskDirectory + ctx.Request.Bucket + "/Objects/");
+                _Settings.Storage.DiskDirectory + ctx.Request.Bucket + "/Objects/", 
+                _Settings.Server.RegionString);
              
             if (!_Buckets.Add(bucket))
             {

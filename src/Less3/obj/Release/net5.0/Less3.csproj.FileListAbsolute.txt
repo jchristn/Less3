@@ -203,7 +203,6 @@ C:\Code\Less3\Less3-2.0\src\Less3\bin\Release\net5.0\Microsoft.Win32.SystemEvent
 C:\Code\Less3\Less3-2.0\src\Less3\bin\Release\net5.0\MySql.Data.dll
 C:\Code\Less3\Less3-2.0\src\Less3\bin\Release\net5.0\Ubiety.Dns.Core.dll
 C:\Code\Less3\Less3-2.0\src\Less3\bin\Release\net5.0\ZstdNet.dll
-C:\Code\Less3\Less3-2.0\src\Less3\bin\Release\net5.0\Newtonsoft.Json.dll
 C:\Code\Less3\Less3-2.0\src\Less3\bin\Release\net5.0\Npgsql.dll
 C:\Code\Less3\Less3-2.0\src\Less3\bin\Release\net5.0\RegexMatcher.dll
 C:\Code\Less3\Less3-2.0\src\Less3\bin\Release\net5.0\S3Server.dll
@@ -263,3 +262,6 @@ C:\Code\Less3\Less3-2.0\src\Less3\obj\Release\net5.0\refint\Less3.dll
 C:\Code\Less3\Less3-2.0\src\Less3\obj\Release\net5.0\Less3.pdb
 C:\Code\Less3\Less3-2.0\src\Less3\obj\Release\net5.0\Less3.genruntimeconfig.cache
 C:\Code\Less3\Less3-2.0\src\Less3\obj\Release\net5.0\ref\Less3.dll
+C:\Code\Less3\Less3-2.0\src\Less3\bin\Release\net5.0\GetSomeInput.dll
+C:\Code\Less3\Less3-2.0\src\Less3\bin\Release\net5.0\System.Text.Encodings.Web.dll
+C:\Code\Less3\Less3-2.0\src\Less3\bin\Release\net5.0\System.Text.Json.dll

@@ -15,9 +15,9 @@
     <RepositoryUrl>https://github.com/jchristn/less3</RepositoryUrl>
     <RepositoryType>Github</RepositoryType>
     <PackageTags>S3 storage blob object storage rest restful</PackageTags>
-    <PackageReleaseNotes>Dependency update</PackageReleaseNotes>
+    <PackageReleaseNotes>Dependency update, validation with AWS CLI</PackageReleaseNotes>
     <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
-    <Version>2.0.1.7</Version>
+    <Version>2.1.0</Version>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <PackageIcon>favicon.png</PackageIcon>
   </PropertyGroup>
@@ -27,9 +27,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="S3Server" Version="4.0.1.13" />
+    <PackageReference Include="Inputty" Version="1.0.3" />
+    <PackageReference Include="S3Server" Version="5.0.4" />
     <PackageReference Include="SyslogLogging" Version="2.0.1.7" />
-    <PackageReference Include="WatsonORM" Version="2.0.1" />
+    <PackageReference Include="WatsonORM" Version="2.0.1.1" />
     <PackageReference Include="XmlToPox" Version="1.0.2.2" />
   </ItemGroup>
 

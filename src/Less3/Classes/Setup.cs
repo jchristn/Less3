@@ -6,6 +6,8 @@ using System.Net;
 using System.Text;
 using SyslogLogging;
 using DatabaseWrapper.Core;
+using GetSomeInput;
+using S3ServerLibrary;
 using Watson.ORM.Core;
 using Less3.Storage;
 
@@ -96,12 +98,12 @@ namespace Less3.Classes
 
             while (!dbSet)
             {
-                string userInput = Common.InputString("Database type [sqlite|sqlserver|mysql|postgresql]:", "sqlite", false);
+                string userInput = Inputty.GetString("Database type [sqlite|sqlserver|mysql|postgresql]:", "sqlite", false);
                 switch (userInput)
                 {
                     case "sqlite":
                         settings.Database = new DatabaseSettings(
-                            Common.InputString("Filename:", "./less3.db", false)
+                            Inputty.GetString("Filename:", "./less3.db", false)
                             );
 
                         //                          1         2         3         4         5         6         7
@@ -116,41 +118,41 @@ namespace Less3.Classes
 
                     case "sqlserver":
                         settings.Database = new DatabaseSettings(
-                            Common.InputString("Hostname:", "localhost", false),
-                            Common.InputInteger("Port:", 1433, true, false),
-                            Common.InputString("Username:", "sa", false),
-                            Common.InputString("Password:", null, false),
-                            Common.InputString("Instance (for SQLEXPRESS):", null, true),
-                            Common.InputString("Database name:", "less3", false)
+                            Inputty.GetString("Hostname:", "localhost", false),
+                            Inputty.GetInteger("Port:", 1433, true, false),
+                            Inputty.GetString("Username:", "sa", false),
+                            Inputty.GetString("Password:", null, false),
+                            Inputty.GetString("Instance (for SQLEXPRESS):", null, true),
+                            Inputty.GetString("Database name:", "less3", false)
                             );
                         dbSet = true;
                         break;
                     case "mysql": 
                         settings.Database = new DatabaseSettings(
                             DbTypes.Mysql,
-                            Common.InputString("Hostname:", "localhost", false),
-                            Common.InputInteger("Port:", 3306, true, false),
-                            Common.InputString("Username:", "root", false),
-                            Common.InputString("Password:", null, false),
-                            Common.InputString("Schema name:", "less3", false)
+                            Inputty.GetString("Hostname:", "localhost", false),
+                            Inputty.GetInteger("Port:", 3306, true, false),
+                            Inputty.GetString("Username:", "root", false),
+                            Inputty.GetString("Password:", null, false),
+                            Inputty.GetString("Schema name:", "less3", false)
                             );
                         dbSet = true;
                         break;
                     case "postgresql":
                         settings.Database = new DatabaseSettings(
                             DbTypes.Postgresql,
-                            Common.InputString("Hostname:", "localhost", false),
-                            Common.InputInteger("Port:", 5432, true, false),
-                            Common.InputString("Username:", "postgres", false),
-                            Common.InputString("Password:", null, false),
-                            Common.InputString("Schema name:", "less3", false)
+                            Inputty.GetString("Hostname:", "localhost", false),
+                            Inputty.GetInteger("Port:", 5432, true, false),
+                            Inputty.GetString("Username:", "postgres", false),
+                            Inputty.GetString("Password:", null, false),
+                            Inputty.GetString("Schema name:", "less3", false)
                             );
                         dbSet = true;
                         break;
                 }
             }
 
-            if (!Common.WriteFile("system.json", Common.SerializeJson(settings, true), false))
+            if (!Common.WriteFile("system.json", SerializationHelper.SerializeJson(settings, true), false))
             {
                 Common.ExitApplication("setup", "Unable to write system.json", -1);
                 return;
@@ -258,7 +260,7 @@ namespace Less3.Classes
             bucket.AddObject(obj2, Encoding.UTF8.GetBytes(textFile));
             bucket.AddObject(obj3, Encoding.UTF8.GetBytes(jsonFile)); 
 
-            Common.WriteFile("./system.json", Encoding.UTF8.GetBytes(Common.SerializeJson(settings, true)));
+            Common.WriteFile("./system.json", Encoding.UTF8.GetBytes(SerializationHelper.SerializeJson(settings, true)));
 
             #endregion 
 
@@ -350,7 +352,7 @@ namespace Less3.Classes
             ret.Add("Title", "Welcome to Less3");
             ret.Add("Body", "If you can see this file, your Less3 node is running!");
             ret.Add("Github", link);
-            return Common.SerializeJson(ret, true);
+            return SerializationHelper.SerializeJson(ret, true);
         }
 
         private string SampleTextFile(string link)

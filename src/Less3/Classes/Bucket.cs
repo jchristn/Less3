@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Watson.ORM.Core;
 using Less3.Storage;
-using Newtonsoft.Json;
  
 namespace Less3.Classes
 {
@@ -41,6 +42,12 @@ namespace Less3.Classes
         /// </summary>
         [Column("name", false, DataTypes.Nvarchar, 256, false)]
         public string Name { get; set; } = null;
+
+        /// <summary>
+        /// Bucket region string.
+        /// </summary>
+        [Column("regionstring", false, DataTypes.Nvarchar, 32, false)]
+        public string RegionString { get; set; } = "us-west-1";
 
         /// <summary>
         /// Type of storage driver.
@@ -101,17 +108,20 @@ namespace Less3.Classes
         /// <param name="owner">Owner GUID.</param>
         /// <param name="storageType">Storage type.</param>
         /// <param name="diskDirectory">Disk directory.</param>
+        /// <param name="region">Region.</param>
         public Bucket(
             string name,
             string owner,
             StorageDriverType storageType,
-            string diskDirectory)
+            string diskDirectory,
+            string region = "us-west-1")
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
             if (String.IsNullOrEmpty(owner)) throw new ArgumentNullException(nameof(owner));
             if (String.IsNullOrEmpty(diskDirectory)) throw new ArgumentNullException(nameof(diskDirectory));
 
             Name = name;
+            RegionString = region;
             StorageType = storageType;
             DiskDirectory = diskDirectory;
             OwnerGUID = owner;
@@ -126,12 +136,14 @@ namespace Less3.Classes
         /// <param name="owner">Owner GUID.</param>
         /// <param name="storageType">Storage type.</param>
         /// <param name="diskDirectory">Disk directory.</param>
+        /// <param name="region">Region.</param>
         public Bucket(
             string guid,
             string name,
             string owner,
             StorageDriverType storageType,
-            string diskDirectory)
+            string diskDirectory,
+            string region = "us-west-1")
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
@@ -140,6 +152,7 @@ namespace Less3.Classes
 
             GUID = guid;
             Name = name;
+            RegionString = region;
             StorageType = storageType;
             DiskDirectory = diskDirectory;
             OwnerGUID = owner;

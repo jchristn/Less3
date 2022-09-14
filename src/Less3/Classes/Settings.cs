@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using SyslogLogging;
 using DatabaseWrapper.Core;
+using S3ServerLibrary;
 using Watson.ORM.Core;
 using Less3.Storage;
 
@@ -202,7 +203,7 @@ namespace Less3.Classes
 
             try
             {
-                ret = Common.DeserializeJson<Settings>(contents);
+                ret = SerializationHelper.DeserializeJson<Settings>(contents);
                 if (ret == null)
                 {
                     Common.ExitApplication("Settings", "Unable to deserialize " + filename + " (null)", -1);

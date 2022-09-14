@@ -5,7 +5,7 @@
   },
   "projects": {
     "C:\\Code\\Less3\\Less3-2.0\\src\\Less3\\Less3.csproj": {
-      "version": "2.0.1.7",
+      "version": "2.1.0",
       "restore": {
         "projectUniqueName": "C:\\Code\\Less3\\Less3-2.0\\src\\Less3\\Less3.csproj",
         "projectName": "Less3",
@@ -55,9 +55,13 @@
         "netcoreapp3.1": {
           "targetAlias": "netcoreapp3.1",
           "dependencies": {
+            "Inputty": {
+              "target": "Package",
+              "version": "[1.0.3, )"
+            },
             "S3Server": {
               "target": "Package",
-              "version": "[4.0.1.13, )"
+              "version": "[5.0.4, )"
             },
             "SyslogLogging": {
               "target": "Package",
@@ -65,7 +69,7 @@
             },
             "WatsonORM": {
               "target": "Package",
-              "version": "[2.0.1, )"
+              "version": "[2.0.1.1, )"
             },
             "XmlToPox": {
               "target": "Package",
@@ -98,9 +102,13 @@
         "net5.0": {
           "targetAlias": "net5.0",
           "dependencies": {
+            "Inputty": {
+              "target": "Package",
+              "version": "[1.0.3, )"
+            },
             "S3Server": {
               "target": "Package",
-              "version": "[4.0.1.13, )"
+              "version": "[5.0.4, )"
             },
             "SyslogLogging": {
               "target": "Package",
@@ -108,7 +116,7 @@
             },
             "WatsonORM": {
               "target": "Package",
-              "version": "[2.0.1, )"
+              "version": "[2.0.1.1, )"
             },
             "XmlToPox": {
               "target": "Package",
@@ -135,9 +143,13 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "dependencies": {
+            "Inputty": {
+              "target": "Package",
+              "version": "[1.0.3, )"
+            },
             "S3Server": {
               "target": "Package",
-              "version": "[4.0.1.13, )"
+              "version": "[5.0.4, )"
             },
             "SyslogLogging": {
               "target": "Package",
@@ -145,7 +157,7 @@
             },
             "WatsonORM": {
               "target": "Package",
-              "version": "[2.0.1, )"
+              "version": "[2.0.1.1, )"
             },
             "XmlToPox": {
               "target": "Package",

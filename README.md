@@ -20,7 +20,7 @@ Core use cases for Less3:
 v2.1.0
 
 - Dependency update and changes to improve compatibility with AWS CLI
-- Testing with key AWS CLI capabilities
+- Testing with key AWS CLI capabilities, see AWSCLI.md
 
 ## Help and Feedback
 

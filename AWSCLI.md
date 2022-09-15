@@ -110,6 +110,12 @@ $ aws --endpoint-url http://localhost:8000 s3 ls s3://
 2022-09-14 21:43:27 default
 ```
 
+## Check Bucket Existence
+```
+$ aws s3api head-bucket --endpoint http://localhost:8000 --bucket default
+(no output)
+```
+
 ## List Default Bucket
 ```
 $ aws --endpoint-url http://localhost:8000 s3 ls s3://default
@@ -131,6 +137,19 @@ Versioning is disabled by default on buckets.  Re-uploading the object that was 
 ```
 $ aws --endpoint-url http://localhost:8000 s3 cp ./hello.foo s3://default/hello.foo
 upload: .\hello.foo to s3://default/hello.foo
+```
+
+## Check Object Existence
+```
+$ aws s3api head-object --endpoint http://localhost:8000 --bucket default --key hello.txt
+{
+    "LastModified": "2022-09-14T21:43:27",
+    "ContentLength": 217,
+    "ETag": "626A3F7A01F364E917A5088E4856CADD",
+    "ContentType": "application/octet-stream",
+    "Metadata": {},
+    "StorageClass": "STANDARD"
+}
 ```
 
 ## Delete an Object

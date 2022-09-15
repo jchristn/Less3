@@ -383,7 +383,7 @@
           }
         }
       },
-      "S3Server/5.0.4": {
+      "S3Server/5.0.6": {
         "type": "package",
         "dependencies": {
           "Watson": "4.3.2"
@@ -1241,7 +1241,7 @@
           }
         }
       },
-      "S3Server/5.0.4": {
+      "S3Server/5.0.6": {
         "type": "package",
         "dependencies": {
           "Watson": "4.3.2"
@@ -2083,7 +2083,7 @@
           }
         }
       },
-      "S3Server/5.0.4": {
+      "S3Server/5.0.6": {
         "type": "package",
         "dependencies": {
           "Watson": "4.3.2"
@@ -3274,10 +3274,10 @@
         "version.txt"
       ]
     },
-    "S3Server/5.0.4": {
-      "sha512": "ei7ai+hcW8baJlXkB5VyYd2tFPDXvBkHaMUp/fBnwn7hSi3TL+lRn+VBm66LJy7p0EBXkTu+vFVYC/ezlP11dg==",
+    "S3Server/5.0.6": {
+      "sha512": "iTaVA+Up6E++MjN1Lg9SvZZ/Y2+OI+MaOVocXLTwoT4urINWaO49AqPMeurFfCjntxGSIwd4TXC4J7EpWuSbOw==",
       "type": "package",
-      "path": "s3server/5.0.4",
+      "path": "s3server/5.0.6",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3293,7 +3293,7 @@
         "lib/netstandard2.1/S3Server.dll",
         "lib/netstandard2.1/S3Server.xml",
         "logo.png",
-        "s3server.5.0.4.nupkg.sha512",
+        "s3server.5.0.6.nupkg.sha512",
         "s3server.nuspec"
       ]
     },
@@ -4166,21 +4166,21 @@
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v3.1": [
       "Inputty >= 1.0.3",
-      "S3Server >= 5.0.4",
+      "S3Server >= 5.0.6",
       "SyslogLogging >= 2.0.1.7",
       "WatsonORM >= 2.0.1.1",
       "XmlToPox >= 1.0.2.2"
     ],
     "net5.0": [
       "Inputty >= 1.0.3",
-      "S3Server >= 5.0.4",
+      "S3Server >= 5.0.6",
       "SyslogLogging >= 2.0.1.7",
       "WatsonORM >= 2.0.1.1",
       "XmlToPox >= 1.0.2.2"
     ],
     "net6.0": [
       "Inputty >= 1.0.3",
-      "S3Server >= 5.0.4",
+      "S3Server >= 5.0.6",
       "SyslogLogging >= 2.0.1.7",
       "WatsonORM >= 2.0.1.1",
       "XmlToPox >= 1.0.2.2"
@@ -4191,13 +4191,13 @@
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
-    "version": "2.1.0",
+    "version": "2.1.1",
     "restore": {
-      "projectUniqueName": "C:\\Code\\Less3\\Less3-2.0\\src\\Less3\\Less3.csproj",
+      "projectUniqueName": "C:\\code\\less3\\Less3-2.1\\src\\Less3\\Less3.csproj",
       "projectName": "Less3",
-      "projectPath": "C:\\Code\\Less3\\Less3-2.0\\src\\Less3\\Less3.csproj",
+      "projectPath": "C:\\code\\less3\\Less3-2.1\\src\\Less3\\Less3.csproj",
       "packagesPath": "C:\\Users\\joelc\\.nuget\\packages\\",
-      "outputPath": "C:\\Code\\Less3\\Less3-2.0\\src\\Less3\\obj\\",
+      "outputPath": "C:\\code\\less3\\Less3-2.1\\src\\Less3\\obj\\",
       "projectStyle": "PackageReference",
       "crossTargeting": true,
       "fallbackFolders": [
@@ -4247,7 +4247,7 @@
           },
           "S3Server": {
             "target": "Package",
-            "version": "[5.0.4, )"
+            "version": "[5.0.6, )"
           },
           "SyslogLogging": {
             "target": "Package",
@@ -4294,7 +4294,7 @@
           },
           "S3Server": {
             "target": "Package",
-            "version": "[5.0.4, )"
+            "version": "[5.0.6, )"
           },
           "SyslogLogging": {
             "target": "Package",
@@ -4335,7 +4335,7 @@
           },
           "S3Server": {
             "target": "Package",
-            "version": "[5.0.4, )"
+            "version": "[5.0.6, )"
           },
           "SyslogLogging": {
             "target": "Package",

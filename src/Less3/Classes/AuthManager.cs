@@ -133,6 +133,13 @@ namespace Less3.Classes
                         md.BucketTags = md.BucketClient.GetBucketTags();
                     }
                 }
+                else
+                {
+                    if (md.Authentication == AuthenticationResult.Authenticated)
+                    {
+                        md.Authorization = AuthorizationResult.PermitBucketOwnership;
+                    }
+                }
             }
 
             #endregion
@@ -161,6 +168,13 @@ namespace Less3.Classes
                 {
                     md.ObjectAcls = md.BucketClient.GetObjectAcl(md.Obj.GUID);
                     md.ObjectTags = md.BucketClient.GetObjectTags(md.Obj.GUID);
+                }
+                else
+                {
+                    if (md.Authentication == AuthenticationResult.Authenticated)
+                    {
+                        md.Authorization = AuthorizationResult.PermitObjectOwnership;
+                    }
                 }
             }
 
@@ -208,8 +222,6 @@ namespace Less3.Classes
         {
             if (ctx == null) throw new ArgumentNullException(nameof(ctx));
             if (md == null) throw new ArgumentNullException(nameof(md));
-
-            md.Authorization = AuthorizationResult.NotAuthorized;
 
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Http.Request.Method.ToString() + " " + ctx.Http.Request.Url.RawWithoutQuery + "] AuthorizeBucketRequest ";
             bool allowed = false;
@@ -457,8 +469,6 @@ namespace Less3.Classes
         {
             if (ctx == null) throw new ArgumentNullException(nameof(ctx));
             if (md == null) throw new ArgumentNullException(nameof(md));
-
-            md.Authorization = AuthorizationResult.NotAuthorized;
 
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Http.Request.Method.ToString() + " " + ctx.Http.Request.Url.RawWithoutQuery + "] AuthorizeObjectWriteRequest ";
             bool allowed = false;

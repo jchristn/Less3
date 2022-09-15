@@ -9,3 +9,46 @@
 2022-09-15 15:40:18 ALIENWAREM15 12 Debug ::1:52335 HEAD /default/hello.txt 200
 2022-09-15 15:40:44 ALIENWAREM15 15 Debug ::1:52344 HEAD /default/hello.txt 200
 2022-09-15 15:40:56 ALIENWAREM15 15 Debug ::1:52349 HEAD /default 200
+2022-09-15 15:50:04 ALIENWAREM15 5 Debug ::1:52554 HEAD /default/hello2.txt 200
+2022-09-15 15:50:05 ALIENWAREM15 5 Debug ::1:52554 HEAD /default/hello2.txt 200
+2022-09-15 15:50:06 ALIENWAREM15 5 Debug ::1:52554 HEAD /default/hello2.txt 200
+2022-09-15 15:50:11 ALIENWAREM15 5 Debug ::1:52560 HEAD /default/hello3.txt 200
+2022-09-15 15:50:12 ALIENWAREM15 5 Debug ::1:52560 HEAD /default/hello3.txt 200
+2022-09-15 15:50:13 ALIENWAREM15 5 Debug ::1:52560 HEAD /default/hello3.txt 200
+2022-09-15 15:50:23 ALIENWAREM15 5 Debug ::1:52563 HEAD /default/hello3.txt 200
+2022-09-15 15:50:24 ALIENWAREM15 5 Debug ::1:52563 HEAD /default/hello3.txt 200
+2022-09-15 15:50:25 ALIENWAREM15 5 Debug ::1:52563 HEAD /default/hello3.txt 200
+2022-09-15 15:57:54 ALIENWAREM15 5 Debug ::1:52711 HEAD /default 200
+2022-09-15 15:57:57 ALIENWAREM15 5 Warn [::1:52713 BucketExists] not authorized
+2022-09-15 15:57:57 ALIENWAREM15 5 Debug ::1:52713 HEAD /default2 200
+2022-09-15 15:57:58 ALIENWAREM15 5 Warn [::1:52713 BucketExists] not authorized
+2022-09-15 15:57:58 ALIENWAREM15 5 Debug ::1:52713 HEAD /default2 200
+2022-09-15 15:57:59 ALIENWAREM15 5 Warn [::1:52713 BucketExists] not authorized
+2022-09-15 15:57:59 ALIENWAREM15 5 Debug ::1:52713 HEAD /default2 200
+2022-09-15 16:15:20 ALIENWAREM15 5 Info [::1:53010 HEAD /default] BucketExists auth result: Authenticated/PermitBucketGlobalConfig
+2022-09-15 16:15:20 ALIENWAREM15 5 Debug ::1:53010 HEAD /default 200
+2022-09-15 16:15:24 ALIENWAREM15 5 Info [::1:53012 HEAD /default2] BucketExists auth result: Authenticated/NotAuthorized
+2022-09-15 16:15:24 ALIENWAREM15 5 Warn [::1:53012 BucketExists] not authorized
+2022-09-15 16:15:24 ALIENWAREM15 5 Debug ::1:53012 HEAD /default2 200
+2022-09-15 16:15:24 ALIENWAREM15 5 Info [::1:53012 HEAD /default2] BucketExists auth result: Authenticated/NotAuthorized
+2022-09-15 16:15:24 ALIENWAREM15 5 Warn [::1:53012 BucketExists] not authorized
+2022-09-15 16:15:24 ALIENWAREM15 5 Debug ::1:53012 HEAD /default2 200
+2022-09-15 16:15:26 ALIENWAREM15 5 Info [::1:53012 HEAD /default2] BucketExists auth result: Authenticated/NotAuthorized
+2022-09-15 16:15:26 ALIENWAREM15 5 Warn [::1:53012 BucketExists] not authorized
+2022-09-15 16:15:26 ALIENWAREM15 5 Debug ::1:53012 HEAD /default2 200
+2022-09-15 16:20:15 ALIENWAREM15 5 Info [::1:53108 HEAD /default] BucketExists auth result: Authenticated/PermitBucketGlobalConfig
+2022-09-15 16:20:15 ALIENWAREM15 5 Debug ::1:53108 HEAD /default 200
+2022-09-15 16:20:17 ALIENWAREM15 5 Info [::1:53110 HEAD /default2] BucketExists auth result: Authenticated/NotAuthorized
+2022-09-15 16:20:17 ALIENWAREM15 5 Warn [::1:53110 BucketExists] not authorized
+2022-09-15 16:20:17 ALIENWAREM15 5 Debug ::1:53110 HEAD /default2 200
+2022-09-15 16:20:17 ALIENWAREM15 5 Info [::1:53110 HEAD /default2] BucketExists auth result: Authenticated/NotAuthorized
+2022-09-15 16:20:17 ALIENWAREM15 5 Warn [::1:53110 BucketExists] not authorized
+2022-09-15 16:20:17 ALIENWAREM15 5 Debug ::1:53110 HEAD /default2 200
+2022-09-15 16:20:17 ALIENWAREM15 5 Info [::1:53110 HEAD /default2] BucketExists auth result: Authenticated/NotAuthorized
+2022-09-15 16:20:17 ALIENWAREM15 5 Warn [::1:53110 BucketExists] not authorized
+2022-09-15 16:20:17 ALIENWAREM15 5 Debug ::1:53110 HEAD /default2 200
+2022-09-15 16:20:57 ALIENWAREM15 5 Info [::1:53122 HEAD /default2] BucketExists auth result: Authenticated/PermitBucketOwnership
+2022-09-15 16:20:57 ALIENWAREM15 5 Warn [::1:53122 BucketExists] no such bucket
+2022-09-15 16:20:57 ALIENWAREM15 5 Debug ::1:53122 HEAD /default2 404
+2022-09-15 16:21:00 ALIENWAREM15 5 Info [::1:53124 HEAD /default] BucketExists auth result: Authenticated/PermitBucketGlobalConfig
+2022-09-15 16:21:00 ALIENWAREM15 5 Debug ::1:53124 HEAD /default 200

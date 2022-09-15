@@ -32,7 +32,7 @@
     "DiskDirectory": "./logs/"
   },
   "Debug": {
-    "Authentication": false,
+    "Authentication": true,
     "S3Requests": false
   }
 }

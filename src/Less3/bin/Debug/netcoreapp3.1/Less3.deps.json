@@ -6,10 +6,10 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v3.1": {
-      "Less3/2.1.1": {
+      "Less3/2.1.3": {
         "dependencies": {
           "Inputty": "1.0.3",
-          "S3Server": "5.0.6",
+          "S3Server": "5.0.7",
           "SyslogLogging": "2.0.1.7",
           "WatsonORM": "2.0.1.1",
           "XmlToPox": "1.0.2.2"
@@ -314,14 +314,14 @@
           }
         }
       },
-      "S3Server/5.0.6": {
+      "S3Server/5.0.7": {
         "dependencies": {
           "Watson": "4.3.2"
         },
         "runtime": {
           "lib/netcoreapp3.1/S3Server.dll": {
-            "assemblyVersion": "5.0.6.0",
-            "fileVersion": "5.0.6.0"
+            "assemblyVersion": "5.0.7.0",
+            "fileVersion": "5.0.7.0"
           }
         }
       },
@@ -721,7 +721,7 @@
     }
   },
   "libraries": {
-    "Less3/2.1.1": {
+    "Less3/2.1.3": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -929,12 +929,12 @@
       "path": "runtime.win-x86.runtime.native.system.data.sqlclient.sni/4.4.0",
       "hashPath": "runtime.win-x86.runtime.native.system.data.sqlclient.sni.4.4.0.nupkg.sha512"
     },
-    "S3Server/5.0.6": {
+    "S3Server/5.0.7": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-iTaVA+Up6E++MjN1Lg9SvZZ/Y2+OI+MaOVocXLTwoT4urINWaO49AqPMeurFfCjntxGSIwd4TXC4J7EpWuSbOw==",
-      "path": "s3server/5.0.6",
-      "hashPath": "s3server.5.0.6.nupkg.sha512"
+      "sha512": "sha512-TNsgRaPkg+gPICRLhHf1fL1hf9xNcf0zq0TsjWKo0o+INxnpXmFDzM9wHCnQnwmEMy0dwxcwIOYPnEGoh4innQ==",
+      "path": "s3server/5.0.7",
+      "hashPath": "s3server.5.0.7.nupkg.sha512"
     },
     "SQLitePCLRaw.bundle_e_sqlite3/2.0.6": {
       "type": "package",

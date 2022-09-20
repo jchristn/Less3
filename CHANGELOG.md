@@ -2,11 +2,16 @@
 
 ## Current Version
 
+v2.1.x
+
+- Dependency update and changes to improve compatibility with AWS CLI
+- Testing with key AWS CLI capabilities, see AWSCLI.md
+
+## Previous Versions
+
 v2.0.0
 
 - Dependency updates, internal refactor
-
-## Previous Versions
 
 v1.5.0
 

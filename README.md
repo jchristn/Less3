@@ -17,7 +17,7 @@ Core use cases for Less3:
 
 ## New in This Version
 
-v2.1.0
+v2.1.x
 
 - Dependency update and changes to improve compatibility with AWS CLI
 - Testing with key AWS CLI capabilities, see AWSCLI.md

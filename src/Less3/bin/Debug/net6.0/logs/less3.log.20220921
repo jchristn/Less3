@@ -1,0 +1,24 @@
+2022-09-21 16:56:57 ALIENWAREM15 5 Info [::1:65091 GET /] ListBuckets auth result: Authenticated/PermitService
+2022-09-21 16:56:57 ALIENWAREM15 5 Debug ::1:65091 GET / 200
+2022-09-21 16:56:57 ALIENWAREM15 5 Info [::1:65091 GET /default/] BucketRead auth result: Authenticated/PermitBucketGlobalConfig
+2022-09-21 16:56:57 ALIENWAREM15 5 Debug ::1:65091 GET /default/?delimiter=%2F&max-keys=1000&prefix= 200
+2022-09-21 16:57:12 ALIENWAREM15 5 Info [::1:65091 HEAD /default/hello.txt] ObjectExists auth result: Authenticated/PermitBucketGlobalConfig
+2022-09-21 16:57:12 ALIENWAREM15 5 Debug ::1:65091 HEAD /default/hello.txt 200
+2022-09-21 16:57:12 ALIENWAREM15 5 Info [::1:65091 GET /default/hello.txt] ObjectRead auth result: Authenticated/PermitBucketGlobalConfig
+2022-09-21 16:57:12 ALIENWAREM15 7 Debug ::1:65091 GET /default/hello.txt 200
+2022-09-21 16:59:49 ALIENWAREM15 10 Info [::1:52530 GET /default/hello.txt] ObjectRead auth result: Authenticated/PermitBucketGlobalConfig
+2022-09-21 16:59:49 ALIENWAREM15 11 Debug ::1:52530 GET /default/hello.txt 200
+2022-09-21 17:00:11 ALIENWAREM15 3 Info [::1:52530 GET /default/hello.txt] ObjectReadRange auth result: Authenticated/PermitBucketGlobalConfig
+2022-09-21 17:00:11 ALIENWAREM15 3 Debug ::1:52530 GET /default/hello.txt 200
+2022-09-21 17:00:19 ALIENWAREM15 3 Info [::1:52530 GET /default/hello.txt] ObjectReadRange auth result: Authenticated/PermitBucketGlobalConfig
+2022-09-21 17:00:19 ALIENWAREM15 3 Debug ::1:52530 GET /default/hello.txt 200
+2022-09-21 17:00:20 ALIENWAREM15 3 Info [::1:52530 GET /default/hello.txt] ObjectReadRange auth result: Authenticated/PermitBucketGlobalConfig
+2022-09-21 17:00:20 ALIENWAREM15 3 Debug ::1:52530 GET /default/hello.txt 200
+2022-09-21 17:00:21 ALIENWAREM15 3 Info [::1:52530 GET /default/hello.txt] ObjectReadRange auth result: Authenticated/PermitBucketGlobalConfig
+2022-09-21 17:00:21 ALIENWAREM15 3 Debug ::1:52530 GET /default/hello.txt 200
+2022-09-21 17:00:21 ALIENWAREM15 3 Info [::1:52530 GET /default/hello.txt] ObjectReadRange auth result: Authenticated/PermitBucketGlobalConfig
+2022-09-21 17:00:21 ALIENWAREM15 3 Debug ::1:52530 GET /default/hello.txt 200
+2022-09-21 17:00:22 ALIENWAREM15 3 Info [::1:52530 GET /default/hello.txt] ObjectReadRange auth result: Authenticated/PermitBucketGlobalConfig
+2022-09-21 17:00:22 ALIENWAREM15 3 Debug ::1:52530 GET /default/hello.txt 200
+2022-09-21 17:00:30 ALIENWAREM15 3 Info [::1:52530 GET /default/hello.txt] ObjectReadRange auth result: Authenticated/PermitBucketGlobalConfig
+2022-09-21 17:00:30 ALIENWAREM15 3 Debug ::1:52530 GET /default/hello.txt 200

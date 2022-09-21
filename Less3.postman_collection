@@ -2,1218 +2,1332 @@
 	"info": {
 		"_postman_id": "c21009c2-84fb-43ed-be5c-588eb3ea174e",
 		"name": "Less3-Local",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "720438"
 	},
 	"item": [
 		{
-			"name": "*Admin* Create Bucket",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "x-api-key",
-						"value": "less3admin",
-						"type": "text"
-					},
-					{
-						"key": "content-type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"GUID\": \"testbucket\",\n  \"OwnerGUID\": \"default\",\n  \"Name\": \"testbucket\",\n  \"StorageType\": \"Disk\",\n  \"DiskDirectory\": \"./Storage/testbucket/Objects/\",\n  \"EnableVersioning\": false,\n  \"EnablePublicWrite\": false,\n  \"EnablePUblicRead\": true,\n  \"CreatedUtc\": \"2020-01-01T00:00:00.000000Z\"\n}"
-				},
-				"url": {
-					"raw": "http://localhost:8000/admin/buckets",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"admin",
-						"buckets"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "*Admin* List Buckets",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "x-api-key",
-						"value": "less3admin",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://localhost:8000/admin/buckets",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"admin",
-						"buckets"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "*Admin* List Bucket Metadata",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "x-api-key",
-						"value": "less3admin",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://localhost:8000/admin/buckets/default",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"admin",
-						"buckets",
-						"default"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "*Admin* Delete Bucket (with destroy)",
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "x-api-key",
-						"value": "less3admin",
-						"type": "text"
-					},
-					{
-						"key": "Authentication",
-						"value": "ubuntu",
-						"type": "text",
-						"disabled": true
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://localhost:8000/admin/buckets/testbucket?destroy",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"admin",
-						"buckets",
-						"testbucket"
-					],
-					"query": [
-						{
-							"key": "destroy",
-							"value": null
+			"name": "Admin",
+			"item": [
+				{
+					"name": "*Admin* Create Bucket",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "less3admin",
+								"type": "text"
+							},
+							{
+								"key": "content-type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"GUID\": \"testbucket\",\n  \"OwnerGUID\": \"default\",\n  \"Name\": \"testbucket\",\n  \"StorageType\": \"Disk\",\n  \"DiskDirectory\": \"./Storage/testbucket/Objects/\",\n  \"EnableVersioning\": false,\n  \"EnablePublicWrite\": false,\n  \"EnablePUblicRead\": true,\n  \"CreatedUtc\": \"2020-01-01T00:00:00.000000Z\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/admin/buckets",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"admin",
+								"buckets"
+							]
 						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "*Admin* Delete Bucket (without destroy)",
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "x-api-key",
-						"value": "less3admin",
-						"type": "text"
 					},
-					{
-						"key": "Authentication",
-						"value": "ubuntu",
-						"type": "text",
-						"disabled": true
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
+					"response": []
 				},
-				"url": {
-					"raw": "http://localhost:8000/admin/buckets/testbucket",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"admin",
-						"buckets",
-						"testbucket"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "*Admin* Create User",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "x-api-key",
-						"value": "less3admin",
-						"type": "text"
+				{
+					"name": "*Admin* List Buckets",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
 					},
-					{
-						"key": "content-type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{ \r\n  \"GUID\": \"testuser\",\r\n  \"Name\": \"Test User\",\r\n  \"Email\": \"test@user.com\"\r\n}"
-				},
-				"url": {
-					"raw": "http://localhost:8000/admin/users",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"admin",
-						"users"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "*Admin* List Users",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "x-api-key",
-						"value": "less3admin",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://localhost:8000/admin/users",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"admin",
-						"users"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "*Admin* List User Metadata",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "x-api-key",
-						"value": "less3admin",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://localhost:8000/admin/users/default",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"admin",
-						"users",
-						"default"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "*Admin* Delete User",
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "x-api-key",
-						"value": "less3admin",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://localhost:8000/admin/users/testuser",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"admin",
-						"users",
-						"testuser"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "*Admin* List Credentials",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "x-api-key",
-						"value": "less3admin",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://localhost:8000/admin/credentials",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"admin",
-						"credentials"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "*Admin* List Credential Metadata",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "x-api-key",
-						"value": "less3admin",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://localhost:8000/admin/credentials/default",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"admin",
-						"credentials",
-						"default"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "*Admin* Create Credentials",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "x-api-key",
-						"value": "less3admin",
-						"type": "text"
-					},
-					{
-						"key": "content-type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{ \r\n  \"GUID\": \"testcred\",\r\n  \"UserGUID\": \"default\",\r\n  \"Description\": \"My second access key\",\r\n  \"AccessKey\": \"testcred\",\r\n  \"SecretKey\": \"testcred\"\r\n}"
-				},
-				"url": {
-					"raw": "http://localhost:8000/admin/credentials",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"admin",
-						"credentials"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "*Admin* Delete Credentials",
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "x-api-key",
-						"value": "less3admin",
-						"type": "text"
-					},
-					{
-						"key": "content-type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://localhost:8000/admin/credentials/testcred",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"admin",
-						"credentials",
-						"testcred"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "List Buckets",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-						"type": "text"
-					},
-					{
-						"key": "Authentication",
-						"value": "ubuntu",
-						"type": "text",
-						"disabled": true
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://localhost:8000/",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						""
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Write Bucket",
-			"request": {
-				"method": "PUT",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-						"type": "text"
-					},
-					{
-						"key": "Content-Type",
-						"value": "application/xml",
-						"type": "text",
-						"disabled": true
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://localhost:8000/testbucket",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"testbucket"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Check Bucket Existence",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "HEAD",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-						"type": "text"
-					},
-					{
-						"key": "Content-Type",
-						"value": "text/plain",
-						"type": "text",
-						"disabled": true
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://localhost:8000/default",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"default"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "List Objects in Bucket",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-						"type": "text"
-					},
-					{
-						"key": "Authentication",
-						"value": "ubuntu",
-						"type": "text",
-						"disabled": true
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://localhost:8000/default/",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"default",
-						""
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Check Object Existence",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "HEAD",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-						"type": "text"
-					},
-					{
-						"key": "Content-Type",
-						"value": "text/plain",
-						"type": "text",
-						"disabled": true
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://localhost:8000/default/hello.txt",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"default",
-						"hello.txt"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Write Object",
-			"request": {
-				"method": "PUT",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-						"type": "text"
-					},
-					{
-						"key": "Content-Type",
-						"value": "text/plain",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "Hello, world!"
-				},
-				"url": {
-					"raw": "http://localhost:8000/default/hello.temp",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"default",
-						"hello.temp"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Retrieve Object",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-						"type": "text"
-					},
-					{
-						"key": "Content-Type",
-						"value": "text/plain",
-						"type": "text",
-						"disabled": true
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://localhost:8000/default/hello.txt",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"default",
-						"hello.txt"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Delete Object",
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-						"type": "text"
-					},
-					{
-						"key": "Content-Type",
-						"value": "text/plain",
-						"type": "text",
-						"disabled": true
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://localhost:8000/default/hello.temp",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"default",
-						"hello.temp"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Delete Bucket",
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-						"type": "text"
-					},
-					{
-						"key": "Content-Type",
-						"value": "text/plain",
-						"type": "text",
-						"disabled": true
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://localhost:8000/default",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"default"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Write Bucket ACL",
-			"request": {
-				"method": "PUT",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-						"type": "text"
-					},
-					{
-						"key": "Content-Type",
-						"value": "application/xml",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "<AccessControlPolicy xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\">\r\n  <Owner>\r\n    <ID>default</ID>\r\n    <DisplayName>default</DisplayName>\r\n  </Owner>\r\n  <AccessControlList>\r\n    <Grant>\r\n      <Grantee xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"CanonicalUser\">\r\n        <ID>default</ID>\r\n        <DisplayName>default@default.com</DisplayName>\r\n      </Grantee>\r\n      <Permission>FULL_CONTROL</Permission>\r\n    </Grant>\r\n  </AccessControlList>\r\n</AccessControlPolicy> "
-				},
-				"url": {
-					"raw": "http://localhost:8000/default?acl",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"default"
-					],
-					"query": [
-						{
-							"key": "acl",
-							"value": null
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "less3admin",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/admin/buckets",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"admin",
+								"buckets"
+							]
 						}
-					]
+					},
+					"response": []
+				},
+				{
+					"name": "*Admin* List Bucket Metadata",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "less3admin",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/admin/buckets/default",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"admin",
+								"buckets",
+								"default"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "*Admin* Delete Bucket (with destroy)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "less3admin",
+								"type": "text"
+							},
+							{
+								"key": "Authentication",
+								"value": "ubuntu",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/admin/buckets/testbucket?destroy",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"admin",
+								"buckets",
+								"testbucket"
+							],
+							"query": [
+								{
+									"key": "destroy",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "*Admin* Delete Bucket (without destroy)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "less3admin",
+								"type": "text"
+							},
+							{
+								"key": "Authentication",
+								"value": "ubuntu",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/admin/buckets/testbucket",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"admin",
+								"buckets",
+								"testbucket"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "*Admin* Create User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "less3admin",
+								"type": "text"
+							},
+							{
+								"key": "content-type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{ \r\n  \"GUID\": \"testuser\",\r\n  \"Name\": \"Test User\",\r\n  \"Email\": \"test@user.com\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/admin/users",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"admin",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "*Admin* List Users",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "less3admin",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/admin/users",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"admin",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "*Admin* List User Metadata",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "less3admin",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/admin/users/default",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"admin",
+								"users",
+								"default"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "*Admin* Delete User",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "less3admin",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/admin/users/testuser",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"admin",
+								"users",
+								"testuser"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "*Admin* List Credentials",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "less3admin",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/admin/credentials",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"admin",
+								"credentials"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "*Admin* List Credential Metadata",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "less3admin",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/admin/credentials/default",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"admin",
+								"credentials",
+								"default"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "*Admin* Create Credentials",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "less3admin",
+								"type": "text"
+							},
+							{
+								"key": "content-type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{ \r\n  \"GUID\": \"testcred\",\r\n  \"UserGUID\": \"default\",\r\n  \"Description\": \"My second access key\",\r\n  \"AccessKey\": \"testcred\",\r\n  \"SecretKey\": \"testcred\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/admin/credentials",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"admin",
+								"credentials"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "*Admin* Delete Credentials",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "less3admin",
+								"type": "text"
+							},
+							{
+								"key": "content-type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/admin/credentials/testcred",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"admin",
+								"credentials",
+								"testcred"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		},
 		{
-			"name": "Retrieve Bucket ACL",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-						"type": "text"
+			"name": "Buckets",
+			"item": [
+				{
+					"name": "List Buckets",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
 					},
-					{
-						"key": "Content-Type",
-						"value": "text/plain",
-						"type": "text",
-						"disabled": true
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://localhost:8000/default?acl",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"default"
-					],
-					"query": [
-						{
-							"key": "acl",
-							"value": null
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
+								"type": "text"
+							},
+							{
+								"key": "Authentication",
+								"value": "ubuntu",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								""
+							]
 						}
-					]
+					},
+					"response": []
+				},
+				{
+					"name": "Write Bucket",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/xml",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/testbucket",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"testbucket"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check Bucket Existence",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "HEAD",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "text/plain",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/default",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"default"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Objects in Bucket",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
+								"type": "text"
+							},
+							{
+								"key": "Authentication",
+								"value": "ubuntu",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/default/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"default",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Bucket",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "text/plain",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/default",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"default"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		},
 		{
-			"name": "Write Object ACL",
-			"request": {
-				"method": "PUT",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-						"type": "text"
-					},
-					{
-						"key": "Content-Type",
-						"value": "application/xml",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "<AccessControlPolicy xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\">\r\n  <Owner>\r\n    <ID>default</ID>\r\n    <DisplayName>default</DisplayName>\r\n  </Owner>\r\n  <AccessControlList>\r\n    <Grant>\r\n      <Grantee xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"CanonicalUser\">\r\n        <ID>default</ID>\r\n        <DisplayName>default@default.com</DisplayName>\r\n      </Grantee>\r\n      <Permission>FULL_CONTROL</Permission>\r\n    </Grant>\r\n  </AccessControlList>\r\n</AccessControlPolicy> "
-				},
-				"url": {
-					"raw": "http://localhost:8000/default/hello.txt?acl",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"default",
-						"hello.txt"
-					],
-					"query": [
-						{
-							"key": "acl",
-							"value": null
+			"name": "Bucket ACLs",
+			"item": [
+				{
+					"name": "Write Bucket ACL",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/xml",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<AccessControlPolicy xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\">\r\n  <Owner>\r\n    <ID>default</ID>\r\n    <DisplayName>default</DisplayName>\r\n  </Owner>\r\n  <AccessControlList>\r\n    <Grant>\r\n      <Grantee xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"CanonicalUser\">\r\n        <ID>default</ID>\r\n        <DisplayName>default@default.com</DisplayName>\r\n      </Grantee>\r\n      <Permission>FULL_CONTROL</Permission>\r\n    </Grant>\r\n  </AccessControlList>\r\n</AccessControlPolicy> "
+						},
+						"url": {
+							"raw": "http://localhost:8000/default?acl",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"default"
+							],
+							"query": [
+								{
+									"key": "acl",
+									"value": null
+								}
+							]
 						}
-					]
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve Bucket ACL",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "text/plain",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/default?acl",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"default"
+							],
+							"query": [
+								{
+									"key": "acl",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		},
 		{
-			"name": "Retrieve Object ACL",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-						"type": "text"
-					},
-					{
-						"key": "Content-Type",
-						"value": "text/plain",
-						"type": "text",
-						"disabled": true
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://localhost:8000/default/hello.txt?acl",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"default",
-						"hello.txt"
-					],
-					"query": [
-						{
-							"key": "acl",
-							"value": null
+			"name": "Bucket Tags",
+			"item": [
+				{
+					"name": "Write Bucket Tags",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/xml",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Tagging xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\r\n    <TagSet>\r\n        <Tag>\r\n            <Key>key</Key>\r\n            <Value>val</Value>\r\n        </Tag>\r\n    </TagSet>\r\n</Tagging>"
+						},
+						"url": {
+							"raw": "http://localhost:8000/default?tagging",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"default"
+							],
+							"query": [
+								{
+									"key": "tagging",
+									"value": null
+								}
+							]
 						}
-					]
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve Bucket Tags",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "text/plain",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/default?tagging",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"default"
+							],
+							"query": [
+								{
+									"key": "tagging",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Bucket Tags",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/xml",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/default?tagging",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"default"
+							],
+							"query": [
+								{
+									"key": "tagging",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		},
 		{
-			"name": "Write Bucket Tags",
-			"request": {
-				"method": "PUT",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-						"type": "text"
+			"name": "Objects",
+			"item": [
+				{
+					"name": "Check Object Existence",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
 					},
-					{
-						"key": "Content-Type",
-						"value": "application/xml",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Tagging xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\r\n    <TagSet>\r\n        <Tag>\r\n            <Key>key</Key>\r\n            <Value>val</Value>\r\n        </Tag>\r\n    </TagSet>\r\n</Tagging>"
-				},
-				"url": {
-					"raw": "http://localhost:8000/default?tagging",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"default"
-					],
-					"query": [
-						{
-							"key": "tagging",
-							"value": null
+					"request": {
+						"method": "HEAD",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "text/plain",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/default/hello.txt",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"default",
+								"hello.txt"
+							]
 						}
-					]
+					},
+					"response": []
+				},
+				{
+					"name": "Write Object (non-chunked)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "text/plain",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "Hello, world!"
+						},
+						"url": {
+							"raw": "http://localhost:8000/default/hello.temp",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"default",
+								"hello.temp"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Write Object (chunked)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "text/plain",
+								"type": "text"
+							},
+							{
+								"key": "x-amz-content-sha256",
+								"value": "STREAMING",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "D;chunk-signature=c47420eedec1c2370bb5a16b80d282244790d3ae3369fb1a401c5cb49412f619\r\nHello, world!\r\n0;chunk-signature=b338f2fd4775cd936fa244a1ba27470a2c58581c9882b471620ed802889a176e\r\n\r\n"
+						},
+						"url": {
+							"raw": "http://localhost:8000/default/hello.temp",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"default",
+								"hello.temp"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve Object",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "text/plain",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/default/hello.txt",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"default",
+								"hello.txt"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve Object Range",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
+								"type": "text"
+							},
+							{
+								"key": "Range",
+								"value": "bytes=1-10",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/default/hello.txt",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"default",
+								"hello.txt"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Object",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "text/plain",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/default/hello.temp",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"default",
+								"hello.temp"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		},
 		{
-			"name": "Retrieve Bucket Tags",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-						"type": "text"
-					},
-					{
-						"key": "Content-Type",
-						"value": "text/plain",
-						"type": "text",
-						"disabled": true
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://localhost:8000/default?tagging",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"default"
-					],
-					"query": [
-						{
-							"key": "tagging",
-							"value": null
+			"name": "Object ACLs",
+			"item": [
+				{
+					"name": "Write Object ACL",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/xml",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<AccessControlPolicy xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\">\r\n  <Owner>\r\n    <ID>default</ID>\r\n    <DisplayName>default</DisplayName>\r\n  </Owner>\r\n  <AccessControlList>\r\n    <Grant>\r\n      <Grantee xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"CanonicalUser\">\r\n        <ID>default</ID>\r\n        <DisplayName>default@default.com</DisplayName>\r\n      </Grantee>\r\n      <Permission>FULL_CONTROL</Permission>\r\n    </Grant>\r\n  </AccessControlList>\r\n</AccessControlPolicy> "
+						},
+						"url": {
+							"raw": "http://localhost:8000/default/hello.txt?acl",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"default",
+								"hello.txt"
+							],
+							"query": [
+								{
+									"key": "acl",
+									"value": null
+								}
+							]
 						}
-					]
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve Object ACL",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "text/plain",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/default/hello.txt?acl",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"default",
+								"hello.txt"
+							],
+							"query": [
+								{
+									"key": "acl",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		},
 		{
-			"name": "Delete Bucket Tags",
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-						"type": "text"
-					},
-					{
-						"key": "Content-Type",
-						"value": "application/xml",
-						"type": "text",
-						"disabled": true
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://localhost:8000/default?tagging",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"default"
-					],
-					"query": [
-						{
-							"key": "tagging",
-							"value": null
+			"name": "Object Tags",
+			"item": [
+				{
+					"name": "Write Object Tags",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/xml",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Tagging xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\r\n    <TagSet>\r\n        <Tag>\r\n            <Key>key</Key>\r\n            <Value>val</Value>\r\n        </Tag>\r\n    </TagSet>\r\n</Tagging>"
+						},
+						"url": {
+							"raw": "http://localhost:8000/default/hello.html?tagging",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"default",
+								"hello.html"
+							],
+							"query": [
+								{
+									"key": "tagging",
+									"value": null
+								}
+							]
 						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Write Object Tags",
-			"request": {
-				"method": "PUT",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-						"type": "text"
 					},
-					{
-						"key": "Content-Type",
-						"value": "application/xml",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Tagging xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\r\n    <TagSet>\r\n        <Tag>\r\n            <Key>key</Key>\r\n            <Value>val</Value>\r\n        </Tag>\r\n    </TagSet>\r\n</Tagging>"
+					"response": []
 				},
-				"url": {
-					"raw": "http://localhost:8000/default/hello.html?tagging",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"default",
-						"hello.html"
-					],
-					"query": [
-						{
-							"key": "tagging",
-							"value": null
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Retrieve Object Tags",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-						"type": "text"
+				{
+					"name": "Retrieve Object Tags",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
 					},
-					{
-						"key": "Content-Type",
-						"value": "text/plain",
-						"type": "text",
-						"disabled": true
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://localhost:8000/default/hello.txt?tagging",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"default",
-						"hello.txt"
-					],
-					"query": [
-						{
-							"key": "tagging",
-							"value": null
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "text/plain",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/default/hello.txt?tagging",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"default",
+								"hello.txt"
+							],
+							"query": [
+								{
+									"key": "tagging",
+									"value": null
+								}
+							]
 						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Delete Object Tags",
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-						"type": "text"
 					},
-					{
-						"key": "Content-Type",
-						"value": "application/xml",
-						"type": "text",
-						"disabled": true
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
+					"response": []
 				},
-				"url": {
-					"raw": "http://localhost:8000/default/hello.txt?tagging",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"default",
-						"hello.txt"
-					],
-					"query": [
-						{
-							"key": "tagging",
-							"value": null
+				{
+					"name": "Delete Object Tags",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/xml",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/default/hello.txt?tagging",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"default",
+								"hello.txt"
+							],
+							"query": [
+								{
+									"key": "tagging",
+									"value": null
+								}
+							]
 						}
-					]
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		}
 	]
 }

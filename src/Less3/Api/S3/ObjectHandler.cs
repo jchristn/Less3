@@ -604,7 +604,7 @@ namespace Less3.Api.S3
             if (md.Obj == null)
             {
                 if (versionId == 1)
-                {
+                { 
                     _Logging.Warn(header + "no such key");
                     throw new S3Exception(new Error(ErrorCode.NoSuchKey));
                 }
@@ -621,8 +621,9 @@ namespace Less3.Api.S3
                 throw new S3Exception(new Error(ErrorCode.NoSuchKey));
             }
 
-            if (ctx.Request.RangeStart == null || ctx.Request.RangeEnd == null)
+            if (ctx.Request.RangeStart == null)
             {
+                _Logging.Debug(header + "null range start and end, shifting to full object read");
                 return await Read(ctx);
             }
 
@@ -630,34 +631,55 @@ namespace Less3.Api.S3
             long latestVersion = md.BucketClient.GetObjectLatestVersion(md.Obj.Key);
             if (md.Obj.Version < latestVersion) isLatest = false;
 
-            long endPosition = (long)ctx.Request.RangeEnd;
-            long startPosition = (long)ctx.Request.RangeStart;
-            long readLen = endPosition - startPosition;
-
-            if (endPosition > 0)
+            long readLen = 0;
+            if (ctx.Request.RangeEnd != null)
             {
-                if (readLen < 1)
+                // test that end is equal to or later than start
+                // add one to RangeEnd because the number of bytes to read is inclusive of the byte specified in RangeEnd
+                if (ctx.Request.RangeStart.Value >= (ctx.Request.RangeEnd.Value + 1))
                 {
-                    _Logging.Warn(header + "invalid range supplied, start " + startPosition + " end " + endPosition);
+                    _Logging.Warn(header + "invalid range supplied, start " + ctx.Request.RangeStart.Value + " end " + ctx.Request.RangeEnd.Value);
                     throw new S3Exception(new Error(ErrorCode.InvalidRange));
                 }
+
+                // test that end is not beyond content length
+                if (ctx.Request.RangeEnd.Value >= md.Obj.ContentLength)
+                {
+                    _Logging.Warn(header + "invalid range supplied, end " + ctx.Request.RangeEnd.Value + " is beyond content length " + md.Obj.ContentLength);
+                    throw new S3Exception(new Error(ErrorCode.InvalidRange));
+                }
+
+                readLen = (ctx.Request.RangeEnd.Value + 1) - ctx.Request.RangeStart.Value;
             }
             else
             {
-                endPosition = md.Obj.ContentLength;
+                // null RangeEnd, therefore should be object length - 1 (since it's inclusive of the byte specified in RangeEnd)
+                // but first test if RangeStart is out of range
+                if ((ctx.Request.RangeStart.Value + 1) >= md.Obj.ContentLength)
+                {
+                    _Logging.Warn(header + "invalid range supplied, start " + ctx.Request.RangeStart.Value + " is beyond content length " + md.Obj.ContentLength);
+                    throw new S3Exception(new Error(ErrorCode.InvalidRange));
+                }
+
+                // set RangeEnd also!
+                ctx.Request.RangeEnd = (md.Obj.ContentLength - 1);
+
+                readLen = md.Obj.ContentLength - ctx.Request.RangeStart.Value;
             }
 
-            if (endPosition > md.Obj.ContentLength)
-            {
-                _Logging.Warn(header + "out of range " + ctx.Request.Bucket + "/" + ctx.Request.Key + " version " + versionId);
-                throw new S3Exception(new Error(ErrorCode.InvalidRange));
-            }
+            _Logging.Info(
+                header + 
+                "range read " + 
+                ctx.Request.RangeStart.Value + 
+                " to " + ctx.Request.RangeEnd.Value + 
+                " on " + md.Bucket.Name + "/" + md.Obj.Key + "/" + md.Obj.Version + 
+                " len " + md.Obj.ContentLength);
 
             byte[] data = new byte[readLen];
 
             using (FileStream fs = new FileStream(GetObjectBlobFile(md.Bucket, md.Obj), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
-                fs.Seek(startPosition, SeekOrigin.Begin);
+                fs.Seek(ctx.Request.RangeStart.Value, SeekOrigin.Begin);
 
                 int bytesRemaining = (int)readLen;
                 int position = 0;

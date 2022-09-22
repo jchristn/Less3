@@ -97,7 +97,7 @@
           "lib/netstandard2.0/Google.Protobuf.dll": {}
         }
       },
-      "Inputty/1.0.3": {
+      "Inputty/1.0.4": {
         "type": "package",
         "compile": {
           "lib/netcoreapp3.1/GetSomeInput.dll": {}
@@ -383,7 +383,7 @@
           }
         }
       },
-      "S3Server/5.0.8": {
+      "S3Server/5.0.11": {
         "type": "package",
         "dependencies": {
           "Watson": "4.3.2"
@@ -775,13 +775,13 @@
           "lib/netcoreapp3.1/WatsonWebserver.dll": {}
         }
       },
-      "WatsonORM/2.0.1.1": {
+      "WatsonORM/2.0.1.2": {
         "type": "package",
         "dependencies": {
-          "WatsonORM.Mysql": "2.0.1.1",
-          "WatsonORM.Postgresql": "2.0.1.1",
-          "WatsonORM.SqlServer": "2.0.1.1",
-          "WatsonORM.Sqlite": "2.0.1.1"
+          "WatsonORM.Mysql": "2.0.1.2",
+          "WatsonORM.Postgresql": "2.0.1.2",
+          "WatsonORM.SqlServer": "2.0.1.2",
+          "WatsonORM.Sqlite": "2.0.1.2"
         },
         "compile": {
           "lib/netcoreapp3.1/WatsonORM.dll": {}
@@ -802,7 +802,7 @@
           "lib/netcoreapp3.1/WatsonORM.Core.dll": {}
         }
       },
-      "WatsonORM.Mysql/2.0.1.1": {
+      "WatsonORM.Mysql/2.0.1.2": {
         "type": "package",
         "dependencies": {
           "DatabaseWrapper.Mysql": "4.1.5",
@@ -815,7 +815,7 @@
           "lib/netcoreapp3.1/WatsonORM.Mysql.dll": {}
         }
       },
-      "WatsonORM.Postgresql/2.0.1.1": {
+      "WatsonORM.Postgresql/2.0.1.2": {
         "type": "package",
         "dependencies": {
           "DatabaseWrapper.Postgresql": "4.1.5",
@@ -828,7 +828,7 @@
           "lib/netcoreapp3.1/WatsonORM.Postgresql.dll": {}
         }
       },
-      "WatsonORM.Sqlite/2.0.1.1": {
+      "WatsonORM.Sqlite/2.0.1.2": {
         "type": "package",
         "dependencies": {
           "DatabaseWrapper.Sqlite": "4.1.5",
@@ -841,7 +841,7 @@
           "lib/netcoreapp3.1/WatsonORM.Sqlite.dll": {}
         }
       },
-      "WatsonORM.SqlServer/2.0.1.1": {
+      "WatsonORM.SqlServer/2.0.1.2": {
         "type": "package",
         "dependencies": {
           "DatabaseWrapper.SqlServer": "4.1.5",
@@ -956,7 +956,7 @@
           "lib/net5.0/Google.Protobuf.dll": {}
         }
       },
-      "Inputty/1.0.3": {
+      "Inputty/1.0.4": {
         "type": "package",
         "compile": {
           "lib/net5.0/GetSomeInput.dll": {}
@@ -1241,7 +1241,7 @@
           }
         }
       },
-      "S3Server/5.0.8": {
+      "S3Server/5.0.11": {
         "type": "package",
         "dependencies": {
           "Watson": "4.3.2"
@@ -1617,13 +1617,13 @@
           "lib/net5.0/WatsonWebserver.dll": {}
         }
       },
-      "WatsonORM/2.0.1.1": {
+      "WatsonORM/2.0.1.2": {
         "type": "package",
         "dependencies": {
-          "WatsonORM.Mysql": "2.0.1.1",
-          "WatsonORM.Postgresql": "2.0.1.1",
-          "WatsonORM.SqlServer": "2.0.1.1",
-          "WatsonORM.Sqlite": "2.0.1.1"
+          "WatsonORM.Mysql": "2.0.1.2",
+          "WatsonORM.Postgresql": "2.0.1.2",
+          "WatsonORM.SqlServer": "2.0.1.2",
+          "WatsonORM.Sqlite": "2.0.1.2"
         },
         "compile": {
           "lib/net5.0/WatsonORM.dll": {}
@@ -1644,7 +1644,7 @@
           "lib/net5.0/WatsonORM.Core.dll": {}
         }
       },
-      "WatsonORM.Mysql/2.0.1.1": {
+      "WatsonORM.Mysql/2.0.1.2": {
         "type": "package",
         "dependencies": {
           "DatabaseWrapper.Mysql": "4.1.5",
@@ -1657,7 +1657,7 @@
           "lib/net5.0/WatsonORM.Mysql.dll": {}
         }
       },
-      "WatsonORM.Postgresql/2.0.1.1": {
+      "WatsonORM.Postgresql/2.0.1.2": {
         "type": "package",
         "dependencies": {
           "DatabaseWrapper.Postgresql": "4.1.5",
@@ -1670,7 +1670,7 @@
           "lib/net5.0/WatsonORM.Postgresql.dll": {}
         }
       },
-      "WatsonORM.Sqlite/2.0.1.1": {
+      "WatsonORM.Sqlite/2.0.1.2": {
         "type": "package",
         "dependencies": {
           "DatabaseWrapper.Sqlite": "4.1.5",
@@ -1683,7 +1683,7 @@
           "lib/net5.0/WatsonORM.Sqlite.dll": {}
         }
       },
-      "WatsonORM.SqlServer/2.0.1.1": {
+      "WatsonORM.SqlServer/2.0.1.2": {
         "type": "package",
         "dependencies": {
           "DatabaseWrapper.SqlServer": "4.1.5",
@@ -1798,7 +1798,7 @@
           "lib/net5.0/Google.Protobuf.dll": {}
         }
       },
-      "Inputty/1.0.3": {
+      "Inputty/1.0.4": {
         "type": "package",
         "compile": {
           "lib/net6.0/GetSomeInput.dll": {}
@@ -2083,7 +2083,7 @@
           }
         }
       },
-      "S3Server/5.0.8": {
+      "S3Server/5.0.11": {
         "type": "package",
         "dependencies": {
           "Watson": "4.3.2"
@@ -2465,13 +2465,13 @@
           "lib/net6.0/WatsonWebserver.dll": {}
         }
       },
-      "WatsonORM/2.0.1.1": {
+      "WatsonORM/2.0.1.2": {
         "type": "package",
         "dependencies": {
-          "WatsonORM.Mysql": "2.0.1.1",
-          "WatsonORM.Postgresql": "2.0.1.1",
-          "WatsonORM.SqlServer": "2.0.1.1",
-          "WatsonORM.Sqlite": "2.0.1.1"
+          "WatsonORM.Mysql": "2.0.1.2",
+          "WatsonORM.Postgresql": "2.0.1.2",
+          "WatsonORM.SqlServer": "2.0.1.2",
+          "WatsonORM.Sqlite": "2.0.1.2"
         },
         "compile": {
           "lib/net6.0/WatsonORM.dll": {}
@@ -2492,7 +2492,7 @@
           "lib/net6.0/WatsonORM.Core.dll": {}
         }
       },
-      "WatsonORM.Mysql/2.0.1.1": {
+      "WatsonORM.Mysql/2.0.1.2": {
         "type": "package",
         "dependencies": {
           "DatabaseWrapper.Mysql": "4.1.5",
@@ -2505,7 +2505,7 @@
           "lib/net6.0/WatsonORM.Mysql.dll": {}
         }
       },
-      "WatsonORM.Postgresql/2.0.1.1": {
+      "WatsonORM.Postgresql/2.0.1.2": {
         "type": "package",
         "dependencies": {
           "DatabaseWrapper.Postgresql": "4.1.5",
@@ -2518,7 +2518,7 @@
           "lib/net6.0/WatsonORM.Postgresql.dll": {}
         }
       },
-      "WatsonORM.Sqlite/2.0.1.1": {
+      "WatsonORM.Sqlite/2.0.1.2": {
         "type": "package",
         "dependencies": {
           "DatabaseWrapper.Sqlite": "4.1.5",
@@ -2531,7 +2531,7 @@
           "lib/net6.0/WatsonORM.Sqlite.dll": {}
         }
       },
-      "WatsonORM.SqlServer/2.0.1.1": {
+      "WatsonORM.SqlServer/2.0.1.2": {
         "type": "package",
         "dependencies": {
           "DatabaseWrapper.SqlServer": "4.1.5",
@@ -2734,10 +2734,10 @@
         "lib/netstandard2.0/Google.Protobuf.xml"
       ]
     },
-    "Inputty/1.0.3": {
-      "sha512": "1jusPzlmJRz38Ozg/aMzDWxMi4HjlcPzp6LVUq7zeW4dWQy+6j+3IH806byQgXRNidC21vpCTurtt50ZSU/XAA==",
+    "Inputty/1.0.4": {
+      "sha512": "LAfxloYTlpT7J4WeQMHSN9s/qRdWrfoEre3gCxk+lr7zOeOJibiFItZUEloWYsBj/zutM0D9uRPz0Ce+EL+o9Q==",
       "type": "package",
-      "path": "inputty/1.0.3",
+      "path": "inputty/1.0.4",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2756,7 +2756,7 @@
         "contentFiles/any/netstandard2.1/Inputty.xml",
         "icon.ico",
         "icon.png",
-        "inputty.1.0.3.nupkg.sha512",
+        "inputty.1.0.4.nupkg.sha512",
         "inputty.nuspec",
         "lib/net461/GetSomeInput.dll",
         "lib/net461/GetSomeInput.xml",
@@ -3274,10 +3274,10 @@
         "version.txt"
       ]
     },
-    "S3Server/5.0.8": {
-      "sha512": "29IcAX+fAHMR0Pyhk7wtDTh95kRduhFqyjITlbtY10Zz+wIHwvBtnm6faLWYRMPVQ7Dyn6xLK13qf+ZHH/3g2Q==",
+    "S3Server/5.0.11": {
+      "sha512": "OyVguPi02XQeYsG9+W5aUoJtqNZmWIyO4Ws/yiKaP1paSD+7N7l+5IpU2U3pBGF+KImXdrq6Tx6h6dAIoGJgUQ==",
       "type": "package",
-      "path": "s3server/5.0.8",
+      "path": "s3server/5.0.11",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3293,7 +3293,7 @@
         "lib/netstandard2.1/S3Server.dll",
         "lib/netstandard2.1/S3Server.xml",
         "logo.png",
-        "s3server.5.0.8.nupkg.sha512",
+        "s3server.5.0.11.nupkg.sha512",
         "s3server.nuspec"
       ]
     },
@@ -4007,10 +4007,10 @@
         "watson.png"
       ]
     },
-    "WatsonORM/2.0.1.1": {
-      "sha512": "R+hjsmlhRk4XlzdbHX5ekkyGOc/5X9p52Ca0Zg9MoYYpUFjOsc1hduUOmy4fGFN8SDoo4lV16t936FyGCXHnNg==",
+    "WatsonORM/2.0.1.2": {
+      "sha512": "u7ZyjV+2lwwyeHM/NNE+UiEGUOrHLkuQIY7cMN2kiv1NBBEhiXtgvSt0Og53No5DUg4Cz7xlKJvcrat1Ytei9Q==",
       "type": "package",
-      "path": "watsonorm/2.0.1.1",
+      "path": "watsonorm/2.0.1.2",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -4026,7 +4026,7 @@
         "lib/netstandard2.1/WatsonORM.dll",
         "lib/netstandard2.1/WatsonORM.xml",
         "watson.png",
-        "watsonorm.2.0.1.1.nupkg.sha512",
+        "watsonorm.2.0.1.2.nupkg.sha512",
         "watsonorm.nuspec"
       ]
     },
@@ -4053,10 +4053,10 @@
         "watsonorm.core.nuspec"
       ]
     },
-    "WatsonORM.Mysql/2.0.1.1": {
-      "sha512": "o/Pc9hitNVpKgePSpsxWamVRxsE0QZESYU6OPJEfWh/EpBeR1Q6hhqm7r+WBEzRMN5tz06BB9SXMMeB1AVthZA==",
+    "WatsonORM.Mysql/2.0.1.2": {
+      "sha512": "sOoo+Y8Rv4pC3jPachjmy1mfpLTm43DVskpHaXTx+C6WzsX5pXyrvjlLPg/63ck2NnIlgUNPP+n76YsORVgOOg==",
       "type": "package",
-      "path": "watsonorm.mysql/2.0.1.1",
+      "path": "watsonorm.mysql/2.0.1.2",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -4072,14 +4072,14 @@
         "lib/netstandard2.1/WatsonORM.Mysql.dll",
         "lib/netstandard2.1/WatsonORM.Mysql.xml",
         "watson.png",
-        "watsonorm.mysql.2.0.1.1.nupkg.sha512",
+        "watsonorm.mysql.2.0.1.2.nupkg.sha512",
         "watsonorm.mysql.nuspec"
       ]
     },
-    "WatsonORM.Postgresql/2.0.1.1": {
-      "sha512": "33Prae5GJtesc52cY9iqdMxcZvdkID1Obfw+85BZA32w0rnoNOkEuJ/9HwJU7sZToXCexALYi8O3ln8JnXUYpA==",
+    "WatsonORM.Postgresql/2.0.1.2": {
+      "sha512": "UwmBz6+LK0jPHj+Gha1E5mpxkD95SALvsjfh2Yo+V6byVr03FHc62payd4fEH+AE2V8jpddA43IirysBhGTGVg==",
       "type": "package",
-      "path": "watsonorm.postgresql/2.0.1.1",
+      "path": "watsonorm.postgresql/2.0.1.2",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -4095,14 +4095,14 @@
         "lib/netstandard2.1/WatsonORM.Postgresql.dll",
         "lib/netstandard2.1/WatsonORM.Postgresql.xml",
         "watson.png",
-        "watsonorm.postgresql.2.0.1.1.nupkg.sha512",
+        "watsonorm.postgresql.2.0.1.2.nupkg.sha512",
         "watsonorm.postgresql.nuspec"
       ]
     },
-    "WatsonORM.Sqlite/2.0.1.1": {
-      "sha512": "H2oRABqROS8uTH5de4vtH5KAdBjR9R9LyZ1TAPAqolebuDi22RVWEx2TA8Sbx4Aq806Npv4VcMogl49SmxMztw==",
+    "WatsonORM.Sqlite/2.0.1.2": {
+      "sha512": "6cPKf8TwgyJXTZDjwiDv5hyCnQ0AaGvzWRnPjMeTC2+f502aYW8h3thB8yIjvCSj+/gaEUHFzivqEDoQxLQEkg==",
       "type": "package",
-      "path": "watsonorm.sqlite/2.0.1.1",
+      "path": "watsonorm.sqlite/2.0.1.2",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -4118,14 +4118,14 @@
         "lib/netstandard2.1/WatsonORM.Sqlite.dll",
         "lib/netstandard2.1/WatsonORM.Sqlite.xml",
         "watson.png",
-        "watsonorm.sqlite.2.0.1.1.nupkg.sha512",
+        "watsonorm.sqlite.2.0.1.2.nupkg.sha512",
         "watsonorm.sqlite.nuspec"
       ]
     },
-    "WatsonORM.SqlServer/2.0.1.1": {
-      "sha512": "J0hrgieNZp5J8sJD41Bw+kPR1aTsnjuFGokFNDgqgp0gCBonX3ZKxt+0qfw7iiR6PndYt3+/zp1d6LqDmLMJEQ==",
+    "WatsonORM.SqlServer/2.0.1.2": {
+      "sha512": "A0Bk38Sz34XlHirFCwW+5iisejwnKsI+vuQug3mrjDS8MkgDGP2xG69qb4HQhL7bKz8fGY4XqhD3WHvzJQu2TQ==",
       "type": "package",
-      "path": "watsonorm.sqlserver/2.0.1.1",
+      "path": "watsonorm.sqlserver/2.0.1.2",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -4141,7 +4141,7 @@
         "lib/netstandard2.1/WatsonORM.SqlServer.dll",
         "lib/netstandard2.1/WatsonORM.SqlServer.xml",
         "watson.png",
-        "watsonorm.sqlserver.2.0.1.1.nupkg.sha512",
+        "watsonorm.sqlserver.2.0.1.2.nupkg.sha512",
         "watsonorm.sqlserver.nuspec"
       ]
     },
@@ -4165,24 +4165,24 @@
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v3.1": [
-      "Inputty >= 1.0.3",
-      "S3Server >= 5.0.8",
+      "Inputty >= 1.0.4",
+      "S3Server >= 5.0.11",
       "SyslogLogging >= 2.0.1.7",
-      "WatsonORM >= 2.0.1.1",
+      "WatsonORM >= 2.0.1.2",
       "XmlToPox >= 1.0.2.2"
     ],
     "net5.0": [
-      "Inputty >= 1.0.3",
-      "S3Server >= 5.0.8",
+      "Inputty >= 1.0.4",
+      "S3Server >= 5.0.11",
       "SyslogLogging >= 2.0.1.7",
-      "WatsonORM >= 2.0.1.1",
+      "WatsonORM >= 2.0.1.2",
       "XmlToPox >= 1.0.2.2"
     ],
     "net6.0": [
-      "Inputty >= 1.0.3",
-      "S3Server >= 5.0.8",
+      "Inputty >= 1.0.4",
+      "S3Server >= 5.0.11",
       "SyslogLogging >= 2.0.1.7",
-      "WatsonORM >= 2.0.1.1",
+      "WatsonORM >= 2.0.1.2",
       "XmlToPox >= 1.0.2.2"
     ]
   },
@@ -4191,7 +4191,7 @@
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
-    "version": "2.1.4",
+    "version": "2.1.5",
     "restore": {
       "projectUniqueName": "C:\\code\\less3\\Less3-2.1\\src\\Less3\\Less3.csproj",
       "projectName": "Less3",
@@ -4243,11 +4243,11 @@
         "dependencies": {
           "Inputty": {
             "target": "Package",
-            "version": "[1.0.3, )"
+            "version": "[1.0.4, )"
           },
           "S3Server": {
             "target": "Package",
-            "version": "[5.0.8, )"
+            "version": "[5.0.11, )"
           },
           "SyslogLogging": {
             "target": "Package",
@@ -4255,7 +4255,7 @@
           },
           "WatsonORM": {
             "target": "Package",
-            "version": "[2.0.1.1, )"
+            "version": "[2.0.1.2, )"
           },
           "XmlToPox": {
             "target": "Package",
@@ -4290,11 +4290,11 @@
         "dependencies": {
           "Inputty": {
             "target": "Package",
-            "version": "[1.0.3, )"
+            "version": "[1.0.4, )"
           },
           "S3Server": {
             "target": "Package",
-            "version": "[5.0.8, )"
+            "version": "[5.0.11, )"
           },
           "SyslogLogging": {
             "target": "Package",
@@ -4302,7 +4302,7 @@
           },
           "WatsonORM": {
             "target": "Package",
-            "version": "[2.0.1.1, )"
+            "version": "[2.0.1.2, )"
           },
           "XmlToPox": {
             "target": "Package",
@@ -4331,11 +4331,11 @@
         "dependencies": {
           "Inputty": {
             "target": "Package",
-            "version": "[1.0.3, )"
+            "version": "[1.0.4, )"
           },
           "S3Server": {
             "target": "Package",
-            "version": "[5.0.8, )"
+            "version": "[5.0.11, )"
           },
           "SyslogLogging": {
             "target": "Package",
@@ -4343,7 +4343,7 @@
           },
           "WatsonORM": {
             "target": "Package",
-            "version": "[2.0.1.1, )"
+            "version": "[2.0.1.2, )"
           },
           "XmlToPox": {
             "target": "Package",

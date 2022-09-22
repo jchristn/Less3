@@ -14,17 +14,17 @@
     <SourceRoot Include="C:\Program Files (x86)\Microsoft Visual Studio\Shared\NuGetPackages\" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0' AND '$(ExcludeRestorePackageImports)' != 'true' ">
-    <Content Include="$(NuGetPackageRoot)inputty\1.0.3\contentFiles\any\net5.0\Assets\icon.ico" Condition="Exists('$(NuGetPackageRoot)inputty\1.0.3\contentFiles\any\net5.0\Assets\icon.ico')">
+    <Content Include="$(NuGetPackageRoot)inputty\1.0.4\contentFiles\any\net5.0\Assets\icon.ico" Condition="Exists('$(NuGetPackageRoot)inputty\1.0.4\contentFiles\any\net5.0\Assets\icon.ico')">
       <NuGetPackageId>Inputty</NuGetPackageId>
-      <NuGetPackageVersion>1.0.3</NuGetPackageVersion>
+      <NuGetPackageVersion>1.0.4</NuGetPackageVersion>
       <NuGetItemType>Content</NuGetItemType>
       <Pack>false</Pack>
       <Private>False</Private>
       <Link>Assets\icon.ico</Link>
     </Content>
-    <Content Include="$(NuGetPackageRoot)inputty\1.0.3\contentFiles\any\net5.0\Inputty.xml" Condition="Exists('$(NuGetPackageRoot)inputty\1.0.3\contentFiles\any\net5.0\Inputty.xml')">
+    <Content Include="$(NuGetPackageRoot)inputty\1.0.4\contentFiles\any\net5.0\Inputty.xml" Condition="Exists('$(NuGetPackageRoot)inputty\1.0.4\contentFiles\any\net5.0\Inputty.xml')">
       <NuGetPackageId>Inputty</NuGetPackageId>
-      <NuGetPackageVersion>1.0.3</NuGetPackageVersion>
+      <NuGetPackageVersion>1.0.4</NuGetPackageVersion>
       <NuGetItemType>Content</NuGetItemType>
       <Pack>false</Pack>
       <Private>False</Private>
@@ -32,17 +32,17 @@
     </Content>
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' AND '$(ExcludeRestorePackageImports)' != 'true' ">
-    <Content Include="$(NuGetPackageRoot)inputty\1.0.3\contentFiles\any\net6.0\Assets\icon.ico" Condition="Exists('$(NuGetPackageRoot)inputty\1.0.3\contentFiles\any\net6.0\Assets\icon.ico')">
+    <Content Include="$(NuGetPackageRoot)inputty\1.0.4\contentFiles\any\net6.0\Assets\icon.ico" Condition="Exists('$(NuGetPackageRoot)inputty\1.0.4\contentFiles\any\net6.0\Assets\icon.ico')">
       <NuGetPackageId>Inputty</NuGetPackageId>
-      <NuGetPackageVersion>1.0.3</NuGetPackageVersion>
+      <NuGetPackageVersion>1.0.4</NuGetPackageVersion>
       <NuGetItemType>Content</NuGetItemType>
       <Pack>false</Pack>
       <Private>False</Private>
       <Link>Assets\icon.ico</Link>
     </Content>
-    <Content Include="$(NuGetPackageRoot)inputty\1.0.3\contentFiles\any\net6.0\Inputty.xml" Condition="Exists('$(NuGetPackageRoot)inputty\1.0.3\contentFiles\any\net6.0\Inputty.xml')">
+    <Content Include="$(NuGetPackageRoot)inputty\1.0.4\contentFiles\any\net6.0\Inputty.xml" Condition="Exists('$(NuGetPackageRoot)inputty\1.0.4\contentFiles\any\net6.0\Inputty.xml')">
       <NuGetPackageId>Inputty</NuGetPackageId>
-      <NuGetPackageVersion>1.0.3</NuGetPackageVersion>
+      <NuGetPackageVersion>1.0.4</NuGetPackageVersion>
       <NuGetItemType>Content</NuGetItemType>
       <Pack>false</Pack>
       <Private>False</Private>
@@ -50,17 +50,17 @@
     </Content>
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' AND '$(ExcludeRestorePackageImports)' != 'true' ">
-    <Content Include="$(NuGetPackageRoot)inputty\1.0.3\contentFiles\any\netcoreapp3.1\Assets\icon.ico" Condition="Exists('$(NuGetPackageRoot)inputty\1.0.3\contentFiles\any\netcoreapp3.1\Assets\icon.ico')">
+    <Content Include="$(NuGetPackageRoot)inputty\1.0.4\contentFiles\any\netcoreapp3.1\Assets\icon.ico" Condition="Exists('$(NuGetPackageRoot)inputty\1.0.4\contentFiles\any\netcoreapp3.1\Assets\icon.ico')">
       <NuGetPackageId>Inputty</NuGetPackageId>
-      <NuGetPackageVersion>1.0.3</NuGetPackageVersion>
+      <NuGetPackageVersion>1.0.4</NuGetPackageVersion>
       <NuGetItemType>Content</NuGetItemType>
       <Pack>false</Pack>
       <Private>False</Private>
       <Link>Assets\icon.ico</Link>
     </Content>
-    <Content Include="$(NuGetPackageRoot)inputty\1.0.3\contentFiles\any\netcoreapp3.1\Inputty.xml" Condition="Exists('$(NuGetPackageRoot)inputty\1.0.3\contentFiles\any\netcoreapp3.1\Inputty.xml')">
+    <Content Include="$(NuGetPackageRoot)inputty\1.0.4\contentFiles\any\netcoreapp3.1\Inputty.xml" Condition="Exists('$(NuGetPackageRoot)inputty\1.0.4\contentFiles\any\netcoreapp3.1\Inputty.xml')">
       <NuGetPackageId>Inputty</NuGetPackageId>
-      <NuGetPackageVersion>1.0.3</NuGetPackageVersion>
+      <NuGetPackageVersion>1.0.4</NuGetPackageVersion>
       <NuGetItemType>Content</NuGetItemType>
       <Pack>false</Pack>
       <Private>False</Private>

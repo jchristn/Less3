@@ -1,0 +1,3 @@
+2022-09-22 15:50:46 ALIENWAREM15 4 Debug ::1:65108 PUT /default/hello.temp 200
+2022-09-22 15:50:53 ALIENWAREM15 5 Debug ::1:65108 GET /default/hello.temp 200
+2022-09-22 15:50:58 ALIENWAREM15 8 Debug ::1:65108 GET /default/hello.temp 200

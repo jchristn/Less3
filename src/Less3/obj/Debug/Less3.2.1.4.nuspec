@@ -15,24 +15,24 @@
     <repository type="Github" url="https://github.com/jchristn/less3" />
     <dependencies>
       <group targetFramework=".NETCoreApp3.1">
-        <dependency id="Inputty" version="1.0.3" exclude="Build,Analyzers" />
-        <dependency id="S3Server" version="5.0.8" exclude="Build,Analyzers" />
+        <dependency id="Inputty" version="1.0.4" exclude="Build,Analyzers" />
+        <dependency id="S3Server" version="5.0.11" exclude="Build,Analyzers" />
         <dependency id="SyslogLogging" version="2.0.1.7" exclude="Build,Analyzers" />
-        <dependency id="WatsonORM" version="2.0.1.1" exclude="Build,Analyzers" />
+        <dependency id="WatsonORM" version="2.0.1.2" exclude="Build,Analyzers" />
         <dependency id="XmlToPox" version="1.0.2.2" exclude="Build,Analyzers" />
       </group>
       <group targetFramework="net5.0">
-        <dependency id="Inputty" version="1.0.3" exclude="Build,Analyzers" />
-        <dependency id="S3Server" version="5.0.8" exclude="Build,Analyzers" />
+        <dependency id="Inputty" version="1.0.4" exclude="Build,Analyzers" />
+        <dependency id="S3Server" version="5.0.11" exclude="Build,Analyzers" />
         <dependency id="SyslogLogging" version="2.0.1.7" exclude="Build,Analyzers" />
-        <dependency id="WatsonORM" version="2.0.1.1" exclude="Build,Analyzers" />
+        <dependency id="WatsonORM" version="2.0.1.2" exclude="Build,Analyzers" />
         <dependency id="XmlToPox" version="1.0.2.2" exclude="Build,Analyzers" />
       </group>
       <group targetFramework="net6.0">
-        <dependency id="Inputty" version="1.0.3" exclude="Build,Analyzers" />
-        <dependency id="S3Server" version="5.0.8" exclude="Build,Analyzers" />
+        <dependency id="Inputty" version="1.0.4" exclude="Build,Analyzers" />
+        <dependency id="S3Server" version="5.0.11" exclude="Build,Analyzers" />
         <dependency id="SyslogLogging" version="2.0.1.7" exclude="Build,Analyzers" />
-        <dependency id="WatsonORM" version="2.0.1.1" exclude="Build,Analyzers" />
+        <dependency id="WatsonORM" version="2.0.1.2" exclude="Build,Analyzers" />
         <dependency id="XmlToPox" version="1.0.2.2" exclude="Build,Analyzers" />
       </group>
     </dependencies>

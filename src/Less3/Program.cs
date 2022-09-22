@@ -396,7 +396,7 @@ namespace Less3
 
             #region Enumerate
 
-            if (_Settings.Logging.LogHttpRequests)
+            if (_Settings.Logging.LogHttpRequests || ctx.Http.Request.QuerystringExists("logrequest", false))
             {
                 _Logging.Debug(Environment.NewLine + ctx.Http.Request.ToString());
             }

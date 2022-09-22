@@ -38,13 +38,13 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="C:\code\less3\Less3-2.1\src\Less3\bin\Release\net5.0\Less3.runtimeconfig.json" target="lib\net5.0\Less3.runtimeconfig.json" />
-    <file src="C:\code\less3\Less3-2.1\src\Less3\bin\Release\net5.0\Less3.dll" target="lib\net5.0\Less3.dll" />
-    <file src="C:\code\less3\Less3-2.1\src\Less3\bin\Release\net6.0\Less3.runtimeconfig.json" target="lib\net6.0\Less3.runtimeconfig.json" />
-    <file src="C:\code\less3\Less3-2.1\src\Less3\bin\Release\net6.0\Less3.dll" target="lib\net6.0\Less3.dll" />
-    <file src="C:\code\less3\Less3-2.1\src\Less3\bin\Release\netcoreapp3.1\Less3.runtimeconfig.json" target="lib\netcoreapp3.1\Less3.runtimeconfig.json" />
-    <file src="C:\code\less3\Less3-2.1\src\Less3\bin\Release\netcoreapp3.1\Less3.dll" target="lib\netcoreapp3.1\Less3.dll" />
-    <file src="C:\code\less3\Less3-2.1\src\Less3\Assets\favicon.png" target="favicon.png" />
-    <file src="C:\code\less3\Less3-2.1\src\Less3\LICENSE.md" target="LICENSE.md" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Release\net5.0\Less3.runtimeconfig.json" target="lib\net5.0\Less3.runtimeconfig.json" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Release\net5.0\Less3.dll" target="lib\net5.0\Less3.dll" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Release\net6.0\Less3.runtimeconfig.json" target="lib\net6.0\Less3.runtimeconfig.json" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Release\net6.0\Less3.dll" target="lib\net6.0\Less3.dll" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Release\netcoreapp3.1\Less3.runtimeconfig.json" target="lib\netcoreapp3.1\Less3.runtimeconfig.json" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Release\netcoreapp3.1\Less3.dll" target="lib\netcoreapp3.1\Less3.dll" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\Assets\favicon.png" target="favicon.png" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\LICENSE.md" target="LICENSE.md" />
   </files>
 </package>

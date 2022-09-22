@@ -110,7 +110,7 @@ namespace Less3.Api.S3
              
             if (md.Obj.DeleteMarker)
             {
-                ctx.Response.Headers.Add("X-Amz-Delete-Marker", "true");
+                ctx.Response.Headers.Add(Constants.Headers.DeleteMarker, "true");
                 throw new S3Exception(new Error(ErrorCode.NoSuchKey));
             }
 
@@ -253,7 +253,7 @@ namespace Less3.Api.S3
 
             if (md.Obj.DeleteMarker)
             {
-                ctx.Response.Headers.Add("X-Amz-Delete-Marker", "true");
+                ctx.Response.Headers.Add(Constants.Headers.DeleteMarker, "true");
                 throw new S3Exception(new Error(ErrorCode.NoSuchKey));
             }
              
@@ -301,7 +301,7 @@ namespace Less3.Api.S3
 
             if (md.Obj.DeleteMarker)
             {
-                ctx.Response.Headers.Add("X-Amz-Delete-Marker", "true");
+                ctx.Response.Headers.Add(Constants.Headers.DeleteMarker, "true");
                 throw new S3Exception(new Error(ErrorCode.NoSuchKey));
             }
 
@@ -358,7 +358,7 @@ namespace Less3.Api.S3
 
             if (md.Obj.DeleteMarker)
             {
-                ctx.Response.Headers.Add("X-Amz-Delete-Marker", "true");
+                ctx.Response.Headers.Add(Constants.Headers.DeleteMarker, "true");
                 throw new S3Exception(new Error(ErrorCode.NoSuchKey));
             }
 
@@ -420,7 +420,7 @@ namespace Less3.Api.S3
 
             if (md.Obj.DeleteMarker)
             {
-                ctx.Response.Headers.Add("X-Amz-Delete-Marker", "true");
+                ctx.Response.Headers.Add(Constants.Headers.DeleteMarker, "true");
                 throw new S3Exception(new Error(ErrorCode.NoSuchKey));
             }
 
@@ -617,13 +617,13 @@ namespace Less3.Api.S3
 
             if (md.Obj.DeleteMarker)
             {
-                ctx.Response.Headers.Add("X-Amz-Delete-Marker", "true");
+                ctx.Response.Headers.Add(Constants.Headers.DeleteMarker, "true");
                 throw new S3Exception(new Error(ErrorCode.NoSuchKey));
             }
 
             if (ctx.Request.RangeStart == null)
             {
-                _Logging.Debug(header + "null range start and end, shifting to full object read");
+                _Logging.Debug(header + "null range start, shifting to full object read");
                 return await Read(ctx);
             }
 
@@ -759,7 +759,7 @@ namespace Less3.Api.S3
 
             if (md.Obj.DeleteMarker)
             {
-                ctx.Response.Headers.Add("X-Amz-Delete-Marker", "true");
+                ctx.Response.Headers.Add(Constants.Headers.DeleteMarker, "true");
                 throw new S3Exception(new Error(ErrorCode.NoSuchKey));
             }
              
@@ -1101,7 +1101,7 @@ namespace Less3.Api.S3
 
             if (md.Obj.DeleteMarker)
             {
-                ctx.Response.Headers.Add("X-Amz-Delete-Marker", "true");
+                ctx.Response.Headers.Add(Constants.Headers.DeleteMarker, "true");
                 throw new S3Exception(new Error(ErrorCode.NoSuchKey));
             }
 
@@ -1296,7 +1296,7 @@ namespace Less3.Api.S3
 
             if (md.Obj.DeleteMarker)
             {
-                ctx.Response.Headers.Add("X-Amz-Delete-Marker", "true");
+                ctx.Response.Headers.Add(Constants.Headers.DeleteMarker, "true");
                 throw new S3Exception(new Error(ErrorCode.NoSuchKey));
             }
 
@@ -1349,9 +1349,9 @@ namespace Less3.Api.S3
             string[] grantees = null;
             Grant grant = null;
 
-            if (headers.ContainsKey("x-amz-acl"))
+            if (headers.ContainsKey(Constants.Headers.AccessControlList.ToLower()))
             {
-                headerVal = headers["x-amz-acl"];
+                headerVal = headers[Constants.Headers.AccessControlList.ToLower()];
 
                 switch (headerVal)
                 {
@@ -1400,9 +1400,9 @@ namespace Less3.Api.S3
                 }
             }
 
-            if (headers.ContainsKey("x-amz-grant-read"))
+            if (headers.ContainsKey(Constants.Headers.AclGrantRead.ToLower()))
             {
-                headerVal = headers["x-amz-grant-read"];
+                headerVal = headers[Constants.Headers.AclGrantRead.ToLower()];
                 grantees = headerVal.Split(',');
                 if (grantees.Length > 0)
                 {
@@ -1415,9 +1415,9 @@ namespace Less3.Api.S3
                 }
             }
 
-            if (headers.ContainsKey("x-amz-grant-write"))
+            if (headers.ContainsKey(Constants.Headers.AclGrantWrite.ToLower()))
             {
-                headerVal = headers["x-amz-grant-write"];
+                headerVal = headers[Constants.Headers.AclGrantWrite.ToLower()];
                 grantees = headerVal.Split(',');
                 if (grantees.Length > 0)
                 {
@@ -1430,9 +1430,9 @@ namespace Less3.Api.S3
                 }
             }
 
-            if (headers.ContainsKey("x-amz-grant-read-acp"))
+            if (headers.ContainsKey(Constants.Headers.AclGrantReadAcp.ToLower()))
             {
-                headerVal = headers["x-amz-grant-read-acp"];
+                headerVal = headers[Constants.Headers.AclGrantReadAcp.ToLower()];
                 grantees = headerVal.Split(',');
                 if (grantees.Length > 0)
                 {
@@ -1445,9 +1445,9 @@ namespace Less3.Api.S3
                 }
             }
 
-            if (headers.ContainsKey("x-amz-grant-write-acp"))
+            if (headers.ContainsKey(Constants.Headers.AclGrantWriteAcp.ToLower()))
             {
-                headerVal = headers["x-amz-grant-write-acp"];
+                headerVal = headers[Constants.Headers.AclGrantWriteAcp.ToLower()];
                 grantees = headerVal.Split(',');
                 if (grantees.Length > 0)
                 {
@@ -1460,9 +1460,9 @@ namespace Less3.Api.S3
                 }
             }
 
-            if (headers.ContainsKey("x-amz-grant-full-control"))
+            if (headers.ContainsKey(Constants.Headers.AclGrantFullControl.ToLower()))
             {
-                headerVal = headers["x-amz-grant-full-control"];
+                headerVal = headers[Constants.Headers.AclGrantFullControl.ToLower()];
                 grantees = headerVal.Split(',');
                 if (grantees.Length > 0)
                 {

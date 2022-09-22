@@ -525,9 +525,9 @@ namespace Less3
 
             if (_Settings.Debug.Authentication)
             {
-                ctx.Response.Headers.Add("X-Request-Type", ctx.Request.RequestType.ToString());
-                ctx.Response.Headers.Add("X-Authentication-Result", md.Authentication.ToString());
-                ctx.Response.Headers.Add("X-Authorized-By", md.Authorization.ToString());
+                ctx.Response.Headers.Add(Constants.Headers.RequestType, ctx.Request.RequestType.ToString());
+                ctx.Response.Headers.Add(Constants.Headers.AuthenticationResult, md.Authentication.ToString());
+                ctx.Response.Headers.Add(Constants.Headers.AuthorizedBy, md.Authorization.ToString());
 
                 _Logging.Info(
                     header + ctx.Request.RequestType.ToString() + " " +

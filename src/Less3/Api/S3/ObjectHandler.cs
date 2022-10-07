@@ -458,7 +458,7 @@ namespace Less3.Api.S3
                         grant.Grantee = new Grantee();
                         grant.Grantee.DisplayName = tempUser.Name;
                         grant.Grantee.ID = curr.UserGUID;
-                        grant.Permission = "READ";
+                        grant.Permission = PermissionEnum.Read;
                         ret.Acl.Grants.Add(grant);
                     }
 
@@ -468,7 +468,7 @@ namespace Less3.Api.S3
                         grant.Grantee = new Grantee();
                         grant.Grantee.DisplayName = tempUser.Name;
                         grant.Grantee.ID = curr.UserGUID;
-                        grant.Permission = "READ_ACP";
+                        grant.Permission = PermissionEnum.ReadAcp;
                         ret.Acl.Grants.Add(grant);
                     }
 
@@ -478,7 +478,7 @@ namespace Less3.Api.S3
                         grant.Grantee = new Grantee();
                         grant.Grantee.DisplayName = tempUser.Name;
                         grant.Grantee.ID = curr.UserGUID;
-                        grant.Permission = "WRITE";
+                        grant.Permission = PermissionEnum.Write;
                         ret.Acl.Grants.Add(grant);
                     }
 
@@ -488,7 +488,7 @@ namespace Less3.Api.S3
                         grant.Grantee = new Grantee();
                         grant.Grantee.DisplayName = tempUser.Name;
                         grant.Grantee.ID = curr.UserGUID;
-                        grant.Permission = "WRITE_ACP";
+                        grant.Permission = PermissionEnum.WriteAcp;
                         ret.Acl.Grants.Add(grant);
                     }
 
@@ -498,7 +498,7 @@ namespace Less3.Api.S3
                         grant.Grantee = new Grantee();
                         grant.Grantee.DisplayName = tempUser.Name;
                         grant.Grantee.ID = curr.UserGUID;
-                        grant.Permission = "FULL_CONTROL";
+                        grant.Permission = PermissionEnum.FullControl;
                         ret.Acl.Grants.Add(grant);
                     }
 
@@ -514,7 +514,7 @@ namespace Less3.Api.S3
                         grant.Grantee = new Grantee();
                         grant.Grantee.DisplayName = curr.UserGroup;
                         grant.Grantee.URI = curr.UserGroup;
-                        grant.Permission = "READ";
+                        grant.Permission = PermissionEnum.Read;
                         ret.Acl.Grants.Add(grant);
                     }
 
@@ -524,7 +524,7 @@ namespace Less3.Api.S3
                         grant.Grantee = new Grantee();
                         grant.Grantee.DisplayName = curr.UserGroup;
                         grant.Grantee.URI = curr.UserGroup;
-                        grant.Permission = "READ_ACP";
+                        grant.Permission = PermissionEnum.ReadAcp;
                         ret.Acl.Grants.Add(grant);
                     }
 
@@ -534,7 +534,7 @@ namespace Less3.Api.S3
                         grant.Grantee = new Grantee();
                         grant.Grantee.DisplayName = curr.UserGroup;
                         grant.Grantee.URI = curr.UserGroup;
-                        grant.Permission = "WRITE";
+                        grant.Permission = PermissionEnum.Write;
                         ret.Acl.Grants.Add(grant);
                     }
 
@@ -544,7 +544,7 @@ namespace Less3.Api.S3
                         grant.Grantee = new Grantee();
                         grant.Grantee.DisplayName = curr.UserGroup;
                         grant.Grantee.URI = curr.UserGroup;
-                        grant.Permission = "WRITE_ACP";
+                        grant.Permission = PermissionEnum.WriteAcp;
                         ret.Acl.Grants.Add(grant);
                     }
 
@@ -554,7 +554,7 @@ namespace Less3.Api.S3
                         grant.Grantee = new Grantee();
                         grant.Grantee.DisplayName = curr.UserGroup;
                         grant.Grantee.URI = curr.UserGroup;
-                        grant.Permission = "FULL_CONTROL";
+                        grant.Permission = PermissionEnum.FullControl;
                         ret.Acl.Grants.Add(grant);
                     }
 
@@ -985,17 +985,11 @@ namespace Less3.Api.S3
                                     continue;
                                 }
 
-                                if (String.IsNullOrEmpty(curr.Permission))
-                                {
-                                    _Logging.Warn(header + "no permissions specified for user " + curr.Grantee.ID + " in ACL for object " + ctx.Request.Bucket + "/" + ctx.Request.Key);
-                                    continue;
-                                }
-
-                                if (curr.Permission.Equals("READ")) permitRead = true;
-                                else if (curr.Permission.Equals("WRITE")) permitWrite = true;
-                                else if (curr.Permission.Equals("READ_ACP")) permitReadAcp = true;
-                                else if (curr.Permission.Equals("WRITE_ACP")) permitWriteAcp = true;
-                                else if (curr.Permission.Equals("FULL_CONTROL")) fullControl = true;
+                                if (curr.Permission == PermissionEnum.Read) permitRead = true;
+                                else if (curr.Permission == PermissionEnum.Write) permitWrite = true;
+                                else if (curr.Permission == PermissionEnum.ReadAcp) permitReadAcp = true;
+                                else if (curr.Permission == PermissionEnum.WriteAcp) permitWriteAcp = true;
+                                else if (curr.Permission == PermissionEnum.FullControl) fullControl = true;
 
                                 objectAcl = ObjectAcl.UserAcl(
                                     curr.Grantee.ID,
@@ -1012,17 +1006,11 @@ namespace Less3.Api.S3
                             }
                             else if (!String.IsNullOrEmpty(curr.Grantee.URI))
                             {
-                                if (String.IsNullOrEmpty(curr.Permission))
-                                {
-                                    _Logging.Warn(header + "no permissions specified for user " + curr.Grantee.ID + " in ACL for object " + ctx.Request.Bucket + "/" + ctx.Request.Key + " version " + obj.Version);
-                                    continue;
-                                }
-
-                                if (curr.Permission.Equals("READ")) permitRead = true;
-                                else if (curr.Permission.Equals("WRITE")) permitWrite = true;
-                                else if (curr.Permission.Equals("READ_ACP")) permitReadAcp = true;
-                                else if (curr.Permission.Equals("WRITE_ACP")) permitWriteAcp = true;
-                                else if (curr.Permission.Equals("FULL_CONTROL")) fullControl = true;
+                                if (curr.Permission == PermissionEnum.Read) permitRead = true;
+                                else if (curr.Permission == PermissionEnum.Write) permitWrite = true;
+                                else if (curr.Permission == PermissionEnum.ReadAcp) permitReadAcp = true;
+                                else if (curr.Permission == PermissionEnum.WriteAcp) permitWriteAcp = true;
+                                else if (curr.Permission == PermissionEnum.FullControl) fullControl = true;
 
                                 objectAcl = ObjectAcl.GroupAcl(
                                     curr.Grantee.URI,
@@ -1138,7 +1126,7 @@ namespace Less3.Api.S3
                         continue;
                     }
 
-                    if (curr.Permission.Equals("READ"))
+                    if (curr.Permission == PermissionEnum.Read)
                     {
                         acl = ObjectAcl.UserAcl(
                             curr.Grantee.ID, 
@@ -1147,7 +1135,7 @@ namespace Less3.Api.S3
                             md.Obj.GUID, 
                             true, false, false, false, false);
                     }
-                    else if (curr.Permission.Equals("WRITE"))
+                    else if (curr.Permission == PermissionEnum.Write)
                     {
                         acl = ObjectAcl.UserAcl(
                             curr.Grantee.ID,
@@ -1156,7 +1144,7 @@ namespace Less3.Api.S3
                             md.Obj.GUID,
                             false, true, false, false, false);
                     }
-                    else if (curr.Permission.Equals("READ_ACP"))
+                    else if (curr.Permission == PermissionEnum.ReadAcp)
                     {
                         acl = ObjectAcl.UserAcl(
                             curr.Grantee.ID,
@@ -1165,7 +1153,7 @@ namespace Less3.Api.S3
                             md.Obj.GUID,
                             false, false, true, false, false);
                     }
-                    else if (curr.Permission.Equals("WRITE_ACP"))
+                    else if (curr.Permission == PermissionEnum.WriteAcp)
                     {
                         acl = ObjectAcl.UserAcl(
                             curr.Grantee.ID,
@@ -1174,7 +1162,7 @@ namespace Less3.Api.S3
                             md.Obj.GUID,
                             false, false, false, true, false);
                     }
-                    else if (curr.Permission.Equals("FULL_CONTROL"))
+                    else if (curr.Permission == PermissionEnum.FullControl)
                     {
                         acl = ObjectAcl.UserAcl(
                             curr.Grantee.ID,
@@ -1190,7 +1178,7 @@ namespace Less3.Api.S3
                 {
                     #region Group-ACL
 
-                    if (curr.Permission.Equals("READ"))
+                    if (curr.Permission == PermissionEnum.Read)
                     {
                         acl = ObjectAcl.GroupAcl(
                             curr.Grantee.URI,
@@ -1199,7 +1187,7 @@ namespace Less3.Api.S3
                             md.Obj.GUID,
                             true, false, false, false, false);
                     }
-                    else if (curr.Permission.Equals("WRITE"))
+                    else if (curr.Permission == PermissionEnum.Write)
                     {
                         acl = ObjectAcl.GroupAcl(
                             curr.Grantee.URI,
@@ -1208,7 +1196,7 @@ namespace Less3.Api.S3
                             md.Obj.GUID,
                             false, true, false, false, false);
                     }
-                    else if (curr.Permission.Equals("READ_ACP"))
+                    else if (curr.Permission == PermissionEnum.ReadAcp)
                     {
                         acl = ObjectAcl.GroupAcl(
                             curr.Grantee.URI,
@@ -1217,7 +1205,7 @@ namespace Less3.Api.S3
                             md.Obj.GUID,
                             false, false, true, false, false);
                     }
-                    else if (curr.Permission.Equals("WRITE_ACP"))
+                    else if (curr.Permission == PermissionEnum.WriteAcp)
                     {
                         acl = ObjectAcl.GroupAcl(
                             curr.Grantee.URI,
@@ -1226,7 +1214,7 @@ namespace Less3.Api.S3
                             md.Obj.GUID,
                             false, false, false, true, false);
                     }
-                    else if (curr.Permission.Equals("FULL_CONTROL"))
+                    else if (curr.Permission == PermissionEnum.FullControl)
                     {
                         acl = ObjectAcl.GroupAcl(
                             curr.Grantee.URI,
@@ -1357,7 +1345,7 @@ namespace Less3.Api.S3
                 {
                     case "private":
                         grant = new Grant();
-                        grant.Permission = "FULL_CONTROL";
+                        grant.Permission = PermissionEnum.FullControl;
                         grant.Grantee = new Grantee();
                         grant.Grantee.ID = user.GUID;
                         grant.Grantee.DisplayName = user.Name;
@@ -1366,7 +1354,7 @@ namespace Less3.Api.S3
 
                     case "public-read":
                         grant = new Grant();
-                        grant.Permission = "READ";
+                        grant.Permission = PermissionEnum.Read;
                         grant.Grantee = new Grantee();
                         grant.Grantee.URI = "http://acs.amazonaws.com/groups/global/AllUsers";
                         grant.Grantee.DisplayName = "AllUsers";
@@ -1375,14 +1363,14 @@ namespace Less3.Api.S3
 
                     case "public-read-write":
                         grant = new Grant();
-                        grant.Permission = "READ";
+                        grant.Permission = PermissionEnum.Read;
                         grant.Grantee = new Grantee();
                         grant.Grantee.URI = "http://acs.amazonaws.com/groups/global/AllUsers";
                         grant.Grantee.DisplayName = "AllUsers";
                         ret.Add(grant);
 
                         grant = new Grant();
-                        grant.Permission = "WRITE";
+                        grant.Permission = PermissionEnum.Write;
                         grant.Grantee = new Grantee();
                         grant.Grantee.URI = "http://acs.amazonaws.com/groups/global/AllUsers";
                         grant.Grantee.DisplayName = "AllUsers";
@@ -1391,7 +1379,7 @@ namespace Less3.Api.S3
 
                     case "authenticated-read":
                         grant = new Grant();
-                        grant.Permission = "READ";
+                        grant.Permission = PermissionEnum.Read;
                         grant.Grantee = new Grantee();
                         grant.Grantee.URI = "http://acs.amazonaws.com/groups/global/AuthenticatedUsers";
                         grant.Grantee.DisplayName = "AuthenticatedUsers";
@@ -1409,7 +1397,7 @@ namespace Less3.Api.S3
                     foreach (string curr in grantees)
                     {
                         grant = null;
-                        if (!GrantFromString(curr, "READ", out grant)) continue;
+                        if (!GrantFromString(curr, PermissionEnum.Read, out grant)) continue;
                         ret.Add(grant);
                     }
                 }
@@ -1424,7 +1412,7 @@ namespace Less3.Api.S3
                     foreach (string curr in grantees)
                     {
                         grant = null;
-                        if (!GrantFromString(curr, "WRITE", out grant)) continue;
+                        if (!GrantFromString(curr, PermissionEnum.Write, out grant)) continue;
                         ret.Add(grant);
                     }
                 }
@@ -1439,7 +1427,7 @@ namespace Less3.Api.S3
                     foreach (string curr in grantees)
                     {
                         grant = null;
-                        if (!GrantFromString(curr, "READ_ACP", out grant)) continue;
+                        if (!GrantFromString(curr, PermissionEnum.ReadAcp, out grant)) continue;
                         ret.Add(grant);
                     }
                 }
@@ -1454,7 +1442,7 @@ namespace Less3.Api.S3
                     foreach (string curr in grantees)
                     {
                         grant = null;
-                        if (!GrantFromString(curr, "WRITE_ACP", out grant)) continue;
+                        if (!GrantFromString(curr, PermissionEnum.WriteAcp, out grant)) continue;
                         ret.Add(grant);
                     }
                 }
@@ -1469,7 +1457,7 @@ namespace Less3.Api.S3
                     foreach (string curr in grantees)
                     {
                         grant = null;
-                        if (!GrantFromString(curr, "FULL_CONTROL", out grant)) continue;
+                        if (!GrantFromString(curr, PermissionEnum.FullControl, out grant)) continue;
                         ret.Add(grant);
                     }
                 }
@@ -1478,11 +1466,10 @@ namespace Less3.Api.S3
             return ret;
         }
 
-        private bool GrantFromString(string str, string permType, out Grant grant)
+        private bool GrantFromString(string str, PermissionEnum permType, out Grant grant)
         {
             grant = null;
             if (String.IsNullOrEmpty(str)) return false;
-            if (String.IsNullOrEmpty(permType)) return false;
 
             string[] parts = str.Split('=');
             if (parts.Length != 2) return false;

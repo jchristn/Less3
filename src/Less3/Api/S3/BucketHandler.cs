@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Data;
 using System.IO;
 using System.Linq;
@@ -953,7 +954,7 @@ namespace Less3.Api.S3
             return !laterObjExists;
         }
 
-        private List<Grant> GrantsFromHeaders(User user, Dictionary<string, string> headers)
+        private List<Grant> GrantsFromHeaders(User user, NameValueCollection headers)
         {
             List<Grant> ret = new List<Grant>();
             if (headers == null || headers.Count < 1) return ret;
@@ -962,7 +963,7 @@ namespace Less3.Api.S3
             string[] grantees = null;
             Grant grant = null;
 
-            if (headers.ContainsKey(Constants.Headers.AccessControlList.ToLower()))
+            if (headers.AllKeys.Contains(Constants.Headers.AccessControlList.ToLower()))
             {
                 headerVal = headers[Constants.Headers.AccessControlList.ToLower()];
 
@@ -1013,7 +1014,7 @@ namespace Less3.Api.S3
                 }
             }
 
-            if (headers.ContainsKey(Constants.Headers.AclGrantRead.ToLower()))
+            if (headers.AllKeys.Contains(Constants.Headers.AclGrantRead.ToLower()))
             {
                 headerVal = headers[Constants.Headers.AclGrantRead.ToLower()];
                 grantees = headerVal.Split(',');
@@ -1028,7 +1029,7 @@ namespace Less3.Api.S3
                 }
             }
 
-            if (headers.ContainsKey(Constants.Headers.AclGrantWrite.ToLower()))
+            if (headers.AllKeys.Contains(Constants.Headers.AclGrantWrite.ToLower()))
             {
                 headerVal = headers[Constants.Headers.AclGrantWrite.ToLower()];
                 grantees = headerVal.Split(',');
@@ -1043,7 +1044,7 @@ namespace Less3.Api.S3
                 }
             }
 
-            if (headers.ContainsKey(Constants.Headers.AclGrantReadAcp.ToLower()))
+            if (headers.AllKeys.Contains(Constants.Headers.AclGrantReadAcp.ToLower()))
             {
                 headerVal = headers[Constants.Headers.AclGrantReadAcp.ToLower()];
                 grantees = headerVal.Split(',');
@@ -1058,7 +1059,7 @@ namespace Less3.Api.S3
                 }
             }
 
-            if (headers.ContainsKey(Constants.Headers.AclGrantWriteAcp.ToLower()))
+            if (headers.AllKeys.Contains(Constants.Headers.AclGrantWriteAcp.ToLower()))
             {
                 headerVal = headers[Constants.Headers.AclGrantWriteAcp.ToLower()];
                 grantees = headerVal.Split(',');
@@ -1073,7 +1074,7 @@ namespace Less3.Api.S3
                 }
             }
 
-            if (headers.ContainsKey(Constants.Headers.AclGrantFullControl.ToLower()))
+            if (headers.AllKeys.Contains(Constants.Headers.AclGrantFullControl.ToLower()))
             {
                 headerVal = headers[Constants.Headers.AclGrantFullControl.ToLower()];
                 grantees = headerVal.Split(',');

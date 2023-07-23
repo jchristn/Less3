@@ -1,57 +1,60 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Authors>Joel Christner</Authors>
-    <Company>Joel Christner</Company>
-    <Product>Less3</Product>
-    <Description>&lt;3 Less3 is S3-compatible object storage that you can run on your laptop, server, or anywhere you like.</Description>
-    <Copyright>(c)2022 Joel Christner</Copyright>
-    <PackageLicenseUrl></PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/jchristn/less3</PackageProjectUrl>
-    <PackageIconUrl></PackageIconUrl>
-    <RepositoryUrl>https://github.com/jchristn/less3</RepositoryUrl>
-    <RepositoryType>Github</RepositoryType>
-    <PackageTags>S3 storage blob object storage rest restful</PackageTags>
-    <PackageReleaseNotes>Dependency update, validation with AWS CLI</PackageReleaseNotes>
-    <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
-    <Version>2.1.6</Version>
-    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <PackageIcon>favicon.png</PackageIcon>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+		<Version>2.1.8</Version>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Authors>Joel Christner</Authors>
+		<Company>Joel Christner</Company>
+		<Product>Less3</Product>
+		<Description>&lt;3 Less3 is S3-compatible object storage that you can run on your laptop, server, or anywhere you like.</Description>
+		<Copyright>(c)2022 Joel Christner</Copyright>
+		<PackageLicenseUrl></PackageLicenseUrl>
+		<PackageProjectUrl>https://github.com/jchristn/less3</PackageProjectUrl>
+		<PackageIconUrl></PackageIconUrl>
+		<RepositoryUrl>https://github.com/jchristn/less3</RepositoryUrl>
+		<RepositoryType>Github</RepositoryType>
+		<PackageTags>S3 storage blob object storage rest restful</PackageTags>
+		<PackageReleaseNotes>Dependency update, validation with AWS CLI</PackageReleaseNotes>
+		<PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
+		<PublishSingleFile>true</PublishSingleFile>
+		<SelfContained>true</SelfContained>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+		<PackageIcon>favicon.png</PackageIcon>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>C:\code\kvpbase\less3-1.2\Less3\Less3.xml</DocumentationFile>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<DocumentationFile>C:\code\kvpbase\less3-1.2\Less3\Less3.xml</DocumentationFile>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Inputty" Version="1.0.4" />
-    <PackageReference Include="S3Server" Version="5.0.14" />
-    <PackageReference Include="SyslogLogging" Version="2.0.1.8" />
-    <PackageReference Include="WatsonORM" Version="2.0.2.3" />
-    <PackageReference Include="XmlToPox" Version="1.0.2.2" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Inputty" Version="1.0.5" />
+		<PackageReference Include="S3Server" Version="5.1.8" />
+		<PackageReference Include="SyslogLogging" Version="2.0.1.8" />
+		<PackageReference Include="WatsonORM" Version="3.0.0" />
+		<PackageReference Include="XmlToPox" Version="1.0.2.2" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Update="Assets\favicon-old.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\favicon.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\favicon.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Assets\favicon.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-    <None Include="LICENSE.md">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Update="Assets\favicon-old.ico">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Assets\favicon.ico">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Assets\favicon.png">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="Assets\favicon.png">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+		<None Include="LICENSE.md">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+	</ItemGroup>
 
 </Project>

@@ -229,8 +229,8 @@ namespace Less3.Classes
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
             ResultOrder[] ro = new ResultOrder[1];
-            ro[0] = new ResultOrder(_ORM.GetColumnName<Obj>(nameof(Obj.Version)), OrderDirection.Descending);
-
+            ro[0] = new ResultOrder(_ORM.GetColumnName<Obj>(nameof(Obj.Version)), OrderDirectionEnum.Descending);
+            
             Expr e = new Expr(_ORM.GetColumnName<Obj>(nameof(Obj.Key)), OperatorEnum.Equals, key);
             List<Obj> versions = _ORM.SelectMany<Obj>(null, null, e, ro);
 
@@ -283,7 +283,7 @@ namespace Less3.Classes
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
             ResultOrder[] ro = new ResultOrder[1];
-            ro[0] = new ResultOrder(_ORM.GetColumnName<Obj>(nameof(Obj.Version)), OrderDirection.Descending);
+            ro[0] = new ResultOrder(_ORM.GetColumnName<Obj>(nameof(Obj.Version)), OrderDirectionEnum.Descending);
 
             Expr e = new Expr(
                 _ORM.GetColumnName<Obj>(nameof(Obj.Key)),

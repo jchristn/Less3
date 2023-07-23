@@ -129,7 +129,7 @@ namespace Less3.Classes
                         break;
                     case "mysql": 
                         settings.Database = new DatabaseSettings(
-                            DbTypes.Mysql,
+                            DbTypeEnum.Mysql,
                             Inputty.GetString("Hostname:", "localhost", false),
                             Inputty.GetInteger("Port:", 3306, true, false),
                             Inputty.GetString("Username:", "root", false),
@@ -140,7 +140,7 @@ namespace Less3.Classes
                         break;
                     case "postgresql":
                         settings.Database = new DatabaseSettings(
-                            DbTypes.Postgresql,
+                            DbTypeEnum.Postgresql,
                             Inputty.GetString("Hostname:", "localhost", false),
                             Inputty.GetInteger("Port:", 5432, true, false),
                             Inputty.GetString("Username:", "postgres", false),

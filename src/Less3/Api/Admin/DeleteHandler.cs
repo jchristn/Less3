@@ -100,7 +100,7 @@ namespace Less3.Api.Admin
             }
 
             bool destroy = false;
-            if (ctx.Http.Request.Query.Elements.ContainsKey("destroy")) destroy = true; 
+            if (ctx.Http.Request.Query.Elements.AllKeys.Contains("destroy")) destroy = true; 
             _Buckets.Remove(bucket, destroy); 
 
             ctx.Response.StatusCode = 204;

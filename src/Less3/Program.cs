@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -16,14 +17,16 @@ using WatsonWebserver;
 using Less3.Api.Admin;
 using Less3.Api.S3; 
 using Less3.Classes;
+using System.Linq;
 
 namespace Less3
 {
     /// <summary>
     /// Less3 is an S3-compatible object storage server.
     /// </summary>
-    class Program
+    public class Program
     {
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         private static string _Version;
         private static Settings _Settings;
         private static LoggingModule _Logging;
@@ -388,15 +391,14 @@ namespace Less3
              * Return true if a response was sent
              * 
              */
-
-            
+                        
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Http.Request.Method.ToString() + " " + ctx.Http.Request.Url.RawWithoutQuery + "] ";
 
             while (ctx.Http.Request.Url.RawWithoutQuery.Contains("\\\\")) ctx.Http.Request.Url.RawWithoutQuery.Replace("\\\\", "\\");
 
             #region Enumerate
 
-            if (_Settings.Logging.LogHttpRequests || ctx.Http.Request.QuerystringExists("logrequest", false))
+            if (_Settings.Logging.LogHttpRequests || ctx.Http.Request.QuerystringExists("logrequest"))
             {
                 _Logging.Debug(Environment.NewLine + ctx.Http.Request.ToString());
             }
@@ -428,7 +430,7 @@ namespace Less3
              
             #region Unauthenticated-Requests
 
-            if (!ctx.Http.Request.Headers.ContainsKey("Authorization"))
+            if (!ctx.Http.Request.Headers.AllKeys.Contains("Authorization"))
             { 
                 if (ctx.Http.Request.Method == WatsonWebserver.HttpMethod.GET)
                 {
@@ -448,7 +450,7 @@ namespace Less3
 
             if (ctx.Http.Request.Url.Elements.Length >= 2 && ctx.Http.Request.Url.Elements[0].Equals("admin"))
             {
-                if (ctx.Http.Request.Headers.ContainsKey(_Settings.Server.HeaderApiKey))
+                if (ctx.Http.Request.Headers.AllKeys.Contains(_Settings.Server.HeaderApiKey)) 
                 {
                     if (!ctx.Http.Request.Headers[_Settings.Server.HeaderApiKey].Equals(_Settings.Server.AdminApiKey))
                     {
@@ -539,7 +541,7 @@ namespace Less3
 
             #endregion
 
-            if (ctx.Http.Request.Query.Elements != null && ctx.Http.Request.Query.Elements.ContainsKey("metadata"))
+            if (ctx.Http.Request.Query.Elements != null && ctx.Http.Request.Query.Elements.AllKeys.Contains("metadata"))
             {
                 ctx.Response.ContentType = "application/json";
                 await ctx.Response.Send(SerializationHelper.SerializeJson(md, true));
@@ -556,18 +558,21 @@ namespace Less3
             await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest);
         }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         private static async Task PostRequestHandler(S3Context ctx)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
+            ctx.Http.Timestamp.End = DateTime.UtcNow;
             string header = ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Http.Request.Method.ToString() + " " + ctx.Http.Request.Url.RawWithQuery + " ";
-            _Logging.Debug(header + ctx.Http.Response.StatusCode);
-            // _Logging.Debug(header + ctx.Http.Response.StatusCode + Environment.NewLine + SerializationHelper.SerializeJson(ctx.Response, true) + Environment.NewLine + ctx.Response.DataAsString);
+            _Logging.Debug(
+                header 
+                + ctx.Http.Response.StatusCode + " " 
+                + ctx.Http.Timestamp.TotalMs + "ms");
         }
 
         private static void Logger(string msg)
         {
             _Logging.Debug(msg);
         }
+
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     }
 }

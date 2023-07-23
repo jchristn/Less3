@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 using S3ServerLibrary;
@@ -194,7 +195,7 @@ namespace Less3.Classes
 
             #region Check-for-Admin-API-Key
 
-            if (ctx.Http.Request.Headers.ContainsKey(_Settings.Server.HeaderApiKey))
+            if (ctx.Http.Request.Headers.AllKeys.Contains(_Settings.Server.HeaderApiKey))
             {
                 if (ctx.Http.Request.Headers[_Settings.Server.HeaderApiKey].Equals(_Settings.Server.AdminApiKey))
                 {
@@ -238,7 +239,7 @@ namespace Less3.Classes
 
             #region Check-for-Admin-API-Key
 
-            if (ctx.Http.Request.Headers.ContainsKey(_Settings.Server.HeaderApiKey))
+            if (ctx.Http.Request.Headers.AllKeys.Contains(_Settings.Server.HeaderApiKey))
             {
                 if (ctx.Http.Request.Headers[_Settings.Server.HeaderApiKey].Equals(_Settings.Server.AdminApiKey))
                 {
@@ -488,7 +489,7 @@ namespace Less3.Classes
 
             #region Check-for-Admin-API-Key
 
-            if (ctx.Http.Request.Headers.ContainsKey(_Settings.Server.HeaderApiKey))
+            if (ctx.Http.Request.Headers.AllKeys.Contains(_Settings.Server.HeaderApiKey))
             {
                 if (ctx.Http.Request.Headers[_Settings.Server.HeaderApiKey].Equals(_Settings.Server.AdminApiKey))
                 {

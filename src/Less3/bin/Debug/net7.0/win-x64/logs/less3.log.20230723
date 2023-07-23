@@ -1,0 +1,13 @@
+2023-07-23 23:53:14 ALIENWAREM15 7 Debug ::1:62181 GET / 200
+2023-07-23 23:53:14 ALIENWAREM15 10 Debug ::1:62181 GET /default/?delimiter=%2F&max-keys=1000&prefix= 200
+2023-07-23 23:53:22 ALIENWAREM15 7 Debug ::1:62181 HEAD /default/hello.json 200
+2023-07-23 23:53:22 ALIENWAREM15 5 Debug ::1:62181 GET /default/hello.json 200
+2023-07-23 23:53:45 ALIENWAREM15 12 Debug ::1:62181 GET / 200
+2023-07-23 23:53:45 ALIENWAREM15 14 Debug ::1:62181 GET /default/?delimiter=%2F&max-keys=1000&prefix= 200
+2023-07-23 23:54:19 ALIENWAREM15 11 Debug ::1:62181 PUT /test/ 200
+2023-07-23 23:54:19 ALIENWAREM15 10 Debug ::1:62181 GET / 200
+2023-07-23 23:54:19 ALIENWAREM15 7 Debug ::1:62181 GET /default/?delimiter=%2F&max-keys=1000&prefix= 200
+2023-07-23 23:54:21 ALIENWAREM15 10 Debug ::1:62181 GET /test/?delimiter=%2F&max-keys=1000&prefix= 200
+2023-07-23 23:54:21 ALIENWAREM15 7 Debug ::1:62181 GET /default/?delimiter=%2F&max-keys=1000&prefix= 200
+2023-07-23 23:55:54 ALIENWAREM15 7 Debug ::1:62305 HEAD /default/hello.html 200 69.09ms
+2023-07-23 23:55:54 ALIENWAREM15 5 Debug ::1:62305 GET /default/hello.html 200 29.9ms

@@ -190,7 +190,7 @@ namespace Less3.Classes
         public static Settings FromFile(string filename)
         {
             if (String.IsNullOrEmpty(filename)) throw new ArgumentNullException(nameof(filename));
-            if (!Common.FileExists(filename)) throw new FileNotFoundException(nameof(filename));
+            if (!File.Exists(filename)) throw new FileNotFoundException(nameof(filename));
 
             string contents = Common.ReadTextFile(@filename);
             if (String.IsNullOrEmpty(contents))

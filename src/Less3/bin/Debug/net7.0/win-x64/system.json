@@ -10,7 +10,7 @@
     }
   },
   "Server": {
-    "DnsHostname": "localhost",
+    "DnsHostname": "*",
     "ListenerPort": 8000,
     "Ssl": false,
     "HeaderApiKey": "x-api-key",

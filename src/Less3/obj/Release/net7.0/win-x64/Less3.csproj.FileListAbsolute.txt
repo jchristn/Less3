@@ -249,3 +249,5 @@ C:\Code\Less3\Less3-2.1\src\Less3\bin\Release\net7.0\win-x64\k5sprt64.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Release\net7.0\win-x64\krb5_64.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Release\net7.0\win-x64\krbcc64.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Release\net7.0\win-x64\mscordaccore_amd64_amd64_7.0.923.32018.dll
+C:\Code\Less3\Less3-2.1\src\Less3\bin\Release\net7.0\win-x64\PrettyId.dll
+C:\Code\Less3\Less3-2.1\src\Less3\obj\Release\net7.0\win-x64\Less3.sourcelink.json

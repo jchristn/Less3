@@ -239,7 +239,7 @@ namespace Less3.Api.S3
                 c.LastModified = curr.LastUpdateUtc;
                 c.Size = curr.ContentLength;
                 c.ContentType = curr.ContentType;
-                c.StorageClass = "STANDARD";
+                c.StorageClass = StorageClassEnum.STANDARD;
                 
                 c.Owner = new S3ServerLibrary.S3Objects.Owner();
                 if (ownerCache.ContainsKey(curr.OwnerGUID))
@@ -574,7 +574,7 @@ namespace Less3.Api.S3
                     v.ETag = "\"" + curr.Md5 + "\"";
                     v.LastModified = curr.LastUpdateUtc;
                     v.Size = curr.ContentLength;
-                    v.StorageClass = StorageClassEnum.Standard;
+                    v.StorageClass = StorageClassEnum.STANDARD;
 
                     v.Owner = new S3ServerLibrary.S3Objects.Owner();
                     if (ownerCache.ContainsKey(curr.OwnerGUID))

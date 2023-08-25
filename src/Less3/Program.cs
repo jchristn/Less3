@@ -179,7 +179,7 @@ namespace Less3
                 if (String.Compare(args[0], "setup") == 0) initialSetup = true;
             }
 
-            if (!Common.FileExists("system.json")) initialSetup = true;
+            if (!File.Exists("system.json")) initialSetup = true;
             if (initialSetup)
             {
                 Setup setup = new Setup();
@@ -283,7 +283,6 @@ namespace Less3
                 Console.WriteLine("| Base domain " + _Settings.Server.BaseDomain);
                 Console.WriteLine("  | Requests must use virtual-hosted URLs, i.e. [bucket].[hostname]/[key]");
                 Console.WriteLine("  | Run as administrator/root and listen on a wildcard hostname, i.e. '*'");
-                _S3Server.BaseDomains.Add(_Settings.Server.BaseDomain);
             }
             else
             {
@@ -295,6 +294,8 @@ namespace Less3
             _S3Server.PostRequestHandler = PostRequestHandler;
 
             _S3Server.Service.ListBuckets = _ApiHandler.ServiceListBuckets;
+            _S3Server.Service.ServiceExists = _ApiHandler.ServiceExists;
+            _S3Server.Service.FindMatchingBaseDomain = _ApiHandler.FindMatchingBaseDomain;
 
             _S3Server.Bucket.Delete = _ApiHandler.BucketDelete;
             _S3Server.Bucket.DeleteTagging = _ApiHandler.BucketDeleteTagging;

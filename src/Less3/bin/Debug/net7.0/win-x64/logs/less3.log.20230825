@@ -1,0 +1,104 @@
+2023-08-25 18:34:17 ALIENWAREM15 7 Debug [S3Server] exception:
+{
+  "Message": "A base domain could not be found for hostname \u0027digitcells.local.gd\u0027.",
+  "Data": {},
+  "Source": "Less3",
+  "HResult": -2146232969,
+  "StackTrace": "   at Less3.Api.S3.ApiHandler.FindMatchingBaseDomain(String hostname) in C:\\Code\\Less3\\Less3-2.1\\src\\Less3\\Api\\S3\\ApiHandler.cs:line 93\r\n   at S3ServerLibrary.S3Request.ParseHostnameAndUrl()\r\n   at S3ServerLibrary.S3Request.ParseHttpContext()\r\n   at S3ServerLibrary.S3Request..ctor(S3Context ctx, Func\u00602 baseDomainFinder, Action\u00601 logger)\r\n   at S3ServerLibrary.S3Context..ctor(HttpContext ctx, Func\u00602 baseDomainFinder, Object metadata, Action\u00601 logger)\r\n   at S3ServerLibrary.S3Server.RequestHandler(HttpContext ctx)"
+}
+2023-08-25 18:34:18 ALIENWAREM15 10 Debug [S3Server] exception:
+{
+  "Message": "A base domain could not be found for hostname \u0027digitcells.local.gd\u0027.",
+  "Data": {},
+  "Source": "Less3",
+  "HResult": -2146232969,
+  "StackTrace": "   at Less3.Api.S3.ApiHandler.FindMatchingBaseDomain(String hostname) in C:\\Code\\Less3\\Less3-2.1\\src\\Less3\\Api\\S3\\ApiHandler.cs:line 93\r\n   at S3ServerLibrary.S3Request.ParseHostnameAndUrl()\r\n   at S3ServerLibrary.S3Request.ParseHttpContext()\r\n   at S3ServerLibrary.S3Request..ctor(S3Context ctx, Func\u00602 baseDomainFinder, Action\u00601 logger)\r\n   at S3ServerLibrary.S3Context..ctor(HttpContext ctx, Func\u00602 baseDomainFinder, Object metadata, Action\u00601 logger)\r\n   at S3ServerLibrary.S3Server.RequestHandler(HttpContext ctx)"
+}
+2023-08-25 18:34:19 ALIENWAREM15 5 Debug [S3Server] exception:
+{
+  "Message": "A base domain could not be found for hostname \u0027digitcells.local.gd\u0027.",
+  "Data": {},
+  "Source": "Less3",
+  "HResult": -2146232969,
+  "StackTrace": "   at Less3.Api.S3.ApiHandler.FindMatchingBaseDomain(String hostname) in C:\\Code\\Less3\\Less3-2.1\\src\\Less3\\Api\\S3\\ApiHandler.cs:line 93\r\n   at S3ServerLibrary.S3Request.ParseHostnameAndUrl()\r\n   at S3ServerLibrary.S3Request.ParseHttpContext()\r\n   at S3ServerLibrary.S3Request..ctor(S3Context ctx, Func\u00602 baseDomainFinder, Action\u00601 logger)\r\n   at S3ServerLibrary.S3Context..ctor(HttpContext ctx, Func\u00602 baseDomainFinder, Object metadata, Action\u00601 logger)\r\n   at S3ServerLibrary.S3Server.RequestHandler(HttpContext ctx)"
+}
+2023-08-25 18:34:20 ALIENWAREM15 7 Debug [S3Server] exception:
+{
+  "Message": "A base domain could not be found for hostname \u0027digitcells.local.gd\u0027.",
+  "Data": {},
+  "Source": "Less3",
+  "HResult": -2146232969,
+  "StackTrace": "   at Less3.Api.S3.ApiHandler.FindMatchingBaseDomain(String hostname) in C:\\Code\\Less3\\Less3-2.1\\src\\Less3\\Api\\S3\\ApiHandler.cs:line 93\r\n   at S3ServerLibrary.S3Request.ParseHostnameAndUrl()\r\n   at S3ServerLibrary.S3Request.ParseHttpContext()\r\n   at S3ServerLibrary.S3Request..ctor(S3Context ctx, Func\u00602 baseDomainFinder, Action\u00601 logger)\r\n   at S3ServerLibrary.S3Context..ctor(HttpContext ctx, Func\u00602 baseDomainFinder, Object metadata, Action\u00601 logger)\r\n   at S3ServerLibrary.S3Server.RequestHandler(HttpContext ctx)"
+}
+2023-08-25 18:35:18 ALIENWAREM15 7 Debug [S3Server] exception:
+{
+  "Message": "A base domain could not be found for hostname \u0027digitcells.local.gd\u0027.",
+  "Data": {},
+  "Source": "Less3",
+  "HResult": -2146232969,
+  "StackTrace": "   at Less3.Api.S3.ApiHandler.FindMatchingBaseDomain(String hostname) in C:\\Code\\Less3\\Less3-2.1\\src\\Less3\\Api\\S3\\ApiHandler.cs:line 93\r\n   at S3ServerLibrary.S3Request.ParseHostnameAndUrl()\r\n   at S3ServerLibrary.S3Request.ParseHttpContext()\r\n   at S3ServerLibrary.S3Request..ctor(S3Context ctx, Func\u00602 baseDomainFinder, Action\u00601 logger)\r\n   at S3ServerLibrary.S3Context..ctor(HttpContext ctx, Func\u00602 baseDomainFinder, Object metadata, Action\u00601 logger)\r\n   at S3ServerLibrary.S3Server.RequestHandler(HttpContext ctx)"
+}
+2023-08-25 18:35:19 ALIENWAREM15 10 Debug [S3Server] exception:
+{
+  "Message": "A base domain could not be found for hostname \u0027digitcells.local.gd\u0027.",
+  "Data": {},
+  "Source": "Less3",
+  "HResult": -2146232969,
+  "StackTrace": "   at Less3.Api.S3.ApiHandler.FindMatchingBaseDomain(String hostname) in C:\\Code\\Less3\\Less3-2.1\\src\\Less3\\Api\\S3\\ApiHandler.cs:line 93\r\n   at S3ServerLibrary.S3Request.ParseHostnameAndUrl()\r\n   at S3ServerLibrary.S3Request.ParseHttpContext()\r\n   at S3ServerLibrary.S3Request..ctor(S3Context ctx, Func\u00602 baseDomainFinder, Action\u00601 logger)\r\n   at S3ServerLibrary.S3Context..ctor(HttpContext ctx, Func\u00602 baseDomainFinder, Object metadata, Action\u00601 logger)\r\n   at S3ServerLibrary.S3Server.RequestHandler(HttpContext ctx)"
+}
+2023-08-25 18:35:20 ALIENWAREM15 7 Debug [S3Server] exception:
+{
+  "Message": "A base domain could not be found for hostname \u0027digitcells.local.gd\u0027.",
+  "Data": {},
+  "Source": "Less3",
+  "HResult": -2146232969,
+  "StackTrace": "   at Less3.Api.S3.ApiHandler.FindMatchingBaseDomain(String hostname) in C:\\Code\\Less3\\Less3-2.1\\src\\Less3\\Api\\S3\\ApiHandler.cs:line 93\r\n   at S3ServerLibrary.S3Request.ParseHostnameAndUrl()\r\n   at S3ServerLibrary.S3Request.ParseHttpContext()\r\n   at S3ServerLibrary.S3Request..ctor(S3Context ctx, Func\u00602 baseDomainFinder, Action\u00601 logger)\r\n   at S3ServerLibrary.S3Context..ctor(HttpContext ctx, Func\u00602 baseDomainFinder, Object metadata, Action\u00601 logger)\r\n   at S3ServerLibrary.S3Server.RequestHandler(HttpContext ctx)"
+}
+2023-08-25 18:35:21 ALIENWAREM15 10 Debug [S3Server] exception:
+{
+  "Message": "A base domain could not be found for hostname \u0027digitcells.local.gd\u0027.",
+  "Data": {},
+  "Source": "Less3",
+  "HResult": -2146232969,
+  "StackTrace": "   at Less3.Api.S3.ApiHandler.FindMatchingBaseDomain(String hostname) in C:\\Code\\Less3\\Less3-2.1\\src\\Less3\\Api\\S3\\ApiHandler.cs:line 93\r\n   at S3ServerLibrary.S3Request.ParseHostnameAndUrl()\r\n   at S3ServerLibrary.S3Request.ParseHttpContext()\r\n   at S3ServerLibrary.S3Request..ctor(S3Context ctx, Func\u00602 baseDomainFinder, Action\u00601 logger)\r\n   at S3ServerLibrary.S3Context..ctor(HttpContext ctx, Func\u00602 baseDomainFinder, Object metadata, Action\u00601 logger)\r\n   at S3ServerLibrary.S3Server.RequestHandler(HttpContext ctx)"
+}
+2023-08-25 18:35:32 ALIENWAREM15 7 Debug [S3Server] exception:
+{
+  "Message": "A base domain could not be found for hostname \u0027localtest.me\u0027.",
+  "Data": {},
+  "Source": "Less3",
+  "HResult": -2146232969,
+  "StackTrace": "   at Less3.Api.S3.ApiHandler.FindMatchingBaseDomain(String hostname) in C:\\Code\\Less3\\Less3-2.1\\src\\Less3\\Api\\S3\\ApiHandler.cs:line 93\r\n   at S3ServerLibrary.S3Request.ParseHostnameAndUrl()\r\n   at S3ServerLibrary.S3Request.ParseHttpContext()\r\n   at S3ServerLibrary.S3Request..ctor(S3Context ctx, Func\u00602 baseDomainFinder, Action\u00601 logger)\r\n   at S3ServerLibrary.S3Context..ctor(HttpContext ctx, Func\u00602 baseDomainFinder, Object metadata, Action\u00601 logger)\r\n   at S3ServerLibrary.S3Server.RequestHandler(HttpContext ctx)"
+}
+2023-08-25 18:35:33 ALIENWAREM15 5 Debug [S3Server] exception:
+{
+  "Message": "A base domain could not be found for hostname \u0027localtest.me\u0027.",
+  "Data": {},
+  "Source": "Less3",
+  "HResult": -2146232969,
+  "StackTrace": "   at Less3.Api.S3.ApiHandler.FindMatchingBaseDomain(String hostname) in C:\\Code\\Less3\\Less3-2.1\\src\\Less3\\Api\\S3\\ApiHandler.cs:line 93\r\n   at S3ServerLibrary.S3Request.ParseHostnameAndUrl()\r\n   at S3ServerLibrary.S3Request.ParseHttpContext()\r\n   at S3ServerLibrary.S3Request..ctor(S3Context ctx, Func\u00602 baseDomainFinder, Action\u00601 logger)\r\n   at S3ServerLibrary.S3Context..ctor(HttpContext ctx, Func\u00602 baseDomainFinder, Object metadata, Action\u00601 logger)\r\n   at S3ServerLibrary.S3Server.RequestHandler(HttpContext ctx)"
+}
+2023-08-25 18:35:34 ALIENWAREM15 7 Debug [S3Server] exception:
+{
+  "Message": "A base domain could not be found for hostname \u0027localtest.me\u0027.",
+  "Data": {},
+  "Source": "Less3",
+  "HResult": -2146232969,
+  "StackTrace": "   at Less3.Api.S3.ApiHandler.FindMatchingBaseDomain(String hostname) in C:\\Code\\Less3\\Less3-2.1\\src\\Less3\\Api\\S3\\ApiHandler.cs:line 93\r\n   at S3ServerLibrary.S3Request.ParseHostnameAndUrl()\r\n   at S3ServerLibrary.S3Request.ParseHttpContext()\r\n   at S3ServerLibrary.S3Request..ctor(S3Context ctx, Func\u00602 baseDomainFinder, Action\u00601 logger)\r\n   at S3ServerLibrary.S3Context..ctor(HttpContext ctx, Func\u00602 baseDomainFinder, Object metadata, Action\u00601 logger)\r\n   at S3ServerLibrary.S3Server.RequestHandler(HttpContext ctx)"
+}
+2023-08-25 18:35:35 ALIENWAREM15 11 Debug [S3Server] exception:
+{
+  "Message": "A base domain could not be found for hostname \u0027localtest.me\u0027.",
+  "Data": {},
+  "Source": "Less3",
+  "HResult": -2146232969,
+  "StackTrace": "   at Less3.Api.S3.ApiHandler.FindMatchingBaseDomain(String hostname) in C:\\Code\\Less3\\Less3-2.1\\src\\Less3\\Api\\S3\\ApiHandler.cs:line 93\r\n   at S3ServerLibrary.S3Request.ParseHostnameAndUrl()\r\n   at S3ServerLibrary.S3Request.ParseHttpContext()\r\n   at S3ServerLibrary.S3Request..ctor(S3Context ctx, Func\u00602 baseDomainFinder, Action\u00601 logger)\r\n   at S3ServerLibrary.S3Context..ctor(HttpContext ctx, Func\u00602 baseDomainFinder, Object metadata, Action\u00601 logger)\r\n   at S3ServerLibrary.S3Server.RequestHandler(HttpContext ctx)"
+}
+2023-08-25 18:35:54 ALIENWAREM15 7 Debug 127.0.0.1:57261 GET / 200 105.45ms
+2023-08-25 18:35:54 ALIENWAREM15 10 Debug 127.0.0.1:57262 GET /?delimiter=%2F&max-keys=1000&prefix= 200 43.74ms
+2023-08-25 18:35:55 ALIENWAREM15 5 Debug 127.0.0.1:57264 GET /?delimiter=%2F&max-keys=1000&prefix= 200 12.18ms
+2023-08-25 18:35:56 ALIENWAREM15 7 Debug 127.0.0.1:57266 GET /?delimiter=%2F&max-keys=1000&prefix= 200 21.12ms
+2023-08-25 18:36:39 ALIENWAREM15 7 Debug 127.0.0.1:57276 GET / 200 78.94ms
+2023-08-25 18:36:39 ALIENWAREM15 10 Debug 127.0.0.1:57277 GET /default/?delimiter=%2F&max-keys=1000&prefix= 200 49.7ms
+2023-08-25 18:36:43 ALIENWAREM15 5 Debug 127.0.0.1:57278 GET /test/?delimiter=%2F&max-keys=1000&prefix= 200 17.98ms
+2023-08-25 18:36:43 ALIENWAREM15 10 Debug 127.0.0.1:57279 GET /default/?delimiter=%2F&max-keys=1000&prefix= 200 17.3ms

@@ -3,13 +3,13 @@
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
 		<TargetFrameworks>net6.0;net7.0</TargetFrameworks>
-		<Version>2.1.8</Version>
+		<Version>2.1.9</Version>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Authors>Joel Christner</Authors>
 		<Company>Joel Christner</Company>
 		<Product>Less3</Product>
 		<Description>&lt;3 Less3 is S3-compatible object storage that you can run on your laptop, server, or anywhere you like.</Description>
-		<Copyright>(c)2022 Joel Christner</Copyright>
+		<Copyright>(c)2023 Joel Christner</Copyright>
 		<PackageLicenseUrl></PackageLicenseUrl>
 		<PackageProjectUrl>https://github.com/jchristn/less3</PackageProjectUrl>
 		<PackageIconUrl></PackageIconUrl>
@@ -23,18 +23,24 @@
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
 		<PackageIcon>favicon.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<ApplicationIcon>heart.ico</ApplicationIcon>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<DocumentationFile>C:\code\kvpbase\less3-1.2\Less3\Less3.xml</DocumentationFile>
+		<DocumentationFile>Less3.xml</DocumentationFile>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Inputty" Version="1.0.5" />
-		<PackageReference Include="S3Server" Version="5.1.8" />
-		<PackageReference Include="SyslogLogging" Version="2.0.1.8" />
+		<Content Include="heart.ico" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Inputty" Version="1.0.6" />
+		<PackageReference Include="S3Server" Version="5.3.1" />
+		<PackageReference Include="SyslogLogging" Version="2.0.2" />
 		<PackageReference Include="WatsonORM" Version="3.0.0" />
-		<PackageReference Include="XmlToPox" Version="1.0.2.2" />
+		<PackageReference Include="XmlToPox" Version="1.0.3" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -46,6 +52,10 @@
 		</None>
 		<None Update="Assets\favicon.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="..\..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
 		</None>
 		<None Include="Assets\favicon.png">
 			<Pack>True</Pack>

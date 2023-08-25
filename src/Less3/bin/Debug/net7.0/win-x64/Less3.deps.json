@@ -7,13 +7,15 @@
   "targets": {
     ".NETCoreApp,Version=v7.0": {},
     ".NETCoreApp,Version=v7.0/win-x64": {
-      "Less3/2.1.8": {
+      "Less3/2.1.9": {
         "dependencies": {
-          "Inputty": "1.0.5",
-          "S3Server": "5.1.8",
-          "SyslogLogging": "2.0.1.8",
+          "Inputty": "1.0.6",
+          "Microsoft.NET.ILLink.Analyzers": "7.0.100-1.23211.1",
+          "Microsoft.NET.ILLink.Tasks": "7.0.100-1.23211.1",
+          "S3Server": "5.3.1",
+          "SyslogLogging": "2.0.2",
           "WatsonORM": "3.0.0",
-          "XmlToPox": "1.0.2.2",
+          "XmlToPox": "1.0.3",
           "runtimepack.Microsoft.NETCore.App.Runtime.win-x64": "7.0.9"
         },
         "runtime": {
@@ -817,11 +819,11 @@
           }
         }
       },
-      "Inputty/1.0.5": {
+      "Inputty/1.0.6": {
         "runtime": {
           "lib/net7.0/GetSomeInput.dll": {
-            "assemblyVersion": "1.0.5.0",
-            "fileVersion": "1.0.5.0"
+            "assemblyVersion": "1.0.6.0",
+            "fileVersion": "1.0.6.0"
           }
         }
       },
@@ -918,6 +920,8 @@
           }
         }
       },
+      "Microsoft.NET.ILLink.Analyzers/7.0.100-1.23211.1": {},
+      "Microsoft.NET.ILLink.Tasks/7.0.100-1.23211.1": {},
       "Microsoft.NETCore.Platforms/3.1.0": {},
       "Microsoft.NETCore.Targets/1.1.0": {},
       "Microsoft.Win32.Registry/4.7.0": {
@@ -994,6 +998,14 @@
           }
         }
       },
+      "PrettyId/1.0.0.4": {
+        "runtime": {
+          "lib/net7.0/PrettyId.dll": {
+            "assemblyVersion": "1.0.0.4",
+            "fileVersion": "1.0.0.4"
+          }
+        }
+      },
       "RegexMatcher/1.0.8": {
         "runtime": {
           "lib/net7.0/RegexMatcher.dll": {
@@ -1028,14 +1040,15 @@
         }
       },
       "runtime.win-x86.runtime.native.System.Data.SqlClient.sni/4.4.0": {},
-      "S3Server/5.1.8": {
+      "S3Server/5.3.1": {
         "dependencies": {
-          "Watson": "5.0.3"
+          "PrettyId": "1.0.0.4",
+          "Watson": "5.1.2"
         },
         "runtime": {
           "lib/net7.0/S3Server.dll": {
-            "assemblyVersion": "5.1.8.0",
-            "fileVersion": "5.1.8.0"
+            "assemblyVersion": "5.3.1.0",
+            "fileVersion": "5.3.1.0"
           }
         }
       },
@@ -1080,11 +1093,11 @@
           }
         }
       },
-      "SyslogLogging/2.0.1.8": {
+      "SyslogLogging/2.0.2": {
         "runtime": {
-          "lib/net6.0/LoggingModule.dll": {
-            "assemblyVersion": "2.0.1.8",
-            "fileVersion": "2.0.1.8"
+          "lib/net7.0/LoggingModule.dll": {
+            "assemblyVersion": "2.0.2.0",
+            "fileVersion": "2.0.2.0"
           }
         }
       },
@@ -1268,7 +1281,7 @@
           }
         }
       },
-      "Watson/5.0.3": {
+      "Watson/5.1.2": {
         "dependencies": {
           "IpMatcher": "1.0.4.4",
           "RegexMatcher": "1.0.8",
@@ -1278,8 +1291,8 @@
         },
         "runtime": {
           "lib/net7.0/WatsonWebserver.dll": {
-            "assemblyVersion": "5.0.3.0",
-            "fileVersion": "5.0.3.0"
+            "assemblyVersion": "5.1.2.0",
+            "fileVersion": "5.1.2.0"
           }
         }
       },
@@ -1356,18 +1369,18 @@
           }
         }
       },
-      "XmlToPox/1.0.2.2": {
+      "XmlToPox/1.0.3": {
         "runtime": {
-          "lib/net6.0/XmlToPox.dll": {
-            "assemblyVersion": "1.0.2.2",
-            "fileVersion": "1.0.2.2"
+          "lib/net7.0/XmlToPox.dll": {
+            "assemblyVersion": "1.0.3.0",
+            "fileVersion": "1.0.3.0"
           }
         }
       }
     }
   },
   "libraries": {
-    "Less3/2.1.8": {
+    "Less3/2.1.9": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -1426,12 +1439,12 @@
       "path": "google.protobuf/3.21.9",
       "hashPath": "google.protobuf.3.21.9.nupkg.sha512"
     },
-    "Inputty/1.0.5": {
+    "Inputty/1.0.6": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-fCPh+Zt+6IPKCmsb/DoVZnxApOOmsCfwCY05ev9IBG9g/HwtluEIeUjxBMr7JHGOAZmHZUNkAEFHAl+wAxYL/A==",
-      "path": "inputty/1.0.5",
-      "hashPath": "inputty.1.0.5.nupkg.sha512"
+      "sha512": "sha512-opqK/geZcTGcCUV41mE5YOQF77IIFrITLRoucadC2LD46q4Tb0ya1pk6L538PSJ/rrDrvRI0TZ/rL6/MVWwC6w==",
+      "path": "inputty/1.0.6",
+      "hashPath": "inputty.1.0.6.nupkg.sha512"
     },
     "IpMatcher/1.0.4.4": {
       "type": "package",
@@ -1510,6 +1523,20 @@
       "path": "microsoft.extensions.primitives/7.0.0",
       "hashPath": "microsoft.extensions.primitives.7.0.0.nupkg.sha512"
     },
+    "Microsoft.NET.ILLink.Analyzers/7.0.100-1.23211.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-0GvbEgDGcUQA9KuWcQU1WwYHXt1tBzNr1Nls/M57rM7NA/AndFwCaCEoJpJkmxRY7xLlPDBnmGp8h5+FNqUngg==",
+      "path": "microsoft.net.illink.analyzers/7.0.100-1.23211.1",
+      "hashPath": "microsoft.net.illink.analyzers.7.0.100-1.23211.1.nupkg.sha512"
+    },
+    "Microsoft.NET.ILLink.Tasks/7.0.100-1.23211.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-tvG8XZYLjT0o3WicCyKBZysVWo1jC9HdCFmNRmddx3WbAz0UCsd0qKZqpiEo99VLA8Re+FzWK51OcRldQPbt2Q==",
+      "path": "microsoft.net.illink.tasks/7.0.100-1.23211.1",
+      "hashPath": "microsoft.net.illink.tasks.7.0.100-1.23211.1.nupkg.sha512"
+    },
     "Microsoft.NETCore.Platforms/3.1.0": {
       "type": "package",
       "serviceable": true,
@@ -1558,6 +1585,13 @@
       "sha512": "sha512-eZZBCABzVOek+id9Xy04HhmgykF0wZg9wpByzrWN7q8qEI0Qen9b7tfd7w8VA3dOeesumMG7C5ZPy0jk7PSRHw==",
       "path": "portable.bouncycastle/1.9.0",
       "hashPath": "portable.bouncycastle.1.9.0.nupkg.sha512"
+    },
+    "PrettyId/1.0.0.4": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-D1qZeeVpwLTkQ9VrD8XD+RQpc2uKV5bRp7wg2peW3eREjZcYGYXACWN0kkSImVI7/08b1Pn9kNY5LGZb0Tme7A==",
+      "path": "prettyid/1.0.0.4",
+      "hashPath": "prettyid.1.0.0.4.nupkg.sha512"
     },
     "RegexMatcher/1.0.8": {
       "type": "package",
@@ -1636,12 +1670,12 @@
       "path": "runtime.win-x86.runtime.native.system.data.sqlclient.sni/4.4.0",
       "hashPath": "runtime.win-x86.runtime.native.system.data.sqlclient.sni.4.4.0.nupkg.sha512"
     },
-    "S3Server/5.1.8": {
+    "S3Server/5.3.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-dMFsWVfwJtEAuhUBaApMfqeySVJ7HmSybc8Gyxr9DWe3nOZsvv5JJONuWr2SB7Z3h9VkJp1ifl6Xa9RBOTH5Xg==",
-      "path": "s3server/5.1.8",
-      "hashPath": "s3server.5.1.8.nupkg.sha512"
+      "sha512": "sha512-/kFgxQi1aTOpvOUutbLfsxbOx4sbcOM7g4kWh98hsCfKI91qRb7oxBp/ezkFDM3OtGU8OWknWuP/AhR5zRsRgA==",
+      "path": "s3server/5.3.1",
+      "hashPath": "s3server.5.3.1.nupkg.sha512"
     },
     "SQLitePCLRaw.bundle_e_sqlite3/2.1.4": {
       "type": "package",
@@ -1671,12 +1705,12 @@
       "path": "sqlitepclraw.provider.e_sqlite3/2.1.4",
       "hashPath": "sqlitepclraw.provider.e_sqlite3.2.1.4.nupkg.sha512"
     },
-    "SyslogLogging/2.0.1.8": {
+    "SyslogLogging/2.0.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-JuJFM6gWk1XswQglYiTm2auW6BTr9v1Plw6AV89aU4s0pg8huQM1Wtbs8TLOGwqYs8kBCTvq1gEPWY7v+S/4Hg==",
-      "path": "sysloglogging/2.0.1.8",
-      "hashPath": "sysloglogging.2.0.1.8.nupkg.sha512"
+      "sha512": "sha512-/r+zNMTVhw0Qov5gXgb4OUiZg+i68hngaDVGA0JoZbV9iP/fCNo1h/NDVDcYz+ug4Qnpz7zeIIpHylbvnDuUcA==",
+      "path": "sysloglogging/2.0.2",
+      "hashPath": "sysloglogging.2.0.2.nupkg.sha512"
     },
     "System.Buffers/4.5.1": {
       "type": "package",
@@ -1860,12 +1894,12 @@
       "path": "urlmatcher/2.0.1",
       "hashPath": "urlmatcher.2.0.1.nupkg.sha512"
     },
-    "Watson/5.0.3": {
+    "Watson/5.1.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-gIJt/DfyTuSZpLkvP2/rQ+A9fSnX0nEFPkZjf6mEPvosGDIJ4SPIYSn6wjYtbiRj5jU84JVPkimc+VXOs+zfcg==",
-      "path": "watson/5.0.3",
-      "hashPath": "watson.5.0.3.nupkg.sha512"
+      "sha512": "sha512-hNsQAPMqVxJxlJX1lCvpTuS9BSaUD6dTlM9OP92msrGbTZacsoqXu71sqbUrbwoBbz7MtqQJhu42IH6w/nV4HQ==",
+      "path": "watson/5.1.2",
+      "hashPath": "watson.5.1.2.nupkg.sha512"
     },
     "WatsonORM/3.0.0": {
       "type": "package",
@@ -1909,12 +1943,12 @@
       "path": "watsonorm.sqlserver/3.0.0",
       "hashPath": "watsonorm.sqlserver.3.0.0.nupkg.sha512"
     },
-    "XmlToPox/1.0.2.2": {
+    "XmlToPox/1.0.3": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-EaGFpz1qCfFd3eMnFU1gPqNVqUk+f+c46LvyrXKnYt4A8J2JE7hrPQNvezVRa1zjWKKPjYReDPc0q+v8d/Onig==",
-      "path": "xmltopox/1.0.2.2",
-      "hashPath": "xmltopox.1.0.2.2.nupkg.sha512"
+      "sha512": "sha512-rO/3lUKQnnGCAQi/ls+mcUr/TurwiZh7NgirinAznINs6go9BszLNw46QRkecLkQakmID2M/tRiOSKBBJ1Ts3g==",
+      "path": "xmltopox/1.0.3",
+      "hashPath": "xmltopox.1.0.3.nupkg.sha512"
     }
   },
   "runtimes": {

@@ -121,7 +121,7 @@
           }
         }
       },
-      "Inputty/1.0.5": {
+      "Inputty/1.0.6": {
         "type": "package",
         "compile": {
           "lib/net6.0/GetSomeInput.dll": {
@@ -310,6 +310,18 @@
           "buildTransitive/net6.0/_._": {}
         }
       },
+      "Microsoft.NET.ILLink.Analyzers/7.0.100-1.23211.1": {
+        "type": "package",
+        "build": {
+          "build/Microsoft.NET.ILLink.Analyzers.props": {}
+        }
+      },
+      "Microsoft.NET.ILLink.Tasks/7.0.100-1.23211.1": {
+        "type": "package",
+        "build": {
+          "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
       "Microsoft.NETCore.Platforms/3.1.0": {
         "type": "package",
         "compile": {
@@ -455,6 +467,19 @@
           }
         }
       },
+      "PrettyId/1.0.0.4": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/PrettyId.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/PrettyId.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "RegexMatcher/1.0.8": {
         "type": "package",
         "compile": {
@@ -506,10 +531,11 @@
           }
         }
       },
-      "S3Server/5.1.8": {
+      "S3Server/5.3.1": {
         "type": "package",
         "dependencies": {
-          "Watson": "5.0.3"
+          "PrettyId": "1.0.0.4",
+          "Watson": "5.1.2"
         },
         "compile": {
           "lib/net6.0/S3Server.dll": {
@@ -665,7 +691,7 @@
           "lib/net6.0/SQLitePCLRaw.provider.e_sqlite3.dll": {}
         }
       },
-      "SyslogLogging/2.0.1.8": {
+      "SyslogLogging/2.0.2": {
         "type": "package",
         "compile": {
           "lib/net6.0/LoggingModule.dll": {}
@@ -1096,7 +1122,7 @@
           }
         }
       },
-      "Watson/5.0.3": {
+      "Watson/5.1.2": {
         "type": "package",
         "dependencies": {
           "IpMatcher": "1.0.4.4",
@@ -1219,13 +1245,24 @@
           }
         }
       },
-      "XmlToPox/1.0.2.2": {
+      "XmlToPox/1.0.3": {
         "type": "package",
         "compile": {
-          "lib/net6.0/XmlToPox.dll": {}
+          "lib/net6.0/XmlToPox.dll": {
+            "related": ".xml"
+          }
         },
         "runtime": {
-          "lib/net6.0/XmlToPox.dll": {}
+          "lib/net6.0/XmlToPox.dll": {
+            "related": ".xml"
+          }
+        },
+        "contentFiles": {
+          "contentFiles/any/net6.0/logo.ico": {
+            "buildAction": "Content",
+            "codeLanguage": "any",
+            "copyToOutput": false
+          }
         }
       }
     },
@@ -1349,7 +1386,7 @@
           }
         }
       },
-      "Inputty/1.0.5": {
+      "Inputty/1.0.6": {
         "type": "package",
         "compile": {
           "lib/net6.0/GetSomeInput.dll": {
@@ -1538,6 +1575,18 @@
           "buildTransitive/net6.0/_._": {}
         }
       },
+      "Microsoft.NET.ILLink.Analyzers/7.0.100-1.23211.1": {
+        "type": "package",
+        "build": {
+          "build/Microsoft.NET.ILLink.Analyzers.props": {}
+        }
+      },
+      "Microsoft.NET.ILLink.Tasks/7.0.100-1.23211.1": {
+        "type": "package",
+        "build": {
+          "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
       "Microsoft.NETCore.Platforms/3.1.0": {
         "type": "package",
         "compile": {
@@ -1652,6 +1701,19 @@
           }
         }
       },
+      "PrettyId/1.0.0.4": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/PrettyId.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/PrettyId.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "RegexMatcher/1.0.8": {
         "type": "package",
         "compile": {
@@ -1745,10 +1807,11 @@
       "runtime.win-x86.runtime.native.System.Data.SqlClient.sni/4.4.0": {
         "type": "package"
       },
-      "S3Server/5.1.8": {
+      "S3Server/5.3.1": {
         "type": "package",
         "dependencies": {
-          "Watson": "5.0.3"
+          "PrettyId": "1.0.0.4",
+          "Watson": "5.1.2"
         },
         "compile": {
           "lib/net6.0/S3Server.dll": {
@@ -1813,7 +1876,7 @@
           "lib/net6.0/SQLitePCLRaw.provider.e_sqlite3.dll": {}
         }
       },
-      "SyslogLogging/2.0.1.8": {
+      "SyslogLogging/2.0.2": {
         "type": "package",
         "compile": {
           "lib/net6.0/LoggingModule.dll": {}
@@ -2202,7 +2265,7 @@
           }
         }
       },
-      "Watson/5.0.3": {
+      "Watson/5.1.2": {
         "type": "package",
         "dependencies": {
           "IpMatcher": "1.0.4.4",
@@ -2325,13 +2388,24 @@
           }
         }
       },
-      "XmlToPox/1.0.2.2": {
+      "XmlToPox/1.0.3": {
         "type": "package",
         "compile": {
-          "lib/net6.0/XmlToPox.dll": {}
+          "lib/net6.0/XmlToPox.dll": {
+            "related": ".xml"
+          }
         },
         "runtime": {
-          "lib/net6.0/XmlToPox.dll": {}
+          "lib/net6.0/XmlToPox.dll": {
+            "related": ".xml"
+          }
+        },
+        "contentFiles": {
+          "contentFiles/any/net6.0/logo.ico": {
+            "buildAction": "Content",
+            "codeLanguage": "any",
+            "copyToOutput": false
+          }
         }
       }
     },
@@ -2455,7 +2529,7 @@
           }
         }
       },
-      "Inputty/1.0.5": {
+      "Inputty/1.0.6": {
         "type": "package",
         "compile": {
           "lib/net7.0/GetSomeInput.dll": {
@@ -2641,6 +2715,18 @@
           "buildTransitive/net6.0/_._": {}
         }
       },
+      "Microsoft.NET.ILLink.Analyzers/7.0.100-1.23211.1": {
+        "type": "package",
+        "build": {
+          "build/Microsoft.NET.ILLink.Analyzers.props": {}
+        }
+      },
+      "Microsoft.NET.ILLink.Tasks/7.0.100-1.23211.1": {
+        "type": "package",
+        "build": {
+          "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
       "Microsoft.NETCore.Platforms/3.1.0": {
         "type": "package",
         "compile": {
@@ -2785,6 +2871,19 @@
           }
         }
       },
+      "PrettyId/1.0.0.4": {
+        "type": "package",
+        "compile": {
+          "lib/net7.0/PrettyId.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net7.0/PrettyId.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "RegexMatcher/1.0.8": {
         "type": "package",
         "compile": {
@@ -2836,10 +2935,11 @@
           }
         }
       },
-      "S3Server/5.1.8": {
+      "S3Server/5.3.1": {
         "type": "package",
         "dependencies": {
-          "Watson": "5.0.3"
+          "PrettyId": "1.0.0.4",
+          "Watson": "5.1.2"
         },
         "compile": {
           "lib/net7.0/S3Server.dll": {
@@ -2995,13 +3095,13 @@
           "lib/net6.0/SQLitePCLRaw.provider.e_sqlite3.dll": {}
         }
       },
-      "SyslogLogging/2.0.1.8": {
+      "SyslogLogging/2.0.2": {
         "type": "package",
         "compile": {
-          "lib/net6.0/LoggingModule.dll": {}
+          "lib/net7.0/LoggingModule.dll": {}
         },
         "runtime": {
-          "lib/net6.0/LoggingModule.dll": {}
+          "lib/net7.0/LoggingModule.dll": {}
         }
       },
       "System.Buffers/4.5.1": {
@@ -3422,7 +3522,7 @@
           }
         }
       },
-      "Watson/5.0.3": {
+      "Watson/5.1.2": {
         "type": "package",
         "dependencies": {
           "IpMatcher": "1.0.4.4",
@@ -3545,13 +3645,24 @@
           }
         }
       },
-      "XmlToPox/1.0.2.2": {
+      "XmlToPox/1.0.3": {
         "type": "package",
         "compile": {
-          "lib/net6.0/XmlToPox.dll": {}
+          "lib/net7.0/XmlToPox.dll": {
+            "related": ".xml"
+          }
         },
         "runtime": {
-          "lib/net6.0/XmlToPox.dll": {}
+          "lib/net7.0/XmlToPox.dll": {
+            "related": ".xml"
+          }
+        },
+        "contentFiles": {
+          "contentFiles/any/net7.0/logo.ico": {
+            "buildAction": "Content",
+            "codeLanguage": "any",
+            "copyToOutput": false
+          }
         }
       }
     },
@@ -3675,7 +3786,7 @@
           }
         }
       },
-      "Inputty/1.0.5": {
+      "Inputty/1.0.6": {
         "type": "package",
         "compile": {
           "lib/net7.0/GetSomeInput.dll": {
@@ -3861,6 +3972,18 @@
           "buildTransitive/net6.0/_._": {}
         }
       },
+      "Microsoft.NET.ILLink.Analyzers/7.0.100-1.23211.1": {
+        "type": "package",
+        "build": {
+          "build/Microsoft.NET.ILLink.Analyzers.props": {}
+        }
+      },
+      "Microsoft.NET.ILLink.Tasks/7.0.100-1.23211.1": {
+        "type": "package",
+        "build": {
+          "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
       "Microsoft.NETCore.Platforms/3.1.0": {
         "type": "package",
         "compile": {
@@ -3974,6 +4097,19 @@
           }
         }
       },
+      "PrettyId/1.0.0.4": {
+        "type": "package",
+        "compile": {
+          "lib/net7.0/PrettyId.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net7.0/PrettyId.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "RegexMatcher/1.0.8": {
         "type": "package",
         "compile": {
@@ -4067,10 +4203,11 @@
       "runtime.win-x86.runtime.native.System.Data.SqlClient.sni/4.4.0": {
         "type": "package"
       },
-      "S3Server/5.1.8": {
+      "S3Server/5.3.1": {
         "type": "package",
         "dependencies": {
-          "Watson": "5.0.3"
+          "PrettyId": "1.0.0.4",
+          "Watson": "5.1.2"
         },
         "compile": {
           "lib/net7.0/S3Server.dll": {
@@ -4135,13 +4272,13 @@
           "lib/net6.0/SQLitePCLRaw.provider.e_sqlite3.dll": {}
         }
       },
-      "SyslogLogging/2.0.1.8": {
+      "SyslogLogging/2.0.2": {
         "type": "package",
         "compile": {
-          "lib/net6.0/LoggingModule.dll": {}
+          "lib/net7.0/LoggingModule.dll": {}
         },
         "runtime": {
-          "lib/net6.0/LoggingModule.dll": {}
+          "lib/net7.0/LoggingModule.dll": {}
         }
       },
       "System.Buffers/4.5.1": {
@@ -4520,7 +4657,7 @@
           }
         }
       },
-      "Watson/5.0.3": {
+      "Watson/5.1.2": {
         "type": "package",
         "dependencies": {
           "IpMatcher": "1.0.4.4",
@@ -4643,13 +4780,24 @@
           }
         }
       },
-      "XmlToPox/1.0.2.2": {
+      "XmlToPox/1.0.3": {
         "type": "package",
         "compile": {
-          "lib/net6.0/XmlToPox.dll": {}
+          "lib/net7.0/XmlToPox.dll": {
+            "related": ".xml"
+          }
         },
         "runtime": {
-          "lib/net6.0/XmlToPox.dll": {}
+          "lib/net7.0/XmlToPox.dll": {
+            "related": ".xml"
+          }
+        },
+        "contentFiles": {
+          "contentFiles/any/net7.0/logo.ico": {
+            "buildAction": "Content",
+            "codeLanguage": "any",
+            "copyToOutput": false
+          }
         }
       }
     }
@@ -4840,42 +4988,36 @@
         "lib/netstandard2.0/Google.Protobuf.xml"
       ]
     },
-    "Inputty/1.0.5": {
-      "sha512": "fCPh+Zt+6IPKCmsb/DoVZnxApOOmsCfwCY05ev9IBG9g/HwtluEIeUjxBMr7JHGOAZmHZUNkAEFHAl+wAxYL/A==",
+    "Inputty/1.0.6": {
+      "sha512": "opqK/geZcTGcCUV41mE5YOQF77IIFrITLRoucadC2LD46q4Tb0ya1pk6L538PSJ/rrDrvRI0TZ/rL6/MVWwC6w==",
       "type": "package",
-      "path": "inputty/1.0.5",
+      "path": "inputty/1.0.6",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "Inputty.xml",
+        "LICENSE.md",
+        "README.md",
         "content/Assets/icon.ico",
         "content/Inputty.xml",
         "contentFiles/any/net461/Assets/icon.ico",
         "contentFiles/any/net461/Inputty.xml",
-        "contentFiles/any/net5.0/Assets/icon.ico",
-        "contentFiles/any/net5.0/Inputty.xml",
         "contentFiles/any/net6.0/Assets/icon.ico",
         "contentFiles/any/net6.0/Inputty.xml",
         "contentFiles/any/net7.0/Assets/icon.ico",
         "contentFiles/any/net7.0/Inputty.xml",
-        "contentFiles/any/netcoreapp3.1/Assets/icon.ico",
-        "contentFiles/any/netcoreapp3.1/Inputty.xml",
         "contentFiles/any/netstandard2.1/Assets/icon.ico",
         "contentFiles/any/netstandard2.1/Inputty.xml",
         "icon.ico",
         "icon.png",
-        "inputty.1.0.5.nupkg.sha512",
+        "inputty.1.0.6.nupkg.sha512",
         "inputty.nuspec",
         "lib/net461/GetSomeInput.dll",
         "lib/net461/GetSomeInput.xml",
-        "lib/net5.0/GetSomeInput.dll",
-        "lib/net5.0/GetSomeInput.xml",
         "lib/net6.0/GetSomeInput.dll",
         "lib/net6.0/GetSomeInput.xml",
         "lib/net7.0/GetSomeInput.dll",
         "lib/net7.0/GetSomeInput.xml",
-        "lib/netcoreapp3.1/GetSomeInput.dll",
-        "lib/netcoreapp3.1/GetSomeInput.xml",
         "lib/netstandard2.1/GetSomeInput.dll",
         "lib/netstandard2.1/GetSomeInput.xml"
       ]
@@ -5193,6 +5335,53 @@
         "useSharedDesignerContext.txt"
       ]
     },
+    "Microsoft.NET.ILLink.Analyzers/7.0.100-1.23211.1": {
+      "sha512": "0GvbEgDGcUQA9KuWcQU1WwYHXt1tBzNr1Nls/M57rM7NA/AndFwCaCEoJpJkmxRY7xLlPDBnmGp8h5+FNqUngg==",
+      "type": "package",
+      "path": "microsoft.net.illink.analyzers/7.0.100-1.23211.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "analyzers/dotnet/cs/ILLink.CodeFixProvider.dll",
+        "analyzers/dotnet/cs/ILLink.RoslynAnalyzer.dll",
+        "build/Microsoft.NET.ILLink.Analyzers.props",
+        "microsoft.net.illink.analyzers.7.0.100-1.23211.1.nupkg.sha512",
+        "microsoft.net.illink.analyzers.nuspec"
+      ]
+    },
+    "Microsoft.NET.ILLink.Tasks/7.0.100-1.23211.1": {
+      "sha512": "tvG8XZYLjT0o3WicCyKBZysVWo1jC9HdCFmNRmddx3WbAz0UCsd0qKZqpiEo99VLA8Re+FzWK51OcRldQPbt2Q==",
+      "type": "package",
+      "path": "microsoft.net.illink.tasks/7.0.100-1.23211.1",
+      "hasTools": true,
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "Sdk/Sdk.props",
+        "build/6.0_suppressions.xml",
+        "build/Microsoft.NET.ILLink.Tasks.props",
+        "build/Microsoft.NET.ILLink.targets",
+        "microsoft.net.illink.tasks.7.0.100-1.23211.1.nupkg.sha512",
+        "microsoft.net.illink.tasks.nuspec",
+        "tools/net472/ILLink.Tasks.dll",
+        "tools/net472/Mono.Cecil.dll",
+        "tools/net472/System.Buffers.dll",
+        "tools/net472/System.Collections.Immutable.dll",
+        "tools/net472/System.Memory.dll",
+        "tools/net472/System.Numerics.Vectors.dll",
+        "tools/net472/System.Reflection.Metadata.dll",
+        "tools/net472/System.Runtime.CompilerServices.Unsafe.dll",
+        "tools/net7.0/ILLink.Tasks.deps.json",
+        "tools/net7.0/ILLink.Tasks.dll",
+        "tools/net7.0/Mono.Cecil.Pdb.dll",
+        "tools/net7.0/Mono.Cecil.dll",
+        "tools/net7.0/illink.deps.json",
+        "tools/net7.0/illink.dll",
+        "tools/net7.0/illink.runtimeconfig.json"
+      ]
+    },
     "Microsoft.NETCore.Platforms/3.1.0": {
       "sha512": "z7aeg8oHln2CuNulfhiLYxCVMPEwBl3rzicjvIX+4sUuCwvXw5oXQEtbiU2c0z4qYL5L3Kmx0mMA/+t/SbY67w==",
       "type": "package",
@@ -5368,6 +5557,30 @@
         "lib/netstandard2.0/BouncyCastle.Crypto.xml",
         "portable.bouncycastle.1.9.0.nupkg.sha512",
         "portable.bouncycastle.nuspec"
+      ]
+    },
+    "PrettyId/1.0.0.4": {
+      "sha512": "D1qZeeVpwLTkQ9VrD8XD+RQpc2uKV5bRp7wg2peW3eREjZcYGYXACWN0kkSImVI7/08b1Pn9kNY5LGZb0Tme7A==",
+      "type": "package",
+      "path": "prettyid/1.0.0.4",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE.md",
+        "README.md",
+        "icon.png",
+        "lib/net461/PrettyId.dll",
+        "lib/net461/PrettyId.xml",
+        "lib/net48/PrettyId.dll",
+        "lib/net48/PrettyId.xml",
+        "lib/net6.0/PrettyId.dll",
+        "lib/net6.0/PrettyId.xml",
+        "lib/net7.0/PrettyId.dll",
+        "lib/net7.0/PrettyId.xml",
+        "lib/netstandard2.1/PrettyId.dll",
+        "lib/netstandard2.1/PrettyId.xml",
+        "prettyid.1.0.0.4.nupkg.sha512",
+        "prettyid.nuspec"
       ]
     },
     "RegexMatcher/1.0.8": {
@@ -5634,28 +5847,21 @@
         "version.txt"
       ]
     },
-    "S3Server/5.1.8": {
-      "sha512": "dMFsWVfwJtEAuhUBaApMfqeySVJ7HmSybc8Gyxr9DWe3nOZsvv5JJONuWr2SB7Z3h9VkJp1ifl6Xa9RBOTH5Xg==",
+    "S3Server/5.3.1": {
+      "sha512": "/kFgxQi1aTOpvOUutbLfsxbOx4sbcOM7g4kWh98hsCfKI91qRb7oxBp/ezkFDM3OtGU8OWknWuP/AhR5zRsRgA==",
       "type": "package",
-      "path": "s3server/5.1.8",
+      "path": "s3server/5.3.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "LICENSE.md",
-        "lib/net462/S3Server.dll",
-        "lib/net462/S3Server.xml",
-        "lib/net48/S3Server.dll",
-        "lib/net48/S3Server.xml",
+        "README.md",
         "lib/net6.0/S3Server.dll",
         "lib/net6.0/S3Server.xml",
         "lib/net7.0/S3Server.dll",
         "lib/net7.0/S3Server.xml",
-        "lib/netcoreapp3.1/S3Server.dll",
-        "lib/netcoreapp3.1/S3Server.xml",
-        "lib/netstandard2.1/S3Server.dll",
-        "lib/netstandard2.1/S3Server.xml",
         "logo.png",
-        "s3server.5.1.8.nupkg.sha512",
+        "s3server.5.3.1.nupkg.sha512",
         "s3server.nuspec"
       ]
     },
@@ -5749,23 +5955,21 @@
         "sqlitepclraw.provider.e_sqlite3.nuspec"
       ]
     },
-    "SyslogLogging/2.0.1.8": {
-      "sha512": "JuJFM6gWk1XswQglYiTm2auW6BTr9v1Plw6AV89aU4s0pg8huQM1Wtbs8TLOGwqYs8kBCTvq1gEPWY7v+S/4Hg==",
+    "SyslogLogging/2.0.2": {
+      "sha512": "/r+zNMTVhw0Qov5gXgb4OUiZg+i68hngaDVGA0JoZbV9iP/fCNo1h/NDVDcYz+ug4Qnpz7zeIIpHylbvnDuUcA==",
       "type": "package",
-      "path": "sysloglogging/2.0.1.8",
+      "path": "sysloglogging/2.0.2",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "LICENSE.md",
+        "README.md",
         "lib/net451/LoggingModule.dll",
-        "lib/net5.0/LoggingModule.dll",
         "lib/net6.0/LoggingModule.dll",
-        "lib/netcoreapp3.1/LoggingModule.dll",
-        "lib/netcoreapp3.1/LoggingModule.xml",
-        "lib/netstandard2.0/LoggingModule.dll",
+        "lib/net7.0/LoggingModule.dll",
         "lib/netstandard2.1/LoggingModule.dll",
         "logo.png",
-        "sysloglogging.2.0.1.8.nupkg.sha512",
+        "sysloglogging.2.0.2.nupkg.sha512",
         "sysloglogging.nuspec"
       ]
     },
@@ -6944,10 +7148,10 @@
         "urlmatcher.nuspec"
       ]
     },
-    "Watson/5.0.3": {
-      "sha512": "gIJt/DfyTuSZpLkvP2/rQ+A9fSnX0nEFPkZjf6mEPvosGDIJ4SPIYSn6wjYtbiRj5jU84JVPkimc+VXOs+zfcg==",
+    "Watson/5.1.2": {
+      "sha512": "hNsQAPMqVxJxlJX1lCvpTuS9BSaUD6dTlM9OP92msrGbTZacsoqXu71sqbUrbwoBbz7MtqQJhu42IH6w/nV4HQ==",
       "type": "package",
-      "path": "watson/5.0.3",
+      "path": "watson/5.1.2",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -6956,8 +7160,6 @@
         "lib/net462/WatsonWebserver.xml",
         "lib/net48/WatsonWebserver.dll",
         "lib/net48/WatsonWebserver.xml",
-        "lib/net5.0/WatsonWebserver.dll",
-        "lib/net5.0/WatsonWebserver.xml",
         "lib/net6.0/WatsonWebserver.dll",
         "lib/net6.0/WatsonWebserver.xml",
         "lib/net7.0/WatsonWebserver.dll",
@@ -6966,7 +7168,7 @@
         "lib/netcoreapp3.1/WatsonWebserver.xml",
         "lib/netstandard2.1/WatsonWebserver.dll",
         "lib/netstandard2.1/WatsonWebserver.xml",
-        "watson.5.0.3.nupkg.sha512",
+        "watson.5.1.2.nupkg.sha512",
         "watson.nuspec",
         "watson.png"
       ]
@@ -7115,38 +7317,58 @@
         "watsonorm.sqlserver.nuspec"
       ]
     },
-    "XmlToPox/1.0.2.2": {
-      "sha512": "EaGFpz1qCfFd3eMnFU1gPqNVqUk+f+c46LvyrXKnYt4A8J2JE7hrPQNvezVRa1zjWKKPjYReDPc0q+v8d/Onig==",
+    "XmlToPox/1.0.3": {
+      "sha512": "rO/3lUKQnnGCAQi/ls+mcUr/TurwiZh7NgirinAznINs6go9BszLNw46QRkecLkQakmID2M/tRiOSKBBJ1Ts3g==",
       "type": "package",
-      "path": "xmltopox/1.0.2.2",
+      "path": "xmltopox/1.0.3",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
+        "LICENSE.txt",
+        "README.md",
+        "content/logo.ico",
+        "contentFiles/any/net452/logo.ico",
+        "contentFiles/any/net461/logo.ico",
+        "contentFiles/any/net48/logo.ico",
+        "contentFiles/any/net6.0/logo.ico",
+        "contentFiles/any/net7.0/logo.ico",
+        "contentFiles/any/netstandard2.1/logo.ico",
         "lib/net452/XmlToPox.dll",
-        "lib/net5.0/XmlToPox.dll",
+        "lib/net452/XmlToPox.xml",
+        "lib/net461/XmlToPox.dll",
+        "lib/net461/XmlToPox.xml",
+        "lib/net48/XmlToPox.dll",
+        "lib/net48/XmlToPox.xml",
         "lib/net6.0/XmlToPox.dll",
-        "lib/netcoreapp3.1/XmlToPox.dll",
-        "lib/netstandard2.0/XmlToPox.dll",
+        "lib/net6.0/XmlToPox.xml",
+        "lib/net7.0/XmlToPox.dll",
+        "lib/net7.0/XmlToPox.xml",
         "lib/netstandard2.1/XmlToPox.dll",
-        "xmltopox.1.0.2.2.nupkg.sha512",
+        "lib/netstandard2.1/XmlToPox.xml",
+        "logo.png",
+        "xmltopox.1.0.3.nupkg.sha512",
         "xmltopox.nuspec"
       ]
     }
   },
   "projectFileDependencyGroups": {
     "net6.0": [
-      "Inputty >= 1.0.5",
-      "S3Server >= 5.1.8",
-      "SyslogLogging >= 2.0.1.8",
+      "Inputty >= 1.0.6",
+      "Microsoft.NET.ILLink.Analyzers >= 7.0.100-1.23211.1",
+      "Microsoft.NET.ILLink.Tasks >= 7.0.100-1.23211.1",
+      "S3Server >= 5.3.1",
+      "SyslogLogging >= 2.0.2",
       "WatsonORM >= 3.0.0",
-      "XmlToPox >= 1.0.2.2"
+      "XmlToPox >= 1.0.3"
     ],
     "net7.0": [
-      "Inputty >= 1.0.5",
-      "S3Server >= 5.1.8",
-      "SyslogLogging >= 2.0.1.8",
+      "Inputty >= 1.0.6",
+      "Microsoft.NET.ILLink.Analyzers >= 7.0.100-1.23211.1",
+      "Microsoft.NET.ILLink.Tasks >= 7.0.100-1.23211.1",
+      "S3Server >= 5.3.1",
+      "SyslogLogging >= 2.0.2",
       "WatsonORM >= 3.0.0",
-      "XmlToPox >= 1.0.2.2"
+      "XmlToPox >= 1.0.3"
     ]
   },
   "packageFolders": {
@@ -7154,7 +7376,7 @@
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
-    "version": "2.1.8",
+    "version": "2.1.9",
     "restore": {
       "projectUniqueName": "C:\\Code\\Less3\\Less3-2.1\\src\\Less3\\Less3.csproj",
       "projectName": "Less3",
@@ -7194,6 +7416,9 @@
         "warnAsError": [
           "NU1605"
         ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "default"
       }
     },
     "frameworks": {
@@ -7202,15 +7427,27 @@
         "dependencies": {
           "Inputty": {
             "target": "Package",
-            "version": "[1.0.5, )"
+            "version": "[1.0.6, )"
+          },
+          "Microsoft.NET.ILLink.Analyzers": {
+            "suppressParent": "All",
+            "target": "Package",
+            "version": "[7.0.100-1.23211.1, )",
+            "autoReferenced": true
+          },
+          "Microsoft.NET.ILLink.Tasks": {
+            "suppressParent": "All",
+            "target": "Package",
+            "version": "[7.0.100-1.23211.1, )",
+            "autoReferenced": true
           },
           "S3Server": {
             "target": "Package",
-            "version": "[5.1.8, )"
+            "version": "[5.3.1, )"
           },
           "SyslogLogging": {
             "target": "Package",
-            "version": "[2.0.1.8, )"
+            "version": "[2.0.2, )"
           },
           "WatsonORM": {
             "target": "Package",
@@ -7218,7 +7455,7 @@
           },
           "XmlToPox": {
             "target": "Package",
-            "version": "[1.0.2.2, )"
+            "version": "[1.0.3, )"
           }
         },
         "imports": [
@@ -7234,11 +7471,27 @@
         "warn": true,
         "downloadDependencies": [
           {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[6.0.20, 6.0.20]"
+          },
+          {
             "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
             "version": "[6.0.20, 6.0.20]"
           },
           {
+            "name": "Microsoft.NETCore.App.Host.win-x64",
+            "version": "[6.0.20, 6.0.20]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Ref",
+            "version": "[6.0.20, 6.0.20]"
+          },
+          {
             "name": "Microsoft.NETCore.App.Runtime.win-x64",
+            "version": "[6.0.20, 6.0.20]"
+          },
+          {
+            "name": "Microsoft.WindowsDesktop.App.Ref",
             "version": "[6.0.20, 6.0.20]"
           },
           {
@@ -7251,22 +7504,34 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.109\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.100-preview.7.23376.3\\RuntimeIdentifierGraph.json"
       },
       "net7.0": {
         "targetAlias": "net7.0",
         "dependencies": {
           "Inputty": {
             "target": "Package",
-            "version": "[1.0.5, )"
+            "version": "[1.0.6, )"
+          },
+          "Microsoft.NET.ILLink.Analyzers": {
+            "suppressParent": "All",
+            "target": "Package",
+            "version": "[7.0.100-1.23211.1, )",
+            "autoReferenced": true
+          },
+          "Microsoft.NET.ILLink.Tasks": {
+            "suppressParent": "All",
+            "target": "Package",
+            "version": "[7.0.100-1.23211.1, )",
+            "autoReferenced": true
           },
           "S3Server": {
             "target": "Package",
-            "version": "[5.1.8, )"
+            "version": "[5.3.1, )"
           },
           "SyslogLogging": {
             "target": "Package",
-            "version": "[2.0.1.8, )"
+            "version": "[2.0.2, )"
           },
           "WatsonORM": {
             "target": "Package",
@@ -7274,7 +7539,7 @@
           },
           "XmlToPox": {
             "target": "Package",
-            "version": "[1.0.2.2, )"
+            "version": "[1.0.3, )"
           }
         },
         "imports": [
@@ -7290,11 +7555,27 @@
         "warn": true,
         "downloadDependencies": [
           {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[7.0.9, 7.0.9]"
+          },
+          {
             "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
             "version": "[7.0.9, 7.0.9]"
           },
           {
+            "name": "Microsoft.NETCore.App.Host.win-x64",
+            "version": "[7.0.9, 7.0.9]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Ref",
+            "version": "[7.0.9, 7.0.9]"
+          },
+          {
             "name": "Microsoft.NETCore.App.Runtime.win-x64",
+            "version": "[7.0.9, 7.0.9]"
+          },
+          {
+            "name": "Microsoft.WindowsDesktop.App.Ref",
             "version": "[7.0.9, 7.0.9]"
           },
           {
@@ -7307,7 +7588,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.109\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.100-preview.7.23376.3\\RuntimeIdentifierGraph.json"
       }
     },
     "runtimes": {

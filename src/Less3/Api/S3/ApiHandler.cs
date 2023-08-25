@@ -18,6 +18,8 @@ namespace Less3.Api.S3
     /// </summary>
     internal class ApiHandler
     {
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+
         #region Public-Members
 
         #endregion
@@ -71,6 +73,24 @@ namespace Less3.Api.S3
         internal async Task<ListAllMyBucketsResult> ServiceListBuckets(S3Context ctx)
         {
             return await _ServiceHandler.ListBuckets(ctx);
+        }
+
+        internal async Task<string> ServiceExists(S3Context ctx)
+        {
+            return _Settings.Server.RegionString;
+        }
+
+        internal string FindMatchingBaseDomain(string hostname)
+        {
+            if (String.IsNullOrEmpty(hostname)) return null;
+            if (String.IsNullOrEmpty(_Settings.Server.BaseDomain)) return null;
+
+            if (hostname.Equals(_Settings.Server.BaseDomain)) return _Settings.Server.BaseDomain;
+
+            string testDomain = "." + _Settings.Server.BaseDomain;
+            if (hostname.EndsWith(testDomain)) return _Settings.Server.BaseDomain;
+
+            throw new KeyNotFoundException("A base domain could not be found for hostname '" + hostname + "'.");
         }
 
         #endregion
@@ -213,5 +233,7 @@ namespace Less3.Api.S3
         }
 
         #endregion
+
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     }
 }

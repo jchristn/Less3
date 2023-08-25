@@ -7,7 +7,7 @@
   "targets": {
     ".NETCoreApp,Version=v7.0": {},
     ".NETCoreApp,Version=v7.0/win-x64": {
-      "Less3/2.1.9": {
+      "Less3/2.1.10": {
         "dependencies": {
           "Inputty": "1.0.6",
           "Microsoft.NET.ILLink.Analyzers": "7.0.100-1.23211.1",
@@ -1380,7 +1380,7 @@
     }
   },
   "libraries": {
-    "Less3/2.1.9": {
+    "Less3/2.1.10": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

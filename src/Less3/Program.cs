@@ -274,14 +274,14 @@ namespace Less3
             //             0        1         2         3         4         5
             //             123456789012345678901234567890123456789012345678901234567890
             Console.WriteLine("| Initializing S3 server APIs");
-            _S3Server.Logging.Exceptions = true;
+            _S3Server.Logging.Exceptions = _Settings.Debug.Exceptions;
             _S3Server.Logging.S3Requests = _Settings.Debug.S3Requests;
             _S3Server.Logger = Logger;
 
             if (!String.IsNullOrEmpty(_Settings.Server.BaseDomain))
             {
-                Console.WriteLine("| Base domain " + _Settings.Server.BaseDomain);
-                Console.WriteLine("  | Requests must use virtual-hosted URLs, i.e. [bucket].[hostname]/[key]");
+                Console.WriteLine("| Configured for virtual hosted URLs, base domain set to " + _Settings.Server.BaseDomain);
+                Console.WriteLine("  | Requests must follow the virtual hosted URL pattern, i.e. [bucket]." + _Settings.Server.BaseDomain + ":" + _Settings.Server.ListenerPort + "/[key]");
                 Console.WriteLine("  | Run as administrator/root and listen on a wildcard hostname, i.e. '*'");
             }
             else

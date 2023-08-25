@@ -15,7 +15,8 @@
     "Ssl": false,
     "HeaderApiKey": "x-api-key",
     "AdminApiKey": "less3admin",
-    "RegionString": "us-west-1"
+    "RegionString": "us-west-1",
+    "BaseDomain": "localtest.me"
   },
   "Storage": {
     "TempDirectory": "./temp/",
@@ -33,6 +34,7 @@
   },
   "Debug": {
     "Authentication": false,
-    "S3Requests": false
+    "S3Requests": false,
+    "Exceptions": false
   }
 }

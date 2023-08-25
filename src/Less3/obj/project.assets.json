@@ -7376,7 +7376,7 @@
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
-    "version": "2.1.9",
+    "version": "2.1.10",
     "restore": {
       "projectUniqueName": "C:\\Code\\Less3\\Less3-2.1\\src\\Less3\\Less3.csproj",
       "projectName": "Less3",

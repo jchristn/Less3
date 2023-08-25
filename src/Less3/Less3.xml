@@ -1036,6 +1036,11 @@
             Enable or disable debugging of S3 request parsing.
             </summary>
         </member>
+        <member name="P:Less3.Classes.Settings.SettingsDebug.Exceptions">
+            <summary>
+            Enable or disable debugging of exceptions.
+            </summary>
+        </member>
         <member name="M:Less3.Classes.Settings.#ctor">
             <summary>
             Instantiate.

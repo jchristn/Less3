@@ -96,7 +96,7 @@ namespace Less3.Api.Admin
             try
             {
                 data = Common.StreamToBytes(ctx.Request.Data);
-                bucket = SerializationHelper.DeserializeJson<Bucket>(data);
+                bucket = SerializationHelper.DeserializeJson<Bucket>(Encoding.UTF8.GetString(data));
             }
             catch (Exception)
             {
@@ -126,13 +126,11 @@ namespace Less3.Api.Admin
                 return;
             }
 
-            byte[] data = null;
             User user = null;
 
             try
             {
-                data = Common.StreamToBytes(ctx.Request.Data);
-                user = SerializationHelper.DeserializeJson<User>(data);
+                user = SerializationHelper.DeserializeJson<User>(ctx.Request.DataAsString);
             }
             catch (Exception)
             {
@@ -179,7 +177,7 @@ namespace Less3.Api.Admin
             try
             {
                 data = Common.StreamToBytes(ctx.Request.Data);
-                cred = SerializationHelper.DeserializeJson<Credential>(data);
+                cred = SerializationHelper.DeserializeJson<Credential>(Encoding.UTF8.GetString(data));
             }
             catch (Exception)
             {

@@ -5,7 +5,7 @@
   },
   "projects": {
     "C:\\Code\\Less3\\Less3-2.1\\src\\Less3\\Less3.csproj": {
-      "version": "2.1.10",
+      "version": "2.1.11",
       "restore": {
         "projectUniqueName": "C:\\Code\\Less3\\Less3-2.1\\src\\Less3\\Less3.csproj",
         "projectName": "Less3",
@@ -24,12 +24,14 @@
         ],
         "originalTargetFrameworks": [
           "net6.0",
-          "net7.0"
+          "net7.0",
+          "net8.0"
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "C:\\Program Files\\dotnet\\library-packs": {},
-          "https://api.nuget.org/v3/index.json": {}
+          "https://api.nuget.org/v3/index.json": {},
+          "https://nuget.view.io": {}
         },
         "frameworks": {
           "net6.0": {
@@ -39,6 +41,10 @@
           "net7.0": {
             "targetAlias": "net7.0",
             "projectReferences": {}
+          },
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {}
           }
         },
         "warningProperties": {
@@ -47,7 +53,9 @@
           ]
         },
         "restoreAuditProperties": {
-          "enableAudit": "default"
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
         }
       },
       "frameworks": {
@@ -56,23 +64,23 @@
           "dependencies": {
             "Inputty": {
               "target": "Package",
-              "version": "[1.0.6, )"
+              "version": "[1.0.12, )"
             },
             "Microsoft.NET.ILLink.Analyzers": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[7.0.100-1.23211.1, )",
+              "version": "[7.0.100-1.23401.1, )",
               "autoReferenced": true
             },
             "Microsoft.NET.ILLink.Tasks": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[7.0.100-1.23211.1, )",
+              "version": "[7.0.100-1.23401.1, )",
               "autoReferenced": true
             },
             "S3Server": {
               "target": "Package",
-              "version": "[5.3.1, )"
+              "version": "[6.0.16, )"
             },
             "SyslogLogging": {
               "target": "Package",
@@ -80,7 +88,7 @@
             },
             "WatsonORM": {
               "target": "Package",
-              "version": "[3.0.0, )"
+              "version": "[3.0.8, )"
             },
             "XmlToPox": {
               "target": "Package",
@@ -100,32 +108,16 @@
           "warn": true,
           "downloadDependencies": [
             {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[6.0.20, 6.0.20]"
-            },
-            {
               "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
-              "version": "[6.0.20, 6.0.20]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Host.win-x64",
-              "version": "[6.0.20, 6.0.20]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[6.0.20, 6.0.20]"
+              "version": "[6.0.30, 6.0.30]"
             },
             {
               "name": "Microsoft.NETCore.App.Runtime.win-x64",
-              "version": "[6.0.20, 6.0.20]"
-            },
-            {
-              "name": "Microsoft.WindowsDesktop.App.Ref",
-              "version": "[6.0.20, 6.0.20]"
+              "version": "[6.0.30, 6.0.30]"
             },
             {
               "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
-              "version": "[6.0.20, 6.0.20]"
+              "version": "[6.0.30, 6.0.30]"
             }
           ],
           "frameworkReferences": {
@@ -133,30 +125,30 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.100-preview.7.23376.3\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.300\\RuntimeIdentifierGraph.json"
         },
         "net7.0": {
           "targetAlias": "net7.0",
           "dependencies": {
             "Inputty": {
               "target": "Package",
-              "version": "[1.0.6, )"
+              "version": "[1.0.12, )"
             },
             "Microsoft.NET.ILLink.Analyzers": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[7.0.100-1.23211.1, )",
+              "version": "[7.0.100-1.23401.1, )",
               "autoReferenced": true
             },
             "Microsoft.NET.ILLink.Tasks": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[7.0.100-1.23211.1, )",
+              "version": "[7.0.100-1.23401.1, )",
               "autoReferenced": true
             },
             "S3Server": {
               "target": "Package",
-              "version": "[5.3.1, )"
+              "version": "[6.0.16, )"
             },
             "SyslogLogging": {
               "target": "Package",
@@ -164,7 +156,7 @@
             },
             "WatsonORM": {
               "target": "Package",
-              "version": "[3.0.0, )"
+              "version": "[3.0.8, )"
             },
             "XmlToPox": {
               "target": "Package",
@@ -184,32 +176,16 @@
           "warn": true,
           "downloadDependencies": [
             {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[7.0.9, 7.0.9]"
-            },
-            {
               "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
-              "version": "[7.0.9, 7.0.9]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Host.win-x64",
-              "version": "[7.0.9, 7.0.9]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[7.0.9, 7.0.9]"
+              "version": "[7.0.19, 7.0.19]"
             },
             {
               "name": "Microsoft.NETCore.App.Runtime.win-x64",
-              "version": "[7.0.9, 7.0.9]"
-            },
-            {
-              "name": "Microsoft.WindowsDesktop.App.Ref",
-              "version": "[7.0.9, 7.0.9]"
+              "version": "[7.0.19, 7.0.19]"
             },
             {
               "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
-              "version": "[7.0.9, 7.0.9]"
+              "version": "[7.0.19, 7.0.19]"
             }
           ],
           "frameworkReferences": {
@@ -217,7 +193,69 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.100-preview.7.23376.3\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.300\\RuntimeIdentifierGraph.json"
+        },
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Inputty": {
+              "target": "Package",
+              "version": "[1.0.12, )"
+            },
+            "Microsoft.NET.ILLink.Tasks": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.5, )",
+              "autoReferenced": true
+            },
+            "S3Server": {
+              "target": "Package",
+              "version": "[6.0.16, )"
+            },
+            "SyslogLogging": {
+              "target": "Package",
+              "version": "[2.0.2, )"
+            },
+            "WatsonORM": {
+              "target": "Package",
+              "version": "[3.0.8, )"
+            },
+            "XmlToPox": {
+              "target": "Package",
+              "version": "[1.0.3, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
+              "version": "[8.0.5, 8.0.5]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Runtime.win-x64",
+              "version": "[8.0.5, 8.0.5]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
+              "version": "[8.0.5, 8.0.5]"
+            }
+          ],
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.300/PortableRuntimeIdentifierGraph.json"
         }
       },
       "runtimes": {

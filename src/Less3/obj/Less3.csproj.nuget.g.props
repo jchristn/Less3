@@ -7,7 +7,7 @@
     <NuGetPackageRoot Condition=" '$(NuGetPackageRoot)' == '' ">$(UserProfile)\.nuget\packages\</NuGetPackageRoot>
     <NuGetPackageFolders Condition=" '$(NuGetPackageFolders)' == '' ">C:\Users\joelc\.nuget\packages\;C:\Program Files (x86)\Microsoft Visual Studio\Shared\NuGetPackages</NuGetPackageFolders>
     <NuGetProjectStyle Condition=" '$(NuGetProjectStyle)' == '' ">PackageReference</NuGetProjectStyle>
-    <NuGetToolVersion Condition=" '$(NuGetToolVersion)' == '' ">6.7.0</NuGetToolVersion>
+    <NuGetToolVersion Condition=" '$(NuGetToolVersion)' == '' ">6.10.0</NuGetToolVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
     <SourceRoot Include="C:\Users\joelc\.nuget\packages\" />
@@ -24,17 +24,17 @@
     </Content>
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' AND '$(ExcludeRestorePackageImports)' != 'true' ">
-    <Content Include="$(NuGetPackageRoot)inputty\1.0.6\contentFiles\any\net6.0\Assets\icon.ico" Condition="Exists('$(NuGetPackageRoot)inputty\1.0.6\contentFiles\any\net6.0\Assets\icon.ico')">
+    <Content Include="$(NuGetPackageRoot)inputty\1.0.12\contentFiles\any\net6.0\Assets\icon.ico" Condition="Exists('$(NuGetPackageRoot)inputty\1.0.12\contentFiles\any\net6.0\Assets\icon.ico')">
       <NuGetPackageId>Inputty</NuGetPackageId>
-      <NuGetPackageVersion>1.0.6</NuGetPackageVersion>
+      <NuGetPackageVersion>1.0.12</NuGetPackageVersion>
       <NuGetItemType>Content</NuGetItemType>
       <Pack>false</Pack>
       <Private>False</Private>
       <Link>Assets\icon.ico</Link>
     </Content>
-    <Content Include="$(NuGetPackageRoot)inputty\1.0.6\contentFiles\any\net6.0\Inputty.xml" Condition="Exists('$(NuGetPackageRoot)inputty\1.0.6\contentFiles\any\net6.0\Inputty.xml')">
+    <Content Include="$(NuGetPackageRoot)inputty\1.0.12\contentFiles\any\net6.0\Inputty.xml" Condition="Exists('$(NuGetPackageRoot)inputty\1.0.12\contentFiles\any\net6.0\Inputty.xml')">
       <NuGetPackageId>Inputty</NuGetPackageId>
-      <NuGetPackageVersion>1.0.6</NuGetPackageVersion>
+      <NuGetPackageVersion>1.0.12</NuGetPackageVersion>
       <NuGetItemType>Content</NuGetItemType>
       <Pack>false</Pack>
       <Private>False</Private>
@@ -52,17 +52,45 @@
     </Content>
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net7.0' AND '$(ExcludeRestorePackageImports)' != 'true' ">
-    <Content Include="$(NuGetPackageRoot)inputty\1.0.6\contentFiles\any\net7.0\Assets\icon.ico" Condition="Exists('$(NuGetPackageRoot)inputty\1.0.6\contentFiles\any\net7.0\Assets\icon.ico')">
+    <Content Include="$(NuGetPackageRoot)inputty\1.0.12\contentFiles\any\net7.0\Assets\icon.ico" Condition="Exists('$(NuGetPackageRoot)inputty\1.0.12\contentFiles\any\net7.0\Assets\icon.ico')">
       <NuGetPackageId>Inputty</NuGetPackageId>
-      <NuGetPackageVersion>1.0.6</NuGetPackageVersion>
+      <NuGetPackageVersion>1.0.12</NuGetPackageVersion>
       <NuGetItemType>Content</NuGetItemType>
       <Pack>false</Pack>
       <Private>False</Private>
       <Link>Assets\icon.ico</Link>
     </Content>
-    <Content Include="$(NuGetPackageRoot)inputty\1.0.6\contentFiles\any\net7.0\Inputty.xml" Condition="Exists('$(NuGetPackageRoot)inputty\1.0.6\contentFiles\any\net7.0\Inputty.xml')">
+    <Content Include="$(NuGetPackageRoot)inputty\1.0.12\contentFiles\any\net7.0\Inputty.xml" Condition="Exists('$(NuGetPackageRoot)inputty\1.0.12\contentFiles\any\net7.0\Inputty.xml')">
       <NuGetPackageId>Inputty</NuGetPackageId>
-      <NuGetPackageVersion>1.0.6</NuGetPackageVersion>
+      <NuGetPackageVersion>1.0.12</NuGetPackageVersion>
+      <NuGetItemType>Content</NuGetItemType>
+      <Pack>false</Pack>
+      <Private>False</Private>
+      <Link>Inputty.xml</Link>
+    </Content>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' AND '$(ExcludeRestorePackageImports)' != 'true' ">
+    <Content Include="$(NuGetPackageRoot)xmltopox\1.0.3\contentFiles\any\net7.0\logo.ico" Condition="Exists('$(NuGetPackageRoot)xmltopox\1.0.3\contentFiles\any\net7.0\logo.ico')">
+      <NuGetPackageId>XmlToPox</NuGetPackageId>
+      <NuGetPackageVersion>1.0.3</NuGetPackageVersion>
+      <NuGetItemType>Content</NuGetItemType>
+      <Pack>false</Pack>
+      <Private>False</Private>
+      <Link>logo.ico</Link>
+    </Content>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' AND '$(ExcludeRestorePackageImports)' != 'true' ">
+    <Content Include="$(NuGetPackageRoot)inputty\1.0.12\contentFiles\any\net8.0\Assets\icon.ico" Condition="Exists('$(NuGetPackageRoot)inputty\1.0.12\contentFiles\any\net8.0\Assets\icon.ico')">
+      <NuGetPackageId>Inputty</NuGetPackageId>
+      <NuGetPackageVersion>1.0.12</NuGetPackageVersion>
+      <NuGetItemType>Content</NuGetItemType>
+      <Pack>false</Pack>
+      <Private>False</Private>
+      <Link>Assets\icon.ico</Link>
+    </Content>
+    <Content Include="$(NuGetPackageRoot)inputty\1.0.12\contentFiles\any\net8.0\Inputty.xml" Condition="Exists('$(NuGetPackageRoot)inputty\1.0.12\contentFiles\any\net8.0\Inputty.xml')">
+      <NuGetPackageId>Inputty</NuGetPackageId>
+      <NuGetPackageVersion>1.0.12</NuGetPackageVersion>
       <NuGetItemType>Content</NuGetItemType>
       <Pack>false</Pack>
       <Private>False</Private>
@@ -70,17 +98,23 @@
     </Content>
   </ItemGroup>
   <ImportGroup Condition=" '$(TargetFramework)' == 'net6.0' AND '$(ExcludeRestorePackageImports)' != 'true' ">
-    <Import Project="$(NuGetPackageRoot)microsoft.net.illink.tasks\7.0.100-1.23211.1\build\Microsoft.NET.ILLink.Tasks.props" Condition="Exists('$(NuGetPackageRoot)microsoft.net.illink.tasks\7.0.100-1.23211.1\build\Microsoft.NET.ILLink.Tasks.props')" />
-    <Import Project="$(NuGetPackageRoot)microsoft.net.illink.analyzers\7.0.100-1.23211.1\build\Microsoft.NET.ILLink.Analyzers.props" Condition="Exists('$(NuGetPackageRoot)microsoft.net.illink.analyzers\7.0.100-1.23211.1\build\Microsoft.NET.ILLink.Analyzers.props')" />
+    <Import Project="$(NuGetPackageRoot)microsoft.net.illink.tasks\7.0.100-1.23401.1\build\Microsoft.NET.ILLink.Tasks.props" Condition="Exists('$(NuGetPackageRoot)microsoft.net.illink.tasks\7.0.100-1.23401.1\build\Microsoft.NET.ILLink.Tasks.props')" />
+    <Import Project="$(NuGetPackageRoot)microsoft.net.illink.analyzers\7.0.100-1.23401.1\build\Microsoft.NET.ILLink.Analyzers.props" Condition="Exists('$(NuGetPackageRoot)microsoft.net.illink.analyzers\7.0.100-1.23401.1\build\Microsoft.NET.ILLink.Analyzers.props')" />
   </ImportGroup>
   <ImportGroup Condition=" '$(TargetFramework)' == 'net7.0' AND '$(ExcludeRestorePackageImports)' != 'true' ">
-    <Import Project="$(NuGetPackageRoot)microsoft.net.illink.tasks\7.0.100-1.23211.1\build\Microsoft.NET.ILLink.Tasks.props" Condition="Exists('$(NuGetPackageRoot)microsoft.net.illink.tasks\7.0.100-1.23211.1\build\Microsoft.NET.ILLink.Tasks.props')" />
-    <Import Project="$(NuGetPackageRoot)microsoft.net.illink.analyzers\7.0.100-1.23211.1\build\Microsoft.NET.ILLink.Analyzers.props" Condition="Exists('$(NuGetPackageRoot)microsoft.net.illink.analyzers\7.0.100-1.23211.1\build\Microsoft.NET.ILLink.Analyzers.props')" />
+    <Import Project="$(NuGetPackageRoot)microsoft.net.illink.tasks\7.0.100-1.23401.1\build\Microsoft.NET.ILLink.Tasks.props" Condition="Exists('$(NuGetPackageRoot)microsoft.net.illink.tasks\7.0.100-1.23401.1\build\Microsoft.NET.ILLink.Tasks.props')" />
+    <Import Project="$(NuGetPackageRoot)microsoft.net.illink.analyzers\7.0.100-1.23401.1\build\Microsoft.NET.ILLink.Analyzers.props" Condition="Exists('$(NuGetPackageRoot)microsoft.net.illink.analyzers\7.0.100-1.23401.1\build\Microsoft.NET.ILLink.Analyzers.props')" />
+  </ImportGroup>
+  <ImportGroup Condition=" '$(TargetFramework)' == 'net8.0' AND '$(ExcludeRestorePackageImports)' != 'true' ">
+    <Import Project="$(NuGetPackageRoot)microsoft.net.illink.tasks\8.0.5\build\Microsoft.NET.ILLink.Tasks.props" Condition="Exists('$(NuGetPackageRoot)microsoft.net.illink.tasks\8.0.5\build\Microsoft.NET.ILLink.Tasks.props')" />
   </ImportGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' AND '$(ExcludeRestorePackageImports)' != 'true' ">
-    <PkgMicrosoft_NET_ILLink_Tasks Condition=" '$(PkgMicrosoft_NET_ILLink_Tasks)' == '' ">C:\Users\joelc\.nuget\packages\microsoft.net.illink.tasks\7.0.100-1.23211.1</PkgMicrosoft_NET_ILLink_Tasks>
+    <PkgMicrosoft_NET_ILLink_Tasks Condition=" '$(PkgMicrosoft_NET_ILLink_Tasks)' == '' ">C:\Users\joelc\.nuget\packages\microsoft.net.illink.tasks\7.0.100-1.23401.1</PkgMicrosoft_NET_ILLink_Tasks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net7.0' AND '$(ExcludeRestorePackageImports)' != 'true' ">
-    <PkgMicrosoft_NET_ILLink_Tasks Condition=" '$(PkgMicrosoft_NET_ILLink_Tasks)' == '' ">C:\Users\joelc\.nuget\packages\microsoft.net.illink.tasks\7.0.100-1.23211.1</PkgMicrosoft_NET_ILLink_Tasks>
+    <PkgMicrosoft_NET_ILLink_Tasks Condition=" '$(PkgMicrosoft_NET_ILLink_Tasks)' == '' ">C:\Users\joelc\.nuget\packages\microsoft.net.illink.tasks\7.0.100-1.23401.1</PkgMicrosoft_NET_ILLink_Tasks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' AND '$(ExcludeRestorePackageImports)' != 'true' ">
+    <PkgMicrosoft_NET_ILLink_Tasks Condition=" '$(PkgMicrosoft_NET_ILLink_Tasks)' == '' ">C:\Users\joelc\.nuget\packages\microsoft.net.illink.tasks\8.0.5</PkgMicrosoft_NET_ILLink_Tasks>
   </PropertyGroup>
 </Project>

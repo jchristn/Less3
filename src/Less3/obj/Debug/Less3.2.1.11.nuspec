@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Less3</id>
+    <version>2.1.11</version>
+    <authors>Joel Christner</authors>
+    <license type="file">LICENSE.md</license>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <icon>favicon.png</icon>
+    <readme>README.md</readme>
+    <projectUrl>https://github.com/jchristn/less3</projectUrl>
+    <description>&lt;3 Less3 is S3-compatible object storage that you can run on your laptop, server, or anywhere you like.</description>
+    <releaseNotes>Dependency update, validation with AWS CLI</releaseNotes>
+    <copyright>(c)2024 Joel Christner</copyright>
+    <tags>S3 storage blob object storage rest restful</tags>
+    <repository type="Github" url="https://github.com/jchristn/less3" commit="c6d22df49e5cff576db96f2300a283ecf9f1b7db" />
+    <dependencies>
+      <group targetFramework="net6.0">
+        <dependency id="Inputty" version="1.0.12" exclude="Build,Analyzers" />
+        <dependency id="S3Server" version="6.0.16" exclude="Build,Analyzers" />
+        <dependency id="SyslogLogging" version="2.0.2" exclude="Build,Analyzers" />
+        <dependency id="WatsonORM" version="3.0.8" exclude="Build,Analyzers" />
+        <dependency id="XmlToPox" version="1.0.3" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net7.0">
+        <dependency id="Inputty" version="1.0.12" exclude="Build,Analyzers" />
+        <dependency id="S3Server" version="6.0.16" exclude="Build,Analyzers" />
+        <dependency id="SyslogLogging" version="2.0.2" exclude="Build,Analyzers" />
+        <dependency id="WatsonORM" version="3.0.8" exclude="Build,Analyzers" />
+        <dependency id="XmlToPox" version="1.0.3" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net8.0">
+        <dependency id="Inputty" version="1.0.12" exclude="Build,Analyzers" />
+        <dependency id="S3Server" version="6.0.16" exclude="Build,Analyzers" />
+        <dependency id="SyslogLogging" version="2.0.2" exclude="Build,Analyzers" />
+        <dependency id="WatsonORM" version="3.0.8" exclude="Build,Analyzers" />
+        <dependency id="XmlToPox" version="1.0.3" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+    <contentFiles>
+      <files include="any/net6.0/heart.ico" buildAction="Content" />
+      <files include="any/net7.0/heart.ico" buildAction="Content" />
+      <files include="any/net8.0/heart.ico" buildAction="Content" />
+    </contentFiles>
+  </metadata>
+  <files>
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\Less3.runtimeconfig.json" target="lib\net6.0\Less3.runtimeconfig.json" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\Less3.dll" target="lib\net6.0\Less3.dll" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\Less3.xml" target="lib\net6.0\Less3.xml" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net7.0\win-x64\Less3.runtimeconfig.json" target="lib\net7.0\Less3.runtimeconfig.json" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net7.0\win-x64\Less3.dll" target="lib\net7.0\Less3.dll" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net7.0\win-x64\Less3.xml" target="lib\net7.0\Less3.xml" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net8.0\win-x64\Less3.runtimeconfig.json" target="lib\net8.0\Less3.runtimeconfig.json" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net8.0\win-x64\Less3.dll" target="lib\net8.0\Less3.dll" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net8.0\win-x64\Less3.xml" target="lib\net8.0\Less3.xml" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\heart.ico" target="content\heart.ico" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\heart.ico" target="contentFiles\any\net6.0\heart.ico" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\heart.ico" target="contentFiles\any\net7.0\heart.ico" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\heart.ico" target="contentFiles\any\net8.0\heart.ico" />
+    <file src="C:\Code\Less3\Less3-2.1\README.md" target="\README.md" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\Assets\favicon.png" target="favicon.png" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\LICENSE.md" target="LICENSE.md" />
+  </files>
+</package>

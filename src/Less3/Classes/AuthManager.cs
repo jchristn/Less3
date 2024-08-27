@@ -195,9 +195,9 @@ namespace Less3.Classes
 
             #region Check-for-Admin-API-Key
 
-            if (ctx.Http.Request.Headers.AllKeys.Contains(_Settings.Server.HeaderApiKey))
+            if (ctx.Http.Request.Headers.AllKeys.Contains(_Settings.HeaderApiKey))
             {
-                if (ctx.Http.Request.Headers[_Settings.Server.HeaderApiKey].Equals(_Settings.Server.AdminApiKey))
+                if (ctx.Http.Request.Headers[_Settings.HeaderApiKey].Equals(_Settings.AdminApiKey))
                 {
                     if (_Settings.Debug.Authentication)
                     {
@@ -212,9 +212,7 @@ namespace Less3.Classes
             #endregion
 
             if (md.User != null && md.Authentication == AuthenticationResult.Authenticated)
-            {
                 md.Authorization = AuthorizationResult.PermitService;
-            } 
 
             return md;
         }
@@ -239,9 +237,9 @@ namespace Less3.Classes
 
             #region Check-for-Admin-API-Key
 
-            if (ctx.Http.Request.Headers.AllKeys.Contains(_Settings.Server.HeaderApiKey))
+            if (ctx.Http.Request.Headers.AllKeys.Contains(_Settings.HeaderApiKey))
             {
-                if (ctx.Http.Request.Headers[_Settings.Server.HeaderApiKey].Equals(_Settings.Server.AdminApiKey))
+                if (ctx.Http.Request.Headers[_Settings.HeaderApiKey].Equals(_Settings.AdminApiKey))
                 {
                     if (_Settings.Debug.Authentication)
                     {
@@ -489,9 +487,9 @@ namespace Less3.Classes
 
             #region Check-for-Admin-API-Key
 
-            if (ctx.Http.Request.Headers.AllKeys.Contains(_Settings.Server.HeaderApiKey))
+            if (ctx.Http.Request.Headers.AllKeys.Contains(_Settings.HeaderApiKey))
             {
-                if (ctx.Http.Request.Headers[_Settings.Server.HeaderApiKey].Equals(_Settings.Server.AdminApiKey))
+                if (ctx.Http.Request.Headers[_Settings.HeaderApiKey].Equals(_Settings.AdminApiKey))
                 {
                     if (_Settings.Debug.Authentication)
                     {

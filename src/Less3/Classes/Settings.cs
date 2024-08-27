@@ -4,9 +4,10 @@ using System.IO;
 using System.Net;
 using SyslogLogging;
 using DatabaseWrapper.Core;
+using Less3.Storage;
 using S3ServerLibrary;
 using Watson.ORM.Core;
-using Less3.Storage;
+using WatsonWebserver.Core;
 
 namespace Less3.Classes
 {
@@ -23,6 +24,31 @@ namespace Less3.Classes
         public bool EnableConsole { get; set; } = true;
 
         /// <summary>
+        /// Enable or disable signature validation.
+        /// </summary>
+        public bool ValidateSignatures { get; set; } = true;
+
+        /// <summary>
+        /// Base domain, if using virtual hosted-style URLs, e.g. "localhost".
+        /// </summary>
+        public string BaseDomain { get; set; } = null;
+
+        /// <summary>
+        /// API key header for admin API requests.
+        /// </summary>
+        public string HeaderApiKey { get; set; } = "x-api-key";
+
+        /// <summary>
+        /// Admin API key.
+        /// </summary>
+        public string AdminApiKey { get; set; } = "less3admin";
+
+        /// <summary>
+        /// Region string.
+        /// </summary>
+        public string RegionString { get; set; } = "us-west-1";
+
+        /// <summary>
         /// Database settings.
         /// </summary>
         public DatabaseSettings Database { get; set; } = new DatabaseSettings("./less3.db");
@@ -30,7 +56,7 @@ namespace Less3.Classes
         /// <summary>
         /// Web server settings.
         /// </summary>
-        public SettingsServer Server { get; set; } = new SettingsServer();
+        public WebserverSettings Webserver { get; set; } = new WebserverSettings();
 
         /// <summary>
         /// Storage settings.
@@ -50,47 +76,6 @@ namespace Less3.Classes
         #endregion
 
         #region Subordinate-Classes
-
-        /// <summary>
-        /// Web server settings.
-        /// </summary>
-        public class SettingsServer
-        {
-            /// <summary>
-            /// Hostname on which to listen.
-            /// </summary>
-            public string DnsHostname { get; set; } = "localhost";
-
-            /// <summary>
-            /// TCP port on which to listen.
-            /// </summary>
-            public int ListenerPort { get; set; } = 8000;
-
-            /// <summary>
-            /// Enable or disable SSL.
-            /// </summary>
-            public bool Ssl { get; set; } = false;
-
-            /// <summary>
-            /// Base domain.  
-            /// </summary>
-            public string BaseDomain { get; set; } = null;
-
-            /// <summary>
-            /// Header to use for the admin API key.
-            /// </summary>
-            public string HeaderApiKey { get; set; } = "x-api-key";
-
-            /// <summary>
-            /// Admin API key.
-            /// </summary>
-            public string AdminApiKey { get; set; } = "less3admin";
-
-            /// <summary>
-            /// AWS region string to use for location requests.
-            /// </summary>
-            public string RegionString { get; set; } = "us-west-1";
-        }
 
         /// <summary>
         /// Storage settings.
@@ -137,6 +122,21 @@ namespace Less3.Classes
             /// Enable or disable logging of HTTP requests.
             /// </summary>
             public bool LogHttpRequests { get; set; } = false;
+
+            /// <summary>
+            /// Enable or disable logging of S3 requests.
+            /// </summary>
+            public bool LogS3Requests { get; set; } = false;
+
+            /// <summary>
+            /// Enable or disable logging of exceptions.
+            /// </summary>
+            public bool LogExceptions { get; set; } = false;
+
+            /// <summary>
+            /// Enable or disable logging of signature validation.
+            /// </summary>
+            public bool LogSignatureValidation { get; set; } = false;
 
             /// <summary>
             /// Enable or disable logging to the console.
@@ -227,29 +227,6 @@ namespace Less3.Classes
         #endregion
 
         #region Internal-Methods
-
-        internal void Validate()
-        {
-            if (Database == null) throw new ArgumentException("system.json parameter 'Database' must not be null.");
-            if (Server == null) throw new ArgumentException("system.json parameter 'Server' must not be null.");
-            if (Storage == null) throw new ArgumentException("system.json parameter 'Storage' must not be null.");
-            if (Logging == null) throw new ArgumentException("system.json parameter 'Syslog' must not be null.");
-            if (Debug == null) throw new ArgumentException("system.json parameter 'Debug' must not be null.");
-
-            if (String.IsNullOrEmpty(Server.DnsHostname)) throw new ArgumentException("system.json parameter 'Server.DnsHostname' must not be null.");
-            if (String.IsNullOrEmpty(Server.HeaderApiKey)) throw new ArgumentException("system.json parameter 'Server.HeaderApiKey' must not be null.");
-            if (String.IsNullOrEmpty(Server.AdminApiKey)) throw new ArgumentException("system.json parameter 'Server.AdminApiKey' must not be null.");
-            if (Server.ListenerPort < 0 || Server.ListenerPort > 65535) throw new ArgumentException("system.json parameter 'Server.ListenerPort' must be within the range 0-65535.");
-
-            IPAddress tempIp;
-            if (IPAddress.TryParse(Server.DnsHostname, out tempIp)) throw new ArgumentException("system.json parameter 'Server.DnsHostname' must be a hostname, not an IP address.");
-
-            if (String.IsNullOrEmpty(Storage.DiskDirectory)) throw new ArgumentException("system.json parameter 'Storage.DiskDirectory' must not be null.");
-            if (String.IsNullOrEmpty(Storage.TempDirectory)) throw new ArgumentException("system.json parameter 'Storage.TempDirectory' must not be null.");
-
-            if (String.IsNullOrEmpty(Logging.SyslogServerIp)) throw new ArgumentException("system.json parameter 'Syslog.ServerIp' must not be null.");
-            if (Logging.SyslogServerPort < 0 || Logging.SyslogServerPort > 65535) throw new ArgumentException("system.json parameter 'Syslog.ServerPort' must be within the range 0-65535."); 
-        }
 
         #endregion
     }

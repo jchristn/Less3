@@ -77,18 +77,18 @@ namespace Less3.Api.S3
 
         internal async Task<string> ServiceExists(S3Context ctx)
         {
-            return _Settings.Server.RegionString;
+            return _Settings.RegionString;
         }
 
         internal string FindMatchingBaseDomain(string hostname)
         {
             if (String.IsNullOrEmpty(hostname)) return null;
-            if (String.IsNullOrEmpty(_Settings.Server.BaseDomain)) return null;
+            if (String.IsNullOrEmpty(_Settings.BaseDomain)) return null;
 
-            if (hostname.Equals(_Settings.Server.BaseDomain)) return _Settings.Server.BaseDomain;
+            if (hostname.Equals(_Settings.BaseDomain)) return _Settings.BaseDomain;
 
-            string testDomain = "." + _Settings.Server.BaseDomain;
-            if (hostname.EndsWith(testDomain)) return _Settings.Server.BaseDomain;
+            string testDomain = "." + _Settings.BaseDomain;
+            if (hostname.EndsWith(testDomain)) return _Settings.BaseDomain;
 
             throw new KeyNotFoundException("A base domain could not be found for hostname '" + hostname + "'.");
         }

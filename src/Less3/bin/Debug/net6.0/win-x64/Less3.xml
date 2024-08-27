@@ -896,12 +896,37 @@
             Enable or disable the console.
             </summary>
         </member>
+        <member name="P:Less3.Classes.Settings.ValidateSignatures">
+            <summary>
+            Enable or disable signature validation.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Settings.BaseDomain">
+            <summary>
+            Base domain, if using virtual hosted-style URLs, e.g. "localhost".
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Settings.HeaderApiKey">
+            <summary>
+            API key header for admin API requests.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Settings.AdminApiKey">
+            <summary>
+            Admin API key.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Settings.RegionString">
+            <summary>
+            Region string.
+            </summary>
+        </member>
         <member name="P:Less3.Classes.Settings.Database">
             <summary>
             Database settings.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Settings.Server">
+        <member name="P:Less3.Classes.Settings.Webserver">
             <summary>
             Web server settings.
             </summary>
@@ -919,46 +944,6 @@
         <member name="P:Less3.Classes.Settings.Debug">
             <summary>
             Debugging settings.
-            </summary>
-        </member>
-        <member name="T:Less3.Classes.Settings.SettingsServer">
-            <summary>
-            Web server settings.
-            </summary>
-        </member>
-        <member name="P:Less3.Classes.Settings.SettingsServer.DnsHostname">
-            <summary>
-            Hostname on which to listen.
-            </summary>
-        </member>
-        <member name="P:Less3.Classes.Settings.SettingsServer.ListenerPort">
-            <summary>
-            TCP port on which to listen.
-            </summary>
-        </member>
-        <member name="P:Less3.Classes.Settings.SettingsServer.Ssl">
-            <summary>
-            Enable or disable SSL.
-            </summary>
-        </member>
-        <member name="P:Less3.Classes.Settings.SettingsServer.BaseDomain">
-            <summary>
-            Base domain.  
-            </summary>
-        </member>
-        <member name="P:Less3.Classes.Settings.SettingsServer.HeaderApiKey">
-            <summary>
-            Header to use for the admin API key.
-            </summary>
-        </member>
-        <member name="P:Less3.Classes.Settings.SettingsServer.AdminApiKey">
-            <summary>
-            Admin API key.
-            </summary>
-        </member>
-        <member name="P:Less3.Classes.Settings.SettingsServer.RegionString">
-            <summary>
-            AWS region string to use for location requests.
             </summary>
         </member>
         <member name="T:Less3.Classes.Settings.SettingsStorage">
@@ -1004,6 +989,21 @@
         <member name="P:Less3.Classes.Settings.SettingsLogging.LogHttpRequests">
             <summary>
             Enable or disable logging of HTTP requests.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Settings.SettingsLogging.LogS3Requests">
+            <summary>
+            Enable or disable logging of S3 requests.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Settings.SettingsLogging.LogExceptions">
+            <summary>
+            Enable or disable logging of exceptions.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Settings.SettingsLogging.LogSignatureValidation">
+            <summary>
+            Enable or disable logging of signature validation.
             </summary>
         </member>
         <member name="P:Less3.Classes.Settings.SettingsLogging.ConsoleLogging">

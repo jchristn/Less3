@@ -36,6 +36,8 @@ namespace Less3
         private static ApiHandler _ApiHandler;
         private static AdminApiHandler _AdminApiHandler;
         private static AuthManager _Auth;
+
+        private static S3ServerSettings _S3Settings;
         private static S3Server _S3Server;
         private static ConsoleManager _Console;
 
@@ -83,27 +85,27 @@ namespace Less3
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine("");
 
-            if (_Settings.Server.DnsHostname.Equals("localhost") || _Settings.Server.DnsHostname.Equals("127.0.0.1"))
+            if (_Settings.Webserver.Hostname.Equals("localhost") || _Settings.Webserver.Hostname.Equals("127.0.0.1"))
             {
                 //                          1         2         3         4         5         6         7         8
                 //                 12345678901234567890123456789012345678901234567890123456789012345678901234567890
                 Console.ForegroundColor = ConsoleColor.Yellow; 
-                Console.WriteLine("WARNING: Less3 started on '" + _Settings.Server.DnsHostname + "'");
+                Console.WriteLine("WARNING: Less3 started on '" + _Settings.Webserver.Hostname + "'");
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
                 Console.WriteLine("Less3 can only service requests from the local machine.  If you wish to serve");
                 Console.WriteLine("external requests, edit the system.json file and specify a DNS-resolvable");
-                Console.WriteLine("hostname in the Server.DnsHostname field.");
+                Console.WriteLine("hostname in the Webserver.Hostname property.");
                 Console.WriteLine("");
             }
 
             List<string> adminListeners = new List<string> { "*", "+", "0.0.0.0" };
 
-            if (adminListeners.Contains(_Settings.Server.DnsHostname))
+            if (adminListeners.Contains(_Settings.Webserver.Hostname))
             {
                 //                          1         2         3         4         5         6         7         8
                 //                 12345678901234567890123456789012345678901234567890123456789012345678901234567890
                 Console.ForegroundColor = ConsoleColor.Cyan; 
-                Console.WriteLine("NOTICE: Less3 listening on a wildcard hostname: '" + _Settings.Server.DnsHostname + "'");
+                Console.WriteLine("NOTICE: Less3 listening on a wildcard hostname: '" + _Settings.Webserver.Hostname + "'");
                 Console.ForegroundColor = ConsoleColor.DarkCyan;
                 Console.WriteLine("Less3 must be run with administrative privileges, otherwise it will not be able");
                 Console.WriteLine("to respond to incoming requests.");
@@ -186,7 +188,6 @@ namespace Less3
             }
 
             _Settings = Settings.FromFile("system.json");
-            _Settings.Validate(); 
         }
 
         private static void InitializeGlobals()
@@ -260,28 +261,27 @@ namespace Less3
             //             0        1         2         3         4         5
             //             123456789012345678901234567890123456789012345678901234567890
             Console.WriteLine("| Initializing S3 server interface");
-            _S3Server = new S3Server(
-                _Settings.Server.DnsHostname,
-                _Settings.Server.ListenerPort,
-                _Settings.Server.Ssl,
-                DefaultRequestHandler);
+            _S3Settings = new S3ServerSettings();
+            _S3Settings.Logging.HttpRequests = _Settings.Logging.LogHttpRequests;
+            _S3Settings.Logging.S3Requests = _Settings.Logging.LogS3Requests;
+            _S3Settings.Logging.Exceptions = _Settings.Logging.LogExceptions;
+            _S3Settings.Logging.SignatureV4Validation = _Settings.Logging.LogSignatureValidation;
+            _S3Settings.Logger = Console.WriteLine;
+            _S3Settings.EnableSignatures = _Settings.ValidateSignatures;
+            _S3Settings.Webserver = _Settings.Webserver;
 
-            if (_Settings.Server.Ssl) 
-                Console.WriteLine("| https://" + _Settings.Server.DnsHostname + ":" + _Settings.Server.ListenerPort); 
-            else 
-                Console.WriteLine("| http://" + _Settings.Server.DnsHostname + ":" + _Settings.Server.ListenerPort); 
+            _S3Server = new S3Server(_S3Settings);
+
+            Console.WriteLine("| " + _Settings.Webserver.Prefix);
 
             //             0        1         2         3         4         5
             //             123456789012345678901234567890123456789012345678901234567890
             Console.WriteLine("| Initializing S3 server APIs");
-            _S3Server.Logging.Exceptions = _Settings.Debug.Exceptions;
-            _S3Server.Logging.S3Requests = _Settings.Debug.S3Requests;
-            _S3Server.Logger = Logger;
 
-            if (!String.IsNullOrEmpty(_Settings.Server.BaseDomain))
+            if (!String.IsNullOrEmpty(_Settings.BaseDomain))
             {
-                Console.WriteLine("| Configured for virtual hosted URLs, base domain set to " + _Settings.Server.BaseDomain);
-                Console.WriteLine("  | Requests must follow the virtual hosted URL pattern, i.e. [bucket]." + _Settings.Server.BaseDomain + ":" + _Settings.Server.ListenerPort + "/[key]");
+                Console.WriteLine("| Configured for virtual hosted URLs, base domain set to " + _Settings.BaseDomain);
+                Console.WriteLine("  | Requests must follow the virtual hosted URL pattern, i.e. [bucket]." + _Settings.BaseDomain + ":" + _Settings.Webserver.Port + "/[key]");
                 Console.WriteLine("  | Run as administrator/root and listen on a wildcard hostname, i.e. '*'");
             }
             else
@@ -290,8 +290,9 @@ namespace Less3
                 Console.WriteLine("  | Requests must use path-style hosted URLs, i.e. [hostname]/[bucket]/[key]");
             }
 
-            _S3Server.PreRequestHandler = PreRequestHandler;
-            _S3Server.PostRequestHandler = PostRequestHandler;
+            _S3Server.Settings.PreRequestHandler = PreRequestHandler;
+            _S3Server.Settings.PostRequestHandler = PostRequestHandler;
+            _S3Server.Settings.DefaultRequestHandler = DefaultRequestHandler;
 
             _S3Server.Service.ListBuckets = _ApiHandler.ServiceListBuckets;
             _S3Server.Service.ServiceExists = _ApiHandler.ServiceExists;
@@ -433,7 +434,7 @@ namespace Less3
 
             if (!ctx.Http.Request.Headers.AllKeys.Contains("Authorization"))
             { 
-                if (ctx.Http.Request.Method == WatsonWebserver.HttpMethod.GET)
+                if (ctx.Http.Request.Method == WatsonWebserver.Core.HttpMethod.GET)
                 {
                     if (ctx.Http.Request.Url.Elements == null || ctx.Http.Request.Url.Elements.Length < 1)
                     {
@@ -451,11 +452,11 @@ namespace Less3
 
             if (ctx.Http.Request.Url.Elements.Length >= 2 && ctx.Http.Request.Url.Elements[0].Equals("admin"))
             {
-                if (ctx.Http.Request.Headers.AllKeys.Contains(_Settings.Server.HeaderApiKey)) 
+                if (ctx.Http.Request.Headers.AllKeys.Contains(_Settings.HeaderApiKey)) 
                 {
-                    if (!ctx.Http.Request.Headers[_Settings.Server.HeaderApiKey].Equals(_Settings.Server.AdminApiKey))
+                    if (!ctx.Http.Request.Headers[_Settings.HeaderApiKey].Equals(_Settings.AdminApiKey))
                     {
-                        _Logging.Warn(header + "invalid admin API key supplied: " + ctx.Http.Request.Headers[_Settings.Server.HeaderApiKey]);
+                        _Logging.Warn(header + "invalid admin API key supplied: " + ctx.Http.Request.Headers[_Settings.HeaderApiKey]);
                         ctx.Response.StatusCode = 401;
                         ctx.Response.ContentType = "text/plain";
                         await ctx.Response.Send();
@@ -464,10 +465,10 @@ namespace Less3
 
                     switch (ctx.Http.Request.Method)
                     {
-                        case HttpMethod.GET:
-                        case HttpMethod.PUT:
-                        case HttpMethod.POST:
-                        case HttpMethod.DELETE:
+                        case WatsonWebserver.Core.HttpMethod.GET:
+                        case WatsonWebserver.Core.HttpMethod.PUT:
+                        case WatsonWebserver.Core.HttpMethod.POST:
+                        case WatsonWebserver.Core.HttpMethod.DELETE:
                             await _AdminApiHandler.Process(ctx);
                             return true;
                     } 
@@ -562,9 +563,11 @@ namespace Less3
         private static async Task PostRequestHandler(S3Context ctx)
         {
             ctx.Http.Timestamp.End = DateTime.UtcNow;
-            string header = ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Http.Request.Method.ToString() + " " + ctx.Http.Request.Url.RawWithQuery + " ";
             _Logging.Debug(
-                header 
+                ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " 
+                + ctx.Http.Request.Method.ToString() + " " 
+                + ctx.Http.Request.Url.RawWithQuery + " "
+                + ctx.Request.RequestType.ToString() + " "
                 + ctx.Http.Response.StatusCode + " " 
                 + ctx.Http.Timestamp.TotalMs + "ms");
         }

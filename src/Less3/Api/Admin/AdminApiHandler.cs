@@ -1,17 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
-using S3ServerLibrary; 
-using SyslogLogging;
-using WatsonWebserver;
-
-using Less3.Classes; 
-
-namespace Less3.Api.Admin
+﻿namespace Less3.Api.Admin
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Net.Http;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    using S3ServerLibrary;
+    using SyslogLogging;
+    using WatsonWebserver;
+    using WatsonWebserver.Core;
+
+    using Less3.Classes;
+
     /// <summary>
     /// Admin API handler.
     /// </summary>
@@ -69,13 +71,13 @@ namespace Less3.Api.Admin
         {
             switch (ctx.Http.Request.Method)
             {
-                case HttpMethod.GET:
+                case WatsonWebserver.Core.HttpMethod.GET:
                     await _GetHandler.Process(ctx);
                     return;
-                case HttpMethod.POST:
+                case WatsonWebserver.Core.HttpMethod.POST:
                     await _PostHandler.Process(ctx);
                     return;
-                case HttpMethod.DELETE:
+                case WatsonWebserver.Core.HttpMethod.DELETE:
                     await _DeleteHandler.Process(ctx);
                     return;
             }

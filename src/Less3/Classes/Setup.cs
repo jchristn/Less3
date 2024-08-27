@@ -278,17 +278,17 @@ namespace Less3.Classes
             Console.WriteLine("your node in action.  Access these files in the 'default' bucket using the");
             Console.WriteLine("AWS SDK or your favorite S3 browser tool.");
             Console.WriteLine(""); 
-            Console.WriteLine("  http://" + settings.Server.DnsHostname + ":" + settings.Server.ListenerPort + "/default/hello.html");
-            Console.WriteLine("  http://" + settings.Server.DnsHostname + ":" + settings.Server.ListenerPort + "/default/hello.txt");
-            Console.WriteLine("  http://" + settings.Server.DnsHostname + ":" + settings.Server.ListenerPort + "/default/hello.json");
+            Console.WriteLine("  http://" + settings.Webserver.Hostname + ":" + settings.Webserver.Port + "/default/hello.html");
+            Console.WriteLine("  http://" + settings.Webserver.Hostname + ":" + settings.Webserver.Port + "/default/hello.txt");
+            Console.WriteLine("  http://" + settings.Webserver.Hostname + ":" + settings.Webserver.Port + "/default/hello.json");
             Console.WriteLine("");
             Console.WriteLine("  Access key  : default");
             Console.WriteLine("  Secret key  : default");
             Console.WriteLine("  Bucket name : default (public read enabled!)");
-            Console.WriteLine("  S3 endpoint : http://" + settings.Server.DnsHostname + ":" + settings.Server.ListenerPort);
+            Console.WriteLine("  S3 endpoint : http://" + settings.Webserver.Hostname + ":" + settings.Webserver.Port);
             Console.WriteLine("");
-            Console.WriteLine("IMPORTANT: be sure to supply a hostname in the system.json Server.DnsHostname");
-            Console.WriteLine("field if you wish to allow access from other machines.  Your node is currently");
+            Console.WriteLine("IMPORTANT: be sure to supply a hostname in the system.json Webserver.Hostname");
+            Console.WriteLine("property if you wish to allow access from other machines.  Your node is currently");
             Console.WriteLine("only accessible via localhost.  Do not use an IP address for this value.");
             Console.WriteLine("");
 

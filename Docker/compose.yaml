@@ -1,0 +1,21 @@
+services:
+
+  #
+  # Less3
+  # See https://hub.docker.com/r/jchristn/less3
+  # and https://github.com/jchristn/less3
+  #
+
+  litegraph:
+    container_name: 'less3'
+    image: 'jchristn/less3:v2.1.11'
+    network_mode: 'host'
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./system.json:/app/system.json
+      - ./less3.db:/app/less3.db
+      - ./logs/:/app/logs/
+      - ./temp/:/app/temp/
+    healthcheck:
+      test: curl --fail http://localhost:8000

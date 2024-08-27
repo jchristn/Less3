@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using SyslogLogging;
 using S3ServerLibrary;
 using S3ServerLibrary.S3Objects;
-using WatsonWebserver;
+using WatsonWebserver.Core;
 
 using Less3.Classes;
 
@@ -898,7 +898,7 @@ namespace Less3.Api.S3
                                 totalLength += chunk.Data.Length;
                             }
 
-                            if (chunk.IsFinalChunk) break;
+                            if (chunk.IsFinal) break;
                         }
                     }
                     else

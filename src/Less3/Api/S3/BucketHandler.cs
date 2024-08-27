@@ -264,7 +264,7 @@ namespace Less3.Api.S3
         internal async Task<LocationConstraint> ReadLocation(S3Context ctx)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
-            return new LocationConstraint(_Settings.Server.RegionString);
+            return new LocationConstraint(_Settings.RegionString);
         }
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
@@ -666,7 +666,7 @@ namespace Less3.Api.S3
                 md.User.GUID, 
                 _Settings.Storage.StorageType, 
                 _Settings.Storage.DiskDirectory + ctx.Request.Bucket + "/Objects/", 
-                _Settings.Server.RegionString);
+                _Settings.RegionString);
              
             if (!_Buckets.Add(bucket))
             {

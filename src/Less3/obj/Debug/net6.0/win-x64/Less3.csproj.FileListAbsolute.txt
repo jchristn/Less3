@@ -1,8 +1,3 @@
-C:\Code\Less3\Less3-2.1\src\Less3\obj\Debug\net6.0\win-x64\Less3.csproj.AssemblyReference.cache
-C:\Code\Less3\Less3-2.1\src\Less3\obj\Debug\net6.0\win-x64\Less3.GeneratedMSBuildEditorConfig.editorconfig
-C:\Code\Less3\Less3-2.1\src\Less3\obj\Debug\net6.0\win-x64\Less3.AssemblyInfoInputs.cache
-C:\Code\Less3\Less3-2.1\src\Less3\obj\Debug\net6.0\win-x64\Less3.AssemblyInfo.cs
-C:\Code\Less3\Less3-2.1\src\Less3\obj\Debug\net6.0\win-x64\Less3.csproj.CoreCompileInputs.cache
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\Less3.exe
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\Assets\favicon.ico
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\Assets\favicon.png
@@ -11,6 +6,7 @@ C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\Less3.runtimeconfig.j
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\Less3.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\Less3.pdb
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\Less3.xml
+C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\AWSSignatureGenerator.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\DatabaseWrapper.Core.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\DatabaseWrapper.Mysql.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\DatabaseWrapper.Postgresql.dll
@@ -32,6 +28,7 @@ C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\Microsoft.Win32.Syste
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\MySql.Data.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\Npgsql.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\BouncyCastle.Crypto.dll
+C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\PrettyId.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\RegexMatcher.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\S3Server.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\SQLitePCLRaw.batteries_v2.dll
@@ -40,6 +37,7 @@ C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\SQLitePCLRaw.provider
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\LoggingModule.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\System.Configuration.ConfigurationManager.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\System.Data.SqlClient.dll
+C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\System.Diagnostics.DiagnosticSource.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\System.Drawing.Common.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\System.IO.Pipelines.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\System.Security.Cryptography.ProtectedData.dll
@@ -50,6 +48,7 @@ C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\System.Windows.Extens
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\Timestamps.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\UrlMatcher.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\WatsonWebserver.dll
+C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\WatsonWebserver.Core.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\WatsonORM.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\WatsonORM.Core.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\WatsonORM.Mysql.dll
@@ -57,6 +56,7 @@ C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\WatsonORM.Postgresql.
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\WatsonORM.Sqlite.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\WatsonORM.SqlServer.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\XmlToPox.dll
+C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\ZstdSharp.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\comerr64.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\gssapi64.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\k5sprt64.dll
@@ -90,7 +90,6 @@ C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\System.Data.DataSetEx
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\System.Data.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\System.Diagnostics.Contracts.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\System.Diagnostics.Debug.dll
-C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\System.Diagnostics.DiagnosticSource.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\System.Diagnostics.FileVersionInfo.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\System.Diagnostics.Process.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\System.Diagnostics.StackTrace.dll
@@ -279,16 +278,24 @@ C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\dbgshim.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\hostfxr.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\hostpolicy.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\mscordaccore.dll
-C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\mscordaccore_amd64_amd64_6.0.2023.32017.dll
+C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\mscordaccore_amd64_amd64_6.0.3024.21525.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\mscordbi.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\mscorrc.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\msquic.dll
 C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\ucrtbase.dll
-C:\Code\Less3\Less3-2.1\src\Less3\obj\Debug\net6.0\win-x64\Less3.csproj.CopyComplete
+C:\Code\Less3\Less3-2.1\src\Less3\obj\Debug\net6.0\win-x64\Less3.csproj.AssemblyReference.cache
+C:\Code\Less3\Less3-2.1\src\Less3\obj\Debug\net6.0\win-x64\Less3.GeneratedMSBuildEditorConfig.editorconfig
+C:\Code\Less3\Less3-2.1\src\Less3\obj\Debug\net6.0\win-x64\Less3.AssemblyInfoInputs.cache
+C:\Code\Less3\Less3-2.1\src\Less3\obj\Debug\net6.0\win-x64\Less3.AssemblyInfo.cs
+C:\Code\Less3\Less3-2.1\src\Less3\obj\Debug\net6.0\win-x64\Less3.csproj.CoreCompileInputs.cache
+C:\Code\Less3\Less3-2.1\src\Less3\obj\Debug\net6.0\win-x64\Less3.sourcelink.json
+C:\Code\Less3\Less3-2.1\src\Less3\obj\Debug\net6.0\win-x64\Less3.csproj.Up2Date
 C:\Code\Less3\Less3-2.1\src\Less3\obj\Debug\net6.0\win-x64\Less3.dll
 C:\Code\Less3\Less3-2.1\src\Less3\obj\Debug\net6.0\win-x64\refint\Less3.dll
 C:\Code\Less3\Less3-2.1\src\Less3\obj\Debug\net6.0\win-x64\Less3.pdb
 C:\Code\Less3\Less3-2.1\src\Less3\obj\Debug\net6.0\win-x64\Less3.genruntimeconfig.cache
 C:\Code\Less3\Less3-2.1\src\Less3\obj\Debug\net6.0\win-x64\ref\Less3.dll
-C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\PrettyId.dll
-C:\Code\Less3\Less3-2.1\src\Less3\obj\Debug\net6.0\win-x64\Less3.sourcelink.json
+C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\Dockerbuild.bat
+C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\Dockerfile
+C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\Dockerrun.bat
+C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\Dockerrun.sh

@@ -13,7 +13,7 @@
     <releaseNotes>Dependency update, validation with AWS CLI</releaseNotes>
     <copyright>(c)2024 Joel Christner</copyright>
     <tags>S3 storage blob object storage rest restful</tags>
-    <repository type="Github" url="https://github.com/jchristn/less3" commit="c6d22df49e5cff576db96f2300a283ecf9f1b7db" />
+    <repository type="Github" url="https://github.com/jchristn/less3" commit="723490bfbe9ee8f99a685c2758d2c978d78bf0e5" />
     <dependencies>
       <group targetFramework="net6.0">
         <dependency id="Inputty" version="1.0.12" exclude="Build,Analyzers" />
@@ -44,15 +44,15 @@
     </contentFiles>
   </metadata>
   <files>
-    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\Less3.runtimeconfig.json" target="lib\net6.0\Less3.runtimeconfig.json" />
-    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\Less3.dll" target="lib\net6.0\Less3.dll" />
-    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\win-x64\Less3.xml" target="lib\net6.0\Less3.xml" />
-    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net7.0\win-x64\Less3.runtimeconfig.json" target="lib\net7.0\Less3.runtimeconfig.json" />
-    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net7.0\win-x64\Less3.dll" target="lib\net7.0\Less3.dll" />
-    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net7.0\win-x64\Less3.xml" target="lib\net7.0\Less3.xml" />
-    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net8.0\win-x64\Less3.runtimeconfig.json" target="lib\net8.0\Less3.runtimeconfig.json" />
-    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net8.0\win-x64\Less3.dll" target="lib\net8.0\Less3.dll" />
-    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net8.0\win-x64\Less3.xml" target="lib\net8.0\Less3.xml" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\Less3.runtimeconfig.json" target="lib\net6.0\Less3.runtimeconfig.json" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\Less3.dll" target="lib\net6.0\Less3.dll" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\Less3.xml" target="lib\net6.0\Less3.xml" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net7.0\Less3.runtimeconfig.json" target="lib\net7.0\Less3.runtimeconfig.json" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net7.0\Less3.dll" target="lib\net7.0\Less3.dll" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net7.0\Less3.xml" target="lib\net7.0\Less3.xml" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net8.0\Less3.runtimeconfig.json" target="lib\net8.0\Less3.runtimeconfig.json" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net8.0\Less3.dll" target="lib\net8.0\Less3.dll" />
+    <file src="C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net8.0\Less3.xml" target="lib\net8.0\Less3.xml" />
     <file src="C:\Code\Less3\Less3-2.1\src\Less3\heart.ico" target="content\heart.ico" />
     <file src="C:\Code\Less3\Less3-2.1\src\Less3\heart.ico" target="contentFiles\any\net6.0\heart.ico" />
     <file src="C:\Code\Less3\Less3-2.1\src\Less3\heart.ico" target="contentFiles\any\net7.0\heart.ico" />

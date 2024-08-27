@@ -18,8 +18,6 @@
 		<PackageTags>S3 storage blob object storage rest restful</PackageTags>
 		<PackageReleaseNotes>Dependency update, validation with AWS CLI</PackageReleaseNotes>
 		<PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
-		<PublishSingleFile>true</PublishSingleFile>
-		<SelfContained>true</SelfContained>
 		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
 		<PackageIcon>favicon.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>

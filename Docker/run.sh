@@ -15,6 +15,7 @@ fi
 #   less3.db
 #   logs/
 #   temp/
+#   disk/
 
 # Argument order matters!
 
@@ -27,5 +28,6 @@ docker run \
   -v ./less3.db:/app/less3.db \
   -v ./logs/:/app/logs/ \
   -v ./temp/:/app/temp/ \
+  -v ./disk/:/app/disk/ \
   jchristn/less3:$IMG_TAG
 

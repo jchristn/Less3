@@ -9,7 +9,6 @@
       "Less3/2.1.11": {
         "dependencies": {
           "Inputty": "1.0.12",
-          "Microsoft.NET.ILLink.Tasks": "8.0.5",
           "S3Server": "6.0.16",
           "SyslogLogging": "2.0.2",
           "WatsonORM": "3.0.8",
@@ -205,7 +204,6 @@
           }
         }
       },
-      "Microsoft.NET.ILLink.Tasks/8.0.5": {},
       "Microsoft.NETCore.Platforms/3.1.0": {},
       "Microsoft.NETCore.Targets/1.1.0": {},
       "Microsoft.Win32.Registry/4.7.0": {
@@ -1004,13 +1002,6 @@
       "sha512": "sha512-um1KU5kxcRp3CNuI8o/GrZtD4AIOXDk+RLsytjZ9QPok3ttLUelLKpilVPuaFT3TFjOhSibUAso0odbOaCDj3Q==",
       "path": "microsoft.extensions.primitives/7.0.0",
       "hashPath": "microsoft.extensions.primitives.7.0.0.nupkg.sha512"
-    },
-    "Microsoft.NET.ILLink.Tasks/8.0.5": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-4ISW1Ndgz86FkIbu5rVlMqhhtojdy5rUlxC/N+9kPh9qbYcvHiCvYbHKzAPVIx9OPYIjT9trXt7JI42Y5Ukq6A==",
-      "path": "microsoft.net.illink.tasks/8.0.5",
-      "hashPath": "microsoft.net.illink.tasks.8.0.5.nupkg.sha512"
     },
     "Microsoft.NETCore.Platforms/3.1.0": {
       "type": "package",

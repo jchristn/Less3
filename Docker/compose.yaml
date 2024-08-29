@@ -17,5 +17,6 @@ services:
       - ./less3.db:/app/less3.db
       - ./logs/:/app/logs/
       - ./temp/:/app/temp/
+      - ./disk/:/app/disk/
     healthcheck:
       test: curl --fail http://localhost:8000

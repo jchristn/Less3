@@ -14,9 +14,8 @@
     }
   },
   "Webserver": {
-    "Hostname": "localhost",
+    "Hostname": "*",
     "Port": 8000,
-    "Prefix": "http://localhost:8000/",
     "IO": {
       "StreamBufferSize": 65536,
       "MaxRequests": 1024,

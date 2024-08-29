@@ -17,7 +17,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyDescriptionAttribute("<3 Less3 is S3-compatible object storage that you can run on your laptop, server," +
     " or anywhere you like.")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("2.1.11.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("2.1.11+723490bfbe9ee8f99a685c2758d2c978d78bf0e5")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("2.1.11+ffeed8325f090fa024efa1ff129617a1cf6d743d")]
 [assembly: System.Reflection.AssemblyProductAttribute("Less3")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Less3")]
 [assembly: System.Reflection.AssemblyVersionAttribute("2.1.11.0")]

@@ -112,3 +112,5 @@ C:\Code\Less3\Less3-2.1\src\Less3\obj\Debug\net6.0\refint\Less3.dll
 C:\Code\Less3\Less3-2.1\src\Less3\obj\Debug\net6.0\Less3.pdb
 C:\Code\Less3\Less3-2.1\src\Less3\obj\Debug\net6.0\Less3.genruntimeconfig.cache
 C:\Code\Less3\Less3-2.1\src\Less3\obj\Debug\net6.0\ref\Less3.dll
+C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\clean.bat
+C:\Code\Less3\Less3-2.1\src\Less3\bin\Debug\net6.0\clean.sh

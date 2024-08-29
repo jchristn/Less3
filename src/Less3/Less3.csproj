@@ -17,7 +17,6 @@
 		<RepositoryType>Github</RepositoryType>
 		<PackageTags>S3 storage blob object storage rest restful</PackageTags>
 		<PackageReleaseNotes>Dependency update, validation with AWS CLI</PackageReleaseNotes>
-		<PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
 		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
 		<PackageIcon>favicon.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
@@ -48,16 +47,16 @@
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Include="Dockerbuild.bat">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Include="Dockerfile">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Include="Dockerrun.bat">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Include="Dockerrun.sh">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Include="..\..\README.md">
 			<Pack>True</Pack>
@@ -70,6 +69,12 @@
 		<None Include="LICENSE.md">
 			<Pack>True</Pack>
 			<PackagePath></PackagePath>
+		</None>
+		<None Include="clean.bat">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="clean.sh">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
 

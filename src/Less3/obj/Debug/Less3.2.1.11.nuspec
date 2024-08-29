@@ -13,7 +13,7 @@
     <releaseNotes>Dependency update, validation with AWS CLI</releaseNotes>
     <copyright>(c)2024 Joel Christner</copyright>
     <tags>S3 storage blob object storage rest restful</tags>
-    <repository type="Github" url="https://github.com/jchristn/less3" commit="723490bfbe9ee8f99a685c2758d2c978d78bf0e5" />
+    <repository type="Github" url="https://github.com/jchristn/less3" commit="ffeed8325f090fa024efa1ff129617a1cf6d743d" />
     <dependencies>
       <group targetFramework="net6.0">
         <dependency id="Inputty" version="1.0.12" exclude="Build,Analyzers" />

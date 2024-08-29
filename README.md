@@ -126,7 +126,7 @@ Less3 is built using a series of open-source packages, including:
 
 ## Deployment in Docker
 
-Please refer to ```Docker.md``` and ```Dockerfile``` in the project directory.
+Less3 is available in [DockerHub](https://hub.docker.com/r/jchristn/less3).  Refer to the `Docker` directory for the `compose.yaml`, `system.json`, and `less3.db` files that you will need.  By default, the node will listen on TCP port `8000` and you can use the access key `default` and secret key `default`.  Be sure to connect without SSL, and use path-style URLs.
 
 ## Version History
 

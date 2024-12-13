@@ -264,7 +264,6 @@ namespace Less3
             _S3Settings = new S3ServerSettings();
             _S3Settings.Logging.HttpRequests = _Settings.Logging.LogHttpRequests;
             _S3Settings.Logging.S3Requests = _Settings.Logging.LogS3Requests;
-            _S3Settings.Logging.Exceptions = _Settings.Logging.LogExceptions;
             _S3Settings.Logging.SignatureV4Validation = _Settings.Logging.LogSignatureValidation;
             _S3Settings.Logger = Console.WriteLine;
             _S3Settings.EnableSignatures = _Settings.ValidateSignatures;

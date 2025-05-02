@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using S3ServerLibrary;
-using Less3.Classes;
-
-namespace Less3.Api.S3
+﻿namespace Less3.Api.S3
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+    using System.Threading.Tasks;
+    using S3ServerLibrary;
+    using Less3.Classes;
+
     internal static class ApiHelper
     {
         internal static RequestMetadata GetRequestMetadata(S3Context ctx)

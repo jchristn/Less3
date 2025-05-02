@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
-using S3ServerLibrary;
-using SyslogLogging;
-
-using Less3.Classes;
-
-namespace Less3.Api.Admin
+﻿namespace Less3.Api.Admin
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    using S3ServerLibrary;
+    using SyslogLogging;
+
+    using Less3.Classes;
+
     /// <summary>
     /// Admin API GET handler.
     /// </summary>

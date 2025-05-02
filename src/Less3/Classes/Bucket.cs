@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.IO;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using Watson.ORM.Core;
-using Less3.Storage;
- 
-namespace Less3.Classes
+﻿namespace Less3.Classes
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.IO;
+    using System.Text;
+    using System.Text.Json;
+    using System.Text.Json.Serialization;
+    using Watson.ORM.Core;
+    using Less3.Storage;
+
     /// <summary>
     /// Bucket configuration.
     /// </summary>

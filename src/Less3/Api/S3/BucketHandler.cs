@@ -1,21 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Data;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
-using SyslogLogging;
-using S3ServerLibrary;
-using S3ServerLibrary.S3Objects;
-
-using Less3.Classes;
-
-namespace Less3.Api.S3
+﻿namespace Less3.Api.S3
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.Specialized;
+    using System.Data;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    using SyslogLogging;
+    using S3ServerLibrary;
+    using S3ServerLibrary.S3Objects;
+
+    using Less3.Classes;
+
     /// <summary>
     /// Bucket APIs.
     /// </summary>

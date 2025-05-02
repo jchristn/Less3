@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
-using SyslogLogging;
-using Watson.ORM;
-
-namespace Less3.Classes
+﻿namespace Less3.Classes
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    using SyslogLogging;
+    using Watson.ORM;
+
     /// <summary>
     /// Bucket manager.
     /// </summary>

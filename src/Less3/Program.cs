@@ -1,26 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Diagnostics;
-using System.IO;
-using System.Net;
-using System.Reflection;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
-using S3ServerLibrary; 
-using SyslogLogging;
-using Watson.ORM;
-using WatsonWebserver;
-
-using Less3.Api.Admin;
-using Less3.Api.S3; 
-using Less3.Classes;
-using System.Linq;
-
-namespace Less3
+﻿namespace Less3
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.Specialized;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Net;
+    using System.Reflection;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    using S3ServerLibrary;
+    using SyslogLogging;
+    using Watson.ORM;
+    using WatsonWebserver;
+
+    using Less3.Api.Admin;
+    using Less3.Api.S3;
+    using Less3.Classes;
+    using System.Linq;
+
     /// <summary>
     /// Less3 is an S3-compatible object storage server.
     /// </summary>

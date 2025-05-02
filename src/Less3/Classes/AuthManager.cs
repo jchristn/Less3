@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using S3ServerLibrary;
-using SyslogLogging;
-
-namespace Less3.Classes
+﻿namespace Less3.Classes
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
+    using S3ServerLibrary;
+    using SyslogLogging;
+
     /// <summary>
     /// Authentication manager.
     /// </summary>

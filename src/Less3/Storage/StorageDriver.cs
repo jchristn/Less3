@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Less3.Storage
+﻿namespace Less3.Storage
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Text;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// Less3 storage driver; allows developers to build their own storage providers for Less3.
     /// </summary>

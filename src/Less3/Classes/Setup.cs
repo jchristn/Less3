@@ -1,18 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Net;
-using System.Text;
-using SyslogLogging;
-using DatabaseWrapper.Core;
-using GetSomeInput;
-using S3ServerLibrary;
-using Watson.ORM.Core;
-using Less3.Storage;
-
-namespace Less3.Classes
+﻿namespace Less3.Classes
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Net;
+    using System.Text;
+    using SyslogLogging;
+    using DatabaseWrapper.Core;
+    using GetSomeInput;
+    using S3ServerLibrary;
+    using Watson.ORM.Core;
+    using Less3.Storage;
+
     /// <summary>
     /// Setup workflow.
     /// </summary>

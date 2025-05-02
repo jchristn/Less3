@@ -1,18 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
-using S3ServerLibrary;
-using S3ServerLibrary.S3Objects;
-
-using SyslogLogging;
-
-using Less3.Classes; 
-
-namespace Less3.Api.S3
+﻿namespace Less3.Api.S3
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    using S3ServerLibrary;
+    using S3ServerLibrary.S3Objects;
+
+    using SyslogLogging;
+
+    using Less3.Classes;
+
     /// <summary>
     /// API handler.
     /// </summary>

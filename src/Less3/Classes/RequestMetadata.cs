@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using S3ServerLibrary;
-
-namespace Less3.Classes
+﻿namespace Less3.Classes
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+    using S3ServerLibrary;
+
     /// <summary>
     /// Less3 request metadata.
     /// </summary>

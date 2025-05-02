@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
-namespace Less3.Storage
+﻿namespace Less3.Storage
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Runtime.Serialization;
+    using System.Text;
+    using System.Text.Json;
+    using System.Text.Json.Serialization;
+
     /// <summary>
     /// Type of storage driver.
     /// </summary>

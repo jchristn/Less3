@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-
-namespace Less3.Storage
+﻿namespace Less3.Storage
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Text;
+
     /// <summary>
     /// Stream of data for an object.
     /// </summary>

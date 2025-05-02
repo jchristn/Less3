@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using SyslogLogging;
-using DatabaseWrapper.Core;
-using Less3.Storage;
-using S3ServerLibrary;
-using Watson.ORM.Core;
-using WatsonWebserver.Core;
-
-namespace Less3.Classes
+﻿namespace Less3.Classes
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Net;
+    using SyslogLogging;
+    using DatabaseWrapper.Core;
+    using Less3.Storage;
+    using S3ServerLibrary;
+    using Watson.ORM.Core;
+    using WatsonWebserver.Core;
+
     /// <summary>
     /// Less3 settings.
     /// </summary>

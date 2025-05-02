@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using Watson.ORM.Core;
-
-namespace Less3.Classes
+﻿namespace Less3.Classes
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Text;
+    using System.Text.Json;
+    using System.Text.Json.Serialization;
+    using Watson.ORM.Core;
+
     /// <summary>
     /// Tag entry for an object.
     /// </summary>

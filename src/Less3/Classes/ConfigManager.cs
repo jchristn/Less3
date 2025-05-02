@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Text;
-
-using DatabaseWrapper.Core;
-using ExpressionTree;
-using SyslogLogging;
-using Watson.ORM;
-using Watson.ORM.Core;
-
-namespace Less3.Classes
+﻿namespace Less3.Classes
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Text;
+
+    using DatabaseWrapper.Core;
+    using ExpressionTree;
+    using SyslogLogging;
+    using Watson.ORM;
+    using Watson.ORM.Core;
+
     /// <summary>
     /// Configuration manager.
     /// </summary>

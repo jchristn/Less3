@@ -2,8 +2,8 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<TargetFrameworks>net6.0;net8.0</TargetFrameworks>
-		<Version>2.1.12</Version>
+		<TargetFrameworks>netstandard2.0;netstandard2.1;net6.0;net8.0</TargetFrameworks>
+		<Version>2.1.13</Version>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Authors>Joel Christner</Authors>
 		<Company>Joel Christner</Company>
@@ -33,9 +33,9 @@
 
 	<ItemGroup>
 		<PackageReference Include="Inputty" Version="1.0.12" />
-		<PackageReference Include="S3Server" Version="6.0.19" />
-		<PackageReference Include="SyslogLogging" Version="2.0.6" />
-		<PackageReference Include="WatsonORM" Version="3.0.9" />
+		<PackageReference Include="S3Server" Version="6.0.22" />
+		<PackageReference Include="SyslogLogging" Version="2.0.8" />
+		<PackageReference Include="WatsonORM" Version="3.0.14" />
 		<PackageReference Include="XmlToPox" Version="1.0.3" />
 	</ItemGroup>
 

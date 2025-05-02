@@ -1,20 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.IO;
-using System.Linq;
-using System.Text;
-
-using DatabaseWrapper.Core;
-using ExpressionTree;
-using Watson.ORM;
-using Watson.ORM.Core;
-using SyslogLogging;
-
-using Less3.Storage;
-
-namespace Less3.Classes
+﻿namespace Less3.Classes
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+
+    using DatabaseWrapper.Core;
+    using ExpressionTree;
+    using Watson.ORM;
+    using Watson.ORM.Core;
+    using SyslogLogging;
+
+    using Less3.Storage;
+
     /// <summary>
     /// Bucket client.  All object construction, authentication, and authorization must occur prior to using bucket methods.
     /// </summary>
@@ -483,7 +483,7 @@ namespace Less3.Classes
                 foreach (Obj obj in tempObjects)
                 {
                     string currPrefix = null;
-                    string tempKey = new string(obj.Key);
+                    string tempKey = obj.Key;
                     if (!String.IsNullOrEmpty(prefix)) tempKey = tempKey.Replace(prefix, "");
 
                     if (!String.IsNullOrEmpty(delimiter))

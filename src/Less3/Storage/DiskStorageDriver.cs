@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Less3.Classes;
-
-namespace Less3.Storage
+﻿namespace Less3.Storage
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Security.Cryptography;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Less3.Classes;
+
     /// <summary>
     /// Disk storage driver.
     /// </summary>
@@ -110,7 +110,14 @@ namespace Less3.Storage
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
             string file = FilePath(key);
-            return await File.ReadAllBytesAsync(file);
+
+            using (FileStream fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, useAsync: true))
+            {
+                var length = (int)fileStream.Length;
+                var bytes = new byte[length];
+                await fileStream.ReadAsync(bytes, 0, length);
+                return bytes;
+            }
         }
 
         /// <summary>

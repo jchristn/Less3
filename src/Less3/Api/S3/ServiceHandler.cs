@@ -17,6 +17,8 @@
     /// </summary>
     public class ServiceHandler
     {
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+
         #region Public-Members
 
         #endregion
@@ -57,9 +59,7 @@
 
         #region Internal-Methods
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         internal async Task<ListAllMyBucketsResult> ListBuckets(S3Context ctx)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
@@ -104,7 +104,9 @@
         #endregion
 
         #region Private-Methods
-         
+
         #endregion
+
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     }
 }

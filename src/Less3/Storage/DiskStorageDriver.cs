@@ -12,7 +12,7 @@
     /// <summary>
     /// Disk storage driver.
     /// </summary>
-    public class DiskStorageDriver : StorageDriver
+    public class DiskStorageDriver : StorageDriverBase
     {
         #region Public-Members
 

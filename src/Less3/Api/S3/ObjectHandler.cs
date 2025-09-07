@@ -21,6 +21,8 @@
     /// </summary>
     public class ObjectHandler
     {
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+
         #region Public-Members
 
         #endregion
@@ -61,9 +63,7 @@
 
         #region Internal-Methods
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         internal async Task Delete(S3Context ctx)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
@@ -120,9 +120,7 @@
             md.BucketClient.DeleteObjectVersionTags(md.Obj.Key, versionId);
         }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         internal async Task<DeleteResult> DeleteMultiple(S3Context ctx, DeleteMultiple dm)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
@@ -204,9 +202,7 @@
             return deleteResult;
         }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         internal async Task DeleteTags(S3Context ctx)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
@@ -261,9 +257,7 @@
             md.BucketClient.DeleteObjectVersionTags(ctx.Request.Key, versionId);
         }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         internal async Task<ObjectMetadata> Exists(S3Context ctx)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
@@ -309,9 +303,7 @@
             return new ObjectMetadata(md.Obj.Key, md.Obj.LastUpdateUtc, md.Obj.Md5, md.Obj.ContentLength, new Owner(md.Obj.OwnerGUID, null));
         }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         internal async Task<S3Object> Read(S3Context ctx)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
@@ -371,9 +363,7 @@
             return new S3Object(md.Obj.Key, md.Obj.Version.ToString(), isLatest, md.Obj.LastUpdateUtc, md.Obj.Etag, md.Obj.ContentLength, GetOwnerFromUserGuid(md.Obj.OwnerGUID), fs, md.Obj.ContentType);
         }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         internal async Task<AccessControlPolicy> ReadAcl(S3Context ctx)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
@@ -710,9 +700,7 @@
             }
         }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         internal async Task<Tagging> ReadTags(S3Context ctx)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
@@ -1025,9 +1013,7 @@
             #endregion
         }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         internal async Task WriteAcl(S3Context ctx, AccessControlPolicy acp)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
@@ -1226,9 +1212,7 @@
             }
         }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         internal async Task WriteTagging(S3Context ctx, Tagging tagging)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
@@ -1510,5 +1494,7 @@
         }
 
         #endregion
+
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     }
 }

@@ -7,9 +7,9 @@
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Less3 storage driver; allows developers to build their own storage providers for Less3.
+    /// Less3 storage driver base abstract class; allows developers to build their own storage providers for Less3.
     /// </summary>
-    public abstract class StorageDriver
+    public abstract class StorageDriverBase
     {
         #region Public-Methods
 

@@ -60,7 +60,7 @@
         private Bucket _Bucket = null;
         private WatsonORM _ORM = null;
         private long _StreamReadBufferSize = 65536;
-        private StorageDriver _StorageDriver = null;
+        private StorageDriverBase _StorageDriver = null;
 
         #endregion
 
@@ -930,12 +930,7 @@
                     throw new ArgumentException("Unknown storage driver type '" + _Bucket.StorageType.ToString() + "' in bucket GUID " + _Bucket.GUID + ".");
             }
         }
-         
-        private void Logger(string msg)
-        {
-            Console.WriteLine(msg);
-        }
-
+        
         #endregion
     }
 }

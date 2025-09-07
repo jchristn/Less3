@@ -1269,46 +1269,46 @@
             <param name="contentLength">Content length.</param>
             <param name="data">Stream containing data.</param>
         </member>
-        <member name="T:Less3.Storage.StorageDriver">
+        <member name="T:Less3.Storage.StorageDriverBase">
             <summary>
-            Less3 storage driver; allows developers to build their own storage providers for Less3.
+            Less3 storage driver base abstract class; allows developers to build their own storage providers for Less3.
             </summary>
         </member>
-        <member name="M:Less3.Storage.StorageDriver.Delete(System.String)">
+        <member name="M:Less3.Storage.StorageDriverBase.Delete(System.String)">
             <summary>
             Delete an object by key.
             </summary>
             <param name="key">Key.</param>
         </member>
-        <member name="M:Less3.Storage.StorageDriver.Exists(System.String)">
+        <member name="M:Less3.Storage.StorageDriverBase.Exists(System.String)">
             <summary>
             Verify the existence of an object by key.
             </summary>
             <param name="key">Key.</param>
             <returns>True if exists.</returns>
         </member>
-        <member name="M:Less3.Storage.StorageDriver.Read(System.String)">
+        <member name="M:Less3.Storage.StorageDriverBase.Read(System.String)">
             <summary>
             Read an object.
             </summary>
             <param name="key">Key.</param>
             <returns>Data.</returns>
         </member>
-        <member name="M:Less3.Storage.StorageDriver.ReadAsync(System.String)">
+        <member name="M:Less3.Storage.StorageDriverBase.ReadAsync(System.String)">
             <summary>
             Read an object asynchronously.
             </summary>
             <param name="key">Key.</param>
             <returns>Data.</returns>
         </member>
-        <member name="M:Less3.Storage.StorageDriver.ReadStream(System.String)">
+        <member name="M:Less3.Storage.StorageDriverBase.ReadStream(System.String)">
             <summary>
             Read an object.
             </summary>
             <param name="key">Key.</param>
             <returns>ObjectStream.</returns>
         </member>
-        <member name="M:Less3.Storage.StorageDriver.ReadRange(System.String,System.Int64,System.Int64)">
+        <member name="M:Less3.Storage.StorageDriverBase.ReadRange(System.String,System.Int64,System.Int64)">
             <summary>
             Read a specific number of bytes from a specific location in an object.
             </summary>
@@ -1317,7 +1317,7 @@
             <param name="count">Number of bytes to read.</param>
             <returns>Data.</returns>
         </member>
-        <member name="M:Less3.Storage.StorageDriver.ReadRangeAsync(System.String,System.Int64,System.Int64)">
+        <member name="M:Less3.Storage.StorageDriverBase.ReadRangeAsync(System.String,System.Int64,System.Int64)">
             <summary>
             Read a specific number of bytes asynchronously from a specific location in an object.
             </summary>
@@ -1326,7 +1326,7 @@
             <param name="count">Number of bytes to read.</param>
             <returns>Data.</returns>
         </member>
-        <member name="M:Less3.Storage.StorageDriver.ReadRangeStream(System.String,System.Int64,System.Int64)">
+        <member name="M:Less3.Storage.StorageDriverBase.ReadRangeStream(System.String,System.Int64,System.Int64)">
             <summary>
             Read a specific number of bytes from a specific location in an object.
             </summary>
@@ -1335,7 +1335,7 @@
             <param name="count">Number of bytes to read.</param>
             <returns>ObjectStream.</returns>
         </member>
-        <member name="M:Less3.Storage.StorageDriver.ReadRangeStreamAsync(System.String,System.Int64,System.Int64)">
+        <member name="M:Less3.Storage.StorageDriverBase.ReadRangeStreamAsync(System.String,System.Int64,System.Int64)">
             <summary>
             Read a specific number of bytes asynchronously from a specific location in an object.
             </summary>
@@ -1344,7 +1344,7 @@
             <param name="count">Number of bytes to read.</param>
             <returns>ObjectStream.</returns>
         </member>
-        <member name="M:Less3.Storage.StorageDriver.Write(System.String,System.Byte[])">
+        <member name="M:Less3.Storage.StorageDriverBase.Write(System.String,System.Byte[])">
             <summary>
             Write an object.
             </summary>
@@ -1352,7 +1352,7 @@
             <param name="data">Data.</param> 
             <returns>MD5 hash.</returns>
         </member>
-        <member name="M:Less3.Storage.StorageDriver.WriteAsync(System.String,System.Byte[])">
+        <member name="M:Less3.Storage.StorageDriverBase.WriteAsync(System.String,System.Byte[])">
             <summary>
             Write an object asynchronously.
             </summary>
@@ -1360,7 +1360,7 @@
             <param name="data">Data.</param> 
             <returns>MD5 hash.</returns>
         </member>
-        <member name="M:Less3.Storage.StorageDriver.Write(System.String,System.Int64,System.IO.Stream)">
+        <member name="M:Less3.Storage.StorageDriverBase.Write(System.String,System.Int64,System.IO.Stream)">
             <summary>
             Write an object.
             </summary>
@@ -1369,7 +1369,7 @@
             <param name="stream">Stream.</param> 
             <returns>MD5 hash.</returns>
         </member>
-        <member name="M:Less3.Storage.StorageDriver.WriteAsync(System.String,System.Int64,System.IO.Stream)">
+        <member name="M:Less3.Storage.StorageDriverBase.WriteAsync(System.String,System.Int64,System.IO.Stream)">
             <summary>
             Write an object asynchronously.
             </summary>

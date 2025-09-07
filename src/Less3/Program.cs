@@ -27,6 +27,7 @@
     public class Program
     {
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+
         private static string _Version;
         private static Settings _Settings;
         private static LoggingModule _Logging;
@@ -569,11 +570,6 @@
                 + ctx.Request.RequestType.ToString() + " "
                 + ctx.Http.Response.StatusCode + " " 
                 + ctx.Http.Timestamp.TotalMs + "ms");
-        }
-
-        private static void Logger(string msg)
-        {
-            _Logging.Debug(msg);
         }
 
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously

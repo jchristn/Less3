@@ -13,6 +13,7 @@
     using WatsonWebserver.Core;
 
     using Less3.Classes;
+    using Less3.Settings;
 
     /// <summary>
     /// Admin API handler.
@@ -25,7 +26,7 @@
 
         #region Private-Members
 
-        private Settings _Settings;
+        private SettingsBase _Settings;
         private LoggingModule _Logging;
         private ConfigManager _Config;
         private BucketManager _Buckets;
@@ -40,7 +41,7 @@
         #region Constructors-and-Factories
 
         internal AdminApiHandler(
-            Settings settings, 
+            SettingsBase settings, 
             LoggingModule logging,  
             ConfigManager config,
             BucketManager buckets,

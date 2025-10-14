@@ -440,6 +440,38 @@
             <param name="key">Key.</param>
             <param name="val">Value.</param>
         </member>
+        <member name="T:Less3.Classes.CleanupManager">
+            <summary>
+            Cleanup manager for expired multipart uploads and other maintenance tasks.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.CleanupManager.#ctor(Less3.Settings.SettingsBase,SyslogLogging.LoggingModule,Less3.Classes.ConfigManager)">
+            <summary>
+            Instantiate the cleanup manager.
+            </summary>
+            <param name="settings">Settings.</param>
+            <param name="logging">Logging module.</param>
+            <param name="config">Configuration manager.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when required parameters are null.</exception>
+        </member>
+        <member name="P:Less3.Classes.CleanupManager.CleanupIntervalMs">
+            <summary>
+            Cleanup interval in milliseconds.
+            Default value is 3600000 (1 hour).
+            Minimum value is 60000 (1 minute).
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.CleanupManager.Dispose">
+            <summary>
+            Dispose of the cleanup manager.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.CleanupManager.Dispose(System.Boolean)">
+            <summary>
+            Dispose of the cleanup manager.
+            </summary>
+            <param name="disposing">Disposing.</param>
+        </member>
         <member name="T:Less3.Classes.ConfigManager">
             <summary>
             Configuration manager.
@@ -520,6 +552,31 @@
             <param name="accessKey">Access key.</param>
             <param name="secretKey">Secret key.</param>
             <param name="isBase64">Is base64 encoded.</param>
+        </member>
+        <member name="T:Less3.Classes.HashResult">
+            <summary>
+            Hash computation result.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.HashResult.MD5">
+            <summary>
+            MD5 hash in lowercase hexadecimal format.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.HashResult.SHA1">
+            <summary>
+            SHA1 hash in lowercase hexadecimal format.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.HashResult.SHA256">
+            <summary>
+            SHA256 hash in lowercase hexadecimal format.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.HashResult.#ctor">
+            <summary>
+            Instantiate.
+            </summary>
         </member>
         <member name="T:Less3.Classes.Obj">
             <summary>
@@ -886,176 +943,144 @@
             Compliance retention.
             </summary>
         </member>
-        <member name="T:Less3.Classes.Settings">
+        <member name="T:Less3.Classes.Setup">
             <summary>
-            Less3 settings.
+            Setup workflow.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Settings.EnableConsole">
+        <member name="T:Less3.Classes.Upload">
             <summary>
-            Enable or disable the console.
+            Multipart upload.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Settings.ValidateSignatures">
+        <member name="P:Less3.Classes.Upload.Id">
             <summary>
-            Enable or disable signature validation.
+            Database identifier.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Settings.BaseDomain">
+        <member name="P:Less3.Classes.Upload.GUID">
             <summary>
-            Base domain, if using virtual hosted-style URLs, e.g. "localhost".
+            GUID of the object.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Settings.HeaderApiKey">
+        <member name="P:Less3.Classes.Upload.BucketGUID">
             <summary>
-            API key header for admin API requests.
+            GUID of the bucket.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Settings.AdminApiKey">
+        <member name="P:Less3.Classes.Upload.OwnerGUID">
             <summary>
-            Admin API key.
+            GUID of the owner.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Settings.RegionString">
+        <member name="P:Less3.Classes.Upload.AuthorGUID">
             <summary>
-            Region string.
+            GUID of the author.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Settings.Database">
+        <member name="P:Less3.Classes.Upload.Key">
             <summary>
-            Database settings.
+            Object key.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Settings.Webserver">
+        <member name="P:Less3.Classes.Upload.CreatedUtc">
             <summary>
-            Web server settings.
+            Creation timestamp.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Settings.Storage">
+        <member name="P:Less3.Classes.Upload.LastAccessUtc">
             <summary>
-            Storage settings.
+            Last access timestamp.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Settings.Logging">
+        <member name="P:Less3.Classes.Upload.ExpirationUtc">
             <summary>
-            Logging settings.
+            Expiration UTC.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Settings.Debug">
+        <member name="P:Less3.Classes.Upload.ContentType">
             <summary>
-            Debugging settings.
+            Content type.
             </summary>
         </member>
-        <member name="T:Less3.Classes.Settings.SettingsStorage">
+        <member name="P:Less3.Classes.Upload.Metadata">
             <summary>
-            Storage settings.
+            Custom metadata stored as JSON.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Settings.SettingsStorage.TempDirectory">
-            <summary>
-            Temporary storage directory.
-            </summary>
-        </member>
-        <member name="P:Less3.Classes.Settings.SettingsStorage.StorageType">
-            <summary>
-            Type of storage driver.
-            </summary>
-        </member>
-        <member name="P:Less3.Classes.Settings.SettingsStorage.DiskDirectory">
-            <summary>
-            Storage directory for 'Disk' StorageType.
-            </summary>
-        </member>
-        <member name="T:Less3.Classes.Settings.SettingsLogging">
-            <summary>
-            Logging settings.
-            </summary>
-        </member>
-        <member name="P:Less3.Classes.Settings.SettingsLogging.SyslogServerIp">
-            <summary>
-            IP address or hostname of the syslog server.
-            </summary>
-        </member>
-        <member name="P:Less3.Classes.Settings.SettingsLogging.SyslogServerPort">
-            <summary>
-            Syslog server port number.
-            </summary>
-        </member>
-        <member name="P:Less3.Classes.Settings.SettingsLogging.MinimumLevel">
-            <summary>
-            Minimum log level severity.
-            </summary>
-        </member>
-        <member name="P:Less3.Classes.Settings.SettingsLogging.LogHttpRequests">
-            <summary>
-            Enable or disable logging of HTTP requests.
-            </summary>
-        </member>
-        <member name="P:Less3.Classes.Settings.SettingsLogging.LogS3Requests">
-            <summary>
-            Enable or disable logging of S3 requests.
-            </summary>
-        </member>
-        <member name="P:Less3.Classes.Settings.SettingsLogging.LogExceptions">
-            <summary>
-            Enable or disable logging of exceptions.
-            </summary>
-        </member>
-        <member name="P:Less3.Classes.Settings.SettingsLogging.LogSignatureValidation">
-            <summary>
-            Enable or disable logging of signature validation.
-            </summary>
-        </member>
-        <member name="P:Less3.Classes.Settings.SettingsLogging.ConsoleLogging">
-            <summary>
-            Enable or disable logging to the console.
-            </summary>
-        </member>
-        <member name="P:Less3.Classes.Settings.SettingsLogging.DiskLogging">
-            <summary>
-            Enable or disable logging to disk.
-            </summary>
-        </member>
-        <member name="P:Less3.Classes.Settings.SettingsLogging.DiskDirectory">
-            <summary>
-            Directory on disk to write log files.
-            </summary>
-        </member>
-        <member name="T:Less3.Classes.Settings.SettingsDebug">
-            <summary>
-            Debug settings.
-            </summary>
-        </member>
-        <member name="P:Less3.Classes.Settings.SettingsDebug.Authentication">
-            <summary>
-            Enable or disable debugging of authentication logic.
-            </summary>
-        </member>
-        <member name="P:Less3.Classes.Settings.SettingsDebug.S3Requests">
-            <summary>
-            Enable or disable debugging of S3 request parsing.
-            </summary>
-        </member>
-        <member name="P:Less3.Classes.Settings.SettingsDebug.Exceptions">
-            <summary>
-            Enable or disable debugging of exceptions.
-            </summary>
-        </member>
-        <member name="M:Less3.Classes.Settings.#ctor">
+        <member name="M:Less3.Classes.Upload.#ctor">
             <summary>
             Instantiate.
             </summary>
         </member>
-        <member name="M:Less3.Classes.Settings.FromFile(System.String)">
+        <member name="T:Less3.Classes.UploadPart">
             <summary>
-            Instantiate the object from a file.
+            Multipart upload part.
             </summary>
-            <param name="filename">Filename.</param>
-            <returns>Settings.</returns>
         </member>
-        <member name="T:Less3.Classes.Setup">
+        <member name="P:Less3.Classes.UploadPart.Id">
             <summary>
-            Setup workflow.
+            ID.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.UploadPart.GUID">
+            <summary>
+            GUID.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.UploadPart.BucketGUID">
+            <summary>
+            Bucket GUID.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.UploadPart.OwnerGUID">
+            <summary>
+            Owner GUID.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.UploadPart.UploadGUID">
+            <summary>
+            Multipart upload GUID.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.UploadPart.PartNumber">
+            <summary>
+            Part number.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.UploadPart.PartLength">
+            <summary>
+            Part length.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.UploadPart.MD5Hash">
+            <summary>
+            MD5 hash.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.UploadPart.Sha1Hash">
+            <summary>
+            SHA1 hash.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.UploadPart.Sha256Hash">
+            <summary>
+            SHA256 hash.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.UploadPart.LastAccessUtc">
+            <summary>
+            Last access timestamp.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.UploadPart.CreatedUtc">
+            <summary>
+            Created timestamp.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.UploadPart.#ctor">
+            <summary>
+            Instantiate.
             </summary>
         </member>
         <member name="T:Less3.Classes.User">
@@ -1113,9 +1138,378 @@
             Common static methods.
             </summary>
         </member>
+        <member name="T:Less3.Helpers.AclConverter">
+            <summary>
+            ACL conversion helper methods.
+            Provides bidirectional conversion between internal ACL representations and S3 API objects.
+            </summary>
+        </member>
+        <member name="M:Less3.Helpers.AclConverter.BucketAclsToPolicy(System.Collections.Generic.List{Less3.Classes.BucketAcl},Less3.Classes.User,Less3.Classes.ConfigManager,SyslogLogging.LoggingModule,System.String)">
+            <summary>
+            Converts bucket ACLs to an AccessControlPolicy for API responses.
+            </summary>
+            <param name="acls">List of bucket ACLs to convert.</param>
+            <param name="owner">Bucket owner user.</param>
+            <param name="config">Configuration manager for user lookups.</param>
+            <param name="logging">Logging module for warnings about misconfigured ACLs.</param>
+            <param name="header">Log header prefix for consistent log formatting.</param>
+            <returns>AccessControlPolicy containing owner information and grants.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when owner, config, or logging is null.</exception>
+        </member>
+        <member name="M:Less3.Helpers.AclConverter.ObjectAclsToPolicy(System.Collections.Generic.List{Less3.Classes.ObjectAcl},Less3.Classes.User,Less3.Classes.ConfigManager,SyslogLogging.LoggingModule,System.String)">
+            <summary>
+            Converts object ACLs to an AccessControlPolicy for API responses.
+            </summary>
+            <param name="acls">List of object ACLs to convert.</param>
+            <param name="owner">Object owner user.</param>
+            <param name="config">Configuration manager for user lookups.</param>
+            <param name="logging">Logging module for warnings about misconfigured ACLs.</param>
+            <param name="header">Log header prefix for consistent log formatting.</param>
+            <returns>AccessControlPolicy containing owner information and grants.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when owner, config, or logging is null.</exception>
+        </member>
+        <member name="M:Less3.Helpers.AclConverter.PolicyToBucketAcls(S3ServerLibrary.S3Objects.AccessControlPolicy,System.Collections.Specialized.NameValueCollection,Less3.Classes.User,System.String,System.String,Less3.Classes.ConfigManager,SyslogLogging.LoggingModule,System.String)">
+            <summary>
+            Converts an AccessControlPolicy and request headers to a list of bucket ACLs.
+            </summary>
+            <param name="acp">AccessControlPolicy from request body. May be null.</param>
+            <param name="headers">HTTP request headers containing ACL grants. May be null.</param>
+            <param name="currentUser">User making the request.</param>
+            <param name="bucketGuid">GUID of the bucket.</param>
+            <param name="ownerGuid">GUID of the bucket owner.</param>
+            <param name="config">Configuration manager for user lookups.</param>
+            <param name="logging">Logging module for warnings about invalid grants.</param>
+            <param name="header">Log header prefix for consistent log formatting.</param>
+            <returns>List of BucketAcl objects ready for database insertion.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when currentUser, config, or logging is null.</exception>
+        </member>
+        <member name="M:Less3.Helpers.AclConverter.PolicyToObjectAcls(S3ServerLibrary.S3Objects.AccessControlPolicy,System.Collections.Specialized.NameValueCollection,Less3.Classes.User,System.String,System.String,System.String,Less3.Classes.ConfigManager,SyslogLogging.LoggingModule,System.String)">
+            <summary>
+            Converts an AccessControlPolicy and request headers to a list of object ACLs.
+            </summary>
+            <param name="acp">AccessControlPolicy from request body. May be null.</param>
+            <param name="headers">HTTP request headers containing ACL grants. May be null.</param>
+            <param name="currentUser">User making the request.</param>
+            <param name="bucketGuid">GUID of the bucket containing the object.</param>
+            <param name="objectGuid">GUID of the object.</param>
+            <param name="ownerGuid">GUID of the object owner.</param>
+            <param name="config">Configuration manager for user lookups.</param>
+            <param name="logging">Logging module for warnings about invalid grants.</param>
+            <param name="header">Log header prefix for consistent log formatting.</param>
+            <returns>List of ObjectAcl objects ready for database insertion.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when currentUser, config, or logging is null.</exception>
+        </member>
+        <member name="M:Less3.Helpers.AclConverter.GrantsFromHeaders(Less3.Classes.User,System.Collections.Specialized.NameValueCollection,Less3.Classes.ConfigManager)">
+            <summary>
+            Extracts ACL grants from HTTP request headers.
+            Supports canned ACLs and individual grant headers.
+            </summary>
+            <param name="user">User making the request. Used for 'private' canned ACL.</param>
+            <param name="headers">HTTP request headers to parse. May be null.</param>
+            <param name="config">Configuration manager for user email/GUID lookups.</param>
+            <returns>List of Grant objects parsed from headers. Empty list if no grants found.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when user or config is null.</exception>
+        </member>
+        <member name="T:Less3.Helpers.HashHelper">
+            <summary>
+            Hash computation helper.
+            </summary>
+        </member>
+        <member name="M:Less3.Helpers.HashHelper.ComputeHashes(System.Byte[])">
+            <summary>
+            Compute MD5, SHA1, and SHA256 hashes of the supplied data.
+            </summary>
+            <param name="data">Byte array containing data to hash.</param>
+            <returns>HashResult containing MD5, SHA1, and SHA256 hashes in lowercase hexadecimal format.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when data is null.</exception>
+        </member>
+        <member name="T:Less3.Helpers.RequestValidator">
+            <summary>
+            Request validation helper methods.
+            Provides common validation patterns used across API handlers.
+            </summary>
+        </member>
+        <member name="M:Less3.Helpers.RequestValidator.ValidateAndGetMetadata(S3ServerLibrary.S3Context,SyslogLogging.LoggingModule,System.String)">
+            <summary>
+            Validates that request metadata can be retrieved from the S3Context.
+            </summary>
+            <param name="ctx">S3 request context.</param>
+            <param name="logging">Logging module for error reporting.</param>
+            <param name="header">Log header prefix for consistent log formatting.</param>
+            <returns>RequestMetadata object containing authentication and authorization information.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when ctx or logging is null.</exception>
+            <exception cref="T:S3ServerLibrary.S3Exception">Thrown with InternalError when metadata cannot be retrieved.</exception>
+        </member>
+        <member name="M:Less3.Helpers.RequestValidator.ValidateAuthorization(Less3.Classes.RequestMetadata,SyslogLogging.LoggingModule,System.String)">
+            <summary>
+            Validates that the request is authorized.
+            </summary>
+            <param name="md">Request metadata containing authorization result.</param>
+            <param name="logging">Logging module for error reporting.</param>
+            <param name="header">Log header prefix for consistent log formatting.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when md or logging is null.</exception>
+            <exception cref="T:S3ServerLibrary.S3Exception">Thrown with AccessDenied when authorization check fails.</exception>
+        </member>
+        <member name="M:Less3.Helpers.RequestValidator.ValidateBucketExists(Less3.Classes.RequestMetadata,SyslogLogging.LoggingModule,System.String)">
+            <summary>
+            Validates that the bucket exists and has an associated client.
+            </summary>
+            <param name="md">Request metadata containing bucket and bucket client references.</param>
+            <param name="logging">Logging module for error reporting.</param>
+            <param name="header">Log header prefix for consistent log formatting.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when md or logging is null.</exception>
+            <exception cref="T:S3ServerLibrary.S3Exception">Thrown with NoSuchBucket when bucket or bucket client is null.</exception>
+        </member>
+        <member name="M:Less3.Helpers.RequestValidator.ValidateAuthentication(Less3.Classes.RequestMetadata,SyslogLogging.LoggingModule,System.String)">
+            <summary>
+            Validates that the user is authenticated.
+            </summary>
+            <param name="md">Request metadata containing user and credential references.</param>
+            <param name="logging">Logging module for error reporting.</param>
+            <param name="header">Log header prefix for consistent log formatting.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when md or logging is null.</exception>
+            <exception cref="T:S3ServerLibrary.S3Exception">Thrown with AccessDenied when user or credential is null.</exception>
+        </member>
+        <member name="M:Less3.Helpers.RequestValidator.ParseVersionId(S3ServerLibrary.S3Context)">
+            <summary>
+            Parses and validates the version ID from the S3 request context.
+            Default value is 1 if no version ID is specified.
+            </summary>
+            <param name="ctx">S3 request context containing version ID string.</param>
+            <returns>Parsed version ID as a long integer. Returns 1 if version ID is not specified.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when ctx is null.</exception>
+            <exception cref="T:S3ServerLibrary.S3Exception">Thrown with NoSuchVersion when version ID cannot be parsed as a valid long integer.</exception>
+        </member>
+        <member name="M:Less3.Helpers.RequestValidator.ValidateObjectExists(Less3.Classes.Obj,System.Int64,SyslogLogging.LoggingModule,System.String)">
+            <summary>
+            Validates that an object exists and throws appropriate exceptions based on version ID.
+            </summary>
+            <param name="obj">Object metadata. Null indicates object does not exist.</param>
+            <param name="versionId">Version ID being requested. Used to determine appropriate error message.</param>
+            <param name="logging">Logging module for error reporting.</param>
+            <param name="header">Log header prefix for consistent log formatting.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when logging is null.</exception>
+            <exception cref="T:S3ServerLibrary.S3Exception">Thrown with NoSuchKey when object is null and versionId is 1. Thrown with NoSuchVersion when object is null and versionId is greater than 1.</exception>
+        </member>
+        <member name="M:Less3.Helpers.RequestValidator.CheckDeleteMarker(Less3.Classes.Obj,S3ServerLibrary.S3Context)">
+            <summary>
+            Checks if the object is marked as deleted and sets appropriate response headers.
+            </summary>
+            <param name="obj">Object metadata to check for delete marker.</param>
+            <param name="ctx">S3 request context for setting response headers.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when obj or ctx is null.</exception>
+            <exception cref="T:S3ServerLibrary.S3Exception">Thrown with NoSuchKey when object has a delete marker. Response headers will include delete marker indicator.</exception>
+        </member>
+        <member name="M:Less3.Helpers.RequestValidator.ValidateUploadId(S3ServerLibrary.S3Context,SyslogLogging.LoggingModule,System.String)">
+            <summary>
+            Parses and validates the upload ID from the S3 request context.
+            </summary>
+            <param name="ctx">S3 request context containing upload ID string.</param>
+            <param name="logging">Logging module for error reporting.</param>
+            <param name="header">Log header prefix for consistent log formatting.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when ctx or logging is null.</exception>
+            <exception cref="T:S3ServerLibrary.S3Exception">Thrown with InvalidRequest when upload ID is null or empty.</exception>
+        </member>
+        <member name="M:Less3.Helpers.RequestValidator.ValidateUpload(Less3.Classes.Upload,System.String,SyslogLogging.LoggingModule,System.String)">
+            <summary>
+            Validates that a multipart upload record exists and has not expired.
+            </summary>
+            <param name="upload">Upload record from database. Null indicates upload does not exist.</param>
+            <param name="uploadId">Upload ID being validated. Used for error logging.</param>
+            <param name="logging">Logging module for error reporting.</param>
+            <param name="header">Log header prefix for consistent log formatting.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when logging is null.</exception>
+            <exception cref="T:S3ServerLibrary.S3Exception">Thrown with NoSuchUpload when upload is null or has expired.</exception>
+        </member>
+        <member name="M:Less3.Helpers.RequestValidator.ValidatePartNumber(System.Int32,SyslogLogging.LoggingModule,System.String)">
+            <summary>
+            Validates that a part number is within valid range for multipart uploads.
+            Valid range is 1 to 10000 inclusive.
+            </summary>
+            <param name="partNumber">Part number to validate.</param>
+            <param name="logging">Logging module for error reporting.</param>
+            <param name="header">Log header prefix for consistent log formatting.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when logging is null.</exception>
+            <exception cref="T:S3ServerLibrary.S3Exception">Thrown with InvalidArgument when part number is less than 1 or greater than 10000.</exception>
+        </member>
         <member name="T:Less3.Program">
             <summary>
             Less3 is an S3-compatible object storage server.
+            </summary>
+        </member>
+        <member name="T:Less3.Settings.DebugSettings">
+            <summary>
+            Debug settings.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.DebugSettings.Authentication">
+            <summary>
+            Enable or disable debugging of authentication logic.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.DebugSettings.S3Requests">
+            <summary>
+            Enable or disable debugging of S3 request parsing.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.DebugSettings.Exceptions">
+            <summary>
+            Enable or disable debugging of exceptions.
+            </summary>
+        </member>
+        <member name="M:Less3.Settings.DebugSettings.#ctor">
+            <summary>
+            Debug settings.
+            </summary>
+        </member>
+        <member name="T:Less3.Settings.LoggingSettings">
+            <summary>
+            Logging settings.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.LoggingSettings.SyslogServerIp">
+            <summary>
+            IP address or hostname of the syslog server.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.LoggingSettings.SyslogServerPort">
+            <summary>
+            Syslog server port number.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.LoggingSettings.MinimumLevel">
+            <summary>
+            Minimum log level severity.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.LoggingSettings.LogHttpRequests">
+            <summary>
+            Enable or disable logging of HTTP requests.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.LoggingSettings.LogS3Requests">
+            <summary>
+            Enable or disable logging of S3 requests.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.LoggingSettings.LogExceptions">
+            <summary>
+            Enable or disable logging of exceptions.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.LoggingSettings.LogSignatureValidation">
+            <summary>
+            Enable or disable logging of signature validation.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.LoggingSettings.ConsoleLogging">
+            <summary>
+            Enable or disable logging to the console.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.LoggingSettings.DiskLogging">
+            <summary>
+            Enable or disable logging to disk.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.LoggingSettings.DiskDirectory">
+            <summary>
+            Directory on disk to write log files.
+            </summary>
+        </member>
+        <member name="M:Less3.Settings.LoggingSettings.#ctor">
+            <summary>
+            Logging settings.
+            </summary>
+        </member>
+        <member name="T:Less3.Settings.SettingsBase">
+            <summary>
+            Less3 settings.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.SettingsBase.EnableConsole">
+            <summary>
+            Enable or disable the console.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.SettingsBase.ValidateSignatures">
+            <summary>
+            Enable or disable signature validation.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.SettingsBase.BaseDomain">
+            <summary>
+            Base domain, if using virtual hosted-style URLs, e.g. "localhost".
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.SettingsBase.HeaderApiKey">
+            <summary>
+            API key header for admin API requests.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.SettingsBase.AdminApiKey">
+            <summary>
+            Admin API key.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.SettingsBase.RegionString">
+            <summary>
+            Region string.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.SettingsBase.Database">
+            <summary>
+            Database settings.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.SettingsBase.Webserver">
+            <summary>
+            Web server settings.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.SettingsBase.Storage">
+            <summary>
+            Storage settings.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.SettingsBase.Logging">
+            <summary>
+            Logging settings.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.SettingsBase.Debug">
+            <summary>
+            Debugging settings.
+            </summary>
+        </member>
+        <member name="M:Less3.Settings.SettingsBase.#ctor">
+            <summary>
+            Instantiate.
+            </summary>
+        </member>
+        <member name="T:Less3.Settings.StorageSettings">
+            <summary>
+            Storage settings.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.StorageSettings.TempDirectory">
+            <summary>
+            Temporary storage directory.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.StorageSettings.StorageType">
+            <summary>
+            Type of storage driver.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.StorageSettings.DiskDirectory">
+            <summary>
+            Storage directory for 'Disk' StorageType.
+            </summary>
+        </member>
+        <member name="M:Less3.Settings.StorageSettings.#ctor">
+            <summary>
+            Storage settings.
             </summary>
         </member>
         <member name="T:Less3.Storage.DiskStorageDriver">

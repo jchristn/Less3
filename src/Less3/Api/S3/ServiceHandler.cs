@@ -11,6 +11,7 @@
     using S3ServerLibrary.S3Objects;
 
     using Less3.Classes;
+    using Less3.Settings;
 
     /// <summary>
     /// Service APIs.
@@ -25,7 +26,7 @@
 
         #region Private-Members
 
-        private Settings _Settings = null;
+        private SettingsBase _Settings = null;
         private LoggingModule _Logging = null;
         private ConfigManager _Config = null;
         private BucketManager _Buckets = null;
@@ -36,7 +37,7 @@
         #region Constructors-and-Factories
 
         internal ServiceHandler(
-            Settings settings,
+            SettingsBase settings,
             LoggingModule logging, 
             ConfigManager config,
             BucketManager buckets,

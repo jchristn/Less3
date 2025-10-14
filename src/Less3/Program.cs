@@ -1,25 +1,23 @@
 ﻿namespace Less3
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.Specialized;
-    using System.Diagnostics;
-    using System.IO;
-    using System.Net;
-    using System.Reflection;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using S3ServerLibrary;
-    using SyslogLogging;
-    using Watson.ORM;
-    using WatsonWebserver;
-
     using Less3.Api.Admin;
     using Less3.Api.S3;
     using Less3.Classes;
+    using Less3.Settings;
+    using S3ServerLibrary;
+    using SyslogLogging;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
+    using System.Net;
+    using System.Reflection;
+    using System.Runtime.Loader;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Watson.ORM;
+    using WatsonWebserver;
 
     /// <summary>
     /// Less3 is an S3-compatible object storage server.
@@ -28,8 +26,9 @@
     {
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
+        private static string _Header = "[Less3] ";
         private static string _Version;
-        private static Settings _Settings;
+        private static SettingsBase _Settings;
         private static LoggingModule _Logging;
         private static WatsonORM _ORM;
         private static ConfigManager _Config;
@@ -37,6 +36,7 @@
         private static ApiHandler _ApiHandler;
         private static AdminApiHandler _AdminApiHandler;
         private static AuthManager _Auth;
+        private static CleanupManager _Cleanup;
 
         private static S3ServerSettings _S3Settings;
         private static S3Server _S3Server;
@@ -48,11 +48,9 @@
         {
             _Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
-            LoadSettings(args); 
+            LoadSettings(args);
             Welcome();
             InitializeGlobals();
-
-            #region Wait-for-Server-Thread
 
             if (_Settings.EnableConsole && Environment.UserInteractive)
             {
@@ -60,20 +58,34 @@
             }
             else
             {
-                EventWaitHandle waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset, null);
+                EventWaitHandle waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
+                AssemblyLoadContext.Default.Unloading += (ctx) => waitHandle.Set();
+                Console.CancelKeyPress += (sender, eventArgs) =>
+                {
+                    if (!_Exiting)
+                    {
+                        _Logging.Info(_Header + "termination signal received");
+                        _Exiting = true;
+                        waitHandle.Set();
+                        eventArgs.Cancel = true;
+                    }
+                };
+
                 bool waitHandleSignal = false;
                 do
                 {
-                    if (_Exiting) break;
                     waitHandleSignal = waitHandle.WaitOne(1000);
                 }
                 while (!waitHandleSignal);
+
+                _Logging.Info(_Header + "stopping at " + DateTime.UtcNow);
             }
+
+            _Logging.Info(_Header + "disposing cleanup manager");
+            if (_Cleanup != null) _Cleanup.Dispose();
 
             _S3Server.Stop();
             _Logging.Info("Less3 exiting");
-
-            #endregion
         }
 
         private static void Welcome()
@@ -188,7 +200,7 @@
                 Setup setup = new Setup();
             }
 
-            _Settings = Settings.FromFile("system.json");
+            _Settings = SerializationHelper.DeserializeJson<SettingsBase>(File.ReadAllText("./system.json"));
         }
 
         private static void InitializeGlobals()
@@ -220,47 +232,41 @@
             Console.WriteLine("| Initializing database");
             _ORM = new WatsonORM(_Settings.Database);
             _ORM.InitializeDatabase();
-            _ORM.InitializeTable(typeof(Bucket));
-            _ORM.InitializeTable(typeof(BucketAcl));
-            _ORM.InitializeTable(typeof(BucketTag));
-            _ORM.InitializeTable(typeof(Credential));
-            _ORM.InitializeTable(typeof(Obj));
-            _ORM.InitializeTable(typeof(ObjectAcl));
-            _ORM.InitializeTable(typeof(ObjectTag));
-            _ORM.InitializeTable(typeof(User));
+            _ORM.InitializeTables(new List<Type>
+            {
+                typeof(Bucket),
+                typeof(BucketAcl),
+                typeof(BucketTag),
+                typeof(Credential),
+                typeof(Obj),
+                typeof(ObjectAcl),
+                typeof(ObjectTag),
+                typeof(Upload),
+                typeof(UploadPart),
+                typeof(User)
+            });
 
-            //             0        1         2         3         4         5
-            //             123456789012345678901234567890123456789012345678901234567890
             Console.WriteLine("| Initializing configuration manager");
             _Config = new ConfigManager(_Settings, _Logging, _ORM);
 
-            //             0        1         2         3         4         5
-            //             123456789012345678901234567890123456789012345678901234567890
             Console.WriteLine("| Initializing bucket manager");
             _Buckets = new BucketManager(_Settings, _Logging, _Config, _ORM);
 
-            //             0        1         2         3         4         5
-            //             123456789012345678901234567890123456789012345678901234567890
             Console.WriteLine("| Initializing authentication manager");
             _Auth = new AuthManager(_Settings, _Logging, _Config, _Buckets);
 
-            //             0        1         2         3         4         5
-            //             123456789012345678901234567890123456789012345678901234567890
             Console.WriteLine("| Initializing API handler");
             _ApiHandler = new ApiHandler(_Settings, _Logging, _Config, _Buckets, _Auth);
 
-            //             0        1         2         3         4         5
-            //             123456789012345678901234567890123456789012345678901234567890
             Console.WriteLine("| Initializing admin API handler");
             _AdminApiHandler = new AdminApiHandler(_Settings, _Logging, _Config, _Buckets, _Auth);
 
-            //             0        1         2         3         4         5
-            //             123456789012345678901234567890123456789012345678901234567890
             Console.WriteLine("| Initializing console manager");
             _Console = new ConsoleManager(_Settings, _Logging);
 
-            //             0        1         2         3         4         5
-            //             123456789012345678901234567890123456789012345678901234567890
+            Console.WriteLine("| Initializing cleanup manager");
+            _Cleanup = new CleanupManager(_Settings, _Logging, _Config);
+
             Console.WriteLine("| Initializing S3 server interface");
             _S3Settings = new S3ServerSettings();
             _S3Settings.Logging.HttpRequests = _Settings.Logging.LogHttpRequests;
@@ -274,8 +280,6 @@
 
             Console.WriteLine("| " + _Settings.Webserver.Prefix);
 
-            //             0        1         2         3         4         5
-            //             123456789012345678901234567890123456789012345678901234567890
             Console.WriteLine("| Initializing S3 server APIs");
 
             if (!String.IsNullOrEmpty(_Settings.BaseDomain))
@@ -311,6 +315,7 @@
             _S3Server.Bucket.WriteAcl = _ApiHandler.BucketWriteAcl;
             _S3Server.Bucket.WriteTagging = _ApiHandler.BucketWriteTagging;
             _S3Server.Bucket.WriteVersioning = _ApiHandler.BucketWriteVersioning;
+            _S3Server.Bucket.ReadMultipartUploads = _ApiHandler.ReadMultipartUploads;
 
             _S3Server.Object.Delete = _ApiHandler.ObjectDelete;
             _S3Server.Object.DeleteMultiple = _ApiHandler.ObjectDeleteMultiple;
@@ -323,6 +328,12 @@
             _S3Server.Object.Write = _ApiHandler.ObjectWrite;
             _S3Server.Object.WriteAcl = _ApiHandler.ObjectWriteAcl;
             _S3Server.Object.WriteTagging = _ApiHandler.ObjectWriteTagging;
+            _S3Server.Object.UploadPart = _ApiHandler.UploadPart;
+            _S3Server.Object.AbortMultipartUpload = _ApiHandler.AbortMultipartUpload;
+            _S3Server.Object.CompleteMultipartUpload = _ApiHandler.CompleteMultipartUpload;
+            _S3Server.Object.CreateMultipartUpload = _ApiHandler.CreateMultipartUpload;
+            _S3Server.Object.ReadParts = _ApiHandler.ReadParts;
+
             _S3Server.Start();
 
             Console.ForegroundColor = prior;
@@ -378,13 +389,6 @@
                 "</html>";
 
             return html;
-        }
-
-        private static bool ExitApplication()
-        {
-            _Logging.Info("Less3 exiting due to console request");
-            _Exiting = true; 
-            return true;
         }
 
         private static async Task<bool> PreRequestHandler(S3Context ctx)
@@ -505,6 +509,7 @@
                 case S3RequestType.BucketWriteTags:
                 case S3RequestType.BucketWriteVersioning:
                 case S3RequestType.BucketWriteWebsite:
+                case S3RequestType.BucketReadMultipartUploads:
                     md = _Auth.AuthorizeBucketRequest(ctx, md);
                     break;
 
@@ -523,6 +528,11 @@
                 case S3RequestType.ObjectWriteLegalHold:
                 case S3RequestType.ObjectWriteRetention:
                 case S3RequestType.ObjectWriteTags:
+                case S3RequestType.ObjectCreateMultipartUpload:
+                case S3RequestType.ObjectUploadPart:
+                case S3RequestType.ObjectCompleteMultipartUpload:
+                case S3RequestType.ObjectAbortMultipartUpload:
+                case S3RequestType.ObjectReadParts:
                     md = _Auth.AuthorizeObjectRequest(ctx, md);
                     break; 
             }
@@ -540,6 +550,27 @@
             }
 
             ctx.Metadata = md;
+
+            #endregion
+
+            #region Handle-Canned-ACLs
+
+            if ((ctx.Request.RequestType == S3RequestType.ObjectWriteAcl || ctx.Request.RequestType == S3RequestType.BucketWriteAcl) &&
+                ctx.Http.Request.ContentLength == 0)
+            {
+                _Logging.Debug(header + "handling canned ACL request (no body)");
+
+                if (ctx.Request.RequestType == S3RequestType.ObjectWriteAcl)
+                {
+                    await _ApiHandler.ObjectWriteAcl(ctx, null);
+                }
+                else if (ctx.Request.RequestType == S3RequestType.BucketWriteAcl)
+                {
+                    await _ApiHandler.BucketWriteAcl(ctx, null);
+                }
+
+                return true;
+            }
 
             #endregion
 

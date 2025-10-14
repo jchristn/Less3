@@ -7,6 +7,7 @@
 
     using DatabaseWrapper.Core;
     using ExpressionTree;
+    using Less3.Settings;
     using SyslogLogging;
     using Watson.ORM;
     using Watson.ORM.Core;
@@ -22,7 +23,7 @@
 
         #region Private-Members
 
-        private Settings _Settings = null;
+        private SettingsBase _Settings = null;
         private LoggingModule _Logging = null;
         private WatsonORM _ORM = null;
 
@@ -30,7 +31,7 @@
 
         #region Constructors-and-Factories
          
-        internal ConfigManager(Settings settings, LoggingModule logging, WatsonORM orm)
+        internal ConfigManager(SettingsBase settings, LoggingModule logging, WatsonORM orm)
         {
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _Logging = logging ?? throw new ArgumentNullException(nameof(logging));
@@ -389,6 +390,92 @@
             }
         }
          
-        #endregion 
+        #endregion
+
+        #region Internal-Upload-Methods
+
+        internal Less3.Classes.Upload GetUploadByGuid(string uploadGuid)
+        {
+            if (String.IsNullOrEmpty(uploadGuid)) return null;
+
+            Expr e = new Expr(
+                _ORM.GetColumnName<Less3.Classes.Upload>(nameof(Less3.Classes.Upload.GUID)),
+                OperatorEnum.Equals,
+                uploadGuid);
+
+            return _ORM.SelectFirst<Less3.Classes.Upload>(e);
+        }
+
+        internal List<Less3.Classes.Upload> GetUploads()
+        {
+            Expr e = new Expr(
+                _ORM.GetColumnName<Less3.Classes.Upload>(nameof(Less3.Classes.Upload.Id)),
+                OperatorEnum.GreaterThan,
+                0);
+
+            return _ORM.SelectMany<Less3.Classes.Upload>(e);
+        }
+
+        internal List<Less3.Classes.Upload> GetUploadsByBucketGuid(string bucketGuid)
+        {
+            if (String.IsNullOrEmpty(bucketGuid)) return new List<Less3.Classes.Upload>();
+
+            Expr e = new Expr(
+                _ORM.GetColumnName<Less3.Classes.Upload>(nameof(Less3.Classes.Upload.BucketGUID)),
+                OperatorEnum.Equals,
+                bucketGuid);
+
+            return _ORM.SelectMany<Less3.Classes.Upload>(e);
+        }
+
+        internal void AddUpload(Less3.Classes.Upload upload)
+        {
+            if (upload == null) throw new ArgumentNullException(nameof(upload));
+            _ORM.Insert<Less3.Classes.Upload>(upload);
+        }
+
+        internal void DeleteUpload(string uploadGuid)
+        {
+            if (String.IsNullOrEmpty(uploadGuid)) return;
+
+            Expr e = new Expr(
+                _ORM.GetColumnName<Less3.Classes.Upload>(nameof(Less3.Classes.Upload.GUID)),
+                OperatorEnum.Equals,
+                uploadGuid);
+
+            _ORM.DeleteMany<Less3.Classes.Upload>(e);
+        }
+
+        internal void AddUploadPart(UploadPart part)
+        {
+            if (part == null) throw new ArgumentNullException(nameof(part));
+            _ORM.Insert<UploadPart>(part);
+        }
+
+        internal List<UploadPart> GetUploadPartsByUploadGuid(string uploadGuid)
+        {
+            if (String.IsNullOrEmpty(uploadGuid)) return null;
+
+            Expr e = new Expr(
+                _ORM.GetColumnName<UploadPart>(nameof(UploadPart.UploadGUID)),
+                OperatorEnum.Equals,
+                Guid.Parse(uploadGuid));
+
+            return _ORM.SelectMany<UploadPart>(e);
+        }
+
+        internal void DeleteUploadParts(string uploadGuid)
+        {
+            if (String.IsNullOrEmpty(uploadGuid)) return;
+
+            Expr e = new Expr(
+                _ORM.GetColumnName<UploadPart>(nameof(UploadPart.UploadGUID)),
+                OperatorEnum.Equals,
+                Guid.Parse(uploadGuid));
+
+            _ORM.DeleteMany<UploadPart>(e);
+        }
+
+        #endregion
     }
 }

@@ -15,6 +15,8 @@
     using S3ServerLibrary.S3Objects;
 
     using Less3.Classes;
+    using Less3.Helpers;
+    using Less3.Settings;
 
     /// <summary>
     /// Bucket APIs.
@@ -29,7 +31,7 @@
 
         #region Private-Members
 
-        private Settings _Settings = null;
+        private SettingsBase _Settings = null;
         private LoggingModule _Logging = null;
         private ConfigManager _Config = null;
         private BucketManager _Buckets = null;
@@ -40,7 +42,7 @@
         #region Constructors-and-Factories
 
         internal BucketHandler(
-            Settings settings,
+            SettingsBase settings,
             LoggingModule logging, 
             ConfigManager config,
             BucketManager buckets,
@@ -144,18 +146,8 @@
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
-            if (md == null)
-            {
-                _Logging.Warn(header + "unable to retrieve metadata");
-                throw new S3Exception(new Error(ErrorCode.InternalError));
-            }
-
-            if (md.Authorization == AuthorizationResult.NotAuthorized)
-            {
-                _Logging.Warn(header + "not authorized");
-                throw new S3Exception(new Error(ErrorCode.AccessDenied));
-            }
+            RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
+            RequestValidator.ValidateAuthorization(md, _Logging, header);
 
             if (md.Bucket == null || md.BucketClient == null)
             {
@@ -170,24 +162,9 @@
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
-            if (md == null)
-            {
-                _Logging.Warn(header + "unable to retrieve metadata");
-                throw new S3Exception(new Error(ErrorCode.InternalError));
-            }
-
-            if (md.Authorization == AuthorizationResult.NotAuthorized)
-            {
-                _Logging.Warn(header + "not authorized");
-                throw new S3Exception(new Error(ErrorCode.AccessDenied));
-            }
-
-            if (md.Bucket == null || md.BucketClient == null)
-            {
-                _Logging.Warn(header + "no such bucket");
-                throw new S3Exception(new Error(ErrorCode.NoSuchBucket));
-            }
+            RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
+            RequestValidator.ValidateAuthorization(md, _Logging, header);
+            RequestValidator.ValidateBucketExists(md, _Logging, header);
              
             int startIndex = 0;
             if (!String.IsNullOrEmpty(ctx.Request.ContinuationToken))
@@ -267,24 +244,9 @@
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
-            if (md == null)
-            {
-                _Logging.Warn(header + "unable to retrieve metadata");
-                throw new S3Exception(new Error(ErrorCode.InternalError));
-            }
-
-            if (md.Authorization == AuthorizationResult.NotAuthorized)
-            {
-                _Logging.Warn(header + "not authorized");
-                throw new S3Exception(new Error(ErrorCode.AccessDenied));
-            }
-
-            if (md.Bucket == null || md.BucketClient == null)
-            {
-                _Logging.Warn(header + "no such bucket");
-                throw new S3Exception(new Error(ErrorCode.NoSuchBucket));
-            }
+            RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
+            RequestValidator.ValidateAuthorization(md, _Logging, header);
+            RequestValidator.ValidateBucketExists(md, _Logging, header);
 
             User owner = _Config.GetUserByGuid(md.Bucket.OwnerGUID);
             if (owner == null)
@@ -293,166 +255,16 @@
                 throw new S3Exception(new Error(ErrorCode.InternalError));
             }
 
-            AccessControlPolicy acp = new AccessControlPolicy();
-            acp.Owner = new S3ServerLibrary.S3Objects.Owner();
-            acp.Owner.DisplayName = owner.Name;
-            acp.Owner.ID = owner.GUID;
-
-            acp.Acl = new AccessControlList(); 
-            acp.Acl.Grants = new List<Grant>();
-
-            foreach (BucketAcl curr in md.BucketAcls)
-            { 
-                if (!String.IsNullOrEmpty(curr.UserGUID))
-                {
-                    #region Individual-Permissions
-
-                    User tempUser = _Config.GetUserByGuid(curr.UserGUID);
-                    if (tempUser == null)
-                    {
-                        _Logging.Warn(header + "unlinked ACL ID " + curr.Id + ", could not find user GUID " + curr.UserGUID);
-                        continue;
-                    }
-
-                    if (curr.PermitRead)
-                    {
-                        Grant grant = new Grant(); 
-                        grant.Grantee = new Grantee();
-                        grant.Grantee.DisplayName = tempUser.Name;
-                        grant.Grantee.ID = curr.UserGUID;
-                        grant.Permission = PermissionEnum.Read; 
-                        acp.Acl.Grants.Add(grant);
-                    }
-
-                    if (curr.PermitReadAcp)
-                    {
-                        Grant grant = new Grant();
-                        grant.Grantee = new Grantee();
-                        grant.Grantee.DisplayName = tempUser.Name;
-                        grant.Grantee.ID = curr.UserGUID;
-                        grant.Permission = PermissionEnum.ReadAcp;
-                        acp.Acl.Grants.Add(grant);
-                    }
-
-                    if (curr.PermitWrite)
-                    {
-                        Grant grant = new Grant();
-                        grant.Grantee = new Grantee();
-                        grant.Grantee.DisplayName = tempUser.Name;
-                        grant.Grantee.ID = curr.UserGUID;
-                        grant.Permission = PermissionEnum.Write;
-                        acp.Acl.Grants.Add(grant);
-                    }
-
-                    if (curr.PermitWriteAcp)
-                    {
-                        Grant grant = new Grant();
-                        grant.Grantee = new Grantee();
-                        grant.Grantee.DisplayName = tempUser.Name;
-                        grant.Grantee.ID = curr.UserGUID;
-                        grant.Permission = PermissionEnum.WriteAcp;
-                        acp.Acl.Grants.Add(grant);
-                    }
-
-                    if (curr.FullControl)
-                    {
-                        Grant grant = new Grant();
-                        grant.Grantee = new Grantee();
-                        grant.Grantee.DisplayName = tempUser.Name;
-                        grant.Grantee.ID = curr.UserGUID;
-                        grant.Permission = PermissionEnum.FullControl;
-                        acp.Acl.Grants.Add(grant);
-                    }
-
-                    #endregion
-                }
-                else if (!String.IsNullOrEmpty(curr.UserGroup))
-                {
-                    #region Group-Permissions
-
-                    if (curr.PermitRead)
-                    {
-                        Grant grant = new Grant();
-                        grant.Grantee = new Grantee();
-                        grant.Grantee.DisplayName = curr.UserGroup;
-                        grant.Grantee.URI = curr.UserGroup;
-                        grant.Permission = PermissionEnum.Read;
-                        acp.Acl.Grants.Add(grant);
-                    }
-
-                    if (curr.PermitReadAcp)
-                    {
-                        Grant grant = new Grant();
-                        grant.Grantee = new Grantee();
-                        grant.Grantee.DisplayName = curr.UserGroup;
-                        grant.Grantee.URI = curr.UserGroup;
-                        grant.Permission = PermissionEnum.ReadAcp;
-                        acp.Acl.Grants.Add(grant);
-                    }
-
-                    if (curr.PermitWrite)
-                    {
-                        Grant grant = new Grant();
-                        grant.Grantee = new Grantee();
-                        grant.Grantee.DisplayName = curr.UserGroup;
-                        grant.Grantee.URI = curr.UserGroup;
-                        grant.Permission = PermissionEnum.Write;
-                        acp.Acl.Grants.Add(grant);
-                    }
-
-                    if (curr.PermitWriteAcp)
-                    {
-                        Grant grant = new Grant();
-                        grant.Grantee = new Grantee();
-                        grant.Grantee.DisplayName = curr.UserGroup;
-                        grant.Grantee.URI = curr.UserGroup;
-                        grant.Permission = PermissionEnum.WriteAcp;
-                        acp.Acl.Grants.Add(grant);
-                    }
-
-                    if (curr.FullControl)
-                    {
-                        Grant grant = new Grant();
-                        grant.Grantee = new Grantee();
-                        grant.Grantee.DisplayName = curr.UserGroup;
-                        grant.Grantee.URI = curr.UserGroup;
-                        grant.Permission = PermissionEnum.FullControl;
-                        acp.Acl.Grants.Add(grant);
-                    }
-
-                    #endregion
-                }
-                else
-                {
-                    _Logging.Warn(header + "incorrectly configured bucket ACL ID " + curr.Id + " (not user or group)");
-                }
-            }
-
-            return acp;
+            return AclConverter.BucketAclsToPolicy(md.BucketAcls, owner, _Config, _Logging, header);
         }
 
         internal async Task<Tagging> ReadTags(S3Context ctx)
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
-            if (md == null)
-            {
-                _Logging.Warn(header + "unable to retrieve metadata");
-                throw new S3Exception(new Error(ErrorCode.InternalError));
-            }
-
-            if (md.Authorization == AuthorizationResult.NotAuthorized)
-            {
-                _Logging.Warn(header + "not authorized");
-                throw new S3Exception(new Error(ErrorCode.AccessDenied));
-            }
-
-            if (md.Bucket == null || md.BucketClient == null)
-            {
-                _Logging.Warn(header + "no such bucket");
-                throw new S3Exception(new Error(ErrorCode.NoSuchBucket));
-            }
+            RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
+            RequestValidator.ValidateAuthorization(md, _Logging, header);
+            RequestValidator.ValidateBucketExists(md, _Logging, header);
              
             Tagging tags = new Tagging();
             tags.Tags = new TagSet();
@@ -476,24 +288,9 @@
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
-            if (md == null)
-            {
-                _Logging.Warn(header + "unable to retrieve metadata");
-                throw new S3Exception(new Error(ErrorCode.InternalError));
-            }
-
-            if (md.Authorization == AuthorizationResult.NotAuthorized)
-            {
-                _Logging.Warn(header + "not authorized");
-                throw new S3Exception(new Error(ErrorCode.AccessDenied));
-            }
-
-            if (md.Bucket == null || md.BucketClient == null)
-            {
-                _Logging.Warn(header + "no such bucket");
-                throw new S3Exception(new Error(ErrorCode.NoSuchBucket));
-            }
+            RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
+            RequestValidator.ValidateAuthorization(md, _Logging, header);
+            RequestValidator.ValidateBucketExists(md, _Logging, header);
              
             int startIndex = 0;
             if (!String.IsNullOrEmpty(ctx.Request.ContinuationToken))
@@ -511,7 +308,15 @@
             List<string> prefixes = new List<string>();
             int nextStartIndex = startIndex;
             bool isTruncated = false;
-            md.BucketClient.Enumerate(ctx.Request.Delimiter, ctx.Request.Prefix, startIndex, (int)ctx.Request.MaxKeys, out objects, out prefixes, out nextStartIndex, out isTruncated);
+            md.BucketClient.Enumerate(
+                ctx.Request.Delimiter, 
+                ctx.Request.Prefix, 
+                startIndex, 
+                (int)ctx.Request.MaxKeys, 
+                out objects, 
+                out prefixes, 
+                out nextStartIndex, 
+                out isTruncated);
              
             string lastKey = null; 
             if (objects.Count > 0)
@@ -590,24 +395,9 @@
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
-            if (md == null)
-            {
-                _Logging.Warn(header + "unable to retrieve metadata");
-                throw new S3Exception(new Error(ErrorCode.InternalError));
-            }
-
-            if (md.Authorization == AuthorizationResult.NotAuthorized)
-            {
-                _Logging.Warn(header + "not authorized");
-                throw new S3Exception(new Error(ErrorCode.AccessDenied));
-            }
-
-            if (md.Bucket == null || md.BucketClient == null)
-            {
-                _Logging.Warn(header + "no such bucket");
-                throw new S3Exception(new Error(ErrorCode.NoSuchBucket));
-            }
+            RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
+            RequestValidator.ValidateAuthorization(md, _Logging, header);
+            RequestValidator.ValidateBucketExists(md, _Logging, header);
 
             VersioningConfiguration vc = new VersioningConfiguration();
             vc.Status = VersioningStatusEnum.Suspended;
@@ -622,18 +412,8 @@
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
-            if (md == null)
-            {
-                _Logging.Warn(header + "unable to retrieve metadata");
-                throw new S3Exception(new Error(ErrorCode.InternalError));
-            }
-
-            if (md.User == null || md.Credential == null)
-            {
-                _Logging.Warn(header + "not authorized");
-                throw new S3Exception(new Error(ErrorCode.AccessDenied));
-            }
+            RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
+            RequestValidator.ValidateAuthentication(md, _Logging, header);
 
             if (md.Bucket != null || md.BucketClient != null)
             {
@@ -742,94 +522,25 @@
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
-            if (md == null)
-            {
-                _Logging.Warn(header + "unable to retrieve metadata");
-                throw new S3Exception(new Error(ErrorCode.InternalError));
-            }
-
-            if (md.Authorization == AuthorizationResult.NotAuthorized)
-            {
-                _Logging.Warn(header + "not authorized");
-                throw new S3Exception(new Error(ErrorCode.AccessDenied));
-            }
-             
-            if (md.Bucket == null || md.BucketClient == null)
-            {
-                _Logging.Warn(header + "no such bucket");
-                throw new S3Exception(new Error(ErrorCode.NoSuchBucket));
-            }
+            RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
+            RequestValidator.ValidateAuthorization(md, _Logging, header);
+            RequestValidator.ValidateBucketExists(md, _Logging, header);
 
             md.BucketClient.DeleteBucketAcl();
 
-            List<Grant> headerGrants = GrantsFromHeaders(md.User, ctx.Http.Request.Headers);
-            if (headerGrants != null && headerGrants.Count > 0)
+            List<BucketAcl> acls = AclConverter.PolicyToBucketAcls(
+                acp,
+                ctx.Http.Request.Headers,
+                md.User,
+                md.Bucket.GUID,
+                md.Bucket.OwnerGUID,
+                _Config,
+                _Logging,
+                header);
+
+            foreach (BucketAcl acl in acls)
             {
-                if (acp.Acl.Grants != null)
-                {
-                    foreach (Grant curr in headerGrants)
-                    {
-                        acp.Acl.Grants.Add(curr);
-                    }
-                }
-                else
-                {
-                    acp.Acl.Grants = new List<Grant>(headerGrants);
-                }
-            }
-
-            foreach (Grant curr in acp.Acl.Grants)
-            {
-                BucketAcl acl = null;
-                User tempUser = null;
-                 
-                if (!String.IsNullOrEmpty(curr.Grantee.ID))
-                {
-                    #region User-ACL
-
-                    tempUser = _Config.GetUserByGuid(curr.Grantee.ID);
-                    if (tempUser == null)
-                    {
-                        _Logging.Warn(header + "unable to find user GUID " + curr.Grantee.ID);
-                        continue;
-                    }
-
-                    if (curr.Permission == PermissionEnum.Read)
-                        acl = BucketAcl.UserAcl(curr.Grantee.ID, md.Bucket.OwnerGUID, md.Bucket.GUID, true, false, false, false, false);
-                    else if (curr.Permission == PermissionEnum.Write)
-                        acl = BucketAcl.UserAcl(curr.Grantee.ID, md.Bucket.OwnerGUID, md.Bucket.GUID, false, true, false, false, false);
-                    else if (curr.Permission == PermissionEnum.ReadAcp)
-                        acl = BucketAcl.UserAcl(curr.Grantee.ID, md.Bucket.OwnerGUID, md.Bucket.GUID, false, false, true, false, false);
-                    else if (curr.Permission == PermissionEnum.WriteAcp)
-                        acl = BucketAcl.UserAcl(curr.Grantee.ID, md.Bucket.OwnerGUID, md.Bucket.GUID, false, false, false, true, false);
-                    else if (curr.Permission == PermissionEnum.FullControl)
-                        acl = BucketAcl.UserAcl(curr.Grantee.ID, md.Bucket.OwnerGUID, md.Bucket.GUID, false, false, false, false, true);
-
-                    #endregion
-                }
-                else if (!String.IsNullOrEmpty(curr.Grantee.URI))
-                {
-                    #region Group-ACL
-                     
-                    if (curr.Permission == PermissionEnum.Read)
-                        acl = BucketAcl.GroupAcl(curr.Grantee.URI, md.Bucket.OwnerGUID, md.Bucket.GUID, true, false, false, false, false);
-                    else if (curr.Permission == PermissionEnum.Write)
-                        acl = BucketAcl.GroupAcl(curr.Grantee.URI, md.Bucket.OwnerGUID, md.Bucket.GUID, false, true, false, false, false);
-                    else if (curr.Permission == PermissionEnum.ReadAcp)
-                        acl = BucketAcl.GroupAcl(curr.Grantee.URI, md.Bucket.OwnerGUID, md.Bucket.GUID, false, false, true, false, false);
-                    else if (curr.Permission == PermissionEnum.WriteAcp)
-                        acl = BucketAcl.GroupAcl(curr.Grantee.URI, md.Bucket.OwnerGUID, md.Bucket.GUID, false, false, false, true, false);
-                    else if (curr.Permission == PermissionEnum.FullControl)
-                        acl = BucketAcl.GroupAcl(curr.Grantee.URI, md.Bucket.OwnerGUID, md.Bucket.GUID, false, false, false, false, true);
-
-                    #endregion
-                }
-
-                if (acl != null)
-                { 
-                    md.BucketClient.AddBucketAcl(acl);
-                }
+                md.BucketClient.AddBucketAcl(acl);
             }
         }
 
@@ -837,24 +548,9 @@
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
-            if (md == null)
-            {
-                _Logging.Warn(header + "unable to retrieve metadata");
-                throw new S3Exception(new Error(ErrorCode.InternalError));
-            }
-
-            if (md.Authorization == AuthorizationResult.NotAuthorized)
-            {
-                _Logging.Warn(header + "not authorized");
-                throw new S3Exception(new Error(ErrorCode.AccessDenied));
-            }
-
-            if (md.Bucket == null || md.BucketClient == null)
-            {
-                _Logging.Warn(header + "no such bucket");
-                throw new S3Exception(new Error(ErrorCode.InternalError));
-            }
+            RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
+            RequestValidator.ValidateAuthorization(md, _Logging, header);
+            RequestValidator.ValidateBucketExists(md, _Logging, header);
 
             md.BucketClient.DeleteBucketTags();
 
@@ -878,24 +574,9 @@
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
-            if (md == null)
-            {
-                _Logging.Warn(header + "unable to retrieve metadata");
-                throw new S3Exception(new Error(ErrorCode.InternalError));
-            }
-
-            if (md.Authorization == AuthorizationResult.NotAuthorized)
-            {
-                _Logging.Warn(header + "not authorized");
-                throw new S3Exception(new Error(ErrorCode.AccessDenied));
-            }
-
-            if (md.Bucket == null || md.BucketClient == null)
-            {
-                _Logging.Warn(header + "no such bucket");
-                throw new S3Exception(new Error(ErrorCode.NoSuchBucket));
-            }
+            RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
+            RequestValidator.ValidateAuthorization(md, _Logging, header);
+            RequestValidator.ValidateBucketExists(md, _Logging, header);
 
             if (vc.Status == VersioningStatusEnum.Enabled && !md.Bucket.EnableVersioning)
             {
@@ -911,10 +592,122 @@
             }
         }
 
+        internal async Task<ListMultipartUploadsResult> ReadMultipartUploads(S3Context ctx)
+        {
+            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
+
+            RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
+            RequestValidator.ValidateAuthorization(md, _Logging, header);
+            RequestValidator.ValidateBucketExists(md, _Logging, header);
+
+            List<Less3.Classes.Upload> uploads = _Config.GetUploadsByBucketGuid(md.Bucket.GUID);
+            if (uploads == null)
+            {
+                uploads = new List<Less3.Classes.Upload>();
+            }
+
+            uploads = uploads.Where(u => u.ExpirationUtc > DateTime.UtcNow).ToList();
+
+            if (!String.IsNullOrEmpty(ctx.Request.Prefix))
+            {
+                uploads = uploads.Where(u => u.Key.StartsWith(ctx.Request.Prefix)).ToList();
+            }
+
+            uploads = uploads.OrderBy(u => u.Key).ThenBy(u => u.CreatedUtc).ToList();
+
+            int maxUploads = 1000;
+            bool isTruncated = false;
+            if (uploads.Count > maxUploads)
+            {
+                isTruncated = true;
+                uploads = uploads.Take(maxUploads).ToList();
+            }
+
+            ListMultipartUploadsResult result = new ListMultipartUploadsResult();
+            result.Bucket = ctx.Request.Bucket;
+            result.Prefix = ctx.Request.Prefix;
+            result.Delimiter = ctx.Request.Delimiter;
+            result.MaxUploads = maxUploads;
+            result.IsTruncated = isTruncated;
+            result.Uploads = new List<S3ServerLibrary.S3Objects.Upload>();
+
+            Dictionary<string, S3ServerLibrary.S3Objects.Owner> ownerCache = new Dictionary<string, S3ServerLibrary.S3Objects.Owner>();
+
+            foreach (Less3.Classes.Upload upload in uploads)
+            {
+                S3ServerLibrary.S3Objects.Upload u = new S3ServerLibrary.S3Objects.Upload();
+                u.UploadId = upload.GUID;
+                u.Key = upload.Key;
+                u.Initiated = upload.CreatedUtc;
+                u.StorageClass = StorageClassEnum.STANDARD;
+
+                if (ownerCache.ContainsKey(upload.AuthorGUID))
+                {
+                    u.Initiator = ownerCache[upload.AuthorGUID];
+                }
+                else
+                {
+                    User author = _Config.GetUserByGuid(upload.AuthorGUID);
+                    if (author != null)
+                    {
+                        S3ServerLibrary.S3Objects.Owner initiatorOwner = new S3ServerLibrary.S3Objects.Owner();
+                        initiatorOwner.ID = author.GUID;
+                        initiatorOwner.DisplayName = author.Name;
+                        u.Initiator = initiatorOwner;
+                        ownerCache.Add(author.GUID, initiatorOwner);
+                    }
+                    else
+                    {
+                        S3ServerLibrary.S3Objects.Owner initiatorOwner = new S3ServerLibrary.S3Objects.Owner();
+                        initiatorOwner.ID = upload.AuthorGUID;
+                        initiatorOwner.DisplayName = upload.AuthorGUID;
+                        u.Initiator = initiatorOwner;
+                    }
+                }
+
+                if (ownerCache.ContainsKey(upload.OwnerGUID))
+                {
+                    u.Owner = ownerCache[upload.OwnerGUID];
+                }
+                else
+                {
+                    User owner = _Config.GetUserByGuid(upload.OwnerGUID);
+                    if (owner != null)
+                    {
+                        S3ServerLibrary.S3Objects.Owner ownerObj = new S3ServerLibrary.S3Objects.Owner();
+                        ownerObj.ID = owner.GUID;
+                        ownerObj.DisplayName = owner.Name;
+                        u.Owner = ownerObj;
+                        ownerCache.Add(owner.GUID, ownerObj);
+                    }
+                    else
+                    {
+                        S3ServerLibrary.S3Objects.Owner ownerObj = new S3ServerLibrary.S3Objects.Owner();
+                        ownerObj.ID = upload.OwnerGUID;
+                        ownerObj.DisplayName = upload.OwnerGUID;
+                        u.Owner = ownerObj;
+                    }
+                }
+
+                result.Uploads.Add(u);
+            }
+
+            if (isTruncated && result.Uploads.Count > 0)
+            {
+                S3ServerLibrary.S3Objects.Upload last = result.Uploads[result.Uploads.Count - 1];
+                result.NextKeyMarker = last.Key;
+                result.NextUploadIdMarker = last.UploadId;
+            }
+
+            _Logging.Debug(header + "returning " + result.Uploads.Count + " multipart uploads for bucket " + ctx.Request.Bucket);
+
+            return result;
+        }
+
         #endregion
 
         #region Private-Methods
-           
+
         private string BuildContinuationToken(long lastId)
         {
             return Common.StringToBase64(lastId.ToString());

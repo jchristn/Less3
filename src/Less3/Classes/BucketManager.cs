@@ -7,7 +7,7 @@
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-
+    using Less3.Settings;
     using SyslogLogging;
     using Watson.ORM;
 
@@ -22,7 +22,7 @@
 
         #region Private-Members
 
-        private Settings _Settings;
+        private SettingsBase _Settings;
         private LoggingModule _Logging;
         private ConfigManager _Config;
         private WatsonORM _ORM;
@@ -34,7 +34,7 @@
 
         #region Constructors-and-Factories
 
-        internal BucketManager(Settings settings, LoggingModule logging, ConfigManager config, WatsonORM orm)
+        internal BucketManager(SettingsBase settings, LoggingModule logging, ConfigManager config, WatsonORM orm)
         {
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _Logging = logging ?? throw new ArgumentNullException(nameof(logging));

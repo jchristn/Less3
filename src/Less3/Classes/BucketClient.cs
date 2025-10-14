@@ -14,6 +14,7 @@
     using SyslogLogging;
 
     using Less3.Storage;
+    using Less3.Settings;
 
     /// <summary>
     /// Bucket client.  All object construction, authentication, and authorization must occur prior to using bucket methods.
@@ -55,7 +56,7 @@
 
         #region Private-Members
 
-        private Settings _Settings = null;
+        private SettingsBase _Settings = null;
         private LoggingModule _Logging = null;
         private Bucket _Bucket = null;
         private WatsonORM _ORM = null;
@@ -71,7 +72,7 @@
 
         }
 
-        internal BucketClient(Settings settings, LoggingModule logging, Bucket bucket, WatsonORM orm)
+        internal BucketClient(SettingsBase settings, LoggingModule logging, Bucket bucket, WatsonORM orm)
         {
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _Logging = logging ?? throw new ArgumentNullException(nameof(logging));

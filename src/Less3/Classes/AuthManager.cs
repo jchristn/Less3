@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-
+    using Less3.Settings;
     using S3ServerLibrary;
     using SyslogLogging;
 
@@ -19,7 +19,7 @@
 
         #region Private-Members
 
-        private Settings _Settings;
+        private SettingsBase _Settings;
         private LoggingModule _Logging;
         private ConfigManager _Config;
         private BucketManager _Buckets;
@@ -34,7 +34,7 @@
         }
 
         internal AuthManager(
-            Settings settings, 
+            SettingsBase settings, 
             LoggingModule logging, 
             ConfigManager config, 
             BucketManager buckets)

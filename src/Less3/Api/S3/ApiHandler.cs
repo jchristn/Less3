@@ -12,6 +12,7 @@
     using SyslogLogging;
 
     using Less3.Classes;
+    using Less3.Settings;
 
     /// <summary>
     /// API handler.
@@ -26,7 +27,7 @@
 
         #region Private-Members
 
-        private Settings _Settings;
+        private SettingsBase _Settings;
         private LoggingModule _Logging;
         private ConfigManager _Config;
         private BucketManager _Buckets;
@@ -41,7 +42,7 @@
         #region Constructors-and-Factories
          
         internal ApiHandler(
-            Settings settings, 
+            SettingsBase settings, 
             LoggingModule logging,  
             ConfigManager config,
             BucketManager buckets,
@@ -223,14 +224,43 @@
 
         #endregion
 
+        #region Multipart-Upload-APIs
+
+        internal async Task UploadPart(S3Context ctx)
+        {
+            await _ObjectHandler.UploadPart(ctx);
+        }
+
+        internal async Task AbortMultipartUpload(S3Context ctx)
+        {
+            await _ObjectHandler.AbortMultipartUpload(ctx);
+        }
+
+        internal async Task<CompleteMultipartUploadResult> CompleteMultipartUpload(S3Context ctx, CompleteMultipartUpload upload)
+        {
+            return await _ObjectHandler.CompleteMultipartUpload(ctx, upload);
+        }
+
+        internal async Task<InitiateMultipartUploadResult> CreateMultipartUpload(S3Context ctx)
+        {
+            return await _ObjectHandler.CreateMultipartUpload(ctx);
+        }
+
+        internal async Task<ListPartsResult> ReadParts(S3Context ctx)
+        {
+            return await _ObjectHandler.ReadParts(ctx);
+        }
+
+        internal async Task<ListMultipartUploadsResult> ReadMultipartUploads(S3Context ctx)
+        {
+            return await _BucketHandler.ReadMultipartUploads(ctx);
+        }
+
+        #endregion
+
         #endregion
 
         #region Private-Methods
-
-        private string AmazonTimestamp(DateTime dt)
-        {
-            return dt.ToString("yyyy-MM-ddTHH:mm:ss.fffz");
-        }
 
         #endregion
 

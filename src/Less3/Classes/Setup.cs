@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.IO;
     using System.Net;
     using System.Text;
@@ -12,6 +11,7 @@
     using S3ServerLibrary;
     using Watson.ORM.Core;
     using Less3.Storage;
+    using Less3.Settings;
 
     /// <summary>
     /// Setup workflow.
@@ -46,7 +46,7 @@
             #region Variables
 
             DateTime timestamp = DateTime.Now;
-            Settings settings = new Settings();
+            SettingsBase settings = new SettingsBase();
              
             #endregion
 
@@ -170,17 +170,21 @@
 
             Watson.ORM.WatsonORM orm = new Watson.ORM.WatsonORM(settings.Database);
 
-            orm.InitializeDatabase();
-            
-            orm.InitializeTable(typeof(Bucket));
-            orm.InitializeTable(typeof(BucketAcl));
-            orm.InitializeTable(typeof(BucketTag));
-            orm.InitializeTable(typeof(Credential));
-            orm.InitializeTable(typeof(Obj));
-            orm.InitializeTable(typeof(ObjectAcl));
-            orm.InitializeTable(typeof(ObjectTag));
-            orm.InitializeTable(typeof(User));
-             
+            orm.InitializeDatabase(); 
+            orm.InitializeTables(new List<Type>
+            {
+                typeof(Bucket),
+                typeof(BucketAcl),
+                typeof(BucketTag),
+                typeof(Credential),
+                typeof(Obj),
+                typeof(ObjectAcl),
+                typeof(ObjectTag),
+                typeof(Upload),
+                typeof(UploadPart),
+                typeof(User)
+            });
+
             ConfigManager config = new ConfigManager(settings, logging, orm);
 
             string userGuid = "default";

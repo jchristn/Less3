@@ -7,6 +7,7 @@
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using Less3.Settings;
     using SyslogLogging;
 
     /// <summary>
@@ -21,7 +22,7 @@
         #region Private-Members
 
         private bool _Enabled { get; set; }
-        private Settings _Settings { get; set; } 
+        private SettingsBase _Settings { get; set; } 
         private LoggingModule _Logging { get; set; }  
 
         #endregion
@@ -29,7 +30,7 @@
         #region Constructors-and-Factories
 
         internal ConsoleManager(
-            Settings settings,
+            SettingsBase settings,
             LoggingModule logging)
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));

@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build:*)",
+      "Bash(dotnet nuget locals:*)",
+      "Read(//c/Users/joelc/.nuget/packages/s3server/**)",
+      "Read(//c/Code/Less3/S3Server-6.0/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

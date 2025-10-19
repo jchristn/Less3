@@ -367,7 +367,8 @@
                     v.IsLatest = IsLatest(objects, curr.Key, curr.LastAccessUtc);
                     v.Key = curr.Key;
                     v.ETag = "\"" + curr.Md5 + "\"";
-                    v.LastModified = curr.LastUpdateUtc;
+                    v.LastModified = curr.LastUpdateUtc
+                    v.VersionId = curr.Version.ToString();
                     v.Size = curr.ContentLength;
                     v.StorageClass = StorageClassEnum.STANDARD;
 

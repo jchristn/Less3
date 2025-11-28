@@ -1,0 +1,13 @@
+.tabsContainer {
+  margin: 0 !important;
+  :global {
+    .ant-tabs-nav {
+      margin: 0 !important;
+    }
+  }
+}
+
+.pageTitleContainer {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}

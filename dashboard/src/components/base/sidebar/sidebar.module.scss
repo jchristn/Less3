@@ -1,0 +1,28 @@
+.sidebarContainer {
+  border-right: 1px solid var(--ant-color-border);
+  height: 100vh;
+  overflow: auto;
+  position: fixed !important;
+  left: 0;
+  top: 0;
+  z-index: 100;
+}
+
+.logoContainer {
+  height: 64px;
+  border-bottom: 1px solid var(--ant-color-border);
+  padding: 0 16px;
+}
+
+.collapseButtonContainer {
+  padding: 8px;
+}
+
+.collapseButton {
+  width: 100%;
+  font-size: 16px;
+}
+
+.menu {
+  border-right: none;
+}

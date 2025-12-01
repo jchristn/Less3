@@ -18,7 +18,7 @@ export type BucketListResponse = Bucket[];
 export type BucketResponse = Bucket;
 
 export interface CreateBucketRequest {
-  GUID: string;
+  GUID?: string;
   OwnerGUID?: string;
   Name: string;
   StorageType?: string;

@@ -1,15 +1,8 @@
 /* eslint-disable max-lines-per-function */
 'use client';
-import React, { useState } from 'react';
-import { Form, message, Space, Input, Switch, Select, Dropdown, MenuProps, Descriptions } from 'antd';
-import {
-  PlusOutlined,
-  InfoCircleOutlined,
-  DeleteOutlined,
-  SearchOutlined,
-  MoreOutlined,
-  ExclamationCircleOutlined,
-} from '@ant-design/icons';
+import React, { useMemo, useState } from 'react';
+import { Form, message, Switch, MenuProps, Descriptions } from 'antd';
+import { PlusOutlined, SearchOutlined, MoreOutlined } from '@ant-design/icons';
 import Less3Table from '#/components/base/table/Table';
 import Less3Button from '#/components/base/button/Button';
 import Less3Modal from '#/components/base/modal/Modal';
@@ -17,11 +10,9 @@ import Less3FormItem from '#/components/base/form/FormItem';
 import Less3Input from '#/components/base/input/Input';
 import Less3Select from '#/components/base/select/Select';
 import PageContainer from '#/components/base/pageContainer/PageContainer';
-import ConfirmationModal from '#/components/confirmation-modal/ConfirmationModal';
 import Less3Flex from '#/components/base/flex/Flex';
 import Less3Dropdown from '#/components/base/dropdown/Dropdown';
 import Less3Text from '#/components/base/typograpghy/Text';
-import Less3Title from '#/components/base/typograpghy/Title';
 import {
   useGetBucketsQuery,
   useGetBucketByIdQuery,
@@ -32,8 +23,6 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 
 interface BucketFormValues {
-  GUID: string;
-  OwnerGUID?: string;
   Name: string;
   StorageType?: string;
   DiskDirectory?: string;
@@ -52,9 +41,7 @@ const BucketsPage: React.FC = () => {
   const [deleteWithDestroy, setDeleteWithDestroy] = useState(false);
   const [searchText, setSearchText] = useState('');
 
-  const { data, isLoading, refetch } = useGetBucketsQuery({
-    search: searchText || undefined,
-  });
+  const { data, isLoading, refetch } = useGetBucketsQuery();
 
   const { data: bucketMetadata, isLoading: isMetadataLoading } = useGetBucketByIdQuery(viewingBucketGUID || '', {
     skip: !viewingBucketGUID,
@@ -66,7 +53,6 @@ const BucketsPage: React.FC = () => {
   const handleCreate = () => {
     form.resetFields();
     form.setFieldsValue({
-      OwnerGUID: 'default',
       StorageType: 'Disk',
       EnableVersioning: false,
       EnablePublicWrite: false,
@@ -90,11 +76,9 @@ const BucketsPage: React.FC = () => {
     try {
       const values = await form.validateFields();
       const createPayload = {
-        GUID: values.GUID,
-        OwnerGUID: values.OwnerGUID || 'default',
         Name: values.Name,
         StorageType: values.StorageType || 'Disk',
-        DiskDirectory: values.DiskDirectory || `./Storage/${values.GUID}/Objects/`,
+        DiskDirectory: values.DiskDirectory || `./Storage/${values.Name}/Objects/`,
         EnableVersioning: values.EnableVersioning || false,
         EnablePublicWrite: values.EnablePublicWrite || false,
         EnablePublicRead: values.EnablePublicRead !== undefined ? values.EnablePublicRead : true,
@@ -214,6 +198,22 @@ const BucketsPage: React.FC = () => {
     },
   ];
 
+  const filteredData = useMemo(() => {
+    if (!data) return [];
+
+    const q = searchText.trim().toLowerCase();
+    if (!q) return data;
+
+    return data.filter((bucket) => {
+      const guid = bucket.GUID?.toLowerCase() ?? '';
+      const name = bucket.Name?.toLowerCase() ?? '';
+      const storageType = bucket.StorageType?.toLowerCase() ?? '';
+      const region = bucket.RegionString?.toLowerCase() ?? '';
+
+      return guid.includes(q) || name.includes(q) || storageType.includes(q) || region.includes(q);
+    });
+  }, [data, searchText]);
+
   return (
     <PageContainer
       pageTitle="Buckets"
@@ -237,7 +237,7 @@ const BucketsPage: React.FC = () => {
     >
       <Less3Table
         columns={columns as ColumnsType<any>}
-        dataSource={data}
+        dataSource={filteredData}
         loading={isLoading}
         rowKey="GUID"
         pagination={false}
@@ -253,18 +253,9 @@ const BucketsPage: React.FC = () => {
         }}
         confirmLoading={isCreating}
         width={700}
+        centered
       >
         <Form form={form} layout="vertical" autoComplete="off">
-          <Less3FormItem
-            label="GUID"
-            name="GUID"
-            rules={[
-              { required: true, message: 'Please enter bucket GUID' },
-              { min: 1, message: 'GUID must be at least 1 character' },
-            ]}
-          >
-            <Less3Input placeholder="Enter bucket GUID" />
-          </Less3FormItem>
           <Less3FormItem
             label="Name"
             name="Name"
@@ -274,9 +265,6 @@ const BucketsPage: React.FC = () => {
             ]}
           >
             <Less3Input placeholder="Enter bucket name" />
-          </Less3FormItem>
-          <Less3FormItem label="Owner GUID" name="OwnerGUID">
-            <Less3Input placeholder="Enter owner GUID (default: default)" />
           </Less3FormItem>
           <Less3FormItem
             label="Storage Type"

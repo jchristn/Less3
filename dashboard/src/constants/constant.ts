@@ -11,4 +11,6 @@ export const paths = {
   login: `/`,
   dashboard: `/dashboard`,
   buckets: `/admin/buckets`,
+  users: `/admin/users`,
+  credentials: `/admin/credentials`,
 };

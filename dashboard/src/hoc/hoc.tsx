@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, ComponentType } from 'react';
+import React, { useEffect, useState, ComponentType } from 'react';
 import { useValidateConnectivityMutation } from '#/store/slice/sdkSlice';
 import PageLoading from '../components/base/loading/PageLoading';
 import FallBack from '../components/base/fallback/FallBack';
@@ -28,6 +28,9 @@ const getInitialLess3APIUrl = () => {
   return apiEndpointURL;
 };
 
+// Simple cache to store validation result per URL
+let validationCache: { url: string; isValid: boolean } | null = null;
+
 export function withConnectivityValidation<P extends object>(WrappedComponent: ComponentType<P>) {
   const loadingMessage = 'Validating connectivity...';
   const errorMessage = 'Failed to validate connectivity. Please check your connection.';
@@ -36,19 +39,61 @@ export function withConnectivityValidation<P extends object>(WrappedComponent: C
   const ConnectivityValidatedComponent: React.FC<P> = (props: P) => {
     const [validateConnectivity, { isLoading, isSuccess, isError, error }] = useValidateConnectivityMutation();
 
+    // Initialize cachedValid from cache synchronously to avoid "Initializing..." flash
+    const [cachedValid, setCachedValid] = useState(() => {
+      const url = getInitialLess3APIUrl();
+      return !!(validationCache && validationCache.url === url && validationCache.isValid);
+    });
+
     useEffect(() => {
       const url = getInitialLess3APIUrl();
       updateSdkEndPoint(url);
-      // Trigger connectivity validation on component mount
-      validateConnectivity();
+
+      // Check cache first
+      if (validationCache && validationCache.url === url && validationCache.isValid) {
+        setCachedValid(true);
+        return;
+      }
+
+      // If URL changed, clear cache
+      if (validationCache && validationCache.url !== url) {
+        validationCache = null;
+        setCachedValid(false);
+      }
+
+      // Only validate if not cached
+      if (!validationCache || validationCache.url !== url) {
+        validateConnectivity()
+          .unwrap()
+          .then(() => {
+            validationCache = { url, isValid: true };
+            setCachedValid(true);
+          })
+          .catch(() => {
+            validationCache = null;
+            setCachedValid(false);
+          });
+      }
     }, [validateConnectivity]);
 
     const handleRetry = () => {
-      validateConnectivity();
+      const url = getInitialLess3APIUrl();
+      validationCache = null;
+      setCachedValid(false);
+      validateConnectivity()
+        .unwrap()
+        .then(() => {
+          validationCache = { url, isValid: true };
+          setCachedValid(true);
+        })
+        .catch(() => {
+          validationCache = null;
+          setCachedValid(false);
+        });
     };
 
     // Show loading state while validation is in progress
-    if (isLoading) {
+    if (isLoading && !cachedValid) {
       return (
         <PageContainer
           style={{
@@ -85,8 +130,8 @@ export function withConnectivityValidation<P extends object>(WrappedComponent: C
       );
     }
 
-    // Render the wrapped component only after successful validation
-    if (isSuccess) {
+    // Render the wrapped component only after successful validation (from cache or mutation)
+    if (cachedValid || isSuccess) {
       return <WrappedComponent {...props} />;
     }
 

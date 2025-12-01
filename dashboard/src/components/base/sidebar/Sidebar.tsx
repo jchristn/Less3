@@ -1,7 +1,14 @@
 'use client';
 import React from 'react';
 import { Layout, Menu, Button } from 'antd';
-import { MenuFoldOutlined, MenuUnfoldOutlined, HomeOutlined, DatabaseOutlined } from '@ant-design/icons';
+import {
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  HomeOutlined,
+  DatabaseOutlined,
+  UserOutlined,
+  KeyOutlined,
+} from '@ant-design/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Less3Flex from '../flex/Flex';
@@ -21,6 +28,8 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onCollapse }: Side
   const getSelectedKey = () => {
     if (pathname === '/dashboard') return ['dashboard'];
     if (pathname.startsWith('/admin/buckets')) return ['buckets'];
+    if (pathname.startsWith('/admin/users')) return ['users'];
+    if (pathname.startsWith('/admin/credentials')) return ['credentials'];
     return [];
   };
 
@@ -34,6 +43,16 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onCollapse }: Side
       key: 'buckets',
       icon: <DatabaseOutlined />,
       label: <Link href="/admin/buckets">Buckets</Link>,
+    },
+    {
+      key: 'users',
+      icon: <UserOutlined />,
+      label: <Link href="/admin/users">Users</Link>,
+    },
+    {
+      key: 'credentials',
+      icon: <KeyOutlined />,
+      label: <Link href="/admin/credentials">Credentials</Link>,
     },
   ];
 

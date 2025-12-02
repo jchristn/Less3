@@ -8,6 +8,7 @@
     using SyslogLogging;
     using System;
     using System.Collections.Generic;
+    using System.Collections.Specialized;
     using System.IO;
     using System.Linq;
     using System.Net;
@@ -18,6 +19,7 @@
     using System.Threading.Tasks;
     using Watson.ORM;
     using WatsonWebserver;
+    using WatsonWebserver.Core;
 
     /// <summary>
     /// Less3 is an S3-compatible object storage server.
@@ -277,6 +279,7 @@
             _S3Settings.Webserver = _Settings.Webserver;
 
             _S3Server = new S3Server(_S3Settings);
+            _S3Server.Webserver.Routes.Preflight = PreflightRoute;
 
             Console.WriteLine("| " + _Settings.Webserver.Prefix);
 
@@ -389,6 +392,52 @@
                 "</html>";
 
             return html;
+        }
+
+        private static async Task PreflightRoute(HttpContextBase ctx)
+        {
+            NameValueCollection responseHeaders = new NameValueCollection(StringComparer.InvariantCultureIgnoreCase);
+
+            string[] requestedHeaders = null;
+            string headers = "";
+
+            if (ctx.Request.Headers != null)
+            {
+                for (int i = 0; i < ctx.Request.Headers.Count; i++)
+                {
+                    string key = ctx.Request.Headers.GetKey(i);
+                    string value = ctx.Request.Headers.Get(i);
+                    if (String.IsNullOrEmpty(key)) continue;
+                    if (String.IsNullOrEmpty(value)) continue;
+                    if (String.Compare(key.ToLower(), "access-control-request-headers") == 0)
+                    {
+                        requestedHeaders = value.Split(',');
+                        break;
+                    }
+                }
+            }
+
+            if (requestedHeaders != null)
+            {
+                foreach (string curr in requestedHeaders)
+                {
+                    headers += ", " + curr;
+                }
+            }
+
+            responseHeaders.Add("Access-Control-Allow-Methods", "OPTIONS, HEAD, GET, PUT, POST, DELETE");
+            responseHeaders.Add("Access-Control-Allow-Headers", "*, Content-Type, X-Requested-With, " + headers);
+            responseHeaders.Add("Access-Control-Expose-Headers", "Content-Type, X-Requested-With, " + headers);
+            responseHeaders.Add("Access-Control-Allow-Origin", "*");
+            responseHeaders.Add("Accept", "*/*");
+            responseHeaders.Add("Accept-Language", "en-US, en");
+            responseHeaders.Add("Accept-Charset", "ISO-8859-1, utf-8");
+            responseHeaders.Add("Connection", "keep-alive");
+
+            ctx.Response.StatusCode = 200;
+            ctx.Response.Headers = responseHeaders;
+            await ctx.Response.Send().ConfigureAwait(false);
+            return;
         }
 
         private static async Task<bool> PreRequestHandler(S3Context ctx)

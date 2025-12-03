@@ -90,7 +90,7 @@ export function withConnectivityValidation<P extends object>(WrappedComponent: C
           validationCache = null;
           setCachedValid(false);
         });
-    };
+    };                                 
 
     // Show loading state while validation is in progress
     if (isLoading && !cachedValid) {

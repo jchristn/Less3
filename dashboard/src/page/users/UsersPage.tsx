@@ -20,6 +20,7 @@ import {
   User,
 } from '#/store/slice/usersSlice';
 import type { ColumnsType } from 'antd/es/table';
+import { formatDate } from '#/utils/dateUtils';
 
 interface UserFormValues {
   Name: string;
@@ -117,7 +118,7 @@ const UsersPage: React.FC = () => {
       dataIndex: 'CreatedUtc',
       key: 'CreatedUtc',
       width: 180,
-      render: (text: string) => (text ? new Date(text).toLocaleString() : '-'),
+      render: (text: string) => formatDate(text),
     },
     {
       title: 'Actions',
@@ -286,7 +287,7 @@ const UsersPage: React.FC = () => {
             </Descriptions.Item>
             <Descriptions.Item label="Created At">
               <Less3Text>
-                {userMetadata.CreatedUtc ? new Date(userMetadata.CreatedUtc).toLocaleString() : '-'}
+                {formatDate(userMetadata.CreatedUtc || '')}
               </Less3Text>
             </Descriptions.Item>
           </Descriptions>

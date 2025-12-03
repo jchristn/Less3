@@ -22,6 +22,7 @@ import {
 } from '#/store/slice/credentialsSlice';
 import { useGetUsersQuery } from '#/store/slice/usersSlice';
 import type { ColumnsType } from 'antd/es/table';
+import { formatDate } from '#/utils/dateUtils';
 
 interface CredentialFormValues {
   UserGUID: string;
@@ -148,7 +149,7 @@ const CredentialsPage: React.FC = () => {
       dataIndex: 'CreatedUtc',
       key: 'CreatedUtc',
       width: 180,
-      render: (text: string) => (text ? new Date(text).toLocaleString() : '-'),
+      render: (text: string) => formatDate(text),
     },
     {
       title: 'Actions',
@@ -348,7 +349,7 @@ const CredentialsPage: React.FC = () => {
             </Descriptions.Item>
             <Descriptions.Item label="Created At">
               <Less3Text>
-                {credentialMetadata.CreatedUtc ? new Date(credentialMetadata.CreatedUtc).toLocaleString() : '-'}
+                {formatDate(credentialMetadata.CreatedUtc || '')}
               </Less3Text>
             </Descriptions.Item>
           </Descriptions>

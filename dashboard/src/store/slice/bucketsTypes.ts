@@ -53,3 +53,27 @@ export interface DeleteBucketResponse {
 export interface GetBucketsParams {
   search?: string;
 }
+
+export interface ListBucketObjectsParams {
+  bucketGUID: string;
+}
+
+export interface DownloadBucketObjectParams {
+  bucketGUID: string;
+  objectKey: string;
+}
+
+export interface DownloadBucketObjectResponse {
+  content: string;
+  contentType: string;
+}
+
+export interface WriteBucketObjectParams {
+  bucketGUID: string;
+  objectKey: string;
+  content: string;
+}
+
+export interface WriteBucketObjectResponse {
+  success: boolean;
+}

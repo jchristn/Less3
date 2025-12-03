@@ -14,7 +14,7 @@ const sdkSliceInstance = enhancedSdk.injectEndpoints({
         try {
           const url = buildApiUrl('');
           const response = await fetch(url, {
-            method: 'GET',
+            method: 'HEAD',
             headers: {
               'Content-Type': 'application/json',
               'x-api-key': API_KEY,

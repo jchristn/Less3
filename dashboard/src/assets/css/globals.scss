@@ -38,6 +38,26 @@ a {
   border: none !important;
 }
 
+/* Remove green highlight from selected menu item */
+.ant-menu-light .ant-menu-item-selected {
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+/* Remove green border/indicator */
+.ant-menu-light .ant-menu-item-selected::after {
+  border-right: none !important;
+}
+
+/* Remove green active hover */
+.ant-menu-item-active,
+.ant-menu-submenu-title:hover,
+.ant-menu-item:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+  color: var(--ant-color-text) !important;
+}
+
+
 .mb {
   margin-bottom: var(--ant-margin);
 }
@@ -419,6 +439,85 @@ a {
 
 .h-screen {
   height: 100vh;
+}
+
+/* Show scrollbar only when screen size decreases and content overflows */
+.responsive-scrollbar {
+  overflow-x: auto;
+  
+  /* Hide scrollbar by default on large screens */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+  
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
+  
+  /* Show scrollbar on smaller screens when content overflows */
+  @media (max-width: 1400px) {
+    -ms-overflow-style: auto; /* IE and Edge */
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: var(--ant-color-border) var(--ant-color-fill-secondary);
+    
+    &::-webkit-scrollbar {
+      display: block;
+      height: 8px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: var(--ant-color-fill-secondary);
+      border-radius: 4px;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: var(--ant-color-border);
+      border-radius: 4px;
+      
+      &:hover {
+        background: var(--ant-color-text-tertiary);
+      }
+    }
+  }
+  
+  /* Ensure Ant Design table containers respect the scrollbar styling */
+  .ant-table-body,
+  .ant-table-container,
+  .ant-table-content,
+  .ant-table-wrapper {
+    /* Hide by default on large screens */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    
+    /* Show on smaller screens */
+    @media (max-width: 1400px) {
+      -ms-overflow-style: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--ant-color-border) var(--ant-color-fill-secondary);
+      
+      &::-webkit-scrollbar {
+        display: block;
+        height: 8px;
+      }
+      
+      &::-webkit-scrollbar-track {
+        background: var(--ant-color-fill-secondary);
+        border-radius: 4px;
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background: var(--ant-color-border);
+        border-radius: 4px;
+        
+        &:hover {
+          background: var(--ant-color-text-tertiary);
+        }
+      }
+    }
+  }
 }
 
 .ant-message {

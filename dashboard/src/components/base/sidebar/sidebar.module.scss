@@ -8,6 +8,20 @@
   z-index: 100;
 }
 
+.sidebarContainer a {
+  color: inherit !important;
+}
+
+/* Also fix selected state */
+.sidebarContainer .ant-menu-item-selected a {
+  color: inherit !important;
+}
+
+/* Optional: hover state fix */
+.sidebarContainer .ant-menu-item a:hover {
+  color: inherit !important;
+}
+
 .logoContainer {
   height: 64px;
   border-bottom: 1px solid var(--ant-color-border);
@@ -16,13 +30,16 @@
 
 .collapseButtonContainer {
   padding: 8px;
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
 }
 
 .collapseButton {
-  width: 100%;
   font-size: 16px;
 }
 
 .menu {
   border-right: none;
 }
+

@@ -1,6 +1,7 @@
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query/react';
 import sdkSlice, { ApiBaseQueryArgs } from '#/store/rtk/rtkSdkInstance';
 import { buildApiUrl } from '#/services/sdk.service';
+import { parseListBucketResult, type ListBucketResult } from '#/utils/xmlUtils';
 import type {
   Bucket,
   BucketListResponse,
@@ -10,6 +11,11 @@ import type {
   DeleteBucketParams,
   DeleteBucketResponse,
   GetBucketsParams,
+  ListBucketObjectsParams,
+  DownloadBucketObjectParams,
+  DownloadBucketObjectResponse,
+  WriteBucketObjectParams,
+  WriteBucketObjectResponse,
 } from './bucketsTypes';
 
 export enum BucketsSliceTags {
@@ -26,6 +32,11 @@ export type {
   DeleteBucketParams,
   DeleteBucketResponse,
   GetBucketsParams,
+  ListBucketObjectsParams,
+  DownloadBucketObjectParams,
+  DownloadBucketObjectResponse,
+  WriteBucketObjectParams,
+  WriteBucketObjectResponse,
 };
 
 const enhancedSdk = sdkSlice.enhanceEndpoints({
@@ -82,8 +93,128 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
       invalidatesTags: (_result: DeleteBucketResponse | undefined, _error: unknown, { guid }: DeleteBucketParams) =>
         getBucketTags(guid),
     }),
+
+    listBucketObjects: build.query<ListBucketResult, ListBucketObjectsParams>({
+      async queryFn({ bucketGUID }) {
+        try {
+          const response = await fetch(`http://localhost:8000/${bucketGUID}/`, {
+            method: 'GET',
+            headers: {
+              Authorization:
+                'AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024',
+            },
+          });
+
+          if (!response.ok) {
+            return {
+              error: {
+                status: response.status,
+                data: `Failed to fetch objects: ${response.statusText}`,
+              },
+            };
+          }
+
+          const xmlText = await response.text();
+          const listBucketResult = parseListBucketResult(xmlText);
+
+          return { data: listBucketResult };
+        } catch (error: any) {
+          return {
+            error: {
+              status: 'FETCH_ERROR',
+              data: error?.message || 'Failed to fetch bucket objects',
+            },
+          };
+        }
+      },
+    }),
+
+    downloadBucketObject: build.query<DownloadBucketObjectResponse, DownloadBucketObjectParams>({
+      async queryFn({ bucketGUID, objectKey }) {
+        try {
+          const response = await fetch(`http://localhost:8000/${bucketGUID}/${objectKey}`, {
+            method: 'GET',
+            headers: {
+              Authorization:
+                'AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024',
+            },
+          });
+
+          if (!response.ok) {
+            return {
+              error: {
+                status: response.status,
+                data: `Failed to download object: ${response.statusText}`,
+              },
+            };
+          }
+
+          const content = await response.text();
+          const contentType = response.headers.get('content-type') || 'text/plain';
+
+          return {
+            data: {
+              content,
+              contentType,
+            },
+          };
+        } catch (error: any) {
+          return {
+            error: {
+              status: 'FETCH_ERROR',
+              data: error?.message || 'Failed to download object',
+            },
+          };
+        }
+      },
+    }),
+
+    writeBucketObject: build.mutation<WriteBucketObjectResponse, WriteBucketObjectParams>({
+      async queryFn({ bucketGUID, objectKey, content }) {
+        try {
+          const response = await fetch(`http://localhost:8000/${bucketGUID}/${objectKey}`, {
+            method: 'PUT',
+            headers: {
+              Authorization:
+                'AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024',
+              'Content-Type': 'text/plain',
+            },
+            body: content,
+          });
+
+          if (!response.ok) {
+            return {
+              error: {
+                status: response.status,
+                data: `Failed to write object: ${response.statusText}`,
+              },
+            };
+          }
+
+          return {
+            data: {
+              success: true,
+            },
+          };
+        } catch (error: any) {
+          return {
+            error: {
+              status: 'FETCH_ERROR',
+              data: error?.message || 'Failed to write object',
+            },
+          };
+        }
+      },
+    }),
   }),
 });
 
-export const { useGetBucketsQuery, useGetBucketByIdQuery, useCreateBucketMutation, useDeleteBucketMutation } =
-  bucketsSliceInstance;
+export const {
+  useGetBucketsQuery,
+  useGetBucketByIdQuery,
+  useCreateBucketMutation,
+  useDeleteBucketMutation,
+  useListBucketObjectsQuery,
+  useLazyDownloadBucketObjectQuery,
+  useWriteBucketObjectMutation,
+} = bucketsSliceInstance;

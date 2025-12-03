@@ -1,7 +1,7 @@
 import { theme, ThemeConfig } from 'antd';
 
 export const Less3Theme = {
-  primary: '#22AF79', //95DB7B
+  primary: '#22AF79', //95DB7B 
   primaryDark: '#2dc48a', //95DB7B
   primaryRed: '#d9383a',
   secondaryBlue: '#b1e5ff',

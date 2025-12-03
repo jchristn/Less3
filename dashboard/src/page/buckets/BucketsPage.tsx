@@ -2,7 +2,7 @@
 'use client';
 import React, { useMemo, useState } from 'react';
 import { Form, message, Switch, MenuProps, Descriptions } from 'antd';
-import { PlusOutlined, SearchOutlined, MoreOutlined } from '@ant-design/icons';
+import { PlusOutlined, SearchOutlined, MoreOutlined, DownloadOutlined } from '@ant-design/icons';
 import Less3Table from '#/components/base/table/Table';
 import Less3Button from '#/components/base/button/Button';
 import Less3Modal from '#/components/base/modal/Modal';
@@ -18,9 +18,14 @@ import {
   useGetBucketByIdQuery,
   useCreateBucketMutation,
   useDeleteBucketMutation,
+  useListBucketObjectsQuery,
+  useLazyDownloadBucketObjectQuery,
   Bucket,
 } from '#/store/slice/bucketsSlice';
 import type { ColumnsType } from 'antd/es/table';
+import { type BucketObject } from '#/utils/xmlUtils';
+import { formatDate } from '#/utils/dateUtils';
+import WriteObjectModal from './WriteObjectModal';
 
 interface BucketFormValues {
   Name: string;
@@ -36,10 +41,15 @@ const BucketsPage: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [isMetadataModalVisible, setIsMetadataModalVisible] = useState(false);
+  const [isObjectsModalVisible, setIsObjectsModalVisible] = useState(false);
+  const [isWriteObjectModalVisible, setIsWriteObjectModalVisible] = useState(false);
   const [viewingBucketGUID, setViewingBucketGUID] = useState<string | null>(null);
+  const [viewingBucketForObjects, setViewingBucketForObjects] = useState<Bucket | null>(null);
+  const [writingBucket, setWritingBucket] = useState<Bucket | null>(null);
   const [deletingBucket, setDeletingBucket] = useState<Bucket | null>(null);
   const [deleteWithDestroy, setDeleteWithDestroy] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [downloadingObjectKey, setDownloadingObjectKey] = useState<string | null>(null);
 
   const { data, isLoading, refetch } = useGetBucketsQuery();
 
@@ -49,6 +59,17 @@ const BucketsPage: React.FC = () => {
 
   const [createBucket, { isLoading: isCreating }] = useCreateBucketMutation();
   const [deleteBucket, { isLoading: isDeleting }] = useDeleteBucketMutation();
+
+  const {
+    data: bucketObjectsData,
+    isLoading: isLoadingObjects,
+    refetch: refetchObjects,
+  } = useListBucketObjectsQuery(
+    { bucketGUID: viewingBucketForObjects?.GUID || '' },
+    { skip: !viewingBucketForObjects?.GUID || !isObjectsModalVisible }
+  );
+
+  const [downloadBucketObject] = useLazyDownloadBucketObjectQuery();
 
   const handleCreate = () => {
     form.resetFields();
@@ -64,6 +85,29 @@ const BucketsPage: React.FC = () => {
   const handleViewMetadata = (record: Bucket) => {
     setViewingBucketGUID(record.GUID);
     setIsMetadataModalVisible(true);
+  };
+
+  const handleListObjects = (record: Bucket) => {
+    setViewingBucketForObjects(record);
+    setIsObjectsModalVisible(true);
+  };
+
+  const handleWriteObject = (record: Bucket) => {
+    setWritingBucket(record);
+    setIsWriteObjectModalVisible(true);
+  };
+
+  const handleWriteObjectSuccess = () => {
+    // Refresh objects list if the objects modal is open for this bucket
+    if (viewingBucketForObjects?.GUID === writingBucket?.GUID && isObjectsModalVisible) {
+      refetchObjects();
+    }
+    setWritingBucket(null);
+  };
+
+  const handleWriteObjectCancel = () => {
+    setIsWriteObjectModalVisible(false);
+    setWritingBucket(null);
   };
 
   const handleDelete = (record: Bucket, withDestroy: boolean) => {
@@ -114,68 +158,76 @@ const BucketsPage: React.FC = () => {
       title: 'GUID',
       dataIndex: 'GUID',
       key: 'GUID',
-      width: 200,
+      ellipsis: true,
       sorter: (a: Bucket, b: Bucket) => (a.GUID || '').localeCompare(b.GUID || ''),
     },
     {
       title: 'Name',
       dataIndex: 'Name',
       key: 'Name',
-      width: 200,
+      ellipsis: true,
       sorter: (a: Bucket, b: Bucket) => (a.Name || '').localeCompare(b.Name || ''),
     },
     {
       title: 'Storage Type',
       dataIndex: 'StorageType',
       key: 'StorageType',
-      width: 120,
+      ellipsis: true,
     },
     {
       title: 'Region',
       dataIndex: 'RegionString',
       key: 'RegionString',
-      width: 120,
+      ellipsis: true,
       render: (text: string) => text || '-',
     },
     {
       title: 'Public Read',
       dataIndex: 'EnablePublicRead',
       key: 'EnablePublicRead',
-      width: 100,
+      ellipsis: true,
       render: (value: boolean) => (value ? 'Yes' : 'No'),
     },
     {
       title: 'Public Write',
       dataIndex: 'EnablePublicWrite',
       key: 'EnablePublicWrite',
-      width: 100,
+      ellipsis: true,
       render: (value: boolean) => (value ? 'Yes' : 'No'),
     },
     {
       title: 'Versioning',
       dataIndex: 'EnableVersioning',
       key: 'EnableVersioning',
-      width: 100,
+      ellipsis: true,
       render: (value: boolean) => (value ? 'Yes' : 'No'),
     },
     {
       title: 'Date Created',
       dataIndex: 'CreatedUtc',
       key: 'CreatedUtc',
-      width: 180,
-      render: (text: string) => (text ? new Date(text).toLocaleString() : '-'),
+      ellipsis: true,
+      render: (text: string) => formatDate(text),
     },
     {
       title: 'Actions',
       key: 'actions',
-      width: 80,
-      fixed: 'right',
       render: (_: any, record: Bucket) => {
         const menuItems: MenuProps['items'] = [
           {
             key: 'metadata',
             label: 'View Metadata',
             onClick: () => handleViewMetadata(record),
+          },
+          {
+            key: 'listObjects',
+            label: 'List Objects in Bucket',
+            onClick: () => handleListObjects(record),
+          },
+          {
+            key: 'writeObject',
+            label: 'Write Object',
+            onClick: () => handleWriteObject(record),
           },
           {
             key: 'delete',
@@ -214,6 +266,47 @@ const BucketsPage: React.FC = () => {
     });
   }, [data, searchText]);
 
+  const handleDownloadObject = async (record: BucketObject) => {
+    if (!viewingBucketForObjects?.GUID) {
+      message.error('Bucket information not available');
+      return;
+    }
+
+    // Set the downloading key to show loading state for this specific button
+    setDownloadingObjectKey(record.Key);
+
+    try {
+      const result = await downloadBucketObject({
+        bucketGUID: viewingBucketForObjects.GUID,
+        objectKey: record.Key,
+      }).unwrap();
+
+      // Create a blob from the content
+      const blob = new Blob([result.content], { type: result.contentType || record.ContentType || 'text/plain' });
+
+      // Create a temporary URL for the blob
+      const url = window.URL.createObjectURL(blob);
+
+      // Create a temporary anchor element and trigger download
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = record.Key.split('/').pop() || record.Key; // Get filename from key (handle nested paths)
+      document.body.appendChild(link);
+      link.click();
+
+      // Clean up
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      message.success(`Downloaded ${record.Key} successfully`);
+    } catch (error: any) {
+      message.error(error?.data?.data || error?.message || 'Failed to download object');
+    } finally {
+      // Clear the downloading key to hide loading state
+      setDownloadingObjectKey(null);
+    }
+  };
+
   return (
     <PageContainer
       pageTitle="Buckets"
@@ -235,13 +328,16 @@ const BucketsPage: React.FC = () => {
         </Less3Flex>
       }
     >
-      <Less3Table
-        columns={columns as ColumnsType<any>}
-        dataSource={filteredData}
-        loading={isLoading}
-        rowKey="GUID"
-        pagination={false}
-      />
+      <div className="responsive-scrollbar" style={{ width: '100%' }}>
+        <Less3Table
+          columns={columns as ColumnsType<any>}
+          dataSource={filteredData}
+          loading={isLoading}
+          rowKey="GUID"
+          pagination={false}
+          scroll={{ x: true }}
+        />
+      </div>
 
       <Less3Modal
         title="Create Bucket"
@@ -395,15 +491,140 @@ const BucketsPage: React.FC = () => {
               <Less3Text>{bucketMetadata.EnablePublicRead ? 'Yes' : 'No'}</Less3Text>
             </Descriptions.Item>
             <Descriptions.Item label="Created At">
-              <Less3Text>
-                {bucketMetadata.CreatedUtc ? new Date(bucketMetadata.CreatedUtc).toLocaleString() : '-'}
-              </Less3Text>
+              <Less3Text>{formatDate(bucketMetadata.CreatedUtc || '')}</Less3Text>
             </Descriptions.Item>
           </Descriptions>
         ) : (
           <div style={{ textAlign: 'center', padding: '20px' }}>No metadata available</div>
         )}
       </Less3Modal>
+
+      <Less3Modal
+        title={`Objects in Bucket: ${viewingBucketForObjects?.Name || ''}`}
+        open={isObjectsModalVisible}
+        onCancel={() => {
+          setIsObjectsModalVisible(false);
+          setViewingBucketForObjects(null);
+        }}
+        footer={[
+          <Less3Button
+            key="close"
+            onClick={() => {
+              setIsObjectsModalVisible(false);
+              setViewingBucketForObjects(null);
+            }}
+          >
+            Close
+          </Less3Button>,
+        ]}
+        width="90%"
+        style={{ maxWidth: 1300 }}
+      >
+        {isLoadingObjects ? (
+          <div style={{ textAlign: 'center', padding: '20px' }}>Loading objects...</div>
+        ) : !bucketObjectsData || bucketObjectsData.Contents.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '20px' }}>No objects found in this bucket</div>
+        ) : (
+          <Less3Flex vertical gap={16}>
+            {bucketObjectsData && (
+              <Less3Flex justify="space-between" align="center" style={{ padding: '0 4px' }} wrap="wrap" gap={8}>
+                <Less3Text type="secondary" style={{ fontSize: '14px' }}>
+                  Showing {bucketObjectsData.KeyCount} object{bucketObjectsData.KeyCount !== 1 ? 's' : ''}
+                  {bucketObjectsData.IsTruncated && ` (more available, max ${bucketObjectsData.MaxKeys} per request)`}
+                </Less3Text>
+                {bucketObjectsData.IsTruncated && (
+                  <Less3Text type="warning" style={{ fontSize: '12px' }}>
+                    Results truncated - not all objects are shown
+                  </Less3Text>
+                )}
+              </Less3Flex>
+            )}
+            <div className="responsive-scrollbar" style={{ width: '100%' }}>
+              <Less3Table
+                columns={[
+                  {
+                    title: 'Key',
+                    dataIndex: 'Key',
+                    key: 'Key',
+                    ellipsis: true,
+                  },
+                  {
+                    title: 'Last Modified',
+                    dataIndex: 'LastModified',
+                    key: 'LastModified',
+                    ellipsis: true,
+                    render: (text: string) => formatDate(text),
+                  },
+                  {
+                    title: 'Size',
+                    dataIndex: 'Size',
+                    key: 'Size',
+                    ellipsis: true,
+                    render: (size: number) => {
+                      if (size < 1024) return `${size} B`;
+                      if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} KB`;
+                      if (size < 1024 * 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(2)} MB`;
+                      return `${(size / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+                    },
+                  },
+                  {
+                    title: 'Content Type',
+                    dataIndex: 'ContentType',
+                    key: 'ContentType',
+                    ellipsis: true,
+                  },
+                  {
+                    title: 'ETag',
+                    dataIndex: 'ETag',
+                    key: 'ETag',
+                    ellipsis: true,
+                  },
+                  {
+                    title: 'Storage Class',
+                    dataIndex: 'StorageClass',
+                    key: 'StorageClass',
+                    ellipsis: true,
+                  },
+                  {
+                    title: 'Owner',
+                    key: 'Owner',
+                    ellipsis: true,
+                    render: (_: any, record: any) => (
+                      <Less3Text>
+                        {(record as BucketObject).Owner?.DisplayName || (record as BucketObject).Owner?.ID || '-'}
+                      </Less3Text>
+                    ),
+                  },
+                  {
+                    title: 'Actions',
+                    key: 'Actions',
+                    render: (_: any, record: any) => (
+                      <Less3Button
+                        type="text"
+                        icon={<DownloadOutlined />}
+                        loading={downloadingObjectKey === (record as BucketObject).Key}
+                        onClick={() => handleDownloadObject(record as BucketObject)}
+                      />
+                    ),
+                  },
+                ]}
+                dataSource={bucketObjectsData.Contents}
+                loading={isLoadingObjects}
+                rowKey="Key"
+                pagination={false}
+                scroll={{ x: true }}
+              />
+            </div>
+          </Less3Flex>
+        )}
+      </Less3Modal>
+
+      <WriteObjectModal
+        bucket={writingBucket}
+        open={isWriteObjectModalVisible}
+        onCancel={handleWriteObjectCancel}
+        onSuccess={handleWriteObjectSuccess}
+      />
     </PageContainer>
   );
 };

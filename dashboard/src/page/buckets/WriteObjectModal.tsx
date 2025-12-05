@@ -60,6 +60,7 @@ const WriteObjectModal: React.FC<WriteObjectModalProps> = ({ bucket, open, onCan
       confirmLoading={isWritingObject}
       width={700}
       centered
+      keyboard={true}
     >
       <Form form={form} layout="vertical" autoComplete="off">
         <Less3FormItem
@@ -81,4 +82,3 @@ const WriteObjectModal: React.FC<WriteObjectModalProps> = ({ bucket, open, onCan
 };
 
 export default WriteObjectModal;
-

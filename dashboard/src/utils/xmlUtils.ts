@@ -248,3 +248,235 @@ export const parseListAllMyBucketsResult = (xmlString: string): ListAllMyBuckets
   };
 };
 
+/**
+ * Interface for bucket tag
+ */
+export interface BucketTag {
+  Key: string;
+  Value: string;
+}
+
+/**
+ * Parses Tagging XML response to structured data
+ * @param xmlString - The XML string from the API
+ * @returns Parsed array of BucketTag objects
+ * @throws Error if the XML format is invalid
+ */
+export const parseBucketTagging = (xmlString: string): BucketTag[] => {
+  const jsonResult = xmlToJson(xmlString);
+  const tagging = jsonResult.Tagging;
+
+  if (!tagging) {
+    throw new Error('Invalid response format: Tagging not found');
+  }
+
+  const textKey = '_text';
+  const tagSet = tagging.TagSet;
+
+  if (!tagSet) {
+    return [];
+  }
+
+  const tagElement = tagSet.Tag;
+  if (!tagElement) {
+    return [];
+  }
+
+  // Handle single tag or array of tags
+  const tags: BucketTag[] = [];
+  if (Array.isArray(tagElement)) {
+    tags.push(
+      ...tagElement.map((tag: any) => ({
+        Key: extractXmlText(tag.Key, textKey) || '',
+        Value: extractXmlText(tag.Value, textKey) || '',
+      }))
+    );
+  } else {
+    tags.push({
+      Key: extractXmlText(tagElement.Key, textKey) || '',
+      Value: extractXmlText(tagElement.Value, textKey) || '',
+    });
+  }
+
+  return tags;
+};
+
+/**
+ * Generates XML string for bucket tagging
+ * @param tags - Array of tags to write
+ * @returns XML string for the tagging request
+ */
+export const generateBucketTaggingXml = (tags: BucketTag[]): string => {
+  const tagElements = tags
+    .map(
+      (tag) => `        <Tag>
+            <Key>${escapeXml(tag.Key)}</Key>
+            <Value>${escapeXml(tag.Value)}</Value>
+        </Tag>`
+    )
+    .join('\n');
+
+  return `<?xml version="1.0" encoding="utf-8"?>
+<Tagging xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <TagSet>
+${tagElements}
+    </TagSet>
+</Tagging>`;
+};
+
+/**
+ * Escapes XML special characters
+ * @param text - Text to escape
+ * @returns Escaped text
+ */
+const escapeXml = (text: string): string => {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+};
+
+/**
+ * Interface for ACL Owner
+ */
+export interface ACLOwner {
+  ID: string;
+  DisplayName: string;
+}
+
+/**
+ * Interface for ACL Grantee
+ */
+export interface ACLGrantee {
+  ID: string;
+  DisplayName: string;
+  Type: string;
+  URI?: string | null;
+  EmailAddress?: string | null;
+}
+
+/**
+ * Interface for ACL Grant
+ */
+export interface ACLGrant {
+  Grantee: ACLGrantee;
+  Permission: string;
+}
+
+/**
+ * Interface for Bucket ACL
+ */
+export interface BucketACL {
+  Owner: ACLOwner;
+  AccessControlList: {
+    Grant: ACLGrant | ACLGrant[];
+  };
+}
+
+/**
+ * Parses AccessControlPolicy XML response to structured data
+ * @param xmlString - The XML string from the API
+ * @returns Parsed BucketACL object
+ * @throws Error if the XML format is invalid
+ */
+export const parseBucketACL = (xmlString: string): BucketACL => {
+  const jsonResult = xmlToJson(xmlString);
+  const aclPolicy = jsonResult.AccessControlPolicy;
+
+  if (!aclPolicy) {
+    throw new Error('Invalid response format: AccessControlPolicy not found');
+  }
+
+  const textKey = '_text';
+
+  // Parse Owner
+  const ownerElement = aclPolicy.Owner;
+  const owner: ACLOwner = {
+    ID: extractXmlText(ownerElement?.ID, textKey) || '',
+    DisplayName: extractXmlText(ownerElement?.DisplayName, textKey) || '',
+  };
+
+  // Parse AccessControlList
+  const aclElement = aclPolicy.AccessControlList;
+  if (!aclElement) {
+    throw new Error('Invalid response format: AccessControlList not found');
+  }
+
+  const grantElement = aclElement.Grant;
+  if (!grantElement) {
+    throw new Error('Invalid response format: Grant not found');
+  }
+
+  // Handle single grant or array of grants
+  const grants: ACLGrant[] = [];
+  if (Array.isArray(grantElement)) {
+    grants.push(
+      ...grantElement.map((grant: any) => {
+        const grantee = grant.Grantee;
+        return {
+          Grantee: {
+            ID: extractXmlText(grantee?.ID, textKey) || '',
+            DisplayName: extractXmlText(grantee?.DisplayName, textKey) || '',
+            Type: extractXmlText(grantee?.Type, textKey) || 'CanonicalUser',
+            URI: grantee?.URI?.[textKey] || null,
+            EmailAddress: grantee?.EmailAddress?.[textKey] || null,
+          },
+          Permission: extractXmlText(grant.Permission, textKey) || '',
+        };
+      })
+    );
+  } else {
+    const grantee = grantElement.Grantee;
+    grants.push({
+      Grantee: {
+        ID: extractXmlText(grantee?.ID, textKey) || '',
+        DisplayName: extractXmlText(grantee?.DisplayName, textKey) || '',
+        Type: extractXmlText(grantee?.Type, textKey) || 'CanonicalUser',
+        URI: grantee?.URI?.[textKey] || null,
+        EmailAddress: grantee?.EmailAddress?.[textKey] || null,
+      },
+      Permission: extractXmlText(grantElement.Permission, textKey) || '',
+    });
+  }
+
+  return {
+    Owner: owner,
+    AccessControlList: {
+      Grant: grants.length === 1 ? grants[0] : grants,
+    },
+  };
+};
+
+/**
+ * Generates XML string for bucket ACL
+ * @param owner - Owner information
+ * @param grants - Array of grants
+ * @returns XML string for the ACL request
+ */
+export const generateBucketACLXml = (owner: ACLOwner, grants: ACLGrant[]): string => {
+  const ownerXml = `  <Owner>
+    <ID>${escapeXml(owner.ID)}</ID>
+    <DisplayName>${escapeXml(owner.DisplayName)}</DisplayName>
+  </Owner>`;
+
+  const grantElements = grants
+    .map(
+      (grant) => `    <Grant>
+      <Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="CanonicalUser">
+        <ID>${escapeXml(grant.Grantee.ID)}</ID>
+        <DisplayName>${escapeXml(grant.Grantee.DisplayName)}</DisplayName>
+      </Grantee>
+      <Permission>${escapeXml(grant.Permission)}</Permission>
+    </Grant>`
+    )
+    .join('\n');
+
+  return `<AccessControlPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+${ownerXml}
+  <AccessControlList>
+${grantElements}
+  </AccessControlList>
+</AccessControlPolicy>`;
+};

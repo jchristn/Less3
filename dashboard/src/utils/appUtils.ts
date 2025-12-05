@@ -12,15 +12,15 @@ export const getDashboardPathKey = (path: string) => {
 };
 
 export function transformToOptions<
-  T extends { GUID: string; name?: string; Name?: string }
+  T extends { GUID?: string; name?: string; Name?: string }
 >(
   data?: T[] | null,
   labelField: keyof T = "name" // Field to use for label in options
 ) {
   return (
     data?.map((item: T) => ({
-      value: item.GUID,
-      label: (item[labelField] as string) || item.Name || item.GUID,
+      value: item.GUID || item.Name || (item[labelField] as string) || '',
+      label: (item[labelField] as string) || item.Name || item.GUID || '',
     })) || []
   );
 }

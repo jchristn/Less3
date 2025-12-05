@@ -161,3 +161,90 @@ export const parseListBucketResult = (xmlString: string): ListBucketResult => {
   };
 };
 
+/**
+ * Interface for bucket owner
+ */
+export interface BucketOwner {
+  ID: string;
+  DisplayName: string;
+}
+
+/**
+ * Interface for a bucket in ListAllMyBucketsResult
+ */
+export interface BucketItem {
+  Name: string;
+  CreationDate: string;
+}
+
+/**
+ * Interface for ListAllMyBucketsResult
+ */
+export interface ListAllMyBucketsResult {
+  Owner: BucketOwner;
+  Buckets: BucketItem[];
+}
+
+/**
+ * Parses a single Bucket element from XML
+ * @param item - The XML Bucket element
+ * @param textKey - The key used for text content (default: '_text')
+ * @returns Parsed BucketItem
+ */
+const parseBucketItem = (item: any, textKey: string = '_text'): BucketItem => {
+  const getValue = (field: string): string => {
+    const element = item[field];
+    return extractXmlText(element, textKey) || '';
+  };
+
+  return {
+    Name: getValue('Name'),
+    CreationDate: getValue('CreationDate'),
+  };
+};
+
+/**
+ * Parses ListAllMyBucketsResult XML response to structured data
+ * @param xmlString - The XML string from the API
+ * @returns Parsed ListAllMyBucketsResult object
+ * @throws Error if the XML format is invalid
+ */
+export const parseListAllMyBucketsResult = (xmlString: string): ListAllMyBucketsResult => {
+  const jsonResult = xmlToJson(xmlString);
+  const listAllMyBucketsResult = jsonResult.ListAllMyBucketsResult;
+
+  if (!listAllMyBucketsResult) {
+    throw new Error('Invalid response format: ListAllMyBucketsResult not found');
+  }
+
+  const textKey = '_text';
+
+  // Parse Owner
+  const ownerElement = listAllMyBucketsResult.Owner;
+  const owner: BucketOwner = {
+    ID: extractXmlText(ownerElement?.ID, textKey) || '',
+    DisplayName: extractXmlText(ownerElement?.DisplayName, textKey) || '',
+  };
+
+  // Parse Buckets - can be single object or array
+  const bucketsElement = listAllMyBucketsResult.Buckets;
+  let buckets: BucketItem[] = [];
+
+  if (bucketsElement) {
+    const bucketItems = bucketsElement.Bucket;
+    if (bucketItems) {
+      if (Array.isArray(bucketItems)) {
+        buckets = bucketItems.map((item: any) => parseBucketItem(item, textKey));
+      } else {
+        // Single bucket
+        buckets = [parseBucketItem(bucketItems, textKey)];
+      }
+    }
+  }
+
+  return {
+    Owner: owner,
+    Buckets: buckets,
+  };
+};
+

@@ -6,6 +6,7 @@ import {
   MenuUnfoldOutlined,
   HomeOutlined,
   DatabaseOutlined,
+  FolderOutlined,
   UserOutlined,
   KeyOutlined,
 } from '@ant-design/icons';
@@ -28,6 +29,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onCollapse }: Side
   const getSelectedKey = () => {
     if (pathname === '/dashboard') return ['dashboard'];
     if (pathname.startsWith('/admin/buckets')) return ['buckets'];
+    if (pathname.startsWith('/admin/objects')) return ['objects'];
     if (pathname.startsWith('/admin/users')) return ['users'];
     if (pathname.startsWith('/admin/credentials')) return ['credentials'];
     return [];
@@ -43,6 +45,11 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onCollapse }: Side
       key: 'buckets',
       icon: <DatabaseOutlined />,
       label: <Link href="/admin/buckets">Buckets</Link>,
+    },
+    {
+      key: 'objects',
+      icon: <FolderOutlined />,
+      label: <Link href="/admin/objects">Objects</Link>,
     },
     {
       key: 'users',

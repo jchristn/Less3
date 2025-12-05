@@ -24,7 +24,7 @@ const WriteObjectModal: React.FC<WriteObjectModalProps> = ({ bucket, open, onCan
   const [writeBucketObject, { isLoading: isWritingObject }] = useWriteBucketObjectMutation();
 
   const handleOk = async () => {
-    if (!bucket?.GUID) {
+    if (!bucket?.Name) {
       message.error('Bucket information not available');
       return;
     }
@@ -32,7 +32,7 @@ const WriteObjectModal: React.FC<WriteObjectModalProps> = ({ bucket, open, onCan
     try {
       const values = await form.validateFields();
       await writeBucketObject({
-        bucketGUID: bucket.GUID,
+        bucketGUID: bucket.Name,
         objectKey: values.filename,
         content: values.content,
       }).unwrap();

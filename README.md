@@ -61,6 +61,26 @@ To re-run the setup wizard at any time:
 dotnet run setup
 ```
 
+### Starting the Dashboard
+
+Less3 includes a web-based dashboard for managing buckets, objects, users, and credentials. After starting the Less3 server, you can start the dashboard:
+
+```bash
+cd dashboard
+npm install
+npm run build
+npm run start
+```
+
+The dashboard will be available at `http://localhost:3000`.
+
+For development, you can use:
+```bash
+npm run dev
+```
+
+**Note**: The dashboard requires Node.js v18.20.4 or later.
+
 ### Publishing for Deployment
 
 ```bash

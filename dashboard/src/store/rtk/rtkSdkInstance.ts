@@ -10,7 +10,7 @@ export interface ApiBaseQueryArgs {
 }
 
 // Custom base query that dynamically gets the API endpoint
-const dynamicBaseQuery: BaseQueryFn<ApiBaseQueryArgs, unknown, unknown> = async (
+export const dynamicBaseQuery: BaseQueryFn<ApiBaseQueryArgs, unknown, unknown> = async (
   args: ApiBaseQueryArgs,
   api: unknown,
   extraOptions: unknown

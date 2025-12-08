@@ -63,3 +63,13 @@ jest.mock("jsoneditor-react", () => ({
     />
   ),
 }));
+
+// Handle unhandled promise rejections for form validation errors
+if (typeof window !== 'undefined') {
+  window.addEventListener('unhandledrejection', (event) => {
+    // Suppress Ant Design form validation errors (they have errorFields)
+    if (event.reason?.errorFields || (event.reason?.name && Array.isArray(event.reason.name))) {
+      event.preventDefault();
+    }
+  });
+}

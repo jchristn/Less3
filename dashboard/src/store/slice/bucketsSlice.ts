@@ -820,6 +820,9 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
   }),
 });
 
+// Export underlying API instance for testing/introspection
+export const bucketsSliceApi = bucketsSliceInstance;
+
 export const {
   useGetBucketsQuery,
   useGetBucketByIdQuery,

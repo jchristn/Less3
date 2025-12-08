@@ -12,8 +12,7 @@ const config = {
   // Add more setup options before each test is run
   // setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
-    // ...
-    "^#/components/(.*)$": "<rootDir>/components/$1",
+    "^#/(.*)$": "<rootDir>/src/$1",
     "^antd/es/(.*)$": "<rootDir>/node_modules/antd/lib/$1",
     uuid: require.resolve("uuid"),
   },

@@ -1,0 +1,26 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`dynamicBaseQuery Snapshots captures request snapshot for FormData call 1`] = `
+{
+  "hasBody": true,
+  "headers": {
+    "accept": "application/json",
+    "content-type": "<form-data>",
+    "x-api-key": "less3admin",
+  },
+  "method": "POST",
+  "url": "http://api.test/snapshot-upload",
+}
+`;
+
+exports[`dynamicBaseQuery Snapshots captures request snapshot for JSON call 1`] = `
+{
+  "headers": {
+    "accept": "application/json",
+    "content-type": "application/json",
+    "x-api-key": "less3admin",
+  },
+  "method": "GET",
+  "url": "http://api.test/snapshot-test",
+}
+`;

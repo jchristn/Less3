@@ -1,0 +1,368 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LoginPage Snapshots should match default render 1`] = `
+<div
+  class="loginLayout ant-flex css-dev-only-do-not-override-198drv2 ant-flex-align-stretch ant-flex-justify-space-between ant-flex-vertical"
+>
+  <div
+    class="header ant-flex css-dev-only-do-not-override-198drv2 ant-flex-align-center ant-flex-justify-space-between"
+  >
+    <div
+      class="ant-flex css-dev-only-do-not-override-198drv2 ant-flex-align-center"
+      style="gap: 10px;"
+    >
+      <img
+        alt="Less3"
+        data-nimg="1"
+        decoding="async"
+        height="45"
+        loading="lazy"
+        src="/_next/image?url=%2Fassets%2Flogo.png&w=96&q=75"
+        srcset="/_next/image?url=%2Fassets%2Flogo.png&w=48&q=75 1x, /_next/image?url=%2Fassets%2Flogo.png&w=96&q=75 2x"
+        style="color: transparent;"
+        width="45"
+      />
+      <span
+        class="ant-typography css-dev-only-do-not-override-198drv2"
+        style="font-size: 20px;"
+      />
+    </div>
+    <svg
+      color="black"
+      fill="none"
+      height="20"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      style="cursor: pointer; transform: rotate(90deg);"
+      viewBox="0 0 24 24"
+      width="20"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <mask
+        id="circle-mask-13"
+      >
+        <rect
+          fill="white"
+          height="100%"
+          width="100%"
+          x="0"
+          y="0"
+        />
+        <circle
+          fill="black"
+          r="9"
+        />
+      </mask>
+      <circle
+        cx="12"
+        cy="12"
+        fill="black"
+        mask="url(#circle-mask-13)"
+      />
+      <g
+        stroke="currentColor"
+        style="opacity: 1;"
+      >
+        <line
+          x1="12"
+          x2="12"
+          y1="1"
+          y2="3"
+        />
+        <line
+          x1="12"
+          x2="12"
+          y1="21"
+          y2="23"
+        />
+        <line
+          x1="4.22"
+          x2="5.64"
+          y1="4.22"
+          y2="5.64"
+        />
+        <line
+          x1="18.36"
+          x2="19.78"
+          y1="18.36"
+          y2="19.78"
+        />
+        <line
+          x1="1"
+          x2="3"
+          y1="12"
+          y2="12"
+        />
+        <line
+          x1="21"
+          x2="23"
+          y1="12"
+          y2="12"
+        />
+        <line
+          x1="4.22"
+          x2="5.64"
+          y1="19.78"
+          y2="18.36"
+        />
+        <line
+          x1="18.36"
+          x2="19.78"
+          y1="5.64"
+          y2="4.22"
+        />
+      </g>
+    </svg>
+  </div>
+  <div
+    class="content"
+  >
+    <div
+      class="loginLayout ant-flex css-dev-only-do-not-override-198drv2 ant-flex-align-stretch ant-flex-justify-space-between ant-flex-vertical"
+    >
+      <div
+        class="header ant-flex css-dev-only-do-not-override-198drv2 ant-flex-align-center ant-flex-justify-space-between"
+      >
+        <div
+          class="ant-flex css-dev-only-do-not-override-198drv2 ant-flex-align-center"
+          style="gap: 10px;"
+        >
+          <img
+            alt="Less3"
+            data-nimg="1"
+            decoding="async"
+            height="45"
+            loading="lazy"
+            src="/_next/image?url=%2Fassets%2Flogo.png&w=96&q=75"
+            srcset="/_next/image?url=%2Fassets%2Flogo.png&w=48&q=75 1x, /_next/image?url=%2Fassets%2Flogo.png&w=96&q=75 2x"
+            style="color: transparent;"
+            width="45"
+          />
+          <span
+            class="ant-typography css-dev-only-do-not-override-198drv2"
+            style="font-size: 20px;"
+          />
+        </div>
+        <svg
+          color="black"
+          fill="none"
+          height="20"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          style="cursor: pointer; transform: rotate(90deg);"
+          viewBox="0 0 24 24"
+          width="20"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <mask
+            id="circle-mask-14"
+          >
+            <rect
+              fill="white"
+              height="100%"
+              width="100%"
+              x="0"
+              y="0"
+            />
+            <circle
+              fill="black"
+              r="9"
+            />
+          </mask>
+          <circle
+            cx="12"
+            cy="12"
+            fill="black"
+            mask="url(#circle-mask-14)"
+          />
+          <g
+            stroke="currentColor"
+            style="opacity: 1;"
+          >
+            <line
+              x1="12"
+              x2="12"
+              y1="1"
+              y2="3"
+            />
+            <line
+              x1="12"
+              x2="12"
+              y1="21"
+              y2="23"
+            />
+            <line
+              x1="4.22"
+              x2="5.64"
+              y1="4.22"
+              y2="5.64"
+            />
+            <line
+              x1="18.36"
+              x2="19.78"
+              y1="18.36"
+              y2="19.78"
+            />
+            <line
+              x1="1"
+              x2="3"
+              y1="12"
+              y2="12"
+            />
+            <line
+              x1="21"
+              x2="23"
+              y1="12"
+              y2="12"
+            />
+            <line
+              x1="4.22"
+              x2="5.64"
+              y1="19.78"
+              y2="18.36"
+            />
+            <line
+              x1="18.36"
+              x2="19.78"
+              y1="5.64"
+              y2="4.22"
+            />
+          </g>
+        </svg>
+      </div>
+      <div
+        class="content"
+      >
+        <div
+          class="loginBox ant-flex css-dev-only-do-not-override-198drv2 ant-flex-align-center ant-flex-justify-center ant-flex-vertical"
+        >
+          <div
+            class="ant-flex css-dev-only-do-not-override-198drv2 ant-flex-align-center"
+            style="gap: 10px;"
+          >
+            <img
+              alt="Less3"
+              data-nimg="1"
+              decoding="async"
+              height="50"
+              loading="lazy"
+              src="/_next/image?url=%2Fassets%2Flogo.png&w=128&q=75"
+              srcset="/_next/image?url=%2Fassets%2Flogo.png&w=64&q=75 1x, /_next/image?url=%2Fassets%2Flogo.png&w=128&q=75 2x"
+              style="color: transparent;"
+              width="50"
+            />
+          </div>
+          <div
+            class="ant-divider css-dev-only-do-not-override-198drv2 ant-divider-horizontal"
+            role="separator"
+          />
+          <form
+            class="ant-form ant-form-vertical ant-form-hide-required-mark css-dev-only-do-not-override-198drv2"
+          >
+            <div
+              class="ant-flex css-dev-only-do-not-override-198drv2 ant-flex-align-center"
+            >
+              <div
+                class="ant-form-item css-dev-only-do-not-override-198drv2 ant-form-item-vertical"
+                style="width: 400px;"
+              >
+                <div
+                  class="ant-row ant-form-item-row css-dev-only-do-not-override-198drv2"
+                >
+                  <div
+                    class="ant-col ant-form-item-label css-dev-only-do-not-override-198drv2"
+                  >
+                    <label
+                      class="ant-form-item-required ant-form-item-required-mark-hidden"
+                      for="documentAtomAPIUrl"
+                      title="Less3 Server URL"
+                    >
+                      Less3 Server URL
+                    </label>
+                  </div>
+                  <div
+                    class="ant-col ant-form-item-control css-dev-only-do-not-override-198drv2"
+                  >
+                    <div
+                      class="ant-form-item-control-input"
+                    >
+                      <div
+                        class="ant-form-item-control-input-content"
+                      >
+                        <span
+                          class="ant-input-group-wrapper ant-input-group-wrapper-lg ant-input-group-wrapper-outlined css-dev-only-do-not-override-198drv2 ant-input-search ant-input-search-large ant-input-search-with-button"
+                        >
+                          <span
+                            class="ant-input-wrapper ant-input-group css-dev-only-do-not-override-198drv2"
+                          >
+                            <input
+                              aria-required="true"
+                              class="ant-input ant-input-lg css-dev-only-do-not-override-198drv2 ant-input-outlined"
+                              id="documentAtomAPIUrl"
+                              placeholder="https://your-documentatom-server.com"
+                              type="search"
+                              value="http://localhost:8000/"
+                            />
+                            <span
+                              class="ant-input-group-addon"
+                            >
+                              <button
+                                class="ant-btn css-dev-only-do-not-override-198drv2 ant-btn-default ant-btn-color-primary ant-btn-variant-solid ant-btn-lg ant-input-search-button"
+                                type="button"
+                              >
+                                <span
+                                  aria-label="arrow-right"
+                                  class="anticon anticon-arrow-right"
+                                  role="img"
+                                >
+                                  <svg
+                                    aria-hidden="true"
+                                    data-icon="arrow-right"
+                                    fill="currentColor"
+                                    focusable="false"
+                                    height="1em"
+                                    viewBox="64 64 896 896"
+                                    width="1em"
+                                  >
+                                    <path
+                                      d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 000-48.4z"
+                                    />
+                                  </svg>
+                                </span>
+                              </button>
+                            </span>
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div
+        class="footer ant-flex css-dev-only-do-not-override-198drv2 ant-flex-align-center ant-flex-justify-center"
+      >
+        <span
+          class="ant-typography css-dev-only-do-not-override-198drv2"
+          style="color: rgb(193, 193, 193);"
+        />
+      </div>
+    </div>
+  </div>
+  <div
+    class="footer ant-flex css-dev-only-do-not-override-198drv2 ant-flex-align-center ant-flex-justify-center"
+  >
+    <span
+      class="ant-typography css-dev-only-do-not-override-198drv2"
+      style="color: rgb(193, 193, 193);"
+    />
+  </div>
+</div>
+`;

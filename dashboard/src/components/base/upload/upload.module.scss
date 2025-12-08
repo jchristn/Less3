@@ -1,0 +1,18 @@
+.uploadContainer {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  :global {
+    .ant-upload-list {
+      max-width: 400px !important;
+      .ant-upload-list-item {
+        margin-top: 0 !important;
+        border: 1px dashed var(--ant-color-border) !important;
+        padding: var(--ant-padding-sm);
+        .ant-upload-list-item-actions {
+          opacity: 1 !important;
+        }
+      }
+    }
+  }
+}

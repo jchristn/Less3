@@ -1,0 +1,18 @@
+.loginLayout {
+  min-height: 100vh;
+  background-color: var(--ant-color-bg-base);
+}
+
+.header {
+  padding: var(--ant-padding);
+  border-bottom: 1px solid var(--ant-color-border);
+  margin: 0 var(--ant-margin-lg);
+}
+
+.content {
+  padding: var(--ant-padding);
+}
+
+.footer {
+  padding: var(--ant-padding);
+}

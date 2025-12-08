@@ -1,0 +1,21 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`rtkSdkInstance Snapshots captures sample ApiBaseQueryArgs snapshot 1`] = `
+{
+  "body": {
+    "example": true,
+  },
+  "headers": {
+    "Authorization": "Bearer token",
+  },
+  "method": "POST",
+  "url": "/snapshot",
+}
+`;
+
+exports[`rtkSdkInstance Snapshots captures slice config snapshot 1`] = `
+{
+  "reducerPath": "sdk",
+  "tagTypes": undefined,
+}
+`;

@@ -1,0 +1,45 @@
+.sidebarContainer {
+  border-right: 1px solid var(--ant-color-border);
+  height: 100vh;
+  overflow: auto;
+  position: fixed !important;
+  left: 0;
+  top: 0;
+  z-index: 100;
+}
+
+.sidebarContainer a {
+  color: inherit !important;
+}
+
+/* Also fix selected state */
+.sidebarContainer .ant-menu-item-selected a {
+  color: inherit !important;
+}
+
+/* Optional: hover state fix */
+.sidebarContainer .ant-menu-item a:hover {
+  color: inherit !important;
+}
+
+.logoContainer {
+  height: 64px;
+  border-bottom: 1px solid var(--ant-color-border);
+  padding: 0 16px;
+}
+
+.collapseButtonContainer {
+  padding: 8px;
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.collapseButton {
+  font-size: 16px;
+}
+
+.menu {
+  border-right: none;
+}
+

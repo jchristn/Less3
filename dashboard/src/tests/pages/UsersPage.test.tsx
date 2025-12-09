@@ -149,22 +149,29 @@ describe("UsersPage", () => {
 
     it("should view user metadata", async () => {
       renderWithRedux(<UsersPage />);
+      // Wait for table to render first
       await waitFor(() => {
-        const moreButtons = screen.getAllByRole("button");
-        return moreButtons.find((btn) => btn.querySelector(".anticon-more"));
-      }, { timeout: 3000 }).then(async (moreButton) => {
-        if (moreButton) {
-          await userEvent.click(moreButton);
-          await waitFor(async () => {
-            const viewMetadataButton = await screen.findByText("View Metadata", { timeout: 2000 });
-            await userEvent.click(viewMetadataButton);
-          });
-          await waitFor(() => {
-            const metadataTexts = screen.getAllByText(/Metadata/i);
-            expect(metadataTexts.length).toBeGreaterThan(0);
-          });
-        }
-      });
-    });
+        expect(screen.getByText("John Doe")).toBeInTheDocument();
+      }, { timeout: 3000 });
+      // Find the more button
+      const moreButtons = screen.getAllByRole("button");
+      const moreButton = moreButtons.find((btn) => btn.querySelector(".anticon-more"));
+      if (moreButton) {
+        await userEvent.click(moreButton);
+        // Wait for dropdown menu
+        const viewMetadataButton = await screen.findByText("View Metadata", { timeout: 3000 });
+        await userEvent.click(viewMetadataButton);
+        // Wait for metadata modal to appear
+        await waitFor(() => {
+          const modal = screen.getByRole("dialog");
+          expect(modal).toBeInTheDocument();
+        }, { timeout: 3000 });
+        // Verify metadata content is displayed
+        await waitFor(() => {
+          const metadataTexts = screen.getAllByText(/Metadata/i);
+          expect(metadataTexts.length).toBeGreaterThan(0);
+        }, { timeout: 3000 });
+      }
+    }, 10000);
   });
 });

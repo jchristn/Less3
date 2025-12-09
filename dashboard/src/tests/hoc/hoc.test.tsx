@@ -15,7 +15,7 @@ describe("withConnectivityValidation", () => {
     jest.clearAllMocks();
     localStorage.clear();
     // Set a unique URL to avoid cache hits
-    localStorage.setItem(localStorageKeys.documentAtomAPIUrl, `http://test-${Date.now()}.com`);
+    localStorage.setItem(localStorageKeys.less3APIUrl, `http://test-${Date.now()}.com`);
     mockValidateConnectivity.mockReturnValue({
       unwrap: jest.fn().mockResolvedValue(true),
     });
@@ -47,7 +47,7 @@ describe("withConnectivityValidation", () => {
 
     it("should show loading state while validating", () => {
       // Set a unique URL to ensure no cache match
-      localStorage.setItem(localStorageKeys.documentAtomAPIUrl, `http://loading-test-${Date.now()}.com`);
+      localStorage.setItem(localStorageKeys.less3APIUrl, `http://loading-test-${Date.now()}.com`);
       
       // Mock unwrap to never resolve (stays in loading state)
       const unwrapPromise = new Promise(() => {}); // Never resolves
@@ -110,7 +110,7 @@ describe("withConnectivityValidation", () => {
     });
 
     it("should use cached validation result", async () => {
-      localStorage.setItem(localStorageKeys.documentAtomAPIUrl, "http://test.com");
+      localStorage.setItem(localStorageKeys.less3APIUrl, "http://test.com");
       mockValidateConnectivity.mockReturnValue({
         unwrap: jest.fn().mockResolvedValue(true),
       });
@@ -130,7 +130,7 @@ describe("withConnectivityValidation", () => {
     });
 
     it("should handle cache when URL changes", async () => {
-      localStorage.setItem(localStorageKeys.documentAtomAPIUrl, "http://old-url.com");
+      localStorage.setItem(localStorageKeys.less3APIUrl, "http://old-url.com");
       mockValidateConnectivity.mockReturnValue({
         unwrap: jest.fn().mockResolvedValue(true),
       });
@@ -143,7 +143,7 @@ describe("withConnectivityValidation", () => {
       const WrappedComponent = withConnectivityValidation(TestComponent);
 
       // Change URL
-      localStorage.setItem(localStorageKeys.documentAtomAPIUrl, "http://new-url.com");
+      localStorage.setItem(localStorageKeys.less3APIUrl, "http://new-url.com");
 
       render(<WrappedComponent />);
 

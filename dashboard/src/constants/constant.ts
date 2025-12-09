@@ -1,5 +1,5 @@
 export const localStorageKeys = {
-  documentAtomAPIUrl: 'documentAtomAPIUrl',
+  less3APIUrl: 'less3APIUrl',
   theme: 'theme',
 };
 

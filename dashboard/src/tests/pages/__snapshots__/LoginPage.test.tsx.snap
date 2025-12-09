@@ -278,7 +278,7 @@ exports[`LoginPage Snapshots should match default render 1`] = `
                   >
                     <label
                       class="ant-form-item-required ant-form-item-required-mark-hidden"
-                      for="documentAtomAPIUrl"
+                      for="less3APIUrl"
                       title="Less3 Server URL"
                     >
                       Less3 Server URL
@@ -302,8 +302,8 @@ exports[`LoginPage Snapshots should match default render 1`] = `
                             <input
                               aria-required="true"
                               class="ant-input ant-input-lg css-dev-only-do-not-override-198drv2 ant-input-outlined"
-                              id="documentAtomAPIUrl"
-                              placeholder="https://your-documentatom-server.com"
+                              id="less3APIUrl"
+                              placeholder="https://your-less3-server.com"
                               type="search"
                               value="http://localhost:8000/"
                             />

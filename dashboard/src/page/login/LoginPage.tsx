@@ -19,7 +19,7 @@ import { localStorageKeys, paths } from '#/constants/constant';
 //eslint-disable-next-line max-lines-per-function
 const LoginPage = () => {
   const [loading, setLoading] = useState(false);
-  const [documentAtomAPIUrl, setLess3APIUrl] = useState(apiEndpointURL);
+  const [less3APIUrl, setLess3APIUrl] = useState(apiEndpointURL);
   const [form] = Form.useForm();
   const router = useRouter();
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
@@ -30,10 +30,10 @@ const LoginPage = () => {
 
   useEffect(() => {
     // Check if there's a saved URL in localStorage
-    const savedUrl = localStorage.getItem(localStorageKeys.documentAtomAPIUrl);
+    const savedUrl = localStorage.getItem(localStorageKeys.less3APIUrl);
     if (savedUrl) {
       setLess3APIUrl(savedUrl);
-      form.setFieldsValue({ documentAtomAPIUrl: savedUrl });
+      form.setFieldsValue({ less3APIUrl: savedUrl });
       // Optionally validate connectivity on mount
       validateConnectivity(savedUrl, false);
     }
@@ -49,7 +49,7 @@ const LoginPage = () => {
         setIsSuccess(true);
         setIsError(false);
         message.success('Connected successfully!');
-        localStorage.setItem(localStorageKeys.documentAtomAPIUrl, newURL);
+        localStorage.setItem(localStorageKeys.less3APIUrl, newURL);
         if (navigate) {
           router.push(paths.dashboard);
         }
@@ -72,7 +72,7 @@ const LoginPage = () => {
     const values = await form.validateFields();
     setLoading(true);
     setIsFormSubmitted(true);
-    const newURL = values.documentAtomAPIUrl;
+    const newURL = values.less3APIUrl;
     if (newURL) {
       await validateConnectivity(newURL, true);
     } else {
@@ -87,7 +87,7 @@ const LoginPage = () => {
         <Less3Logo imageSize={50} showOnlyIcon />
         <Less3Divider />
         <Form
-          initialValues={{ documentAtomAPIUrl }}
+          initialValues={{ less3APIUrl }}
           layout="vertical"
           form={form}
           onFinish={handleSubmit}
@@ -97,7 +97,7 @@ const LoginPage = () => {
           <Less3Flex align="center" gap={0}>
             <Form.Item
               label="Less3 Server URL"
-              name="documentAtomAPIUrl"
+              name="less3APIUrl"
               rules={[
                 {
                   required: true,
@@ -112,11 +112,11 @@ const LoginPage = () => {
                 loading={loading}
                 autoFocus
                 disabled={loading}
-                value={documentAtomAPIUrl}
+                value={less3APIUrl}
                 onChange={(e: any) => setLess3APIUrl(e.target.value)}
                 enterButton={<ArrowRightOutlined />}
                 onSearch={handleSubmit}
-                placeholder="https://your-documentatom-server.com"
+                placeholder="https://your-less3-server.com"
               />
             </Form.Item>
           </Less3Flex>

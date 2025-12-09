@@ -22,7 +22,7 @@ import { updateSdkEndPoint } from '#/services/sdk.service';
 
 const getInitialLess3APIUrl = () => {
   if (typeof localStorage !== 'undefined') {
-    const initialSharpAPIUrl = localStorage.getItem(localStorageKeys.documentAtomAPIUrl);
+    const initialSharpAPIUrl = localStorage.getItem(localStorageKeys.less3APIUrl);
     return initialSharpAPIUrl || apiEndpointURL;
   }
   return apiEndpointURL;

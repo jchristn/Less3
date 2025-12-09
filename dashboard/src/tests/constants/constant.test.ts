@@ -2,8 +2,8 @@ import { localStorageKeys, paths, dynamicSlugs } from "#/constants/constant";
 
 describe("constants", () => {
   describe("localStorageKeys", () => {
-    it("should have documentAtomAPIUrl key", () => {
-      expect(localStorageKeys.documentAtomAPIUrl).toBe("documentAtomAPIUrl");
+    it("should have less3APIUrl key", () => {
+      expect(localStorageKeys.less3APIUrl).toBe("less3APIUrl");
     });
 
     it("should have theme key", () => {

@@ -45,7 +45,7 @@ describe("LoginPage", () => {
   describe("Rendering", () => {
     it("should render login form", () => {
       renderWithRedux(<LoginPage />, true);
-      const input = screen.getByPlaceholderText("https://your-documentatom-server.com");
+      const input = screen.getByPlaceholderText("https://your-less3-server.com");
       const submitButton = screen.getByRole("button");
 
       expect(screen.getByLabelText("Less3 Server URL")).toBeInTheDocument();
@@ -60,20 +60,20 @@ describe("LoginPage", () => {
   "buttonTag": "BUTTON",
   "hasIcon": true,
   "label": "",
-  "placeholder": "https://your-documentatom-server.com",
+  "placeholder": "https://your-less3-server.com",
 }
 `);
     });
 
     it("should load saved URL from localStorage", async () => {
       const savedUrl = "http://saved-url.com";
-      localStorage.setItem(localStorageKeys.documentAtomAPIUrl, savedUrl);
+      localStorage.setItem(localStorageKeys.less3APIUrl, savedUrl);
       mockValidateConnectivity.mockResolvedValue({ unwrap: () => Promise.resolve(true) });
 
       renderWithRedux(<LoginPage />, true);
 
       await waitFor(() => {
-        const input = screen.getByPlaceholderText("https://your-documentatom-server.com");
+        const input = screen.getByPlaceholderText("https://your-less3-server.com");
         expect(input).toHaveValue(savedUrl);
       });
     });
@@ -82,7 +82,7 @@ describe("LoginPage", () => {
   describe("User Interactions", () => {
     it("should update URL input value", async () => {
       renderWithRedux(<LoginPage />, true);
-      const input = screen.getByPlaceholderText("https://your-documentatom-server.com");
+      const input = screen.getByPlaceholderText("https://your-less3-server.com");
 
       await userEvent.clear(input);
       await userEvent.type(input, "http://test.com");
@@ -94,7 +94,7 @@ describe("LoginPage", () => {
       mockValidateConnectivity.mockResolvedValue({ unwrap: () => Promise.resolve(true) });
 
       renderWithRedux(<LoginPage />, true);
-      const input = screen.getByPlaceholderText("https://your-documentatom-server.com");
+      const input = screen.getByPlaceholderText("https://your-less3-server.com");
       const submitButton = screen.getByRole("button");
 
       await userEvent.clear(input);
@@ -115,7 +115,7 @@ describe("LoginPage", () => {
       const { message } = require("antd");
 
       renderWithRedux(<LoginPage />, true);
-      const input = screen.getByPlaceholderText("https://your-documentatom-server.com");
+      const input = screen.getByPlaceholderText("https://your-less3-server.com");
       const submitButton = screen.getByRole("button");
 
       await userEvent.clear(input);
@@ -139,7 +139,7 @@ describe("LoginPage", () => {
       });
 
       renderWithRedux(<LoginPage />, true);
-      const input = screen.getByPlaceholderText("https://your-documentatom-server.com");
+      const input = screen.getByPlaceholderText("https://your-less3-server.com");
       const submitButton = screen.getByRole("button");
 
       await userEvent.clear(input);

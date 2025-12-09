@@ -7,12 +7,12 @@ docker run ^
   -t ^
   -i ^
   -e "TERM=xterm-256color" ^
-  jchristn/documentatom-ui:%1
+  jchristn/less3-ui:%1
 
 GOTO :Done
 
 :Usage
 ECHO Provide one argument indicating the tag. 
-ECHO Example: dockerrun.bat v1.0.0
+ECHO Example: dockerrun.bat v2.1.12
 :Done
 @echo on

@@ -10,6 +10,10 @@
 #
 #
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+
+# Workaround for QEMU emulation issues with .NET on ARM64
+ENV DOTNET_EnableWriteXorExecute=0
+
 WORKDIR /src
 
 # Copy source

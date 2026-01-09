@@ -21,3 +21,21 @@ services:
       - ./disk/:/app/disk/
     healthcheck:
       test: curl --fail http://localhost:8000
+
+  #
+  # Less3 UI (Dashboard)
+  # See https://hub.docker.com/r/jchristn/less3-ui
+  #
+
+  less3-ui:
+    container_name: 'less3-ui'
+    image: 'jchristn/less3-ui:v2.1.12'
+    ports:
+      - "3000:3000"
+    stdin_open: true
+    tty: true
+    environment:
+      - TERM=xterm-256color
+    depends_on:
+      less3:
+        condition: service_healthy

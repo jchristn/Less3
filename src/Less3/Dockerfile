@@ -38,7 +38,27 @@ RUN dotnet publish "Less3.csproj" -c Release -o /app/publish /p:UseAppHost=false
 #
 #
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS final
-RUN apt-get update && apt-get install -y iputils-ping traceroute net-tools curl wget dnsutils iproute2 vim file && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+    # Networking tools
+    iputils-ping \
+    traceroute \
+    net-tools \
+    curl \
+    wget \
+    dnsutils \
+    iproute2 \
+    netcat-openbsd \
+    telnet \
+    tcpdump \
+    # Editors and utilities
+    vim \
+    less \
+    file \
+    jq \
+    # Process tools
+    procps \
+    htop \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=publish /app/publish .
 EXPOSE 8000

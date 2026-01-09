@@ -1,5 +1,5 @@
 {
-  "EnableConsole": true,
+  "EnableConsole": false,
   "ValidateSignatures": true,
   "HeaderApiKey": "x-api-key",
   "AdminApiKey": "less3admin",

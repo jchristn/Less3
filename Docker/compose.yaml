@@ -6,10 +6,11 @@ services:
   # and https://github.com/jchristn/less3
   #
 
-  litegraph:
+  less3:
     container_name: 'less3'
-    image: 'jchristn/less3:v2.1.11'
-    network_mode: 'host'
+    image: 'jchristn/less3:v2.1.12'
+    ports:
+      - "8000:8000"
     stdin_open: true
     tty: true
     volumes:

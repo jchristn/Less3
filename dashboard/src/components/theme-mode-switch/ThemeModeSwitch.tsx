@@ -1,22 +1,26 @@
 import React from 'react';
-import { DarkModeSwitch } from 'react-toggle-dark-mode';
+import { MoonOutlined, SunOutlined } from '@ant-design/icons';
 import { useAppContext } from '#/hooks/appHooks';
 import { ThemeEnum } from '#/types/types';
-
-const DarkModeToggle = DarkModeSwitch as React.ComponentType<{
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-  size: number;
-}>;
+import styles from './ThemeModeSwitch.module.scss';
 
 const ThemeModeSwitch = () => {
   const { theme, setTheme } = useAppContext();
+  const isDark = theme === ThemeEnum.DARK;
+
+  const handleToggle = () => {
+    setTheme(isDark ? ThemeEnum.LIGHT : ThemeEnum.DARK);
+  };
+
   return (
-    <DarkModeToggle
-      checked={theme === ThemeEnum.DARK}
-      onChange={(checked: boolean) => setTheme(checked ? ThemeEnum.DARK : ThemeEnum.LIGHT)}
-      size={20}
-    />
+    <button
+      type="button"
+      onClick={handleToggle}
+      className={styles.themeModeSwitch}
+      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+    >
+      {isDark ? <SunOutlined /> : <MoonOutlined />}
+    </button>
   );
 };
 

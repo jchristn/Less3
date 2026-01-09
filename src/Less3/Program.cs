@@ -451,6 +451,15 @@
 
             while (ctx.Http.Request.Url.RawWithoutQuery.Contains("\\\\")) ctx.Http.Request.Url.RawWithoutQuery.Replace("\\\\", "\\");
 
+            #region CORS-Headers
+
+            ctx.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+            ctx.Response.Headers.Add("Access-Control-Allow-Methods", "OPTIONS, HEAD, GET, PUT, POST, DELETE");
+            ctx.Response.Headers.Add("Access-Control-Allow-Headers", "*, Content-Type, X-Requested-With, Authorization, x-api-key, x-amz-content-sha256, x-amz-date");
+            ctx.Response.Headers.Add("Access-Control-Expose-Headers", "ETag, Content-Length, Content-Type, x-amz-request-id, x-amz-version-id");
+
+            #endregion
+
             #region Enumerate
 
             if (_Settings.Logging.LogHttpRequests || ctx.Http.Request.QuerystringExists("logrequest"))

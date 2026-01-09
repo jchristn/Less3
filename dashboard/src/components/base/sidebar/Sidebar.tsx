@@ -12,6 +12,7 @@ import {
 } from '@ant-design/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import classNames from 'classnames';
 import Less3Flex from '../flex/Flex';
 import Less3Logo from '#/components/logo/Logo';
 import styles from './sidebar.module.scss';
@@ -21,9 +22,10 @@ const { Sider } = Layout;
 interface SidebarProps {
   collapsed?: boolean;
   onCollapse?: (collapsed: boolean) => void;
+  showLogo?: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onCollapse }: SidebarProps) => {
+const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onCollapse, showLogo = true }: SidebarProps) => {
   const pathname = usePathname();
 
   const getSelectedKey = () => {
@@ -69,13 +71,15 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onCollapse }: Side
       width={200}
       collapsed={collapsed}
       collapsedWidth={60}
-      className={styles.sidebarContainer}
+      className={classNames(styles.sidebarContainer, !showLogo && styles.sidebarWithTopHeader)}
       trigger={null}
       collapsible
     >
-      <Less3Flex justify="center" align="center" className={styles.logoContainer}>
-        <Less3Logo showOnlyIcon={collapsed} size={16} imageSize={35} />
-      </Less3Flex>
+      {showLogo && (
+        <Less3Flex justify="center" align="center" className={styles.logoContainer}>
+          <Less3Logo showOnlyIcon={collapsed} size={16} imageSize={35} />
+        </Less3Flex>
+      )}
       <Less3Flex justify="flex-end" className={styles.collapseButtonContainer}>
         <Button
           type="text"

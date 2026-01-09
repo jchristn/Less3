@@ -13,6 +13,7 @@ import PageContainer from '#/components/base/pageContainer/PageContainer';
 import Less3Flex from '#/components/base/flex/Flex';
 import Less3Dropdown from '#/components/base/dropdown/Dropdown';
 import Less3Text from '#/components/base/typograpghy/Text';
+import GuidDisplay from '#/components/guid-display';
 import {
   useGetCredentialsQuery,
   useGetCredentialByIdQuery,
@@ -122,8 +123,9 @@ const CredentialsPage: React.FC = () => {
       title: 'GUID',
       dataIndex: 'GUID',
       key: 'GUID',
-      width: 250,
+      width: 320,
       sorter: (a: Credential, b: Credential) => (a.GUID || '').localeCompare(b.GUID || ''),
+      render: (guid: string) => <GuidDisplay guid={guid} />,
     },
     {
       title: 'User',
@@ -221,7 +223,7 @@ const CredentialsPage: React.FC = () => {
         dataSource={filteredData}
         loading={isLoading}
         rowKey="GUID"
-        pagination={false}
+        scroll={{ x: true }}
       />
 
       <Less3Modal
@@ -330,7 +332,7 @@ const CredentialsPage: React.FC = () => {
         ) : credentialMetadata ? (
           <Descriptions bordered column={1} size="small">
             <Descriptions.Item label="GUID">
-              <Less3Text>{credentialMetadata.GUID}</Less3Text>
+              <GuidDisplay guid={credentialMetadata.GUID} />
             </Descriptions.Item>
             <Descriptions.Item label="User">
               <Less3Text>{getUserName(credentialMetadata.UserGUID)}</Less3Text>

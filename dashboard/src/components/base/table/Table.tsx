@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Table, TableProps } from 'antd';
+import { Table, TableProps, TablePaginationConfig } from 'antd';
 import { Resizable } from 'react-resizable';
 
 const ResizableTitle = (props: any) => {
@@ -29,8 +29,20 @@ const ResizableTitle = (props: any) => {
   );
 };
 
-const Less3Table = (props: TableProps) => {
-  const { columns, ...rest } = props;
+const defaultPagination: TablePaginationConfig = {
+  showSizeChanger: true,
+  showQuickJumper: true,
+  pageSizeOptions: ['10', '20', '50', '100'],
+  defaultPageSize: 10,
+  showTotal: (total: number, range: [number, number]) => `${range[0]}-${range[1]} of ${total} items`,
+};
+
+interface Less3TableProps extends TableProps<any> {
+  enablePagination?: boolean;
+}
+
+const Less3Table = (props: Less3TableProps) => {
+  const { columns, pagination, enablePagination = true, ...rest } = props;
   const [columnsState, setColumnsState] = useState(columns);
 
   const handleResize =
@@ -58,10 +70,16 @@ const Less3Table = (props: TableProps) => {
     setColumnsState(columns);
   }, [columns]);
 
+  // Determine pagination config
+  const paginationConfig = pagination === false || !enablePagination
+    ? false
+    : { ...defaultPagination, ...pagination };
+
   return (
     <Table
       {...rest}
       columns={columnsWithResizable}
+      pagination={paginationConfig}
       components={{
         header: {
           cell: ResizableTitle,

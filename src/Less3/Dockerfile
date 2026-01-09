@@ -9,7 +9,7 @@
 # Build stage
 #
 #
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copy source
@@ -37,7 +37,7 @@ RUN dotnet publish "Less3.csproj" -c Release -o /app/publish /p:UseAppHost=false
 # Runtime stage
 #
 #
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS final
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS final
 RUN apt-get update && apt-get install -y \
     # Networking tools
     iputils-ping \

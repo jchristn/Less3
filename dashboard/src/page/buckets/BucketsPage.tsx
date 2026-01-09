@@ -9,7 +9,10 @@ import {
   DeleteOutlined,
   TagOutlined,
   SafetyOutlined,
+  FolderOutlined,
+  FolderOpenOutlined,
 } from '@ant-design/icons';
+import { useRouter } from 'next/navigation';
 import Less3Table from '#/components/base/table/Table';
 import Less3Button from '#/components/base/button/Button';
 import Less3Modal from '#/components/base/modal/Modal';
@@ -70,6 +73,7 @@ const DEFAULT_ACL_OWNER = {
 
 const BucketsPage: React.FC = () => {
   const { theme } = useAppContext();
+  const router = useRouter();
   const [form] = Form.useForm<BucketFormValues>();
   const [tagForm] = Form.useForm<TagFormValues>();
   const [aclForm] = Form.useForm<ACLFormValues>();
@@ -153,6 +157,10 @@ const BucketsPage: React.FC = () => {
   const handleDelete = (record: Bucket) => {
     setDeletingBucket(record);
     setIsDeleteModalVisible(true);
+  };
+
+  const handleViewObjects = (record: Bucket) => {
+    router.push(`/admin/objects?bucket=${encodeURIComponent(record.Name)}`);
   };
 
   const handleWriteTags = (record: Bucket) => {
@@ -362,6 +370,17 @@ const BucketsPage: React.FC = () => {
       key: 'Name',
       ellipsis: true,
       sorter: (a: Bucket, b: Bucket) => (a.Name || '').localeCompare(b.Name || ''),
+      render: (name: string, record: Bucket) => (
+        <Less3Flex align="center" gap={8}>
+          <FolderOutlined style={{ color: 'var(--ant-color-primary)', fontSize: 16 }} />
+          <span
+            style={{ cursor: 'pointer', color: 'var(--ant-color-primary)' }}
+            onClick={() => handleViewObjects(record)}
+          >
+            {name}
+          </span>
+        </Less3Flex>
+      ),
     },
     {
       title: 'Date Created',
@@ -378,6 +397,18 @@ const BucketsPage: React.FC = () => {
         const isOpen = openDropdownKey === dropdownKey;
 
         const menuItems: MenuProps['items'] = [
+          {
+            key: 'view-objects',
+            icon: <FolderOpenOutlined />,
+            label: 'View Objects',
+            onClick: () => {
+              setOpenDropdownKey(null); // Close dropdown immediately
+              handleViewObjects(record);
+            },
+          },
+          {
+            type: 'divider',
+          },
           {
             key: 'write-tags',
             label: 'Write Tags',
@@ -489,7 +520,6 @@ const BucketsPage: React.FC = () => {
           dataSource={filteredData}
           loading={isLoading}
           rowKey="Name"
-          pagination={false}
           scroll={{ x: true }}
         />
       </div>

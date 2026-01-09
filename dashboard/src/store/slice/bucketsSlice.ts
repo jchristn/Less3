@@ -403,6 +403,72 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
       },
     }),
 
+    deleteMultipleObjects: build.mutation<
+      { deleted: string[]; errors: Array<{ key: string; error: string }> },
+      { bucketGUID: string; objectKeys: string[] }
+    >({
+      async queryFn({ bucketGUID, objectKeys }) {
+        try {
+          const baseUrl = apiEndpointURL.endsWith('/') ? apiEndpointURL.slice(0, -1) : apiEndpointURL;
+
+          // Build the XML body for S3 DeleteObjects API
+          const objectsXml = objectKeys.map((key) => `<Object><Key>${key}</Key></Object>`).join('');
+          const xmlBody = `<?xml version="1.0" encoding="UTF-8"?><Delete><Quiet>false</Quiet>${objectsXml}</Delete>`;
+
+          const response = await fetch(`${baseUrl}/${bucketGUID}?delete`, {
+            method: 'POST',
+            headers: {
+              Authorization: AWS_AUTH_HEADER,
+              'Content-Type': 'application/xml',
+            },
+            body: xmlBody,
+          });
+
+          if (!response.ok) {
+            return {
+              error: {
+                status: response.status,
+                data: `Failed to delete objects: ${response.statusText}`,
+              },
+            };
+          }
+
+          // Parse the response XML to get deleted keys and errors
+          const responseText = await response.text();
+          const deleted: string[] = [];
+          const errors: Array<{ key: string; error: string }> = [];
+
+          // Simple regex parsing for deleted keys
+          const deletedRegex = /<Deleted>\s*<Key>([^<]+)<\/Key>/g;
+          let deletedMatch;
+          while ((deletedMatch = deletedRegex.exec(responseText)) !== null) {
+            deleted.push(deletedMatch[1]);
+          }
+
+          // Simple regex parsing for errors
+          const errorRegex = /<Error>\s*<Key>([^<]+)<\/Key>\s*<Code>([^<]+)<\/Code>\s*<Message>([^<]+)<\/Message>/g;
+          let errorMatch;
+          while ((errorMatch = errorRegex.exec(responseText)) !== null) {
+            errors.push({ key: errorMatch[1], error: `${errorMatch[2]}: ${errorMatch[3]}` });
+          }
+
+          return {
+            data: {
+              deleted,
+              errors,
+            },
+          };
+        } catch (error: any) {
+          return {
+            error: {
+              status: 'FETCH_ERROR',
+              data: error?.message || 'Failed to delete objects',
+            },
+          };
+        }
+      },
+    }),
+
     writeBucketTags: build.mutation<WriteBucketTagsResponse, WriteBucketTagsParams>({
       async queryFn({ bucketName, tags }) {
         try {
@@ -832,6 +898,7 @@ export const {
   useLazyDownloadBucketObjectQuery,
   useWriteBucketObjectMutation,
   useDeleteBucketObjectMutation,
+  useDeleteMultipleObjectsMutation,
   useWriteBucketTagsMutation,
   useGetBucketTagsQuery,
   useDeleteBucketTagsMutation,

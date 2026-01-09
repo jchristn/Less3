@@ -21,6 +21,10 @@ services:
       - ./disk/:/app/disk/
     healthcheck:
       test: curl --fail http://localhost:8000
+      interval: 5s
+      timeout: 3s
+      retries: 2
+      start_period: 10s
 
   #
   # Less3 UI (Dashboard)

@@ -8,7 +8,13 @@ import {
   MoreOutlined,
   DeleteOutlined,
   TagOutlined,
+  FolderOutlined,
+  FileOutlined,
+  HomeOutlined,
+  RollbackOutlined,
 } from '@ant-design/icons';
+import { Breadcrumb } from 'antd';
+import { useSearchParams } from 'next/navigation';
 import Less3Table from '#/components/base/table/Table';
 import Less3Button from '#/components/base/button/Button';
 import Less3Input from '#/components/base/input/Input';
@@ -24,6 +30,7 @@ import {
   useListBucketObjectsQuery,
   useLazyDownloadBucketObjectQuery,
   useDeleteBucketObjectMutation,
+  useDeleteMultipleObjectsMutation,
   useWriteObjectTagsMutation,
   useGetObjectTagsQuery,
   useDeleteObjectTagsMutation,
@@ -67,7 +74,9 @@ const DEFAULT_ACL_OWNER = {
 
 const ObjectsPage: React.FC = () => {
   const { theme } = useAppContext();
+  const searchParams = useSearchParams();
   const [selectedBucketName, setSelectedBucketName] = useState<string | null>(null);
+  const [currentPrefix, setCurrentPrefix] = useState<string>('');
   const [searchText, setSearchText] = useState('');
   const [downloadingObjectKey, setDownloadingObjectKey] = useState<string | null>(null);
   const [isWriteObjectModalVisible, setIsWriteObjectModalVisible] = useState(false);
@@ -82,6 +91,9 @@ const ObjectsPage: React.FC = () => {
   const [tagForm] = Form.useForm<TagFormValues>();
   const [aclForm] = Form.useForm<ACLFormValues>();
   const [openDropdownKey, setOpenDropdownKey] = useState<string | null>(null);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [isBulkDeleteModalVisible, setIsBulkDeleteModalVisible] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
   const { data: bucketsData, isLoading: isLoadingBuckets } = useGetBucketsQuery();
 
@@ -93,6 +105,7 @@ const ObjectsPage: React.FC = () => {
 
   const [downloadBucketObject] = useLazyDownloadBucketObjectQuery();
   const [deleteBucketObject, { isLoading: isDeleting }] = useDeleteBucketObjectMutation();
+  const [deleteMultipleObjects] = useDeleteMultipleObjectsMutation();
   const [writeObjectTags, { isLoading: isWritingTags }] = useWriteObjectTagsMutation();
   const [deleteObjectTags, { isLoading: isDeletingTags }] = useDeleteObjectTagsMutation();
   const [writeObjectACL, { isLoading: isWritingACL }] = useWriteObjectACLMutation();
@@ -138,20 +151,76 @@ const ObjectsPage: React.FC = () => {
     return transformToOptions(bucketsData, 'Name');
   }, [bucketsData]);
 
-  // Auto-select the first bucket when buckets are loaded
+  // Select bucket from URL parameter or auto-select the first bucket
   useEffect(() => {
     if (bucketsData && bucketsData.length > 0 && !selectedBucketName) {
-      setSelectedBucketName(bucketsData[0].Name);
+      const bucketFromUrl = searchParams.get('bucket');
+      if (bucketFromUrl && bucketsData.some((b) => b.Name === bucketFromUrl)) {
+        setSelectedBucketName(bucketFromUrl);
+      } else {
+        setSelectedBucketName(bucketsData[0].Name);
+      }
     }
-  }, [bucketsData, selectedBucketName]);
+  }, [bucketsData, selectedBucketName, searchParams]);
+
+  // Get objects at the current prefix level (not deeper)
+  const objectsAtCurrentLevel = useMemo(() => {
+    if (!bucketObjectsData?.Contents) return { folders: [] as string[], files: [] as BucketObject[] };
+
+    const folders = new Set<string>();
+    const files: BucketObject[] = [];
+
+    bucketObjectsData.Contents.forEach((obj) => {
+      const key = obj.Key;
+
+      // Skip if doesn't start with current prefix
+      if (!key.startsWith(currentPrefix)) return;
+
+      // Get the remaining path after the prefix
+      const remainingPath = key.slice(currentPrefix.length);
+
+      // Skip empty remaining path (shouldn't happen, but guard)
+      if (!remainingPath) return;
+
+      // Check if there's a folder separator in the remaining path
+      const slashIndex = remainingPath.indexOf('/');
+
+      if (slashIndex === -1) {
+        // No slash - this is a file at current level
+        files.push(obj);
+      } else if (slashIndex === remainingPath.length - 1) {
+        // Slash is at the end - this is a folder marker at current level
+        folders.add(remainingPath.slice(0, slashIndex));
+      } else {
+        // Slash in middle - this is an item in a subfolder, extract the folder name
+        folders.add(remainingPath.slice(0, slashIndex));
+      }
+    });
+
+    return { folders: Array.from(folders).sort(), files };
+  }, [bucketObjectsData, currentPrefix]);
 
   const filteredObjects = useMemo(() => {
-    if (!bucketObjectsData?.Contents) return [];
+    const { folders, files } = objectsAtCurrentLevel;
+
+    // Create virtual folder objects for display
+    const folderObjects: BucketObject[] = folders.map((folderName) => ({
+      Key: currentPrefix + folderName + '/',
+      LastModified: '',
+      ETag: '',
+      Size: 0,
+      StorageClass: '',
+      ContentType: 'folder',
+      Owner: { ID: '', DisplayName: '' },
+    }));
+
+    // Combine folders and files
+    const allItems = [...folderObjects, ...files];
 
     const q = searchText.trim().toLowerCase();
-    if (!q) return bucketObjectsData.Contents;
+    if (!q) return allItems;
 
-    return bucketObjectsData.Contents.filter((obj) => {
+    return allItems.filter((obj) => {
       const key = obj.Key?.toLowerCase() ?? '';
       const contentType = obj.ContentType?.toLowerCase() ?? '';
       const storageClass = obj.StorageClass?.toLowerCase() ?? '';
@@ -159,7 +228,48 @@ const ObjectsPage: React.FC = () => {
 
       return key.includes(q) || contentType.includes(q) || storageClass.includes(q) || owner.includes(q);
     });
-  }, [bucketObjectsData, searchText]);
+  }, [objectsAtCurrentLevel, currentPrefix, searchText]);
+
+  // Breadcrumb path parts
+  const breadcrumbParts = useMemo(() => {
+    if (!currentPrefix) return [];
+    return currentPrefix.split('/').filter(Boolean);
+  }, [currentPrefix]);
+
+  // Navigate to a folder
+  const navigateToFolder = (folderKey: string) => {
+    setCurrentPrefix(folderKey);
+    setSearchText('');
+    setSelectedRowKeys([]);
+  };
+
+  // Navigate up one level
+  const navigateUp = () => {
+    if (!currentPrefix) return;
+    const parts = currentPrefix.split('/').filter(Boolean);
+    parts.pop();
+    setCurrentPrefix(parts.length > 0 ? parts.join('/') + '/' : '');
+    setSelectedRowKeys([]);
+  };
+
+  // Navigate to root
+  const navigateToRoot = () => {
+    setCurrentPrefix('');
+    setSearchText('');
+    setSelectedRowKeys([]);
+  };
+
+  // Navigate to a specific breadcrumb level
+  const navigateToBreadcrumb = (index: number) => {
+    if (index < 0) {
+      navigateToRoot();
+    } else {
+      const parts = breadcrumbParts.slice(0, index + 1);
+      setCurrentPrefix(parts.join('/') + '/');
+      setSelectedRowKeys([]);
+    }
+    setSearchText('');
+  };
 
   const handleDownloadObject = async (record: BucketObject) => {
     if (!selectedBucketName) {
@@ -248,6 +358,51 @@ const ObjectsPage: React.FC = () => {
   const handleDeleteCancel = () => {
     setIsDeleteModalVisible(false);
     setDeletingObject(null);
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning('Please select at least one object to delete');
+      return;
+    }
+    setIsBulkDeleteModalVisible(true);
+  };
+
+  const handleBulkDeleteConfirm = async () => {
+    if (!selectedBucketName || selectedRowKeys.length === 0) {
+      message.error('Bucket or selection information not available');
+      return;
+    }
+
+    setIsBulkDeleting(true);
+    const keysToDelete = selectedRowKeys.filter((key) => !String(key).endsWith('/')) as string[];
+
+    try {
+      const result = await deleteMultipleObjects({
+        bucketGUID: selectedBucketName,
+        objectKeys: keysToDelete,
+      }).unwrap();
+
+      const successCount = result.deleted.length;
+      const failCount = result.errors.length;
+
+      if (failCount === 0) {
+        message.success(`Successfully deleted ${successCount} object(s)`);
+      } else {
+        message.warning(`Deleted ${successCount} object(s), ${failCount} failed`);
+      }
+    } catch (error: any) {
+      message.error(error?.data || 'Failed to delete objects');
+    }
+
+    setIsBulkDeleting(false);
+    setIsBulkDeleteModalVisible(false);
+    setSelectedRowKeys([]);
+    refetchObjects();
+  };
+
+  const handleBulkDeleteCancel = () => {
+    setIsBulkDeleteModalVisible(false);
   };
 
   const handleWriteObjectTags = (record: BucketObject) => {
@@ -472,12 +627,48 @@ const ObjectsPage: React.FC = () => {
     tagForm,
   ]);
 
+  const isFolder = (key: string): boolean => {
+    return key.endsWith('/');
+  };
+
+  // Get display name from full key (just the last part without prefix)
+  const getDisplayName = (key: string): string => {
+    const withoutPrefix = key.slice(currentPrefix.length);
+    // Remove trailing slash for folders
+    return withoutPrefix.endsWith('/') ? withoutPrefix.slice(0, -1) : withoutPrefix;
+  };
+
   const columns: ColumnsType<BucketObject> = [
     {
       title: 'Key',
       dataIndex: 'Key',
       key: 'Key',
       ellipsis: true,
+      render: (key: string, record: BucketObject) => {
+        const displayName = getDisplayName(key);
+        const isFolderItem = isFolder(key);
+
+        if (isFolderItem) {
+          return (
+            <Less3Flex align="center" gap={8}>
+              <FolderOutlined style={{ color: 'var(--ant-color-primary)', fontSize: 16 }} />
+              <span
+                style={{ cursor: 'pointer', color: 'var(--ant-color-primary)' }}
+                onClick={() => navigateToFolder(key)}
+              >
+                {displayName}
+              </span>
+            </Less3Flex>
+          );
+        }
+
+        return (
+          <Less3Flex align="center" gap={8}>
+            <FileOutlined style={{ color: 'var(--ant-color-text-secondary)', fontSize: 16 }} />
+            <span>{displayName}</span>
+          </Less3Flex>
+        );
+      },
     },
     {
       title: 'Last Modified',
@@ -585,7 +776,7 @@ const ObjectsPage: React.FC = () => {
               setOpenDropdownKey(null); // Close dropdown immediately
               handleDownloadObject(record);
             },
-            disabled: downloadingObjectKey === record.Key,
+            disabled: isFolder(record.Key) || downloadingObjectKey === record.Key,
           },
           {
             key: 'delete',
@@ -630,6 +821,8 @@ const ObjectsPage: React.FC = () => {
             onChange={(value: string | number | string[]) => {
               setSelectedBucketName(typeof value === 'string' ? value : null);
               setSearchText(''); // Clear search when bucket changes
+              setCurrentPrefix(''); // Reset to root when bucket changes
+              setSelectedRowKeys([]); // Clear selection when bucket changes
             }}
             style={{ width: 250 }}
             loading={isLoadingBuckets}
@@ -661,7 +854,7 @@ const ObjectsPage: React.FC = () => {
         </div>
       ) : isLoadingObjects ? (
         <div style={{ textAlign: 'center', padding: '40px' }}>Loading objects...</div>
-      ) : !bucketObjectsData || bucketObjectsData.Contents.length === 0 ? (
+      ) : !bucketObjectsData || (bucketObjectsData.Contents.length === 0 && !currentPrefix) ? (
         <div style={{ textAlign: 'center', padding: '40px' }}>
           <Less3Text type="secondary">No objects found in bucket &quot;{selectedBucket?.Name}&quot;</Less3Text>
         </div>
@@ -674,14 +867,79 @@ const ObjectsPage: React.FC = () => {
               </Less3Text>
             </Less3Flex>
           )}
+
+          {/* Breadcrumb navigation */}
+          <Less3Flex align="center" gap={8} style={{ padding: '0 4px' }}>
+            <Breadcrumb
+              items={[
+                {
+                  title: (
+                    <span
+                      onClick={navigateToRoot}
+                      style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+                    >
+                      <HomeOutlined />
+                      <span>{selectedBucket?.Name || 'Root'}</span>
+                    </span>
+                  ),
+                },
+                ...breadcrumbParts.map((part, index) => ({
+                  title: (
+                    <span
+                      onClick={() => navigateToBreadcrumb(index)}
+                      style={{ cursor: index < breadcrumbParts.length - 1 ? 'pointer' : 'default' }}
+                    >
+                      {part}
+                    </span>
+                  ),
+                })),
+              ]}
+            />
+            {currentPrefix && (
+              <Less3Button
+                type="text"
+                size="small"
+                icon={<RollbackOutlined />}
+                onClick={navigateUp}
+                style={{ marginLeft: 8 }}
+              >
+                Go up
+              </Less3Button>
+            )}
+            <Less3Flex style={{ marginLeft: 'auto' }} align="center" gap={8}>
+              {selectedRowKeys.length > 0 && (
+                <Less3Text type="secondary" style={{ fontSize: 12 }}>
+                  {selectedRowKeys.length} selected
+                </Less3Text>
+              )}
+              <Less3Button
+                type="text"
+                danger
+                icon={<DeleteOutlined />}
+                onClick={handleBulkDelete}
+                disabled={selectedRowKeys.length === 0}
+              >
+                Delete
+              </Less3Button>
+            </Less3Flex>
+          </Less3Flex>
+
           <div className="responsive-scrollbar" style={{ width: '100%' }}>
             <Less3Table
               columns={columns as ColumnsType<any>}
               dataSource={filteredObjects}
               loading={isLoadingObjects}
               rowKey="Key"
-              pagination={false}
               scroll={{ x: true }}
+              rowSelection={{
+                selectedRowKeys,
+                onChange: (newSelectedRowKeys: React.Key[]) => {
+                  setSelectedRowKeys(newSelectedRowKeys);
+                },
+                getCheckboxProps: (record: BucketObject) => ({
+                  disabled: record.Key.endsWith('/'), // Disable checkbox for folders
+                }),
+              }}
             />
           </div>
         </Less3Flex>
@@ -715,6 +973,34 @@ const ObjectsPage: React.FC = () => {
           </p>
           <p style={{ fontSize: '13px', color: '#8c8c8c' }}>
             This action cannot be undone. The object will be permanently deleted.
+          </p>
+        </Less3Flex>
+      </Less3Modal>
+
+      <Less3Modal
+        title="Delete Selected Objects"
+        open={isBulkDeleteModalVisible}
+        onCancel={handleBulkDeleteCancel}
+        confirmLoading={isBulkDeleting}
+        okText="Delete All"
+        okButtonProps={{ danger: true }}
+        centered
+        keyboard={true}
+        footer={[
+          <Less3Button key="cancel" onClick={handleBulkDeleteCancel} disabled={isBulkDeleting}>
+            Cancel
+          </Less3Button>,
+          <Less3Button key="confirm" type="primary" danger loading={isBulkDeleting} onClick={handleBulkDeleteConfirm}>
+            Delete All
+          </Less3Button>,
+        ]}
+      >
+        <Less3Flex vertical={true} gap={16}>
+          <p>
+            Are you sure you want to delete <strong>{selectedRowKeys.filter((key) => !String(key).endsWith('/')).length}</strong> selected object(s)?
+          </p>
+          <p style={{ fontSize: '13px', color: '#8c8c8c' }}>
+            This action cannot be undone. All selected objects will be permanently deleted.
           </p>
         </Less3Flex>
       </Less3Modal>

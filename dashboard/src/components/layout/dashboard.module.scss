@@ -64,3 +64,42 @@
     }
   }
 }
+
+.topHeader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 101;
+  border-bottom: 1px solid var(--ant-color-border);
+  background: var(--ant-layout-light-sider-bg) !important;
+  padding: 0 24px !important;
+  height: 65px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.serverUrl {
+  font-size: 13px;
+  color: var(--ant-color-text-secondary);
+}
+
+.serverUrlValue {
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Consolas', monospace;
+  font-size: 12px;
+  color: var(--ant-color-text);
+  background: var(--ant-color-fill-tertiary);
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 4px;
+}
+
+.logoutButton {
+  color: var(--ant-color-text-secondary);
+  font-weight: 500;
+
+  &:hover {
+    color: var(--ant-color-primary) !important;
+  }
+}

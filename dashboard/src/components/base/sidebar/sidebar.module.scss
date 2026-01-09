@@ -8,6 +8,11 @@
   z-index: 100;
 }
 
+.sidebarWithTopHeader {
+  top: 65px;
+  height: calc(100vh - 65px);
+}
+
 .sidebarContainer a {
   color: inherit !important;
 }

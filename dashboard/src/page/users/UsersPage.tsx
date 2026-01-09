@@ -12,6 +12,7 @@ import PageContainer from '#/components/base/pageContainer/PageContainer';
 import Less3Flex from '#/components/base/flex/Flex';
 import Less3Dropdown from '#/components/base/dropdown/Dropdown';
 import Less3Text from '#/components/base/typograpghy/Text';
+import GuidDisplay from '#/components/guid-display';
 import {
   useGetUsersQuery,
   useGetUserByIdQuery,
@@ -96,8 +97,9 @@ const UsersPage: React.FC = () => {
       title: 'GUID',
       dataIndex: 'GUID',
       key: 'GUID',
-      width: 200,
+      width: 320,
       sorter: (a: User, b: User) => (a.GUID || '').localeCompare(b.GUID || ''),
+      render: (guid: string) => <GuidDisplay guid={guid} />,
     },
     {
       title: 'Name',
@@ -189,7 +191,7 @@ const UsersPage: React.FC = () => {
         dataSource={filteredData}
         loading={isLoading}
         rowKey="GUID"
-        pagination={false}
+        scroll={{ x: true }}
       />
 
       <Less3Modal
@@ -277,7 +279,7 @@ const UsersPage: React.FC = () => {
         ) : userMetadata ? (
           <Descriptions bordered column={1} size="small">
             <Descriptions.Item label="GUID">
-              <Less3Text>{userMetadata.GUID}</Less3Text>
+              <GuidDisplay guid={userMetadata.GUID} />
             </Descriptions.Item>
             <Descriptions.Item label="Name">
               <Less3Text>{userMetadata.Name}</Less3Text>

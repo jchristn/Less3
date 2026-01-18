@@ -26,7 +26,7 @@ docker run ^
   -v .\logs\:/app/logs/ ^
   -v .\temp\:/app/temp/ ^
   -v .\disk\:/app/disk/ ^
-  jchristn/less3:%1
+  jchristn77/less3:%1
 
 GOTO :Done
 

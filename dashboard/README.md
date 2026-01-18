@@ -1,4 +1,4 @@
-<img src="public/assets/logo.png" height="48">
+<img src="https://github.com/jchristn/Less3/blob/main/assets/logo.png?raw=true" height="128">
 
 # Less3 UI
 

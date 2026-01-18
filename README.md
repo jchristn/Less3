@@ -1,10 +1,10 @@
-![alt tag](https://github.com/jchristn/less3/blob/master/assets/logo.png)
+![alt tag](https://github.com/jchristn/less3/blob/main/assets/logo.png)
 
 # Less3 :: S3-Compatible Object Storage
 
 Less3 is an S3-compatible object storage platform that you can run anywhere. 
 
-![alt tag](https://github.com/jchristn/less3/blob/master/assets/diagram.png)
+![alt tag](https://github.com/jchristn/less3/blob/main/assets/diagram.png)
 
 ## Use Cases
 
@@ -254,7 +254,7 @@ Less3 is built using a series of open-source packages, including:
 
 ## Docker Deployment
 
-Less3 is available on [DockerHub](https://hub.docker.com/r/jchristn/less3).
+Less3 is available on [DockerHub](https://hub.docker.com/r/jchristn77/less3).
 
 ### Quick Start with Docker Compose
 

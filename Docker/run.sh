@@ -29,5 +29,5 @@ docker run \
   -v ./logs/:/app/logs/ \
   -v ./temp/:/app/temp/ \
   -v ./disk/:/app/disk/ \
-  jchristn/less3:$IMG_TAG
+  jchristn77/less3:$IMG_TAG
 

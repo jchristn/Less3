@@ -2,13 +2,13 @@ services:
 
   #
   # Less3
-  # See https://hub.docker.com/r/jchristn/less3
+  # See https://hub.docker.com/r/jchristn77/less3
   # and https://github.com/jchristn/less3
   #
 
   litegraph:
     container_name: 'less3'
-    image: 'jchristn/less3:v2.1.11'
+    image: 'jchristn77/less3:v2.1.11'
     network_mode: 'host'
     stdin_open: true
     tty: true

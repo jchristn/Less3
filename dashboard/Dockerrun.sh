@@ -9,4 +9,4 @@ docker run \
   -t \
   -i \
   -e "TERM=xterm-256color" \
-  jchristn/less3-ui:$IMG_TAG
+  jchristn77/less3-ui:$IMG_TAG

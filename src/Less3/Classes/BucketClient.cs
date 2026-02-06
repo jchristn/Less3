@@ -138,7 +138,7 @@
                 obj.Version = 1;
             }
 
-            obj.Md5 = Common.BytesToHexString(_StorageDriver.Write(obj.BlobFilename, obj.ContentLength, stream));
+            obj.Md5 = Common.BytesToHexString(_StorageDriver.Write(obj.BlobFilename, obj.ContentLength, stream)).ToLowerInvariant();
 
             if (String.IsNullOrEmpty(obj.Etag)) obj.Etag = obj.Md5;
 
@@ -463,6 +463,11 @@
                     OperatorEnum.GreaterThanOrEqualTo,
                     nextStartIndex);
 
+                e.PrependAnd(
+                    _ORM.GetColumnName<Obj>(nameof(Obj.DeleteMarker)),
+                    OperatorEnum.Equals,
+                    false);
+
                 if (!String.IsNullOrEmpty(prefix))
                 {
                     e.PrependAnd(
@@ -521,6 +526,22 @@
 
                 #endregion
             }
+
+            // Filter to only the latest version of each key
+            List<Obj> latestObjects = new List<Obj>();
+            Dictionary<string, Obj> latestByKey = new Dictionary<string, Obj>();
+            foreach (Obj obj in objects)
+            {
+                if (!latestByKey.ContainsKey(obj.Key))
+                {
+                    latestByKey[obj.Key] = obj;
+                }
+                else if (obj.Version > latestByKey[obj.Key].Version)
+                {
+                    latestByKey[obj.Key] = obj;
+                }
+            }
+            objects = latestByKey.Values.ToList();
 
             return;
         }

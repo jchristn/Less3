@@ -437,9 +437,6 @@
             responseHeaders.Add("Access-Control-Allow-Headers", "*, Content-Type, X-Requested-With, " + headers);
             responseHeaders.Add("Access-Control-Expose-Headers", "Content-Type, X-Requested-With, " + headers);
             responseHeaders.Add("Access-Control-Allow-Origin", "*");
-            responseHeaders.Add("Accept", "*/*");
-            responseHeaders.Add("Accept-Language", "en-US, en");
-            responseHeaders.Add("Accept-Charset", "ISO-8859-1, utf-8");
             responseHeaders.Add("Connection", "keep-alive");
 
             ctx.Response.StatusCode = 200;

@@ -73,6 +73,9 @@
             md.BucketClient.DeleteObjectVersion(md.Obj.Key, versionId);
             md.BucketClient.DeleteObjectVersionAcl(md.Obj.Key, versionId);
             md.BucketClient.DeleteObjectVersionTags(md.Obj.Key, versionId);
+
+            if (md.Bucket.EnableVersioning)
+                ctx.Response.Headers.Add("x-amz-version-id", md.Obj.Version.ToString());
         }
 
         internal async Task<DeleteResult> DeleteMultiple(S3Context ctx, DeleteMultiple dm)
@@ -155,6 +158,9 @@
             RequestValidator.CheckDeleteMarker(md.Obj, ctx);
 
             md.BucketClient.DeleteObjectVersionTags(ctx.Request.Key, versionId);
+
+            if (md.Bucket.EnableVersioning)
+                ctx.Response.Headers.Add("x-amz-version-id", md.Obj.Version.ToString());
         }
 
         internal async Task<ObjectMetadata> Exists(S3Context ctx)
@@ -174,7 +180,25 @@
 
             RequestValidator.CheckDeleteMarker(md.Obj, ctx);
 
-            return new ObjectMetadata(md.Obj.Key, md.Obj.LastUpdateUtc, md.Obj.Md5, md.Obj.ContentLength, new Owner(md.Obj.OwnerGUID, null));
+            ObjectMetadata metadata = new ObjectMetadata(md.Obj.Key, md.Obj.LastUpdateUtc, md.Obj.Md5, md.Obj.ContentLength, new Owner(md.Obj.OwnerGUID, null));
+            metadata.ContentType = md.Obj.ContentType;
+
+            if (md.Bucket.EnableVersioning)
+                ctx.Response.Headers.Add("x-amz-version-id", md.Obj.Version.ToString());
+
+            if (md.Obj.Metadata != null)
+            {
+                Dictionary<string, string> userMeta = SerializationHelper.DeserializeJson<Dictionary<string, string>>(md.Obj.Metadata);
+                if (userMeta != null)
+                {
+                    foreach (KeyValuePair<string, string> kvp in userMeta)
+                    {
+                        ctx.Response.Headers.Add("x-amz-meta-" + kvp.Key, kvp.Value);
+                    }
+                }
+            }
+
+            return metadata;
         }
 
         internal async Task<S3Object> Read(S3Context ctx)
@@ -192,6 +216,21 @@
             bool isLatest = true;
             long latestVersion = md.BucketClient.GetObjectLatestVersion(md.Obj.Key);
             if (md.Obj.Version < latestVersion) isLatest = false;
+
+            if (md.Bucket.EnableVersioning)
+                ctx.Response.Headers.Add("x-amz-version-id", md.Obj.Version.ToString());
+
+            if (md.Obj.Metadata != null)
+            {
+                Dictionary<string, string> userMeta = SerializationHelper.DeserializeJson<Dictionary<string, string>>(md.Obj.Metadata);
+                if (userMeta != null)
+                {
+                    foreach (KeyValuePair<string, string> kvp in userMeta)
+                    {
+                        ctx.Response.Headers.Add("x-amz-meta-" + kvp.Key, kvp.Value);
+                    }
+                }
+            }
 
             FileStream fs = new FileStream(GetObjectBlobFile(md.Bucket, md.Obj), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             return new S3Object(md.Obj.Key, md.Obj.Version.ToString(), isLatest, md.Obj.LastUpdateUtc, md.Obj.Etag, md.Obj.ContentLength, GetOwnerFromUserGuid(md.Obj.OwnerGUID), fs, md.Obj.ContentType);
@@ -215,6 +254,9 @@
                 _Logging.Warn(header + "unable to find owner GUID " + md.Obj.OwnerGUID + " for object GUID " + md.Obj.GUID);
                 throw new S3Exception(new Error(ErrorCode.InternalError));
             }
+
+            if (md.Bucket.EnableVersioning)
+                ctx.Response.Headers.Add("x-amz-version-id", md.Obj.Version.ToString());
 
             return AclConverter.ObjectAclsToPolicy(md.ObjectAcls, owner, _Config, _Logging, header);
         }
@@ -315,6 +357,13 @@
                     }
                 }
 
+                ctx.Response.Headers.Add("Content-Range", "bytes " + ctx.Request.RangeStart.Value + "-" + ctx.Request.RangeEnd.Value + "/" + md.Obj.ContentLength);
+                ctx.Response.Headers.Add("Accept-Ranges", "bytes");
+                ctx.Response.Headers.Add("ETag", "\"" + md.Obj.Etag + "\"");
+
+                if (md.Bucket.EnableVersioning)
+                    ctx.Response.Headers.Add("x-amz-version-id", md.Obj.Version.ToString());
+
                 return new S3Object(md.Obj.Key, md.Obj.Version.ToString(), isLatest, md.Obj.LastUpdateUtc, md.Obj.Etag, readLen, GetOwnerFromUserGuid(md.Obj.OwnerGUID), data, md.Obj.ContentType);
             }
         }
@@ -330,6 +379,9 @@
             long versionId = RequestValidator.ParseVersionId(ctx);
             RequestValidator.ValidateObjectExists(md.Obj, versionId, _Logging, header);
             RequestValidator.CheckDeleteMarker(md.Obj, ctx);
+
+            if (md.Bucket.EnableVersioning)
+                ctx.Response.Headers.Add("x-amz-version-id", md.Obj.Version.ToString());
 
             Tagging tags = new Tagging();
             tags.Tags = new TagSet();
@@ -415,7 +467,7 @@
             }
             else
             {
-                // new version  
+                // new version
                 if (md.User != null)
                 {
                     obj.AuthorGUID = md.User.GUID;
@@ -427,6 +479,7 @@
                     obj.OwnerGUID = ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port;
                 }
 
+                obj.Etag = null;
                 obj.GUID = Guid.NewGuid().ToString();
                 obj.Version = obj.Version + 1;
                 obj.BlobFilename = obj.GUID;
@@ -437,7 +490,7 @@
                 obj.ExpirationUtc = null;
                 obj.Key = ctx.Request.Key;
                 obj.LastAccessUtc = ts;
-                obj.LastUpdateUtc = ts; 
+                obj.LastUpdateUtc = ts;
             }
 
             #endregion 
@@ -491,11 +544,17 @@
                     }
                 }
 
+                Dictionary<string, string> userMetadata = ExtractMetadataFromHeaders(ctx.Http.Request.Headers);
+                if (userMetadata != null && userMetadata.Count > 0)
+                {
+                    obj.Metadata = SerializationHelper.SerializeJson(userMetadata, false);
+                }
+
                 using (FileStream fs = new FileStream(tempFilename, FileMode.Open, FileAccess.Read))
                 {
                     obj.ContentLength = totalLength;
                     writeSuccess = md.BucketClient.AddObject(obj, fs);
-                } 
+                }
             }
             catch (Exception e)
             {
@@ -513,6 +572,11 @@
                 _Logging.Warn(header + "failed to write object " + ctx.Request.Bucket + "/" + ctx.Request.Key);
                 throw new S3Exception(new Error(ErrorCode.InternalError));
             }
+
+            ctx.Response.Headers.Add("ETag", "\"" + obj.Etag + "\"");
+
+            if (md.Bucket.EnableVersioning)
+                ctx.Response.Headers.Add("x-amz-version-id", obj.Version.ToString());
 
             #endregion
 
@@ -622,6 +686,9 @@
             {
                 md.BucketClient.AddObjectAcl(acl);
             }
+
+            if (md.Bucket.EnableVersioning)
+                ctx.Response.Headers.Add("x-amz-version-id", md.Obj.Version.ToString());
         }
 
         internal async Task WriteTagging(S3Context ctx, Tagging tagging)
@@ -653,6 +720,9 @@
             }
 
             md.BucketClient.AddObjectVersionTags(ctx.Request.Key, versionId, tags);
+
+            if (md.Bucket.EnableVersioning)
+                ctx.Response.Headers.Add("x-amz-version-id", md.Obj.Version.ToString());
         }
 
         internal async Task<InitiateMultipartUploadResult> CreateMultipartUpload(S3Context ctx)
@@ -854,11 +924,18 @@
 
             _Logging.Info(header + "completed multipart upload " + ctx.Request.UploadId + " for key " + ctx.Request.Bucket + "/" + ctx.Request.Key);
 
+            string multipartEtag = ComputeMultipartEtag(parts);
+
             CompleteMultipartUploadResult result = new CompleteMultipartUploadResult();
-            result.Location = ctx.Http.Request.Url.Full;
+            result.Location = "http://" + ctx.Http.Request.Headers["Host"] + "/" + ctx.Request.Bucket + "/" + ctx.Request.Key;
             result.Bucket = ctx.Request.Bucket;
             result.Key = ctx.Request.Key;
-            result.ETag = obj.Etag;
+            result.ETag = multipartEtag;
+
+            ctx.Response.Headers.Add("ETag", "\"" + multipartEtag + "\"");
+
+            if (md.Bucket.EnableVersioning)
+                ctx.Response.Headers.Add("x-amz-version-id", obj.Version.ToString());
 
             return result;
         }
@@ -995,6 +1072,8 @@
             result.Bucket = ctx.Request.Bucket;
             result.Key = ctx.Request.Key;
             result.UploadId = ctx.Request.UploadId;
+            result.Initiator = new Owner();
+            result.Initiator.ID = uploadRecord.OwnerGUID;
             result.Owner = new Owner();
             result.Owner.ID = uploadRecord.OwnerGUID;
 
@@ -1002,6 +1081,7 @@
             if (owner != null)
             {
                 result.Owner.DisplayName = owner.Name;
+                result.Initiator.DisplayName = owner.Name;
             }
 
             result.StorageClass = S3ServerLibrary.S3Objects.StorageClassEnum.STANDARD;
@@ -1023,6 +1103,11 @@
             }
 
             result.IsTruncated = false;
+
+            if (result.Parts.Count > 0)
+            {
+                result.NextPartNumberMarker = result.Parts[result.Parts.Count - 1].PartNumber;
+            }
 
             _Logging.Debug(header + "listed " + result.Parts.Count + " parts for upload " + ctx.Request.UploadId);
 
@@ -1084,6 +1169,35 @@
         {
             return bucket.DiskDirectory + obj.BlobFilename;
         }
+
+        private string ComputeMultipartEtag(List<UploadPart> parts)
+        {
+            using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
+            {
+                List<byte> allMd5Bytes = new List<byte>();
+                foreach (UploadPart part in parts)
+                {
+                    if (!String.IsNullOrEmpty(part.MD5Hash))
+                    {
+                        byte[] partMd5 = HexStringToBytes(part.MD5Hash);
+                        allMd5Bytes.AddRange(partMd5);
+                    }
+                }
+                byte[] combinedHash = md5.ComputeHash(allMd5Bytes.ToArray());
+                string hex = BitConverter.ToString(combinedHash).Replace("-", "").ToLowerInvariant();
+                return hex + "-" + parts.Count;
+            }
+        }
+
+        private byte[] HexStringToBytes(string hex)
+        {
+            byte[] bytes = new byte[hex.Length / 2];
+            for (int i = 0; i < hex.Length; i += 2)
+            {
+                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+            }
+            return bytes;
+        }
          
         private List<Grant> GrantsFromHeaders(User user, NameValueCollection headers)
         {
@@ -1103,7 +1217,7 @@
                     case "private":
                         grant = new Grant();
                         grant.Permission = PermissionEnum.FullControl;
-                        grant.Grantee = new Grantee();
+                        grant.Grantee = new CanonicalUser();
                         grant.Grantee.ID = user.GUID;
                         grant.Grantee.DisplayName = user.Name;
                         ret.Add(grant);
@@ -1111,35 +1225,52 @@
 
                     case "public-read":
                         grant = new Grant();
+                        grant.Permission = PermissionEnum.FullControl;
+                        grant.Grantee = new CanonicalUser();
+                        grant.Grantee.ID = user.GUID;
+                        grant.Grantee.DisplayName = user.Name;
+                        ret.Add(grant);
+
+                        grant = new Grant();
                         grant.Permission = PermissionEnum.Read;
-                        grant.Grantee = new Grantee();
+                        grant.Grantee = new Group();
                         grant.Grantee.URI = "http://acs.amazonaws.com/groups/global/AllUsers";
-                        grant.Grantee.DisplayName = "AllUsers";
                         ret.Add(grant);
                         break;
 
                     case "public-read-write":
                         grant = new Grant();
+                        grant.Permission = PermissionEnum.FullControl;
+                        grant.Grantee = new CanonicalUser();
+                        grant.Grantee.ID = user.GUID;
+                        grant.Grantee.DisplayName = user.Name;
+                        ret.Add(grant);
+
+                        grant = new Grant();
                         grant.Permission = PermissionEnum.Read;
-                        grant.Grantee = new Grantee();
+                        grant.Grantee = new Group();
                         grant.Grantee.URI = "http://acs.amazonaws.com/groups/global/AllUsers";
-                        grant.Grantee.DisplayName = "AllUsers";
                         ret.Add(grant);
 
                         grant = new Grant();
                         grant.Permission = PermissionEnum.Write;
-                        grant.Grantee = new Grantee();
+                        grant.Grantee = new Group();
                         grant.Grantee.URI = "http://acs.amazonaws.com/groups/global/AllUsers";
-                        grant.Grantee.DisplayName = "AllUsers";
                         ret.Add(grant);
                         break;
 
                     case "authenticated-read":
                         grant = new Grant();
+                        grant.Permission = PermissionEnum.FullControl;
+                        grant.Grantee = new CanonicalUser();
+                        grant.Grantee.ID = user.GUID;
+                        grant.Grantee.DisplayName = user.Name;
+                        ret.Add(grant);
+
+                        grant = new Grant();
                         grant.Permission = PermissionEnum.Read;
-                        grant.Grantee = new Grantee();
+                        grant.Grantee = new Group();
                         grant.Grantee.URI = "http://acs.amazonaws.com/groups/global/AuthenticatedUsers";
-                        grant.Grantee.DisplayName = "AuthenticatedUsers";
                         ret.Add(grant);
                         break;
                 }
@@ -1235,7 +1366,6 @@
 
             grant = new Grant();
             grant.Permission = permType;
-            grant.Grantee = new Grantee();
 
             if (granteeType.Equals("emailAddress"))
             {
@@ -1246,6 +1376,7 @@
                 }
                 else
                 {
+                    grant.Grantee = new CanonicalUser();
                     grant.Grantee.ID = user.GUID;
                     grant.Grantee.DisplayName = user.Name;
                     return true;
@@ -1260,6 +1391,7 @@
                 }
                 else
                 {
+                    grant.Grantee = new CanonicalUser();
                     grant.Grantee.ID = user.GUID;
                     grant.Grantee.DisplayName = user.Name;
                     return true;
@@ -1267,6 +1399,7 @@
             }
             else if (granteeType.Equals("uri"))
             {
+                grant.Grantee = new Group();
                 grant.Grantee.URI = grantee;
                 return true;
             }

@@ -126,6 +126,12 @@
         public DateTime LastAccessUtc { get; set; } = DateTime.Now.ToUniversalTime();
 
         /// <summary>
+        /// User-defined metadata stored as JSON.
+        /// </summary>
+        [Column("metadata", false, DataTypes.Nvarchar, 4096, true)]
+        public string Metadata { get; set; } = null;
+
+        /// <summary>
         /// Object expiration timestamp.
         /// </summary>
         [Column("expirationutc", false, DataTypes.DateTime, true)]

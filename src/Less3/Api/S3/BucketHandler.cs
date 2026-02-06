@@ -155,6 +155,7 @@
                 return false;
             }
 
+            ctx.Response.Headers.Add("x-amz-bucket-region", md.Bucket.RegionString);
             return true;
         }
 
@@ -204,6 +205,10 @@
                 listBucketResult.NextContinuationToken = BuildContinuationToken(nextStartIndex); 
             }
 
+            bool fetchOwner = ctx.Request.QuerystringExists("fetch-owner")
+                && !String.IsNullOrEmpty(ctx.Request.RetrieveQueryValue("fetch-owner"))
+                && ctx.Request.RetrieveQueryValue("fetch-owner").Equals("true", StringComparison.OrdinalIgnoreCase);
+
             Dictionary<string, S3ServerLibrary.S3Objects.Owner> ownerCache = new Dictionary<string, S3ServerLibrary.S3Objects.Owner>();
 
             foreach (Obj curr in objects)
@@ -215,18 +220,21 @@
                 c.Size = curr.ContentLength;
                 c.ContentType = curr.ContentType;
                 c.StorageClass = StorageClassEnum.STANDARD;
-                
-                c.Owner = new S3ServerLibrary.S3Objects.Owner();
-                if (ownerCache.ContainsKey(curr.OwnerGUID))
+
+                if (fetchOwner)
                 {
-                    c.Owner = ownerCache[curr.OwnerGUID];
-                }
-                else
-                {
-                    User u = _Config.GetUserByGuid(curr.OwnerGUID);
-                    c.Owner.DisplayName = u.Name;
-                    c.Owner.ID = u.GUID;
-                    ownerCache.Add(u.GUID, c.Owner);
+                    c.Owner = new S3ServerLibrary.S3Objects.Owner();
+                    if (ownerCache.ContainsKey(curr.OwnerGUID))
+                    {
+                        c.Owner = ownerCache[curr.OwnerGUID];
+                    }
+                    else
+                    {
+                        User u = _Config.GetUserByGuid(curr.OwnerGUID);
+                        c.Owner.DisplayName = u.Name;
+                        c.Owner.ID = u.GUID;
+                        ownerCache.Add(u.GUID, c.Owner);
+                    }
                 }
 
                 listBucketResult.Contents.Add(c);
@@ -266,19 +274,21 @@
             RequestValidator.ValidateAuthorization(md, _Logging, header);
             RequestValidator.ValidateBucketExists(md, _Logging, header);
              
+            if (md.BucketTags == null || md.BucketTags.Count == 0)
+            {
+                throw new S3Exception(new Error(ErrorCode.NoSuchTagSetError));
+            }
+
             Tagging tags = new Tagging();
             tags.Tags = new TagSet();
             tags.Tags.Tags = new List<Tag>();
 
-            if (md.BucketTags != null && md.BucketTags.Count > 0)
+            foreach (BucketTag curr in md.BucketTags)
             {
-                foreach (BucketTag curr in md.BucketTags)
-                {
-                    Tag currTag = new Tag();
-                    currTag.Key = curr.Key;
-                    currTag.Value = curr.Value;
-                    tags.Tags.Tags.Add(currTag);
-                }
+                Tag currTag = new Tag();
+                currTag.Key = curr.Key;
+                currTag.Value = curr.Value;
+                tags.Tags.Tags.Add(currTag);
             }
 
             return tags;
@@ -401,10 +411,17 @@
             RequestValidator.ValidateBucketExists(md, _Logging, header);
 
             VersioningConfiguration vc = new VersioningConfiguration();
-            vc.Status = VersioningStatusEnum.Suspended;
-            vc.MfaDelete = MfaDeleteStatusEnum.Disabled;
-                 
-            if (md.Bucket.EnableVersioning) vc.Status = VersioningStatusEnum.Enabled;
+            vc.IncludeMfaDelete = false;
+
+            if (md.Bucket.EnableVersioning)
+            {
+                vc.IncludeStatus = true;
+                vc.Status = VersioningStatusEnum.Enabled;
+            }
+            else
+            {
+                vc.IncludeStatus = false;
+            }
 
             return vc;
         }
@@ -418,6 +435,13 @@
 
             if (md.Bucket != null || md.BucketClient != null)
             {
+                if (md.Bucket != null && md.Bucket.OwnerGUID == md.User.GUID)
+                {
+                    _Logging.Info(header + "bucket already exists and owned by same user, returning success");
+                    ctx.Response.Headers.Add("Location", "/" + ctx.Request.Bucket);
+                    return;
+                }
+
                 _Logging.Warn(header + "bucket already exists");
                 throw new S3Exception(new Error(ErrorCode.BucketAlreadyExists));
             }
@@ -447,6 +471,8 @@
                 _Logging.Warn(header + "unable to retrieve bucket client for bucket " + ctx.Request.Bucket);
                 throw new S3Exception(new Error(ErrorCode.InternalError));
             }
+
+            ctx.Response.Headers.Add("Location", "/" + ctx.Request.Bucket);
 
             #region Permissions-in-Headers
 
@@ -746,7 +772,7 @@
                     case "private":
                         grant = new Grant();
                         grant.Permission = PermissionEnum.FullControl;
-                        grant.Grantee = new Grantee();
+                        grant.Grantee = new CanonicalUser();
                         grant.Grantee.ID = user.GUID;
                         grant.Grantee.DisplayName = user.Name;
                         ret.Add(grant);
@@ -754,35 +780,52 @@
 
                     case "public-read":
                         grant = new Grant();
+                        grant.Permission = PermissionEnum.FullControl;
+                        grant.Grantee = new CanonicalUser();
+                        grant.Grantee.ID = user.GUID;
+                        grant.Grantee.DisplayName = user.Name;
+                        ret.Add(grant);
+
+                        grant = new Grant();
                         grant.Permission = PermissionEnum.Read;
-                        grant.Grantee = new Grantee();
+                        grant.Grantee = new Group();
                         grant.Grantee.URI = "http://acs.amazonaws.com/groups/global/AllUsers";
-                        grant.Grantee.DisplayName = "AllUsers";
                         ret.Add(grant);
                         break;
 
                     case "public-read-write":
                         grant = new Grant();
+                        grant.Permission = PermissionEnum.FullControl;
+                        grant.Grantee = new CanonicalUser();
+                        grant.Grantee.ID = user.GUID;
+                        grant.Grantee.DisplayName = user.Name;
+                        ret.Add(grant);
+
+                        grant = new Grant();
                         grant.Permission = PermissionEnum.Read;
-                        grant.Grantee = new Grantee();
+                        grant.Grantee = new Group();
                         grant.Grantee.URI = "http://acs.amazonaws.com/groups/global/AllUsers";
-                        grant.Grantee.DisplayName = "AllUsers";
                         ret.Add(grant);
 
                         grant = new Grant();
                         grant.Permission = PermissionEnum.Write;
-                        grant.Grantee = new Grantee();
+                        grant.Grantee = new Group();
                         grant.Grantee.URI = "http://acs.amazonaws.com/groups/global/AllUsers";
-                        grant.Grantee.DisplayName = "AllUsers";
                         ret.Add(grant);
                         break;
 
                     case "authenticated-read":
                         grant = new Grant();
+                        grant.Permission = PermissionEnum.FullControl;
+                        grant.Grantee = new CanonicalUser();
+                        grant.Grantee.ID = user.GUID;
+                        grant.Grantee.DisplayName = user.Name;
+                        ret.Add(grant);
+
+                        grant = new Grant();
                         grant.Permission = PermissionEnum.Read;
-                        grant.Grantee = new Grantee();
+                        grant.Grantee = new Group();
                         grant.Grantee.URI = "http://acs.amazonaws.com/groups/global/AuthenticatedUsers";
-                        grant.Grantee.DisplayName = "AuthenticatedUsers";
                         ret.Add(grant);
                         break;
                 }
@@ -878,7 +921,6 @@
 
             grant = new Grant();
             grant.Permission = permType;
-            grant.Grantee = new Grantee();
 
             if (granteeType.Equals("emailAddress"))
             {
@@ -887,6 +929,7 @@
                 {
                     return false;
                 }
+                grant.Grantee = new CanonicalUser();
                 grant.Grantee.ID = user.GUID;
                 grant.Grantee.DisplayName = user.Name;
                 return true;
@@ -898,12 +941,14 @@
                 {
                     return false;
                 }
+                grant.Grantee = new CanonicalUser();
                 grant.Grantee.ID = user.GUID;
                 grant.Grantee.DisplayName = user.Name;
                 return true;
             }
             else if (granteeType.Equals("uri"))
             {
+                grant.Grantee = new Group();
                 grant.Grantee.URI = grantee;
                 return true;
             }

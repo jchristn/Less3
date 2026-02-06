@@ -673,6 +673,11 @@
             Last access timestamp.
             </summary>
         </member>
+        <member name="P:Less3.Classes.Obj.Metadata">
+            <summary>
+            User-defined metadata stored as JSON.
+            </summary>
+        </member>
         <member name="F:Less3.Classes.Obj.ExpirationUtc">
             <summary>
             Object expiration timestamp.

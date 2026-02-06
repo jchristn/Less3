@@ -308,7 +308,7 @@ namespace Less3.Helpers
                     case "private":
                         grant = new Grant();
                         grant.Permission = PermissionEnum.FullControl;
-                        grant.Grantee = new Grantee();
+                        grant.Grantee = new CanonicalUser();
                         grant.Grantee.ID = user.GUID;
                         grant.Grantee.DisplayName = user.Name;
                         ret.Add(grant);
@@ -316,35 +316,52 @@ namespace Less3.Helpers
 
                     case "public-read":
                         grant = new Grant();
+                        grant.Permission = PermissionEnum.FullControl;
+                        grant.Grantee = new CanonicalUser();
+                        grant.Grantee.ID = user.GUID;
+                        grant.Grantee.DisplayName = user.Name;
+                        ret.Add(grant);
+
+                        grant = new Grant();
                         grant.Permission = PermissionEnum.Read;
-                        grant.Grantee = new Grantee();
+                        grant.Grantee = new Group();
                         grant.Grantee.URI = "http://acs.amazonaws.com/groups/global/AllUsers";
-                        grant.Grantee.DisplayName = "AllUsers";
                         ret.Add(grant);
                         break;
 
                     case "public-read-write":
                         grant = new Grant();
+                        grant.Permission = PermissionEnum.FullControl;
+                        grant.Grantee = new CanonicalUser();
+                        grant.Grantee.ID = user.GUID;
+                        grant.Grantee.DisplayName = user.Name;
+                        ret.Add(grant);
+
+                        grant = new Grant();
                         grant.Permission = PermissionEnum.Read;
-                        grant.Grantee = new Grantee();
+                        grant.Grantee = new Group();
                         grant.Grantee.URI = "http://acs.amazonaws.com/groups/global/AllUsers";
-                        grant.Grantee.DisplayName = "AllUsers";
                         ret.Add(grant);
 
                         grant = new Grant();
                         grant.Permission = PermissionEnum.Write;
-                        grant.Grantee = new Grantee();
+                        grant.Grantee = new Group();
                         grant.Grantee.URI = "http://acs.amazonaws.com/groups/global/AllUsers";
-                        grant.Grantee.DisplayName = "AllUsers";
                         ret.Add(grant);
                         break;
 
                     case "authenticated-read":
                         grant = new Grant();
+                        grant.Permission = PermissionEnum.FullControl;
+                        grant.Grantee = new CanonicalUser();
+                        grant.Grantee.ID = user.GUID;
+                        grant.Grantee.DisplayName = user.Name;
+                        ret.Add(grant);
+
+                        grant = new Grant();
                         grant.Permission = PermissionEnum.Read;
-                        grant.Grantee = new Grantee();
+                        grant.Grantee = new Group();
                         grant.Grantee.URI = "http://acs.amazonaws.com/groups/global/AuthenticatedUsers";
-                        grant.Grantee.DisplayName = "AuthenticatedUsers";
                         ret.Add(grant);
                         break;
                 }
@@ -483,7 +500,7 @@ namespace Less3.Helpers
             if (permitRead)
             {
                 Grant grant = new Grant();
-                grant.Grantee = new Grantee();
+                grant.Grantee = new CanonicalUser();
                 grant.Grantee.DisplayName = tempUser.Name;
                 grant.Grantee.ID = userGuid;
                 grant.Permission = PermissionEnum.Read;
@@ -493,7 +510,7 @@ namespace Less3.Helpers
             if (permitReadAcp)
             {
                 Grant grant = new Grant();
-                grant.Grantee = new Grantee();
+                grant.Grantee = new CanonicalUser();
                 grant.Grantee.DisplayName = tempUser.Name;
                 grant.Grantee.ID = userGuid;
                 grant.Permission = PermissionEnum.ReadAcp;
@@ -503,7 +520,7 @@ namespace Less3.Helpers
             if (permitWrite)
             {
                 Grant grant = new Grant();
-                grant.Grantee = new Grantee();
+                grant.Grantee = new CanonicalUser();
                 grant.Grantee.DisplayName = tempUser.Name;
                 grant.Grantee.ID = userGuid;
                 grant.Permission = PermissionEnum.Write;
@@ -513,7 +530,7 @@ namespace Less3.Helpers
             if (permitWriteAcp)
             {
                 Grant grant = new Grant();
-                grant.Grantee = new Grantee();
+                grant.Grantee = new CanonicalUser();
                 grant.Grantee.DisplayName = tempUser.Name;
                 grant.Grantee.ID = userGuid;
                 grant.Permission = PermissionEnum.WriteAcp;
@@ -523,7 +540,7 @@ namespace Less3.Helpers
             if (fullControl)
             {
                 Grant grant = new Grant();
-                grant.Grantee = new Grantee();
+                grant.Grantee = new CanonicalUser();
                 grant.Grantee.DisplayName = tempUser.Name;
                 grant.Grantee.ID = userGuid;
                 grant.Permission = PermissionEnum.FullControl;
@@ -559,8 +576,7 @@ namespace Less3.Helpers
             if (permitRead)
             {
                 Grant grant = new Grant();
-                grant.Grantee = new Grantee();
-                grant.Grantee.DisplayName = userGroup;
+                grant.Grantee = new Group();
                 grant.Grantee.URI = userGroup;
                 grant.Permission = PermissionEnum.Read;
                 grants.Add(grant);
@@ -569,8 +585,7 @@ namespace Less3.Helpers
             if (permitReadAcp)
             {
                 Grant grant = new Grant();
-                grant.Grantee = new Grantee();
-                grant.Grantee.DisplayName = userGroup;
+                grant.Grantee = new Group();
                 grant.Grantee.URI = userGroup;
                 grant.Permission = PermissionEnum.ReadAcp;
                 grants.Add(grant);
@@ -579,8 +594,7 @@ namespace Less3.Helpers
             if (permitWrite)
             {
                 Grant grant = new Grant();
-                grant.Grantee = new Grantee();
-                grant.Grantee.DisplayName = userGroup;
+                grant.Grantee = new Group();
                 grant.Grantee.URI = userGroup;
                 grant.Permission = PermissionEnum.Write;
                 grants.Add(grant);
@@ -589,8 +603,7 @@ namespace Less3.Helpers
             if (permitWriteAcp)
             {
                 Grant grant = new Grant();
-                grant.Grantee = new Grantee();
-                grant.Grantee.DisplayName = userGroup;
+                grant.Grantee = new Group();
                 grant.Grantee.URI = userGroup;
                 grant.Permission = PermissionEnum.WriteAcp;
                 grants.Add(grant);
@@ -599,8 +612,7 @@ namespace Less3.Helpers
             if (fullControl)
             {
                 Grant grant = new Grant();
-                grant.Grantee = new Grantee();
-                grant.Grantee.DisplayName = userGroup;
+                grant.Grantee = new Group();
                 grant.Grantee.URI = userGroup;
                 grant.Permission = PermissionEnum.FullControl;
                 grants.Add(grant);
@@ -723,7 +735,6 @@ namespace Less3.Helpers
 
             grant = new Grant();
             grant.Permission = permType;
-            grant.Grantee = new Grantee();
 
             if (granteeType.Equals("emailAddress"))
             {
@@ -734,6 +745,7 @@ namespace Less3.Helpers
                 }
                 else
                 {
+                    grant.Grantee = new CanonicalUser();
                     grant.Grantee.ID = user.GUID;
                     grant.Grantee.DisplayName = user.Name;
                     return true;
@@ -748,6 +760,7 @@ namespace Less3.Helpers
                 }
                 else
                 {
+                    grant.Grantee = new CanonicalUser();
                     grant.Grantee.ID = user.GUID;
                     grant.Grantee.DisplayName = user.Name;
                     return true;
@@ -755,6 +768,7 @@ namespace Less3.Helpers
             }
             else if (granteeType.Equals("uri"))
             {
+                grant.Grantee = new Group();
                 grant.Grantee.URI = grantee;
                 return true;
             }

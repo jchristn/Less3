@@ -86,7 +86,7 @@
             ListAllMyBucketsResult listBucketsResult = new ListAllMyBucketsResult();
             listBucketsResult.Owner = new S3ServerLibrary.S3Objects.Owner();
             listBucketsResult.Owner.DisplayName = md.User.Name;
-            listBucketsResult.Owner.ID = md.User.Name;
+            listBucketsResult.Owner.ID = md.User.GUID;
 
             listBucketsResult.Buckets = new Buckets();
             listBucketsResult.Buckets.BucketList = new List<S3ServerLibrary.S3Objects.Bucket>();

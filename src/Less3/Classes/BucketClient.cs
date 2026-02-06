@@ -490,14 +490,33 @@
                 {
                     string currPrefix = null;
                     string tempKey = obj.Key;
-                    if (!String.IsNullOrEmpty(prefix)) tempKey = tempKey.Replace(prefix, "");
+
+                    // Strip the current prefix to get the relative key.
+                    // Use StartsWith + Substring rather than Replace to avoid
+                    // removing repeated segments within the key.
+                    if (!String.IsNullOrEmpty(prefix) && tempKey.StartsWith(prefix))
+                        tempKey = tempKey.Substring(prefix.Length);
 
                     if (!String.IsNullOrEmpty(delimiter))
                     {
                         if (tempKey.Contains(delimiter))
                         {
+                            // Key contains the delimiter — extract the immediate
+                            // child prefix (one level deep from current prefix).
                             int delimiterPos = tempKey.IndexOf(delimiter);
                             currPrefix = prefix + tempKey.Substring(0, delimiterPos + delimiter.Length);
+                            if (!prefixes.Contains(currPrefix))
+                            {
+                                prefixes.Add(currPrefix);
+                            }
+                        }
+                        else if (obj.IsFolder && obj.ContentLength == 0 && !String.IsNullOrEmpty(tempKey))
+                        {
+                            // Folder marker without a trailing delimiter in its
+                            // relative key (e.g. key "myfolder" with IsFolder=true).
+                            // Treat it as an immediate child prefix.
+                            currPrefix = prefix + tempKey;
+                            if (!currPrefix.EndsWith(delimiter)) currPrefix += delimiter;
                             if (!prefixes.Contains(currPrefix))
                             {
                                 prefixes.Add(currPrefix);
@@ -508,15 +527,6 @@
                     if (String.IsNullOrEmpty(currPrefix) && objects.Count <= maxResults)
                     {
                         objects.Add(obj);
-                    }
-                    else if (obj.IsFolder && obj.ContentLength == 0)
-                    {
-                        string folderPrefix = obj.Key;
-                        if (!folderPrefix.EndsWith(delimiter ?? "/")) folderPrefix += delimiter ?? "/";
-                        if (!prefixes.Contains(folderPrefix))
-                        {
-                            prefixes.Add(folderPrefix);
-                        }
                     }
 
                     nextStartIndex = obj.Id + 1;

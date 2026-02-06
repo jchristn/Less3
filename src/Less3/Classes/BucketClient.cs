@@ -497,7 +497,7 @@
                         if (tempKey.Contains(delimiter))
                         {
                             int delimiterPos = tempKey.IndexOf(delimiter);
-                            currPrefix = tempKey.Substring(0, delimiterPos + delimiter.Length);
+                            currPrefix = prefix + tempKey.Substring(0, delimiterPos + delimiter.Length);
                             if (!prefixes.Contains(currPrefix))
                             {
                                 prefixes.Add(currPrefix);
@@ -509,10 +509,14 @@
                     {
                         objects.Add(obj);
                     }
-
-                    if (obj.IsFolder && obj.ContentLength == 0)
+                    else if (obj.IsFolder && obj.ContentLength == 0)
                     {
-                        prefixes.Add(obj.Key);
+                        string folderPrefix = obj.Key;
+                        if (!folderPrefix.EndsWith(delimiter ?? "/")) folderPrefix += delimiter ?? "/";
+                        if (!prefixes.Contains(folderPrefix))
+                        {
+                            prefixes.Add(folderPrefix);
+                        }
                     }
 
                     nextStartIndex = obj.Id + 1;
@@ -580,11 +584,11 @@
         internal List<BucketTag> GetBucketTags()
         {
             Expr e = new Expr(
-                _ORM.GetColumnName<Obj>(nameof(Obj.BucketGUID)),
+                _ORM.GetColumnName<BucketTag>(nameof(BucketTag.BucketGUID)),
                 OperatorEnum.Equals,
                 _Bucket.GUID);
 
-            return _ORM.SelectMany<BucketTag>(e); 
+            return _ORM.SelectMany<BucketTag>(e);
         }
 
         internal List<ObjectTag> GetObjectTags(string key, long version)
@@ -627,10 +631,10 @@
                 guid);
 
             e.PrependAnd(
-                _ORM.GetColumnName<Obj>(nameof(ObjectTag.BucketGUID)),
+                _ORM.GetColumnName<ObjectTag>(nameof(ObjectTag.BucketGUID)),
                 OperatorEnum.Equals,
                 _Bucket.GUID);
-            
+
             return _ORM.SelectMany<ObjectTag>(e);
         }
 

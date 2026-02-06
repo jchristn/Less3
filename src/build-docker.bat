@@ -2,7 +2,7 @@
 IF "%1" == "" GOTO :Usage
 ECHO.
 ECHO Building for linux/amd64 and linux/arm64/v8...
-docker buildx build -f Less3\Dockerfile --builder cloud-jchristn77-jchristn77 --platform linux/amd64,linux/arm64/v8 --tag jchristn77/less3:%1 --push .
+docker buildx build -f Less3\Dockerfile --build-context s3server=..\..\s3server-6.0 --builder cloud-jchristn77-jchristn77 --platform linux/amd64,linux/arm64/v8 --tag jchristn77/less3:%1 --push .
 GOTO :Done
 
 :Usage

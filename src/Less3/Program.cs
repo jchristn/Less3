@@ -276,12 +276,20 @@
             _S3Settings.Logging.SignatureV4Validation = _Settings.Logging.LogSignatureValidation;
             _S3Settings.Logger = Console.WriteLine;
             _S3Settings.EnableSignatures = _Settings.ValidateSignatures;
+            _S3Settings.UseTcpServer = _Settings.UseTcpServer;
             _S3Settings.Webserver = _Settings.Webserver;
 
             _S3Server = new S3Server(_S3Settings);
             _S3Server.Webserver.Routes.Preflight = PreflightRoute;
 
-            Console.WriteLine("| " + _Settings.Webserver.Prefix);
+            if (_S3Settings.UseTcpServer)
+            {
+                Console.WriteLine("| " + _Settings.Webserver.Prefix + " (TCP server)");
+            }
+            else
+            {
+                Console.WriteLine("| " + _Settings.Webserver.Prefix);
+            }
 
             Console.WriteLine("| Initializing S3 server APIs");
 

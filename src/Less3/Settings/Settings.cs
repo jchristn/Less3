@@ -28,6 +28,12 @@
         public bool ValidateSignatures { get; set; } = true;
 
         /// <summary>
+        /// Enable or disable use of the TCP server, with its own implementation, as opposed to the HTTP server.
+        /// This should always be 'false' unless you encounter client incompatibility due to invalid HTTP headers.
+        /// </summary>
+        public bool UseTcpServer { get; set; } = false;
+
+        /// <summary>
         /// Base domain, if using virtual hosted-style URLs, e.g. "localhost".
         /// </summary>
         public string BaseDomain { get; set; } = null;

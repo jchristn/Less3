@@ -422,7 +422,7 @@
 
         public static async Task<byte[]> Md5Async(Stream stream, int bufferSize)
         {
-            using (var md5 = MD5.Create())
+            using (MD5 md5 = MD5.Create())
             {
                 byte[] buffer = new byte[bufferSize];
                 int read = 0;

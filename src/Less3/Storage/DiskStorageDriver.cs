@@ -113,9 +113,10 @@
 
             using (FileStream fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, useAsync: true))
             {
-                var length = (int)fileStream.Length;
-                var bytes = new byte[length];
-                await fileStream.ReadAsync(bytes, 0, length);
+                int length = (int)fileStream.Length;
+                byte[] bytes = new byte[length];
+                int read = await fileStream.ReadAsync(bytes, 0, length);
+                if (read != length) throw new IOException("Could not read the entire file.");
                 return bytes;
             }
         }

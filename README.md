@@ -22,6 +22,7 @@ v2.1.17
 - **Multipart upload support** - InitiateMultipartUpload, UploadPart, CompleteMultipartUpload, AbortMultipartUpload, ListParts, ListMultipartUploads
 - Enhanced AWS CLI compatibility
 - Dependency updates for improved stability
+- `UseTcpServer` option in `system.json` to support clients that send headers with invalid payloads
 - See `AWSCLI.md` for comprehensive testing commands
 
 ## Help and Feedback
@@ -113,7 +114,8 @@ dotnet Less3.dll
     "Filename": "./less3.db"
   },
   "AdminApiKey": "less3admin",
-  "ValidateSignatures": true
+  "ValidateSignatures": true,
+  "UseTcpServer": false
 }
 ```
 

@@ -1,6 +1,7 @@
 {
   "EnableConsole": false,
   "ValidateSignatures": true,
+  "UseTcpServer": false,
   "HeaderApiKey": "x-api-key",
   "AdminApiKey": "less3admin",
   "RegionString": "us-west-1",

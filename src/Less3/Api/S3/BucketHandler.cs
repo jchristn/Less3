@@ -196,7 +196,7 @@
             listBucketResult.BucketRegion = md.Bucket.RegionString;
             listBucketResult.Marker = ctx.Request.Marker;
             listBucketResult.Prefix = ctx.Request.Prefix; 
-            listBucketResult.CommonPrefixes.Prefixes = prefixes;
+            listBucketResult.CommonPrefixes = prefixes.Select(p => new CommonPrefixes(p)).ToList();
             listBucketResult.IsTruncated = false;
 
             if (isTruncated)

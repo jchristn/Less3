@@ -25,6 +25,9 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 COPY . .
 RUN npm install
+ARG LESS3_SERVER_URL=http://localhost:3000
+ENV LESS3_SERVER_URL=$LESS3_SERVER_URL
 RUN npm run build
+RUN chmod +x entrypoint.sh
 EXPOSE 3000
-CMD [ "npm", "run", "start" ]
+ENTRYPOINT ["./entrypoint.sh"]

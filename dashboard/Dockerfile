@@ -28,6 +28,6 @@ RUN npm install
 ARG LESS3_SERVER_URL=http://localhost:3000
 ENV LESS3_SERVER_URL=$LESS3_SERVER_URL
 RUN npm run build
-RUN chmod +x entrypoint.sh
+RUN sed -i 's/\r$//' entrypoint.sh && chmod +x entrypoint.sh
 EXPOSE 3000
 ENTRYPOINT ["./entrypoint.sh"]

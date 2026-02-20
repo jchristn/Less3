@@ -8,7 +8,7 @@ services:
 
   less3:
     container_name: 'less3'
-    image: 'jchristn/less3:v2.1.12'
+    image: 'jchristn77/less3:v2.1.12'
     ports:
       - "8000:8000"
     stdin_open: true
@@ -33,7 +33,7 @@ services:
 
   less3-ui:
     container_name: 'less3-ui'
-    image: 'jchristn/less3-ui:v2.1.12'
+    image: 'jchristn77/less3-ui:v2.1.12'
     ports:
       - "3000:3000"
     stdin_open: true

@@ -17,9 +17,10 @@ interface WriteObjectModalProps {
   open: boolean;
   onCancel: () => void;
   onSuccess?: () => void;
+  currentPrefix?: string;
 }
 
-const WriteObjectModal: React.FC<WriteObjectModalProps> = ({ bucket, open, onCancel, onSuccess }) => {
+const WriteObjectModal: React.FC<WriteObjectModalProps> = ({ bucket, open, onCancel, onSuccess, currentPrefix = '' }) => {
   const [form] = Form.useForm<WriteObjectFormValues>();
   const [writeBucketObject, { isLoading: isWritingObject }] = useWriteBucketObjectMutation();
 
@@ -31,9 +32,10 @@ const WriteObjectModal: React.FC<WriteObjectModalProps> = ({ bucket, open, onCan
 
     try {
       const values = await form.validateFields();
+      const objectKey = currentPrefix + values.filename;
       await writeBucketObject({
         bucketGUID: bucket.Name,
-        objectKey: values.filename,
+        objectKey,
         content: values.content,
       }).unwrap();
 

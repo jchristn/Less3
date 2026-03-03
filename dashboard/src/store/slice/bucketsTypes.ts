@@ -60,6 +60,16 @@ export interface WriteBucketObjectResponse {
   success: boolean;
 }
 
+export interface UploadBucketObjectParams {
+  bucketGUID: string;
+  objectKey: string;
+  file: File;
+}
+
+export interface UploadBucketObjectResponse {
+  success: boolean;
+}
+
 export interface DeleteBucketObjectParams {
   bucketGUID: string;
   objectKey: string;

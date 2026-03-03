@@ -24,6 +24,8 @@ import type {
   DownloadBucketObjectResponse,
   WriteBucketObjectParams,
   WriteBucketObjectResponse,
+  UploadBucketObjectParams,
+  UploadBucketObjectResponse,
   DeleteBucketObjectParams,
   DeleteBucketObjectResponse,
   WriteBucketTagsParams,
@@ -68,6 +70,8 @@ export type {
   DownloadBucketObjectResponse,
   WriteBucketObjectParams,
   WriteBucketObjectResponse,
+  UploadBucketObjectParams,
+  UploadBucketObjectResponse,
   DeleteBucketObjectParams,
   DeleteBucketObjectResponse,
   WriteBucketTagsParams,
@@ -363,6 +367,44 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
             error: {
               status: 'FETCH_ERROR',
               data: error?.message || 'Failed to write object',
+            },
+          };
+        }
+      },
+    }),
+
+    uploadBucketObject: build.mutation<UploadBucketObjectResponse, UploadBucketObjectParams>({
+      async queryFn({ bucketGUID, objectKey, file }) {
+        try {
+          const baseUrl = getBaseUrl();
+          const response = await fetch(`${baseUrl}/${bucketGUID}/${objectKey}`, {
+            method: 'PUT',
+            headers: {
+              Authorization: AWS_AUTH_HEADER,
+              'Content-Type': file.type || 'application/octet-stream',
+            },
+            body: file,
+          });
+
+          if (!response.ok) {
+            return {
+              error: {
+                status: response.status,
+                data: `Failed to upload object: ${response.statusText}`,
+              },
+            };
+          }
+
+          return {
+            data: {
+              success: true,
+            },
+          };
+        } catch (error: any) {
+          return {
+            error: {
+              status: 'FETCH_ERROR',
+              data: error?.message || 'Failed to upload object',
             },
           };
         }
@@ -903,6 +945,7 @@ export const {
   useListBucketObjectsQuery,
   useLazyDownloadBucketObjectQuery,
   useWriteBucketObjectMutation,
+  useUploadBucketObjectMutation,
   useDeleteBucketObjectMutation,
   useDeleteMultipleObjectsMutation,
   useWriteBucketTagsMutation,

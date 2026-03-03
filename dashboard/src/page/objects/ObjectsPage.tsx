@@ -9,9 +9,9 @@ import {
   DeleteOutlined,
   TagOutlined,
   FolderOutlined,
+  FolderAddOutlined,
   FileOutlined,
   HomeOutlined,
-  RollbackOutlined,
   ReloadOutlined,
 } from '@ant-design/icons';
 import { Breadcrumb } from 'antd';
@@ -32,6 +32,8 @@ import {
   useLazyDownloadBucketObjectQuery,
   useDeleteBucketObjectMutation,
   useDeleteMultipleObjectsMutation,
+  useWriteBucketObjectMutation,
+  useUploadBucketObjectMutation,
   useWriteObjectTagsMutation,
   useGetObjectTagsQuery,
   useDeleteObjectTagsMutation,
@@ -95,6 +97,11 @@ const ObjectsPage: React.FC = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [isBulkDeleteModalVisible, setIsBulkDeleteModalVisible] = useState(false);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  const [isCreateFolderModalVisible, setIsCreateFolderModalVisible] = useState(false);
+  const [folderForm] = Form.useForm<{ folderName: string }>();
+  const [isDeleteFolderModalVisible, setIsDeleteFolderModalVisible] = useState(false);
+  const [deletingFolderPrefix, setDeletingFolderPrefix] = useState<string | null>(null);
+  const [isDeletingFolder, setIsDeletingFolder] = useState(false);
 
   const { data: bucketsData, isLoading: isLoadingBuckets } = useGetBucketsQuery();
 
@@ -107,6 +114,12 @@ const ObjectsPage: React.FC = () => {
   const [downloadBucketObject] = useLazyDownloadBucketObjectQuery();
   const [deleteBucketObject, { isLoading: isDeleting }] = useDeleteBucketObjectMutation();
   const [deleteMultipleObjects] = useDeleteMultipleObjectsMutation();
+  const [writeBucketObject] = useWriteBucketObjectMutation();
+  const [uploadBucketObject] = useUploadBucketObjectMutation();
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number } | null>(null);
+  const dragCounterRef = React.useRef(0);
   const [writeObjectTags, { isLoading: isWritingTags }] = useWriteObjectTagsMutation();
   const [deleteObjectTags, { isLoading: isDeletingTags }] = useDeleteObjectTagsMutation();
   const [writeObjectACL, { isLoading: isWritingACL }] = useWriteObjectACLMutation();
@@ -204,6 +217,21 @@ const ObjectsPage: React.FC = () => {
   const filteredObjects = useMemo(() => {
     const { folders, files } = objectsAtCurrentLevel;
 
+    // Create ".." parent directory entry when inside a subfolder
+    const parentEntry: BucketObject[] = currentPrefix
+      ? [
+          {
+            Key: '..',
+            LastModified: '',
+            ETag: '',
+            Size: 0,
+            StorageClass: '',
+            ContentType: 'folder',
+            Owner: { ID: '', DisplayName: '' },
+          },
+        ]
+      : [];
+
     // Create virtual folder objects for display
     const folderObjects: BucketObject[] = folders.map((folderName) => ({
       Key: currentPrefix + folderName + '/',
@@ -215,13 +243,14 @@ const ObjectsPage: React.FC = () => {
       Owner: { ID: '', DisplayName: '' },
     }));
 
-    // Combine folders and files
-    const allItems = [...folderObjects, ...files];
+    // Combine parent entry, folders and files
+    const allItems = [...parentEntry, ...folderObjects, ...files];
 
     const q = searchText.trim().toLowerCase();
     if (!q) return allItems;
 
     return allItems.filter((obj) => {
+      if (obj.Key === '..') return true; // Always show parent entry
       const key = obj.Key?.toLowerCase() ?? '';
       const contentType = obj.ContentType?.toLowerCase() ?? '';
       const storageClass = obj.StorageClass?.toLowerCase() ?? '';
@@ -270,6 +299,162 @@ const ObjectsPage: React.FC = () => {
       setSelectedRowKeys([]);
     }
     setSearchText('');
+  };
+
+  const handleCreateFolder = () => {
+    if (!selectedBucketName) {
+      message.warning('Please select a bucket first');
+      return;
+    }
+    folderForm.resetFields();
+    setIsCreateFolderModalVisible(true);
+  };
+
+  const handleCreateFolderOk = async () => {
+    if (!selectedBucketName) return;
+
+    try {
+      const values = await folderForm.validateFields();
+      const folderName = values.folderName.trim().replace(/\/+$/, ''); // Remove trailing slashes
+      const folderKey = currentPrefix + folderName + '/';
+
+      await writeBucketObject({
+        bucketGUID: selectedBucketName,
+        objectKey: folderKey,
+        content: '',
+      }).unwrap();
+
+      message.success(`Folder "${folderName}" created successfully`);
+      setIsCreateFolderModalVisible(false);
+      folderForm.resetFields();
+      refetchObjects();
+    } catch (error: any) {
+      if (error?.errorFields) return;
+      message.error(error?.data?.data || error?.message || 'Failed to create folder');
+    }
+  };
+
+  const handleDeleteFolder = (folderKey: string) => {
+    setDeletingFolderPrefix(folderKey);
+    setIsDeleteFolderModalVisible(true);
+  };
+
+  const handleDeleteFolderConfirm = async () => {
+    if (!selectedBucketName || !deletingFolderPrefix || !bucketObjectsData?.Contents) return;
+
+    setIsDeletingFolder(true);
+
+    // Collect all object keys under this folder prefix
+    const keysToDelete = bucketObjectsData.Contents
+      .filter((obj) => obj.Key.startsWith(deletingFolderPrefix))
+      .map((obj) => obj.Key);
+
+    if (keysToDelete.length === 0) {
+      message.info('Folder is empty');
+      setIsDeletingFolder(false);
+      setIsDeleteFolderModalVisible(false);
+      setDeletingFolderPrefix(null);
+      return;
+    }
+
+    try {
+      const result = await deleteMultipleObjects({
+        bucketGUID: selectedBucketName,
+        objectKeys: keysToDelete,
+      }).unwrap();
+
+      const successCount = result.deleted.length;
+      const failCount = result.errors.length;
+
+      if (failCount === 0) {
+        message.success(`Folder and ${successCount} object(s) deleted successfully`);
+      } else {
+        message.warning(`Deleted ${successCount} object(s), ${failCount} failed`);
+      }
+    } catch (error: any) {
+      message.error(error?.data || 'Failed to delete folder');
+    }
+
+    setIsDeletingFolder(false);
+    setIsDeleteFolderModalVisible(false);
+    setDeletingFolderPrefix(null);
+    refetchObjects();
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current++;
+    if (e.dataTransfer.types.includes('Files')) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current--;
+    if (dragCounterRef.current === 0) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    dragCounterRef.current = 0;
+
+    if (!selectedBucketName) {
+      message.warning('Please select a bucket first');
+      return;
+    }
+
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length === 0) return;
+
+    setIsUploading(true);
+    setUploadProgress({ done: 0, total: files.length });
+
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const file of files) {
+      try {
+        const objectKey = currentPrefix + file.name;
+        await uploadBucketObject({
+          bucketGUID: selectedBucketName,
+          objectKey,
+          file,
+        }).unwrap();
+        successCount++;
+      } catch {
+        failCount++;
+      }
+      setUploadProgress({ done: successCount + failCount, total: files.length });
+    }
+
+    setIsUploading(false);
+    setUploadProgress(null);
+
+    if (failCount === 0) {
+      message.success(`Uploaded ${successCount} file(s) successfully`);
+    } else {
+      message.warning(`Uploaded ${successCount} file(s), ${failCount} failed`);
+    }
+
+    refetchObjects();
+  };
+
+  // Count objects under a folder prefix
+  const getFolderObjectCount = (folderPrefix: string): number => {
+    if (!bucketObjectsData?.Contents) return 0;
+    return bucketObjectsData.Contents.filter((obj) => obj.Key.startsWith(folderPrefix)).length;
   };
 
   const handleDownloadObject = async (record: BucketObject) => {
@@ -646,19 +831,24 @@ const ObjectsPage: React.FC = () => {
       key: 'Key',
       ellipsis: true,
       render: (key: string, record: BucketObject) => {
+        // ".." parent directory entry
+        if (key === '..') {
+          return (
+            <Less3Flex align="center" gap={8} onClick={navigateUp} style={{ cursor: 'pointer', color: 'var(--ant-color-primary)' }}>
+              <FolderOutlined style={{ fontSize: 16 }} />
+              <span>..</span>
+            </Less3Flex>
+          );
+        }
+
         const displayName = getDisplayName(key);
         const isFolderItem = isFolder(key);
 
         if (isFolderItem) {
           return (
-            <Less3Flex align="center" gap={8}>
-              <FolderOutlined style={{ color: 'var(--ant-color-primary)', fontSize: 16 }} />
-              <span
-                style={{ cursor: 'pointer', color: 'var(--ant-color-primary)' }}
-                onClick={() => navigateToFolder(key)}
-              >
-                {displayName}
-              </span>
+            <Less3Flex align="center" gap={8} onClick={() => navigateToFolder(key)} style={{ cursor: 'pointer', color: 'var(--ant-color-primary)' }}>
+              <FolderOutlined style={{ fontSize: 16 }} />
+              <span>{displayName}</span>
             </Less3Flex>
           );
         }
@@ -706,15 +896,41 @@ const ObjectsPage: React.FC = () => {
       title: 'Actions',
       key: 'Actions',
       render: (_: any, record: BucketObject) => {
+        if (record.Key === '..') return null;
+
         const dropdownKey = record.Key || '';
         const isOpen = openDropdownKey === dropdownKey;
+        const isFolderItem = isFolder(record.Key);
 
-        const menuItems: MenuProps['items'] = [
+        const folderMenuItems: MenuProps['items'] = [
+          {
+            key: 'open-folder',
+            label: 'Open Folder',
+            onClick: () => {
+              setOpenDropdownKey(null);
+              navigateToFolder(record.Key);
+            },
+          },
+          {
+            type: 'divider',
+          },
+          {
+            key: 'delete-folder',
+            label: 'Delete Folder',
+            danger: true,
+            onClick: () => {
+              setOpenDropdownKey(null);
+              handleDeleteFolder(record.Key);
+            },
+          },
+        ];
+
+        const fileMenuItems: MenuProps['items'] = [
           {
             key: 'write-tags',
             label: 'Write Tags',
             onClick: () => {
-              setOpenDropdownKey(null); // Close dropdown immediately
+              setOpenDropdownKey(null);
               handleWriteObjectTags(record);
             },
           },
@@ -722,7 +938,7 @@ const ObjectsPage: React.FC = () => {
             key: 'read-tags',
             label: 'Read Tags',
             onClick: () => {
-              setOpenDropdownKey(null); // Close dropdown immediately
+              setOpenDropdownKey(null);
               handleViewObjectTags(record);
             },
           },
@@ -730,7 +946,7 @@ const ObjectsPage: React.FC = () => {
             key: 'delete-tags',
             label: 'Delete Tags',
             onClick: () => {
-              setOpenDropdownKey(null); // Close dropdown immediately
+              setOpenDropdownKey(null);
               handleDeleteObjectTags(record);
             },
           },
@@ -741,7 +957,7 @@ const ObjectsPage: React.FC = () => {
             key: 'write-acl',
             label: 'Write ACL',
             onClick: () => {
-              setOpenDropdownKey(null); // Close dropdown immediately
+              setOpenDropdownKey(null);
               handleWriteObjectACL(record);
             },
           },
@@ -749,7 +965,7 @@ const ObjectsPage: React.FC = () => {
             key: 'read-acl',
             label: 'Read ACL',
             onClick: () => {
-              setOpenDropdownKey(null); // Close dropdown immediately
+              setOpenDropdownKey(null);
               handleViewObjectACL(record);
             },
           },
@@ -760,20 +976,22 @@ const ObjectsPage: React.FC = () => {
             key: 'download',
             label: 'Download Object',
             onClick: () => {
-              setOpenDropdownKey(null); // Close dropdown immediately
+              setOpenDropdownKey(null);
               handleDownloadObject(record);
             },
-            disabled: isFolder(record.Key) || downloadingObjectKey === record.Key,
+            disabled: downloadingObjectKey === record.Key,
           },
           {
             key: 'delete',
             label: 'Delete Object',
             onClick: () => {
-              setOpenDropdownKey(null); // Close dropdown immediately
+              setOpenDropdownKey(null);
               handleDeleteObject(record);
             },
           },
         ];
+
+        const menuItems = isFolderItem ? folderMenuItems : fileMenuItems;
 
         return (
           <Less3Dropdown
@@ -830,6 +1048,9 @@ const ObjectsPage: React.FC = () => {
               <Less3Button icon={<ReloadOutlined />} onClick={() => refetchObjects()} loading={isLoadingObjects}>
                 Refresh
               </Less3Button>
+              <Less3Button icon={<FolderAddOutlined />} onClick={handleCreateFolder}>
+                Create Folder
+              </Less3Button>
               <Less3Button type="primary" icon={<PlusOutlined />} onClick={handleWriteObject}>
                 Write Object
               </Less3Button>
@@ -838,108 +1059,159 @@ const ObjectsPage: React.FC = () => {
         </Less3Flex>
       }
     >
-      {!selectedBucketName ? (
-        <div style={{ textAlign: 'center', padding: '40px' }}>
-          <Less3Text type="secondary">Please select a bucket to view its objects</Less3Text>
-        </div>
-      ) : isLoadingObjects ? (
-        <div style={{ textAlign: 'center', padding: '40px' }}>Loading objects...</div>
-      ) : !bucketObjectsData || (bucketObjectsData.Contents.length === 0 && !currentPrefix) ? (
-        <div style={{ textAlign: 'center', padding: '40px' }}>
-          <Less3Text type="secondary">No objects found in bucket &quot;{selectedBucket?.Name}&quot;</Less3Text>
-        </div>
-      ) : (
-        <Less3Flex vertical gap={16}>
-          {bucketObjectsData?.IsTruncated && (
-            <Less3Flex justify="flex-end" align="center" style={{ padding: '0 4px' }}>
-              <Less3Text type="warning" style={{ fontSize: '12px' }}>
-                Results truncated - not all objects are shown
+      <div
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+        style={{ position: 'relative', minHeight: 200 }}
+      >
+        {/* Drag overlay */}
+        {isDragging && selectedBucketName && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              zIndex: 10,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'rgba(var(--ant-color-primary-rgb, 34, 175, 121), 0.06)',
+              border: '2px dashed var(--ant-color-primary)',
+              borderRadius: 8,
+              pointerEvents: 'none',
+            }}
+          >
+            <Less3Flex vertical align="center" gap={8}>
+              <PlusOutlined style={{ fontSize: 32, color: 'var(--ant-color-primary)' }} />
+              <Less3Text strong style={{ fontSize: 16, color: 'var(--ant-color-primary)' }}>
+                Drop files to upload{currentPrefix ? ` to ${currentPrefix}` : ''}
               </Less3Text>
             </Less3Flex>
-          )}
-
-          {/* Breadcrumb navigation */}
-          <Less3Flex align="center" gap={8} style={{ padding: '0 4px' }}>
-            <Breadcrumb
-              items={[
-                {
-                  title: (
-                    <span
-                      onClick={navigateToRoot}
-                      style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
-                    >
-                      <HomeOutlined />
-                      <span>{selectedBucket?.Name || 'Root'}</span>
-                    </span>
-                  ),
-                },
-                ...breadcrumbParts.map((part, index) => ({
-                  title: (
-                    <span
-                      onClick={() => navigateToBreadcrumb(index)}
-                      style={{ cursor: index < breadcrumbParts.length - 1 ? 'pointer' : 'default' }}
-                    >
-                      {part}
-                    </span>
-                  ),
-                })),
-              ]}
-            />
-            {currentPrefix && (
-              <Less3Button
-                type="text"
-                size="small"
-                icon={<RollbackOutlined />}
-                onClick={navigateUp}
-                style={{ marginLeft: 8 }}
-              >
-                Go up
-              </Less3Button>
-            )}
-            <Less3Flex style={{ marginLeft: 'auto' }} align="center" gap={8}>
-              {selectedRowKeys.length > 0 && (
-                <Less3Text type="secondary" style={{ fontSize: 12 }}>
-                  {selectedRowKeys.length} selected
-                </Less3Text>
-              )}
-              <Less3Button
-                type="text"
-                danger
-                icon={<DeleteOutlined />}
-                onClick={handleBulkDelete}
-                disabled={selectedRowKeys.length === 0}
-              >
-                Delete
-              </Less3Button>
-            </Less3Flex>
-          </Less3Flex>
-
-          <div className="responsive-scrollbar" style={{ width: '100%' }}>
-            <Less3Table
-              columns={columns as ColumnsType<any>}
-              dataSource={filteredObjects}
-              loading={isLoadingObjects}
-              rowKey="Key"
-              scroll={{ x: true }}
-              rowSelection={{
-                selectedRowKeys,
-                onChange: (newSelectedRowKeys: React.Key[]) => {
-                  setSelectedRowKeys(newSelectedRowKeys);
-                },
-                getCheckboxProps: (record: BucketObject) => ({
-                  disabled: record.Key.endsWith('/'), // Disable checkbox for folders
-                }),
-              }}
-            />
           </div>
-        </Less3Flex>
-      )}
+        )}
+
+        {/* Upload progress overlay */}
+        {isUploading && uploadProgress && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              zIndex: 10,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'rgba(0, 0, 0, 0.04)',
+              borderRadius: 8,
+            }}
+          >
+            <Less3Flex vertical align="center" gap={8}>
+              <ReloadOutlined spin style={{ fontSize: 24, color: 'var(--ant-color-primary)' }} />
+              <Less3Text strong>
+                Uploading {uploadProgress.done} / {uploadProgress.total} file(s)...
+              </Less3Text>
+            </Less3Flex>
+          </div>
+        )}
+
+        {!selectedBucketName ? (
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <Less3Text type="secondary">Please select a bucket to view its objects</Less3Text>
+          </div>
+        ) : isLoadingObjects ? (
+          <div style={{ textAlign: 'center', padding: '40px' }}>Loading objects...</div>
+        ) : !bucketObjectsData || (bucketObjectsData.Contents.length === 0 && !currentPrefix) ? (
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <Less3Flex vertical align="center" gap={12}>
+              <Less3Text type="secondary">No objects found in bucket &quot;{selectedBucket?.Name}&quot;</Less3Text>
+              <Less3Text type="secondary" style={{ fontSize: 13 }}>
+                Drag and drop files here to upload
+              </Less3Text>
+            </Less3Flex>
+          </div>
+        ) : (
+          <Less3Flex vertical gap={16}>
+            {bucketObjectsData?.IsTruncated && (
+              <Less3Flex justify="flex-end" align="center" style={{ padding: '0 4px' }}>
+                <Less3Text type="warning" style={{ fontSize: '12px' }}>
+                  Results truncated - not all objects are shown
+                </Less3Text>
+              </Less3Flex>
+            )}
+
+            {/* Breadcrumb navigation */}
+            <Less3Flex align="center" gap={8} style={{ padding: '0 4px' }}>
+              <Breadcrumb
+                items={[
+                  {
+                    title: (
+                      <span
+                        onClick={navigateToRoot}
+                        style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+                      >
+                        <HomeOutlined />
+                        <span>{selectedBucket?.Name || 'Root'}</span>
+                      </span>
+                    ),
+                  },
+                  ...breadcrumbParts.map((part, index) => ({
+                    title: (
+                      <span
+                        onClick={() => navigateToBreadcrumb(index)}
+                        style={{ cursor: index < breadcrumbParts.length - 1 ? 'pointer' : 'default' }}
+                      >
+                        {part}
+                      </span>
+                    ),
+                  })),
+                ]}
+              />
+              <Less3Flex style={{ marginLeft: 'auto' }} align="center" gap={8}>
+                {selectedRowKeys.length > 0 && (
+                  <Less3Text type="secondary" style={{ fontSize: 12 }}>
+                    {selectedRowKeys.length} selected
+                  </Less3Text>
+                )}
+                <Less3Button
+                  type="text"
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={handleBulkDelete}
+                  disabled={selectedRowKeys.length === 0}
+                >
+                  Delete
+                </Less3Button>
+              </Less3Flex>
+            </Less3Flex>
+
+            <div className="responsive-scrollbar" style={{ width: '100%' }}>
+              <Less3Table
+                columns={columns as ColumnsType<any>}
+                dataSource={filteredObjects}
+                loading={isLoadingObjects}
+                rowKey="Key"
+                scroll={{ x: true }}
+                rowSelection={{
+                  selectedRowKeys,
+                  onChange: (newSelectedRowKeys: React.Key[]) => {
+                    setSelectedRowKeys(newSelectedRowKeys);
+                  },
+                  getCheckboxProps: (record: BucketObject) => ({
+                    disabled: record.Key === '..' || record.Key.endsWith('/'),
+                  }),
+                }}
+              />
+            </div>
+          </Less3Flex>
+        )}
+      </div>
 
       <WriteObjectModal
         bucket={selectedBucket}
         open={isWriteObjectModalVisible}
         onCancel={handleWriteObjectCancel}
         onSuccess={handleWriteObjectSuccess}
+        currentPrefix={currentPrefix}
       />
 
       <Less3Modal
@@ -991,6 +1263,71 @@ const ObjectsPage: React.FC = () => {
           </p>
           <p style={{ fontSize: '13px', color: '#8c8c8c' }}>
             This action cannot be undone. All selected objects will be permanently deleted.
+          </p>
+        </Less3Flex>
+      </Less3Modal>
+
+      <Less3Modal
+        title={`Create Folder${currentPrefix ? ` in ${currentPrefix}` : ''}`}
+        open={isCreateFolderModalVisible}
+        onOk={handleCreateFolderOk}
+        onCancel={() => {
+          setIsCreateFolderModalVisible(false);
+          folderForm.resetFields();
+        }}
+        width={500}
+        centered
+        keyboard={true}
+      >
+        <Form form={folderForm} layout="vertical" autoComplete="off">
+          <Less3FormItem
+            label="Folder Name"
+            name="folderName"
+            rules={[
+              { required: true, message: 'Please enter a folder name' },
+              {
+                pattern: /^[^/]+$/,
+                message: 'Folder name cannot contain slashes',
+              },
+            ]}
+          >
+            <Less3Input placeholder="Enter folder name" />
+          </Less3FormItem>
+        </Form>
+      </Less3Modal>
+
+      <Less3Modal
+        title="Delete Folder"
+        open={isDeleteFolderModalVisible}
+        onCancel={() => {
+          setIsDeleteFolderModalVisible(false);
+          setDeletingFolderPrefix(null);
+        }}
+        confirmLoading={isDeletingFolder}
+        centered
+        keyboard={true}
+        footer={[
+          <Less3Button
+            key="cancel"
+            onClick={() => {
+              setIsDeleteFolderModalVisible(false);
+              setDeletingFolderPrefix(null);
+            }}
+            disabled={isDeletingFolder}
+          >
+            Cancel
+          </Less3Button>,
+          <Less3Button key="confirm" type="primary" danger loading={isDeletingFolder} onClick={handleDeleteFolderConfirm}>
+            Delete
+          </Less3Button>,
+        ]}
+      >
+        <Less3Flex vertical={true} gap={16}>
+          <p>
+            Are you sure you want to delete the folder <strong>&quot;{deletingFolderPrefix}&quot;</strong> and all its contents?
+          </p>
+          <p style={{ fontSize: '13px', color: '#8c8c8c' }}>
+            This will delete {deletingFolderPrefix ? getFolderObjectCount(deletingFolderPrefix) : 0} object(s). This action cannot be undone.
           </p>
         </Less3Flex>
       </Less3Modal>

@@ -2,7 +2,7 @@
 'use client';
 import React, { useMemo, useState } from 'react';
 import { Form, message, Descriptions, MenuProps } from 'antd';
-import { PlusOutlined, SearchOutlined, MoreOutlined } from '@ant-design/icons';
+import { PlusOutlined, SearchOutlined, MoreOutlined, ReloadOutlined } from '@ant-design/icons';
 import Less3Table from '#/components/base/table/Table';
 import Less3Button from '#/components/base/button/Button';
 import Less3Modal from '#/components/base/modal/Modal';
@@ -180,6 +180,9 @@ const UsersPage: React.FC = () => {
             style={{ width: 250 }}
             allowClear
           />
+          <Less3Button icon={<ReloadOutlined />} onClick={() => refetch()} loading={isLoading}>
+            Refresh
+          </Less3Button>
           <Less3Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
             Create User
           </Less3Button>
@@ -191,7 +194,6 @@ const UsersPage: React.FC = () => {
         dataSource={filteredData}
         loading={isLoading}
         rowKey="GUID"
-        scroll={{ x: true }}
       />
 
       <Less3Modal

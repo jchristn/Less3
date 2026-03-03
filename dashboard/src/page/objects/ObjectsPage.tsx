@@ -12,6 +12,7 @@ import {
   FileOutlined,
   HomeOutlined,
   RollbackOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
 import { Breadcrumb } from 'antd';
 import { useSearchParams } from 'next/navigation';
@@ -690,12 +691,6 @@ const ObjectsPage: React.FC = () => {
       },
     },
     {
-      title: 'Content Type',
-      dataIndex: 'ContentType',
-      key: 'ContentType',
-      ellipsis: true,
-    },
-    {
       title: 'ETag',
       dataIndex: 'ETag',
       key: 'ETag',
@@ -706,14 +701,6 @@ const ObjectsPage: React.FC = () => {
       dataIndex: 'StorageClass',
       key: 'StorageClass',
       ellipsis: true,
-    },
-    {
-      title: 'Owner',
-      key: 'Owner',
-      ellipsis: true,
-      render: (_: any, record: BucketObject) => (
-        <Less3Text>{record.Owner?.DisplayName || record.Owner?.ID || '-'}</Less3Text>
-      ),
     },
     {
       title: 'Actions',
@@ -840,6 +827,9 @@ const ObjectsPage: React.FC = () => {
                 style={{ width: 250 }}
                 allowClear
               />
+              <Less3Button icon={<ReloadOutlined />} onClick={() => refetchObjects()} loading={isLoadingObjects}>
+                Refresh
+              </Less3Button>
               <Less3Button type="primary" icon={<PlusOutlined />} onClick={handleWriteObject}>
                 Write Object
               </Less3Button>

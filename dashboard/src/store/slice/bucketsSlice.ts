@@ -1,6 +1,6 @@
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query/react';
 import sdkSlice, { ApiBaseQueryArgs } from '#/store/rtk/rtkSdkInstance';
-import { buildApiUrl } from '#/services/sdk.service';
+import { buildApiUrl, getBaseUrl } from '#/services/sdk.service';
 import {
   parseListBucketResult,
   parseListAllMyBucketsResult,
@@ -10,7 +10,6 @@ import {
   generateBucketACLXml,
   type ListBucketResult,
 } from '#/utils/xmlUtils';
-import { apiEndpointURL } from '#/constants/config';
 import type {
   Bucket,
   BucketListResponse,
@@ -123,12 +122,13 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     getBuckets: build.query<BucketListResponse, void>({
       async queryFn() {
         try {
-          const baseUrl = apiEndpointURL.endsWith('/') ? apiEndpointURL.slice(0, -1) : apiEndpointURL;
+          const baseUrl = getBaseUrl();
           const response = await fetch(`${baseUrl}/`, {
             method: 'GET',
             headers: {
               Authorization: AWS_AUTH_HEADER,
             },
+            cache: 'no-store',
           });
 
           if (!response.ok) {
@@ -177,7 +177,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     createBucket: build.mutation<BucketResponse, CreateBucketRequest>({
       async queryFn({ Name: bucketName }) {
         try {
-          const baseUrl = apiEndpointURL.endsWith('/') ? apiEndpointURL.slice(0, -1) : apiEndpointURL;
+          const baseUrl = getBaseUrl();
           const response = await fetch(`${baseUrl}/${bucketName}`, {
             method: 'PUT',
             headers: {
@@ -216,7 +216,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     deleteBucket: build.mutation<DeleteBucketResponse, DeleteBucketParams>({
       async queryFn({ bucketName }) {
         try {
-          const baseUrl = apiEndpointURL.endsWith('/') ? apiEndpointURL.slice(0, -1) : apiEndpointURL;
+          const baseUrl = getBaseUrl();
           const response = await fetch(`${baseUrl}/${bucketName}`, {
             method: 'DELETE',
             headers: {
@@ -257,12 +257,13 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     listBucketObjects: build.query<ListBucketResult, ListBucketObjectsParams>({
       async queryFn({ bucketGUID }) {
         try {
-          const baseUrl = apiEndpointURL.endsWith('/') ? apiEndpointURL.slice(0, -1) : apiEndpointURL;
+          const baseUrl = getBaseUrl();
           const response = await fetch(`${baseUrl}/${bucketGUID}/`, {
             method: 'GET',
             headers: {
               Authorization: AWS_AUTH_HEADER,
             },
+            cache: 'no-store',
           });
 
           if (!response.ok) {
@@ -292,12 +293,13 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     downloadBucketObject: build.query<DownloadBucketObjectResponse, DownloadBucketObjectParams>({
       async queryFn({ bucketGUID, objectKey }) {
         try {
-          const baseUrl = apiEndpointURL.endsWith('/') ? apiEndpointURL.slice(0, -1) : apiEndpointURL;
+          const baseUrl = getBaseUrl();
           const response = await fetch(`${baseUrl}/${bucketGUID}/${objectKey}`, {
             method: 'GET',
             headers: {
               Authorization: AWS_AUTH_HEADER,
             },
+            cache: 'no-store',
           });
 
           if (!response.ok) {
@@ -332,7 +334,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     writeBucketObject: build.mutation<WriteBucketObjectResponse, WriteBucketObjectParams>({
       async queryFn({ bucketGUID, objectKey, content }) {
         try {
-          const baseUrl = apiEndpointURL.endsWith('/') ? apiEndpointURL.slice(0, -1) : apiEndpointURL;
+          const baseUrl = getBaseUrl();
           const response = await fetch(`${baseUrl}/${bucketGUID}/${objectKey}`, {
             method: 'PUT',
             headers: {
@@ -370,7 +372,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     deleteBucketObject: build.mutation<DeleteBucketObjectResponse, DeleteBucketObjectParams>({
       async queryFn({ bucketGUID, objectKey }) {
         try {
-          const baseUrl = apiEndpointURL.endsWith('/') ? apiEndpointURL.slice(0, -1) : apiEndpointURL;
+          const baseUrl = getBaseUrl();
           const response = await fetch(`${baseUrl}/${bucketGUID}/${objectKey}`, {
             method: 'DELETE',
             headers: {
@@ -409,7 +411,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     >({
       async queryFn({ bucketGUID, objectKeys }) {
         try {
-          const baseUrl = apiEndpointURL.endsWith('/') ? apiEndpointURL.slice(0, -1) : apiEndpointURL;
+          const baseUrl = getBaseUrl();
 
           // Build the XML body for S3 DeleteObjects API
           const objectsXml = objectKeys.map((key) => `<Object><Key>${key}</Key></Object>`).join('');
@@ -472,7 +474,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     writeBucketTags: build.mutation<WriteBucketTagsResponse, WriteBucketTagsParams>({
       async queryFn({ bucketName, tags }) {
         try {
-          const baseUrl = apiEndpointURL.endsWith('/') ? apiEndpointURL.slice(0, -1) : apiEndpointURL;
+          const baseUrl = getBaseUrl();
           const xmlBody = generateBucketTaggingXml(tags);
           const response = await fetch(`${baseUrl}/${bucketName}?tagging`, {
             method: 'PUT',
@@ -516,12 +518,13 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     getBucketTags: build.query<GetBucketTagsResponse, GetBucketTagsParams>({
       async queryFn({ bucketName }) {
         try {
-          const baseUrl = apiEndpointURL.endsWith('/') ? apiEndpointURL.slice(0, -1) : apiEndpointURL;
+          const baseUrl = getBaseUrl();
           const response = await fetch(`${baseUrl}/${bucketName}?tagging`, {
             method: 'GET',
             headers: {
               Authorization: AWS_AUTH_HEADER,
             },
+            cache: 'no-store',
           });
 
           if (!response.ok) {
@@ -568,7 +571,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     deleteBucketTags: build.mutation<DeleteBucketTagsResponse, DeleteBucketTagsParams>({
       async queryFn({ bucketName }) {
         try {
-          const baseUrl = apiEndpointURL.endsWith('/') ? apiEndpointURL.slice(0, -1) : apiEndpointURL;
+          const baseUrl = getBaseUrl();
           const response = await fetch(`${baseUrl}/${bucketName}?tagging`, {
             method: 'DELETE',
             headers: {
@@ -609,7 +612,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     writeObjectTags: build.mutation<WriteObjectTagsResponse, WriteObjectTagsParams>({
       async queryFn({ bucketGUID, objectKey, tags }) {
         try {
-          const baseUrl = apiEndpointURL.endsWith('/') ? apiEndpointURL.slice(0, -1) : apiEndpointURL;
+          const baseUrl = getBaseUrl();
           const xmlBody = generateBucketTaggingXml(tags);
           const response = await fetch(`${baseUrl}/${bucketGUID}/${objectKey}?tagging`, {
             method: 'PUT',
@@ -648,12 +651,13 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     getObjectTags: build.query<GetObjectTagsResponse, GetObjectTagsParams>({
       async queryFn({ bucketGUID, objectKey }) {
         try {
-          const baseUrl = apiEndpointURL.endsWith('/') ? apiEndpointURL.slice(0, -1) : apiEndpointURL;
+          const baseUrl = getBaseUrl();
           const response = await fetch(`${baseUrl}/${bucketGUID}/${objectKey}?tagging`, {
             method: 'GET',
             headers: {
               Authorization: AWS_AUTH_HEADER,
             },
+            cache: 'no-store',
           });
 
           if (!response.ok) {
@@ -695,7 +699,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     deleteObjectTags: build.mutation<DeleteObjectTagsResponse, DeleteObjectTagsParams>({
       async queryFn({ bucketGUID, objectKey }) {
         try {
-          const baseUrl = apiEndpointURL.endsWith('/') ? apiEndpointURL.slice(0, -1) : apiEndpointURL;
+          const baseUrl = getBaseUrl();
           const response = await fetch(`${baseUrl}/${bucketGUID}/${objectKey}?tagging`, {
             method: 'DELETE',
             headers: {
@@ -731,7 +735,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     writeBucketACL: build.mutation<WriteBucketACLResponse, WriteBucketACLParams>({
       async queryFn({ bucketName, owner, grants }) {
         try {
-          const baseUrl = apiEndpointURL.endsWith('/') ? apiEndpointURL.slice(0, -1) : apiEndpointURL;
+          const baseUrl = getBaseUrl();
           const xmlBody = generateBucketACLXml(owner, grants);
           const response = await fetch(`${baseUrl}/${bucketName}?acl`, {
             method: 'PUT',
@@ -770,12 +774,13 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     getBucketACL: build.query<GetBucketACLResponse, GetBucketACLParams>({
       async queryFn({ bucketName }) {
         try {
-          const baseUrl = apiEndpointURL.endsWith('/') ? apiEndpointURL.slice(0, -1) : apiEndpointURL;
+          const baseUrl = getBaseUrl();
           const response = await fetch(`${baseUrl}/${bucketName}?acl`, {
             method: 'GET',
             headers: {
               Authorization: AWS_AUTH_HEADER,
             },
+            cache: 'no-store',
           });
 
           if (!response.ok) {
@@ -809,7 +814,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     writeObjectACL: build.mutation<WriteObjectACLResponse, WriteObjectACLParams>({
       async queryFn({ bucketGUID, objectKey, owner, grants }) {
         try {
-          const baseUrl = apiEndpointURL.endsWith('/') ? apiEndpointURL.slice(0, -1) : apiEndpointURL;
+          const baseUrl = getBaseUrl();
           const xmlBody = generateBucketACLXml(owner, grants);
           const response = await fetch(`${baseUrl}/${bucketGUID}/${objectKey}?acl`, {
             method: 'PUT',
@@ -848,12 +853,13 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     getObjectACL: build.query<GetObjectACLResponse, GetObjectACLParams>({
       async queryFn({ bucketGUID, objectKey }) {
         try {
-          const baseUrl = apiEndpointURL.endsWith('/') ? apiEndpointURL.slice(0, -1) : apiEndpointURL;
+          const baseUrl = getBaseUrl();
           const response = await fetch(`${baseUrl}/${bucketGUID}/${objectKey}?acl`, {
             method: 'GET',
             headers: {
               Authorization: AWS_AUTH_HEADER,
             },
+            cache: 'no-store',
           });
 
           if (!response.ok) {

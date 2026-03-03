@@ -19,6 +19,10 @@ a {
 }
 
 .ant-layout-content {
+  background-color: #f8fafc !important;
+}
+
+.theme-dark-mode .ant-layout-content {
   background-color: var(--ant-color-bg-base) !important;
 }
 
@@ -317,15 +321,24 @@ a {
   border-color: var(--ant-color-border) !important;
 }
 
-.ant-card,
+.ant-card {
+  border-color: var(--ant-color-border) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  }
+}
+
 .ant-card-head {
   border-color: var(--ant-color-border) !important;
 }
 
 .ant-table-container {
   border: 1px solid var(--ant-color-border);
-  // padding: 0 30px 10px 30px;
   border-radius: var(--ant-border-radius-lg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
 
   .ant-table-thead {
     tr {

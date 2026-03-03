@@ -11,6 +11,7 @@ import {
   SafetyOutlined,
   FolderOutlined,
   FolderOpenOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
 import Less3Table from '#/components/base/table/Table';
@@ -508,6 +509,9 @@ const BucketsPage: React.FC = () => {
             style={{ width: 250 }}
             allowClear
           />
+          <Less3Button icon={<ReloadOutlined />} onClick={() => refetch()} loading={isLoading}>
+            Refresh
+          </Less3Button>
           <Less3Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
             Create Bucket
           </Less3Button>

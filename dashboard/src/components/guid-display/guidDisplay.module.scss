@@ -9,8 +9,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border-radius: 4px;
   transition: all 0.2s ease;
 
@@ -20,8 +20,9 @@
 }
 
 .defaultIcon {
-  font-size: 14px;
-  color: var(--ant-color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  color: var(--ant-color-text-quaternary);
   transition: color 0.2s ease;
 
   &:hover {

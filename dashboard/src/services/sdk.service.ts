@@ -11,6 +11,12 @@ export const updateSdkEndPoint = (endpoint: string) => {
   apiEndpoint = endpoint.endsWith('/') ? endpoint : `${endpoint}/`;
 };
 
+// Helper function to get API base URL without trailing slash
+export const getBaseUrl = (): string => {
+  const endpoint = getApiEndpoint();
+  return endpoint.endsWith('/') ? endpoint.slice(0, -1) : endpoint;
+};
+
 // Helper function to build full API URL
 export const buildApiUrl = (path: string): string => {
   const baseUrl = getApiEndpoint();

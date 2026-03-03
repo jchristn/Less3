@@ -14,7 +14,7 @@ import {
   ReloadOutlined,
 } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
-import Less3Table from '#/components/base/table/Table';
+import DataTable, { DataTableColumn } from '#/components/DataTable';
 import Less3Button from '#/components/base/button/Button';
 import Less3Modal from '#/components/base/modal/Modal';
 import Less3FormItem from '#/components/base/form/FormItem';
@@ -35,7 +35,6 @@ import {
   useGetBucketACLQuery,
   Bucket,
 } from '#/store/slice/bucketsSlice';
-import type { ColumnsType } from 'antd/es/table';
 import { formatDate } from '#/utils/dateUtils';
 import type { ACLOwner, ACLGrant, ACLGrantee } from '#/utils/xmlUtils';
 import type { BucketTag } from '#/utils/xmlUtils';
@@ -364,37 +363,37 @@ const BucketsPage: React.FC = () => {
     }
   };
 
-  const columns: ColumnsType<Bucket> = [
+  const columns: DataTableColumn<Bucket>[] = [
     {
-      title: 'Name',
-      dataIndex: 'Name',
       key: 'Name',
-      ellipsis: true,
-      sorter: (a: Bucket, b: Bucket) => (a.Name || '').localeCompare(b.Name || ''),
-      render: (name: string, record: Bucket) => (
+      label: 'Name',
+      render: (item) => (
         <Less3Flex align="center" gap={8}>
           <FolderOutlined style={{ color: 'var(--ant-color-primary)', fontSize: 16 }} />
           <span
             style={{ cursor: 'pointer', color: 'var(--ant-color-primary)' }}
-            onClick={() => handleViewObjects(record)}
+            onClick={() => handleViewObjects(item)}
           >
-            {name}
+            {item.Name}
           </span>
         </Less3Flex>
       ),
     },
     {
-      title: 'Date Created',
-      dataIndex: 'CreationDate',
       key: 'CreationDate',
-      ellipsis: true,
-      render: (text: string) => formatDate(text),
+      label: 'Date Created',
+      render: (item) => formatDate(item.CreationDate),
+      filterValue: (item) => formatDate(item.CreationDate),
     },
     {
-      title: 'Actions',
       key: 'actions',
-      render: (_: any, record: Bucket) => {
-        const dropdownKey = record.Name || '';
+      label: 'Actions',
+      width: '80px',
+      isAction: true,
+      sortable: false,
+      filterable: false,
+      render: (item) => {
+        const dropdownKey = item.Name || '';
         const isOpen = openDropdownKey === dropdownKey;
 
         const menuItems: MenuProps['items'] = [
@@ -403,65 +402,59 @@ const BucketsPage: React.FC = () => {
             icon: <FolderOpenOutlined />,
             label: 'View Objects',
             onClick: () => {
-              setOpenDropdownKey(null); // Close dropdown immediately
-              handleViewObjects(record);
+              setOpenDropdownKey(null);
+              handleViewObjects(item);
             },
           },
-          {
-            type: 'divider',
-          },
+          { type: 'divider' },
           {
             key: 'write-tags',
             label: 'Write Tags',
             onClick: () => {
-              setOpenDropdownKey(null); // Close dropdown immediately
-              handleWriteTags(record);
+              setOpenDropdownKey(null);
+              handleWriteTags(item);
             },
           },
           {
             key: 'read-tags',
             label: 'Read Tags',
             onClick: () => {
-              setOpenDropdownKey(null); // Close dropdown immediately
-              handleViewTags(record);
+              setOpenDropdownKey(null);
+              handleViewTags(item);
             },
           },
           {
             key: 'delete-tags',
             label: 'Delete Tags',
             onClick: () => {
-              setOpenDropdownKey(null); // Close dropdown immediately
-              handleDeleteTags(record);
+              setOpenDropdownKey(null);
+              handleDeleteTags(item);
             },
           },
-          {
-            type: 'divider',
-          },
+          { type: 'divider' },
           {
             key: 'write-acl',
             label: 'Write ACL',
             onClick: () => {
-              setOpenDropdownKey(null); // Close dropdown immediately
-              handleWriteACL(record);
+              setOpenDropdownKey(null);
+              handleWriteACL(item);
             },
           },
           {
             key: 'read-acl',
             label: 'Read ACL',
             onClick: () => {
-              setOpenDropdownKey(null); // Close dropdown immediately
-              handleViewACL(record);
+              setOpenDropdownKey(null);
+              handleViewACL(item);
             },
           },
-          {
-            type: 'divider',
-          },
+          { type: 'divider' },
           {
             key: 'delete',
             label: 'Delete Bucket',
             onClick: () => {
-              setOpenDropdownKey(null); // Close dropdown immediately
-              handleDelete(record);
+              setOpenDropdownKey(null);
+              handleDelete(item);
             },
           },
         ];
@@ -518,15 +511,12 @@ const BucketsPage: React.FC = () => {
         </Less3Flex>
       }
     >
-      <div className="responsive-scrollbar" style={{ width: '100%' }}>
-        <Less3Table
-          columns={columns as ColumnsType<any>}
-          dataSource={filteredData}
-          loading={isLoading}
-          rowKey="Name"
-          scroll={{ x: true }}
-        />
-      </div>
+      <DataTable
+        columns={columns}
+        data={filteredData}
+        loading={isLoading}
+        rowKey="Name"
+      />
 
       <Less3Modal
         title="Create Bucket"
@@ -680,28 +670,16 @@ const BucketsPage: React.FC = () => {
             </Less3Text>
           </div>
         ) : bucketTagsData?.tags && bucketTagsData.tags.length > 0 ? (
-          <div className="responsive-scrollbar" style={{ width: '100%' }}>
-            <Less3Table
-              columns={[
-                {
-                  title: 'Key',
-                  dataIndex: 'Key',
-                  key: 'Key',
-                  ellipsis: true,
-                },
-                {
-                  title: 'Value',
-                  dataIndex: 'Value',
-                  key: 'Value',
-                  ellipsis: true,
-                },
-              ]}
-              dataSource={bucketTagsData.tags.map((tag, index) => ({ ...tag, key: index }))}
-              loading={isLoadingTags}
-              pagination={false}
-              scroll={{ x: true }}
-            />
-          </div>
+          <DataTable
+            columns={[
+              { key: 'Key', label: 'Key' },
+              { key: 'Value', label: 'Value' },
+            ]}
+            data={bucketTagsData.tags.map((tag, index) => ({ ...tag, _id: index }))}
+            loading={isLoadingTags}
+            hidePagination
+            rowKey="_id"
+          />
         ) : (
           <div style={{ textAlign: 'center', padding: '40px' }}>
             <Less3Text type="secondary">No tags found for this bucket</Less3Text>
@@ -841,32 +819,30 @@ const BucketsPage: React.FC = () => {
                   ? bucketACLData.acl.AccessControlList.Grant
                   : [bucketACLData.acl.AccessControlList.Grant];
                 return (
-                  <div className="responsive-scrollbar" style={{ width: '100%', marginTop: '8px' }}>
-                    <Less3Table
+                  <div style={{ marginTop: '8px' }}>
+                    <DataTable
                       columns={[
                         {
-                          title: 'Grantee ID',
-                          dataIndex: ['Grantee', 'ID'],
                           key: 'granteeId',
-                          ellipsis: true,
+                          label: 'Grantee ID',
+                          render: (item: ACLGrant) => item.Grantee?.ID,
+                          filterValue: (item: ACLGrant) => item.Grantee?.ID || '',
                         },
                         {
-                          title: 'Grantee Display Name',
-                          dataIndex: ['Grantee', 'DisplayName'],
                           key: 'granteeDisplayName',
-                          ellipsis: true,
+                          label: 'Grantee Display Name',
+                          render: (item: ACLGrant) => item.Grantee?.DisplayName,
+                          filterValue: (item: ACLGrant) => item.Grantee?.DisplayName || '',
                         },
                         {
-                          title: 'Permission',
-                          dataIndex: 'Permission',
-                          key: 'permission',
-                          ellipsis: true,
+                          key: 'Permission',
+                          label: 'Permission',
                         },
                       ]}
-                      dataSource={grants.map((grant: ACLGrant, index: number) => ({ ...grant, key: index }))}
+                      data={grants.map((grant: ACLGrant, index: number) => ({ ...grant, _id: index }))}
                       loading={isLoadingACL}
-                      pagination={false}
-                      scroll={{ x: true }}
+                      hidePagination
+                      rowKey="_id"
                     />
                   </div>
                 );

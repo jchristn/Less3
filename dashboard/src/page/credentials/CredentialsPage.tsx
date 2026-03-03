@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { Form, message, Descriptions, MenuProps } from 'antd';
 import { PlusOutlined, SearchOutlined, MoreOutlined, ReloadOutlined } from '@ant-design/icons';
-import Less3Table from '#/components/base/table/Table';
+import DataTable, { DataTableColumn } from '#/components/DataTable';
 import Less3Button from '#/components/base/button/Button';
 import Less3Modal from '#/components/base/modal/Modal';
 import Less3FormItem from '#/components/base/form/FormItem';
@@ -22,7 +22,6 @@ import {
   Credential,
 } from '#/store/slice/credentialsSlice';
 import { useGetUsersQuery } from '#/store/slice/usersSlice';
-import type { ColumnsType } from 'antd/es/table';
 import { formatDate } from '#/utils/dateUtils';
 
 interface CredentialFormValues {
@@ -118,57 +117,55 @@ const CredentialsPage: React.FC = () => {
     }
   };
 
-  const columns: ColumnsType<Credential> = [
+  const columns: DataTableColumn<Credential>[] = [
     {
-      title: 'GUID',
-      dataIndex: 'GUID',
       key: 'GUID',
-      width: 320,
-      sorter: (a: Credential, b: Credential) => (a.GUID || '').localeCompare(b.GUID || ''),
-      render: (guid: string) => <GuidDisplay guid={guid} />,
+      label: 'GUID',
+      width: '320px',
+      render: (item) => <GuidDisplay guid={item.GUID} />,
     },
     {
-      title: 'User',
-      dataIndex: 'UserGUID',
       key: 'UserGUID',
-      width: 150,
-      render: (userGUID: string) => getUserName(userGUID),
+      label: 'User',
+      width: '150px',
+      render: (item) => getUserName(item.UserGUID),
+      filterValue: (item) => getUserName(item.UserGUID),
     },
     {
-      title: 'Description',
-      dataIndex: 'Description',
       key: 'Description',
-      width: 200,
+      label: 'Description',
+      width: '200px',
     },
     {
-      title: 'Access Key',
-      dataIndex: 'AccessKey',
       key: 'AccessKey',
-      width: 150,
+      label: 'Access Key',
+      width: '150px',
     },
     {
-      title: 'Date Created',
-      dataIndex: 'CreatedUtc',
       key: 'CreatedUtc',
-      width: 180,
-      render: (text: string) => formatDate(text),
+      label: 'Date Created',
+      width: '180px',
+      render: (item) => formatDate(item.CreatedUtc),
+      filterValue: (item) => formatDate(item.CreatedUtc),
     },
     {
-      title: 'Actions',
       key: 'actions',
-      width: 80,
-      fixed: 'right',
-      render: (_: any, record: Credential) => {
+      label: 'Actions',
+      width: '80px',
+      isAction: true,
+      sortable: false,
+      filterable: false,
+      render: (item) => {
         const menuItems: MenuProps['items'] = [
           {
             key: 'metadata',
             label: 'View Metadata',
-            onClick: () => handleViewMetadata(record),
+            onClick: () => handleViewMetadata(item),
           },
           {
             key: 'delete',
             label: 'Delete Credential',
-            onClick: () => handleDelete(record),
+            onClick: () => handleDelete(item),
           },
         ];
 
@@ -221,9 +218,9 @@ const CredentialsPage: React.FC = () => {
         </Less3Flex>
       }
     >
-      <Less3Table
-        columns={columns as ColumnsType<any>}
-        dataSource={filteredData}
+      <DataTable
+        columns={columns}
+        data={filteredData}
         loading={isLoading}
         rowKey="GUID"
       />

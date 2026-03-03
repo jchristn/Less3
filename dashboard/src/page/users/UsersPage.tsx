@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import { Form, message, Descriptions, MenuProps } from 'antd';
 import { PlusOutlined, SearchOutlined, MoreOutlined, ReloadOutlined } from '@ant-design/icons';
-import Less3Table from '#/components/base/table/Table';
+import DataTable, { DataTableColumn } from '#/components/DataTable';
 import Less3Button from '#/components/base/button/Button';
 import Less3Modal from '#/components/base/modal/Modal';
 import Less3FormItem from '#/components/base/form/FormItem';
@@ -20,7 +20,6 @@ import {
   useDeleteUserMutation,
   User,
 } from '#/store/slice/usersSlice';
-import type { ColumnsType } from 'antd/es/table';
 import { formatDate } from '#/utils/dateUtils';
 
 interface UserFormValues {
@@ -92,52 +91,48 @@ const UsersPage: React.FC = () => {
     }
   };
 
-  const columns: ColumnsType<User> = [
+  const columns: DataTableColumn<User>[] = [
     {
-      title: 'GUID',
-      dataIndex: 'GUID',
       key: 'GUID',
-      width: 320,
-      sorter: (a: User, b: User) => (a.GUID || '').localeCompare(b.GUID || ''),
-      render: (guid: string) => <GuidDisplay guid={guid} />,
+      label: 'GUID',
+      width: '320px',
+      render: (item) => <GuidDisplay guid={item.GUID} />,
     },
     {
-      title: 'Name',
-      dataIndex: 'Name',
       key: 'Name',
-      width: 200,
-      sorter: (a: User, b: User) => (a.Name || '').localeCompare(b.Name || ''),
+      label: 'Name',
+      width: '200px',
     },
     {
-      title: 'Email',
-      dataIndex: 'Email',
       key: 'Email',
-      width: 250,
-      sorter: (a: User, b: User) => (a.Email || '').localeCompare(b.Email || ''),
+      label: 'Email',
+      width: '250px',
     },
     {
-      title: 'Date Created',
-      dataIndex: 'CreatedUtc',
       key: 'CreatedUtc',
-      width: 180,
-      render: (text: string) => formatDate(text),
+      label: 'Date Created',
+      width: '180px',
+      render: (item) => formatDate(item.CreatedUtc),
+      filterValue: (item) => formatDate(item.CreatedUtc),
     },
     {
-      title: 'Actions',
       key: 'actions',
-      width: 80,
-      fixed: 'right',
-      render: (_: any, record: User) => {
+      label: 'Actions',
+      width: '80px',
+      isAction: true,
+      sortable: false,
+      filterable: false,
+      render: (item) => {
         const menuItems: MenuProps['items'] = [
           {
             key: 'metadata',
             label: 'View Metadata',
-            onClick: () => handleViewMetadata(record),
+            onClick: () => handleViewMetadata(item),
           },
           {
             key: 'delete',
             label: 'Delete User',
-            onClick: () => handleDelete(record),
+            onClick: () => handleDelete(item),
           },
         ];
 
@@ -189,9 +184,9 @@ const UsersPage: React.FC = () => {
         </Less3Flex>
       }
     >
-      <Less3Table
-        columns={columns as ColumnsType<any>}
-        dataSource={filteredData}
+      <DataTable
+        columns={columns}
+        data={filteredData}
         loading={isLoading}
         rowKey="GUID"
       />

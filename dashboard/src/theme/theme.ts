@@ -52,11 +52,6 @@ export const primaryTheme: ThemeConfig = {
       colorLink: Less3Theme.primary,
       colorLinkHover: Less3Theme.primary,
     },
-    Table: {
-      headerBg: '#ffffff',
-      padding: 18,
-      borderColor: '#d1d5db',
-    },
     Collapse: {
       headerBg: Less3Theme.white,
     },
@@ -121,10 +116,6 @@ export const darkTheme: ThemeConfig = {
       colorLink: Less3Theme.primary,
       colorLinkHover: Less3Theme.primary,
       colorBgContainerDisabled: '#333333',
-    },
-    Table: {
-      padding: 18,
-      borderColor: '#d1d5db',
     },
     Collapse: {
       headerBg: Less3Theme.white,

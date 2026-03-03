@@ -335,89 +335,236 @@ a {
   border-color: var(--ant-color-border) !important;
 }
 
-.ant-table-container {
+/* DataTable styles */
+.datatable-wrapper {
   border: 1px solid var(--ant-color-border);
   border-radius: var(--ant-border-radius-lg);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  background: var(--ant-color-bg-container);
+}
 
-  .ant-table-thead {
+.datatable-scroll {
+  overflow-x: auto;
+}
+
+.datatable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+
+  thead {
     tr {
       th {
+        background: var(--ant-color-bg-container);
+        color: var(--ant-color-text);
+        font-weight: 600;
+        text-align: left;
+        padding: 14px 16px;
         border-bottom: 1px solid var(--ant-color-border);
-      }
+        white-space: nowrap;
+        user-select: none;
 
-      th:first-child,
-      th:last-child {
-        padding-left: 60px;
-        position: relative;
-      }
+        &.sortable {
+          cursor: pointer;
 
-      th:first-child::after,
-      th:last-child::after {
-        content: "";
-        position: absolute;
-        height: 1px;
-        bottom: 0;
-        width: 90%;
-        right: 0;
-        border-bottom: 1px solid #d1d5db;
-      }
-
-      th:last-child::after {
-        left: 0;
-        right: unset;
+          &:hover {
+            background: var(--ant-color-bg-layout);
+          }
+        }
       }
     }
   }
 
-  .ant-table-tbody {
+  tbody {
     tr {
+      transition: background 0.15s;
+
+      &:hover {
+        background: var(--ant-color-bg-layout);
+      }
+
+      &.clickable {
+        cursor: pointer;
+      }
+
       td {
+        padding: 12px 16px;
         border-bottom: 1px solid var(--ant-color-border);
-      }
-
-      td:first-child,
-      td:last-child {
-        padding-left: 60px;
-        // border: none;
-        position: relative;
-      }
-
-      td:first-child::after,
-      td:last-child::after {
-        content: "";
-        position: absolute;
-        height: 1px;
-        bottom: 0;
-        width: 90%;
-        right: 0;
-        border-bottom: 1px solid var(--ant-color-border);
-      }
-
-      td:last-child::after {
-        left: 0;
-        right: unset;
+        color: var(--ant-color-text-secondary);
       }
     }
 
-    tr:last-child {
-      td:first-child::after,
-      td:last-child::after {
-        border: none;
-      }
-
-      td {
-        border: none;
-      }
+    tr:last-child td {
+      border-bottom: none;
     }
   }
 }
 
-.ant-table {
-  .ant-table-tbody {
-    td {
-      color: var(--ant-color-text-secondary);
-    }
+.datatable-th-content {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.datatable-sort-icon {
+  opacity: 0.3;
+  font-size: 12px;
+
+  &.active {
+    opacity: 1;
+    color: var(--ant-color-primary);
+  }
+}
+
+.datatable-filter-row th {
+  padding: 4px 8px 8px !important;
+  border-bottom: 1px solid var(--ant-color-border) !important;
+  background: var(--ant-color-bg-container) !important;
+}
+
+.datatable-filter-input {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid var(--ant-color-border);
+  border-radius: var(--ant-border-radius);
+  background: var(--ant-color-bg-container);
+  color: var(--ant-color-text);
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: var(--ant-color-primary);
+  }
+
+  &::placeholder {
+    color: var(--ant-color-text-quaternary);
+  }
+}
+
+.datatable-empty {
+  text-align: center;
+  padding: 40px 16px !important;
+  color: var(--ant-color-text-secondary);
+}
+
+.datatable-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 20px;
+  color: var(--ant-color-text-secondary);
+  border: 1px solid var(--ant-color-border);
+  border-radius: var(--ant-border-radius-lg);
+  background: var(--ant-color-bg-container);
+}
+
+.datatable-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--ant-color-border);
+  border-top-color: var(--ant-color-primary);
+  border-radius: 50%;
+  animation: datatable-spin 0.6s linear infinite;
+}
+
+@keyframes datatable-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.datatable-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-top: 1px solid var(--ant-color-border);
+  font-size: 13px;
+  color: var(--ant-color-text-secondary);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.datatable-pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.datatable-page-btn {
+  background: var(--ant-color-bg-container);
+  border: 1px solid var(--ant-color-border);
+  border-radius: var(--ant-border-radius);
+  padding: 4px 8px;
+  cursor: pointer;
+  color: var(--ant-color-text);
+  font-size: 13px;
+  line-height: 1;
+
+  &:hover:not(:disabled) {
+    border-color: var(--ant-color-primary);
+    color: var(--ant-color-primary);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+}
+
+.datatable-page-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 4px;
+}
+
+.datatable-page-input {
+  width: 44px;
+  text-align: center;
+  padding: 4px;
+  border: 1px solid var(--ant-color-border);
+  border-radius: var(--ant-border-radius);
+  background: var(--ant-color-bg-container);
+  color: var(--ant-color-text);
+  font-size: 13px;
+  outline: none;
+
+  &:focus {
+    border-color: var(--ant-color-primary);
+  }
+
+  /* Hide spin buttons */
+  -moz-appearance: textfield;
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+.datatable-pagesize-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 8px;
+}
+
+.datatable-pagesize-select {
+  padding: 4px;
+  border: 1px solid var(--ant-color-border);
+  border-radius: var(--ant-border-radius);
+  background: var(--ant-color-bg-container);
+  color: var(--ant-color-text);
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+
+  &:focus {
+    border-color: var(--ant-color-primary);
   }
 }
 
@@ -427,111 +574,14 @@ a {
   color: var(--ant-color-text-secondary);
 }
 
-.react-resizable {
-  position: relative;
-  background-clip: padding-box;
-}
-
-.react-resizable-handle {
-  position: absolute;
-  right: -5px;
-  bottom: 0;
-  z-index: 1;
-  width: 10px;
-  height: 100%;
-  cursor: col-resize;
-}
-
 .ant-btn-link {
   font-weight: 500;
-}
-
-.ant-table-cell::after {
-  display: none;
 }
 
 .h-screen {
   height: 100vh;
 }
 
-/* Show scrollbar only when screen size decreases and content overflows */
-.responsive-scrollbar {
-  overflow-x: auto;
-  
-  /* Hide scrollbar by default on large screens */
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-  
-  &::-webkit-scrollbar {
-    display: none; /* Chrome, Safari and Opera */
-  }
-  
-  /* Show scrollbar on smaller screens when content overflows */
-  @media (max-width: 1400px) {
-    -ms-overflow-style: auto; /* IE and Edge */
-    scrollbar-width: thin; /* Firefox */
-    scrollbar-color: var(--ant-color-border) var(--ant-color-fill-secondary);
-    
-    &::-webkit-scrollbar {
-      display: block;
-      height: 8px;
-    }
-    
-    &::-webkit-scrollbar-track {
-      background: var(--ant-color-fill-secondary);
-      border-radius: 4px;
-    }
-    
-    &::-webkit-scrollbar-thumb {
-      background: var(--ant-color-border);
-      border-radius: 4px;
-      
-      &:hover {
-        background: var(--ant-color-text-tertiary);
-      }
-    }
-  }
-  
-  /* Ensure Ant Design table containers respect the scrollbar styling */
-  .ant-table-body,
-  .ant-table-container,
-  .ant-table-content,
-  .ant-table-wrapper {
-    /* Hide by default on large screens */
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-    
-    &::-webkit-scrollbar {
-      display: none;
-    }
-    
-    /* Show on smaller screens */
-    @media (max-width: 1400px) {
-      -ms-overflow-style: auto;
-      scrollbar-width: thin;
-      scrollbar-color: var(--ant-color-border) var(--ant-color-fill-secondary);
-      
-      &::-webkit-scrollbar {
-        display: block;
-        height: 8px;
-      }
-      
-      &::-webkit-scrollbar-track {
-        background: var(--ant-color-fill-secondary);
-        border-radius: 4px;
-      }
-      
-      &::-webkit-scrollbar-thumb {
-        background: var(--ant-color-border);
-        border-radius: 4px;
-        
-        &:hover {
-          background: var(--ant-color-text-tertiary);
-        }
-      }
-    }
-  }
-}
 
 .ant-message {
   .ant-message-custom-content {

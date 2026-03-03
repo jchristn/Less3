@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Layout } from 'antd';
-import { LogoutOutlined, CheckOutlined } from '@ant-design/icons';
+import { LogoutOutlined, CheckOutlined, GithubOutlined } from '@ant-design/icons';
 import styles from './dashboard.module.scss';
 import Less3Flex from '../base/flex/Flex';
 import Less3Button from '../base/button/Button';
@@ -67,6 +67,14 @@ const DashboardLayout = ({ children }: LayoutWrapperProps) => {
           </span>
         </div>
         <Less3Flex gap={16} align="center">
+          <Less3Tooltip title="GitHub" placement="bottom">
+            <Less3Button
+              type="text"
+              icon={<GithubOutlined />}
+              onClick={() => window.open('https://github.com/jchristn/less3', '_blank')}
+              className={styles.logoutButton}
+            />
+          </Less3Tooltip>
           <ThemeModeSwitch />
           <Less3Button
             type="text"

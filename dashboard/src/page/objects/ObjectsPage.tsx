@@ -13,10 +13,11 @@ import {
   FileOutlined,
   HomeOutlined,
   ReloadOutlined,
+  CheckOutlined,
 } from '@ant-design/icons';
 import { Breadcrumb } from 'antd';
 import { useSearchParams } from 'next/navigation';
-import Less3Table from '#/components/base/table/Table';
+import DataTable, { DataTableColumn } from '#/components/DataTable';
 import Less3Button from '#/components/base/button/Button';
 import Less3Input from '#/components/base/input/Input';
 import Less3Select from '#/components/base/select/Select';
@@ -25,6 +26,7 @@ import Less3FormItem from '#/components/base/form/FormItem';
 import Less3Dropdown from '#/components/base/dropdown/Dropdown';
 import PageContainer from '#/components/base/pageContainer/PageContainer';
 import Less3Flex from '#/components/base/flex/Flex';
+import Less3Tooltip from '#/components/base/tooltip/Tooltip';
 import Less3Text from '#/components/base/typograpghy/Text';
 import {
   useGetBucketsQuery,
@@ -41,9 +43,10 @@ import {
   useGetObjectACLQuery,
   Bucket,
 } from '#/store/slice/bucketsSlice';
-import type { ColumnsType } from 'antd/es/table';
 import { type BucketObject, type BucketTag, type ACLOwner, type ACLGrant, type ACLGrantee } from '#/utils/xmlUtils';
 import { formatDate } from '#/utils/dateUtils';
+import { copyToClipboard } from '#/utils/clipboardUtils';
+import { getBaseUrl } from '#/services/sdk.service';
 import { transformToOptions } from '#/utils/appUtils';
 import WriteObjectModal from '../buckets/WriteObjectModal';
 import { Less3Theme } from '#/theme/theme';
@@ -82,6 +85,7 @@ const ObjectsPage: React.FC = () => {
   const [currentPrefix, setCurrentPrefix] = useState<string>('');
   const [searchText, setSearchText] = useState('');
   const [downloadingObjectKey, setDownloadingObjectKey] = useState<string | null>(null);
+  const [copiedLinkKey, setCopiedLinkKey] = useState<string | null>(null);
   const [isWriteObjectModalVisible, setIsWriteObjectModalVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [deletingObject, setDeletingObject] = useState<BucketObject | null>(null);
@@ -824,14 +828,44 @@ const ObjectsPage: React.FC = () => {
     return withoutPrefix.endsWith('/') ? withoutPrefix.slice(0, -1) : withoutPrefix;
   };
 
-  const columns: ColumnsType<BucketObject> = [
+  const formatSize = (size: number) => {
+    if (size < 1024) return `${size} B`;
+    if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} KB`;
+    if (size < 1024 * 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(2)} MB`;
+    return `${(size / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+  };
+
+  const columns: DataTableColumn<BucketObject>[] = [
     {
-      title: 'Key',
-      dataIndex: 'Key',
+      key: 'select',
+      label: '',
+      width: '40px',
+      isAction: true,
+      sortable: false,
+      filterable: false,
+      render: (item) => {
+        if (item.Key === '..' || item.Key.endsWith('/')) return null;
+        return (
+          <input
+            type="checkbox"
+            checked={selectedRowKeys.includes(item.Key)}
+            onChange={(e) => {
+              if (e.target.checked) {
+                setSelectedRowKeys((prev) => [...prev, item.Key]);
+              } else {
+                setSelectedRowKeys((prev) => prev.filter((k) => k !== item.Key));
+              }
+            }}
+            onClick={(e) => e.stopPropagation()}
+          />
+        );
+      },
+    },
+    {
       key: 'Key',
-      ellipsis: true,
-      render: (key: string, record: BucketObject) => {
-        // ".." parent directory entry
+      label: 'Key',
+      render: (item) => {
+        const key = item.Key;
         if (key === '..') {
           return (
             <Less3Flex align="center" gap={8} onClick={navigateUp} style={{ cursor: 'pointer', color: 'var(--ant-color-primary)' }}>
@@ -853,54 +887,74 @@ const ObjectsPage: React.FC = () => {
           );
         }
 
+        const isCopied = copiedLinkKey === key;
+        const handleCopyLink = (e: React.MouseEvent) => {
+          e.stopPropagation();
+          const baseUrl = getBaseUrl();
+          const downloadUrl = `${baseUrl}/${selectedBucketName}/${key}`;
+          copyToClipboard(downloadUrl);
+          setCopiedLinkKey(key);
+          setTimeout(() => setCopiedLinkKey(null), 2000);
+        };
+
         return (
           <Less3Flex align="center" gap={8}>
             <FileOutlined style={{ color: 'var(--ant-color-text-secondary)', fontSize: 16 }} />
             <span>{displayName}</span>
+            <Less3Tooltip title={isCopied ? 'Copied!' : 'Copy download link'} placement="right">
+              <span
+                onClick={handleCopyLink}
+                style={{
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  color: isCopied ? '#52c41a' : 'var(--ant-color-text-quaternary)',
+                  transition: 'color 0.2s ease',
+                  fontSize: 14,
+                }}
+              >
+                {isCopied ? <CheckOutlined /> : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>}
+              </span>
+            </Less3Tooltip>
           </Less3Flex>
         );
       },
+      filterValue: (item) => getDisplayName(item.Key),
     },
     {
-      title: 'Last Modified',
-      dataIndex: 'LastModified',
       key: 'LastModified',
-      ellipsis: true,
-      render: (text: string) => formatDate(text),
+      label: 'Last Modified',
+      render: (item) => formatDate(item.LastModified),
+      filterValue: (item) => formatDate(item.LastModified),
     },
     {
-      title: 'Size',
-      dataIndex: 'Size',
       key: 'Size',
-      ellipsis: true,
-      render: (size: number) => {
-        if (size < 1024) return `${size} B`;
-        if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} KB`;
-        if (size < 1024 * 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(2)} MB`;
-        return `${(size / (1024 * 1024 * 1024)).toFixed(2)} GB`;
-      },
+      label: 'Size',
+      render: (item) => formatSize(item.Size),
+      sortValue: (item) => item.Size,
+      filterValue: (item) => formatSize(item.Size),
     },
     {
-      title: 'ETag',
-      dataIndex: 'ETag',
       key: 'ETag',
-      ellipsis: true,
+      label: 'ETag',
     },
     {
-      title: 'Storage Class',
-      dataIndex: 'StorageClass',
       key: 'StorageClass',
-      ellipsis: true,
+      label: 'Storage Class',
     },
     {
-      title: 'Actions',
-      key: 'Actions',
-      render: (_: any, record: BucketObject) => {
-        if (record.Key === '..') return null;
+      key: 'actions',
+      label: 'Actions',
+      width: '80px',
+      isAction: true,
+      sortable: false,
+      filterable: false,
+      render: (item) => {
+        if (item.Key === '..') return null;
 
-        const dropdownKey = record.Key || '';
+        const dropdownKey = item.Key || '';
         const isOpen = openDropdownKey === dropdownKey;
-        const isFolderItem = isFolder(record.Key);
+        const isFolderItem = isFolder(item.Key);
 
         const folderMenuItems: MenuProps['items'] = [
           {
@@ -908,19 +962,17 @@ const ObjectsPage: React.FC = () => {
             label: 'Open Folder',
             onClick: () => {
               setOpenDropdownKey(null);
-              navigateToFolder(record.Key);
+              navigateToFolder(item.Key);
             },
           },
-          {
-            type: 'divider',
-          },
+          { type: 'divider' },
           {
             key: 'delete-folder',
             label: 'Delete Folder',
             danger: true,
             onClick: () => {
               setOpenDropdownKey(null);
-              handleDeleteFolder(record.Key);
+              handleDeleteFolder(item.Key);
             },
           },
         ];
@@ -931,7 +983,7 @@ const ObjectsPage: React.FC = () => {
             label: 'Write Tags',
             onClick: () => {
               setOpenDropdownKey(null);
-              handleWriteObjectTags(record);
+              handleWriteObjectTags(item);
             },
           },
           {
@@ -939,7 +991,7 @@ const ObjectsPage: React.FC = () => {
             label: 'Read Tags',
             onClick: () => {
               setOpenDropdownKey(null);
-              handleViewObjectTags(record);
+              handleViewObjectTags(item);
             },
           },
           {
@@ -947,18 +999,16 @@ const ObjectsPage: React.FC = () => {
             label: 'Delete Tags',
             onClick: () => {
               setOpenDropdownKey(null);
-              handleDeleteObjectTags(record);
+              handleDeleteObjectTags(item);
             },
           },
-          {
-            type: 'divider',
-          },
+          { type: 'divider' },
           {
             key: 'write-acl',
             label: 'Write ACL',
             onClick: () => {
               setOpenDropdownKey(null);
-              handleWriteObjectACL(record);
+              handleWriteObjectACL(item);
             },
           },
           {
@@ -966,27 +1016,25 @@ const ObjectsPage: React.FC = () => {
             label: 'Read ACL',
             onClick: () => {
               setOpenDropdownKey(null);
-              handleViewObjectACL(record);
+              handleViewObjectACL(item);
             },
           },
-          {
-            type: 'divider',
-          },
+          { type: 'divider' },
           {
             key: 'download',
             label: 'Download Object',
             onClick: () => {
               setOpenDropdownKey(null);
-              handleDownloadObject(record);
+              handleDownloadObject(item);
             },
-            disabled: downloadingObjectKey === record.Key,
+            disabled: downloadingObjectKey === item.Key,
           },
           {
             key: 'delete',
             label: 'Delete Object',
             onClick: () => {
               setOpenDropdownKey(null);
-              handleDeleteObject(record);
+              handleDeleteObject(item);
             },
           },
         ];
@@ -1006,7 +1054,7 @@ const ObjectsPage: React.FC = () => {
               type="text"
               icon={<MoreOutlined />}
               size="small"
-              loading={downloadingObjectKey === record.Key}
+              loading={downloadingObjectKey === item.Key}
             />
           </Less3Dropdown>
         );
@@ -1184,24 +1232,12 @@ const ObjectsPage: React.FC = () => {
               </Less3Flex>
             </Less3Flex>
 
-            <div className="responsive-scrollbar" style={{ width: '100%' }}>
-              <Less3Table
-                columns={columns as ColumnsType<any>}
-                dataSource={filteredObjects}
-                loading={isLoadingObjects}
-                rowKey="Key"
-                scroll={{ x: true }}
-                rowSelection={{
-                  selectedRowKeys,
-                  onChange: (newSelectedRowKeys: React.Key[]) => {
-                    setSelectedRowKeys(newSelectedRowKeys);
-                  },
-                  getCheckboxProps: (record: BucketObject) => ({
-                    disabled: record.Key === '..' || record.Key.endsWith('/'),
-                  }),
-                }}
-              />
-            </div>
+            <DataTable
+              columns={columns}
+              data={filteredObjects}
+              loading={isLoadingObjects}
+              rowKey="Key"
+            />
           </Less3Flex>
         )}
       </div>
@@ -1427,28 +1463,16 @@ const ObjectsPage: React.FC = () => {
             </Less3Text>
           </div>
         ) : objectTagsData?.tags && objectTagsData.tags.length > 0 ? (
-          <div className="responsive-scrollbar" style={{ width: '100%' }}>
-            <Less3Table
-              columns={[
-                {
-                  title: 'Key',
-                  dataIndex: 'Key',
-                  key: 'Key',
-                  ellipsis: true,
-                },
-                {
-                  title: 'Value',
-                  dataIndex: 'Value',
-                  key: 'Value',
-                  ellipsis: true,
-                },
-              ]}
-              dataSource={objectTagsData.tags.map((tag, index) => ({ ...tag, key: index }))}
-              loading={isLoadingObjectTags}
-              pagination={false}
-              scroll={{ x: true }}
-            />
-          </div>
+          <DataTable
+            columns={[
+              { key: 'Key', label: 'Key' },
+              { key: 'Value', label: 'Value' },
+            ]}
+            data={objectTagsData.tags.map((tag, index) => ({ ...tag, _id: index }))}
+            loading={isLoadingObjectTags}
+            hidePagination
+            rowKey="_id"
+          />
         ) : (
           <div style={{ textAlign: 'center', padding: '40px' }}>
             <Less3Text type="secondary">No tags found for this object</Less3Text>
@@ -1590,32 +1614,30 @@ const ObjectsPage: React.FC = () => {
                   ? objectACLData.acl.AccessControlList.Grant
                   : [objectACLData.acl.AccessControlList.Grant];
                 return (
-                  <div className="responsive-scrollbar" style={{ width: '100%', marginTop: '8px' }}>
-                    <Less3Table
+                  <div style={{ marginTop: '8px' }}>
+                    <DataTable
                       columns={[
                         {
-                          title: 'Grantee ID',
-                          dataIndex: ['Grantee', 'ID'],
                           key: 'granteeId',
-                          ellipsis: true,
+                          label: 'Grantee ID',
+                          render: (item: ACLGrant) => item.Grantee?.ID,
+                          filterValue: (item: ACLGrant) => item.Grantee?.ID || '',
                         },
                         {
-                          title: 'Grantee Display Name',
-                          dataIndex: ['Grantee', 'DisplayName'],
                           key: 'granteeDisplayName',
-                          ellipsis: true,
+                          label: 'Grantee Display Name',
+                          render: (item: ACLGrant) => item.Grantee?.DisplayName,
+                          filterValue: (item: ACLGrant) => item.Grantee?.DisplayName || '',
                         },
                         {
-                          title: 'Permission',
-                          dataIndex: 'Permission',
-                          key: 'permission',
-                          ellipsis: true,
+                          key: 'Permission',
+                          label: 'Permission',
                         },
                       ]}
-                      dataSource={grants.map((grant: ACLGrant, index: number) => ({ ...grant, key: index }))}
+                      data={grants.map((grant: ACLGrant, index: number) => ({ ...grant, _id: index }))}
                       loading={isLoadingObjectACL}
-                      pagination={false}
-                      scroll={{ x: true }}
+                      hidePagination
+                      rowKey="_id"
                     />
                   </div>
                 );

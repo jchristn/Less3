@@ -180,7 +180,7 @@
 
             RequestValidator.CheckDeleteMarker(md.Obj, ctx);
 
-            ObjectMetadata metadata = new ObjectMetadata(md.Obj.Key, md.Obj.LastUpdateUtc, md.Obj.Md5, md.Obj.ContentLength, new Owner(md.Obj.OwnerGUID, null));
+            ObjectMetadata metadata = new ObjectMetadata(md.Obj.Key, md.Obj.LastUpdateUtc, md.Obj.Etag ?? md.Obj.Md5, md.Obj.ContentLength, new Owner(md.Obj.OwnerGUID, null));
             metadata.ContentType = md.Obj.ContentType;
 
             if (md.Bucket.EnableVersioning)
@@ -425,11 +425,6 @@
             }
 
             Obj obj = md.BucketClient.GetObjectLatestMetadata(ctx.Request.Key);
-            if (obj != null && !md.Bucket.EnableVersioning)
-            {
-                _Logging.Warn(header + "versioning disabled, prohibiting write to " + ctx.Request.Bucket + "/" + ctx.Request.Key);
-                throw new S3Exception(new Error(ErrorCode.InvalidBucketState));
-            }
 
             #region Populate-Metadata
 
@@ -523,23 +518,15 @@
                     }
                     else
                     {
-                        if (ctx.Request.Data != null && ctx.Http.Request.ContentLength > 0)
+                        if (ctx.Http.Request.ContentLength > 0)
                         {
-                            long bytesRemaining = ctx.Http.Request.ContentLength;
-                            byte[] buffer = new byte[65536];
-                            int bytesRead = 0;
-
-                            while (bytesRemaining > 0)
+                            byte[] bodyBytes = ctx.Request.DataAsBytes;
+                            if (bodyBytes != null && bodyBytes.Length > 0)
                             {
-                                bytesRead = await ctx.Request.Data.ReadAsync(buffer, 0, buffer.Length);
-                                if (bytesRead > 0)
-                                {
-                                    bytesRemaining -= bytesRead;
-                                    await fs.WriteAsync(buffer, 0, bytesRead);
-                                }
+                                await fs.WriteAsync(bodyBytes, 0, bodyBytes.Length);
                             }
 
-                            totalLength = obj.ContentLength;
+                            totalLength = bodyBytes != null ? bodyBytes.Length : 0;
                         }
                     }
                 }
@@ -811,11 +798,6 @@
             }
 
             Obj existingObj = md.BucketClient.GetObjectLatestMetadata(ctx.Request.Key);
-            if (existingObj != null && !md.Bucket.EnableVersioning)
-            {
-                _Logging.Warn(header + "versioning disabled, prohibiting write to " + ctx.Request.Bucket + "/" + ctx.Request.Key);
-                throw new S3Exception(new Error(ErrorCode.InvalidBucketState));
-            }
 
             DateTime ts = DateTime.UtcNow;
 
@@ -852,6 +834,9 @@
 
             string tempFilename = _Settings.Storage.TempDirectory + Guid.NewGuid().ToString();
             long totalLength = 0;
+
+            string multipartEtag = ComputeMultipartEtag(parts);
+            obj.Etag = multipartEtag;
 
             try
             {
@@ -924,8 +909,6 @@
 
             _Logging.Info(header + "completed multipart upload " + ctx.Request.UploadId + " for key " + ctx.Request.Bucket + "/" + ctx.Request.Key);
 
-            string multipartEtag = ComputeMultipartEtag(parts);
-
             CompleteMultipartUploadResult result = new CompleteMultipartUploadResult();
             result.Location = "http://" + ctx.Http.Request.Headers["Host"] + "/" + ctx.Request.Bucket + "/" + ctx.Request.Key;
             result.Bucket = ctx.Request.Bucket;
@@ -960,21 +943,29 @@
             {
                 using (FileStream fs = new FileStream(partFile, FileMode.Create, FileAccess.Write))
                 {
-                    if (ctx.Request.Data != null && ctx.Http.Request.ContentLength > 0)
+                    if (ctx.Request.Chunked)
                     {
-                        long bytesRemaining = ctx.Http.Request.ContentLength;
-                        byte[] buffer = new byte[65536];
-                        int bytesRead = 0;
-
-                        while (bytesRemaining > 0)
+                        while (true)
                         {
-                            bytesRead = await ctx.Request.Data.ReadAsync(buffer, 0, buffer.Length);
-                            if (bytesRead > 0)
+                            Chunk chunk = await ctx.Request.ReadChunk();
+                            if (chunk == null) break;
+
+                            if (chunk.Data != null && chunk.Data.Length > 0)
                             {
-                                bytesRemaining -= bytesRead;
-                                await fs.WriteAsync(buffer, 0, bytesRead);
-                                partLength += bytesRead;
+                                await fs.WriteAsync(chunk.Data, 0, chunk.Data.Length);
+                                partLength += chunk.Data.Length;
                             }
+
+                            if (chunk.IsFinal) break;
+                        }
+                    }
+                    else if (ctx.Http.Request.ContentLength > 0)
+                    {
+                        byte[] bodyBytes = ctx.Request.DataAsBytes;
+                        if (bodyBytes != null && bodyBytes.Length > 0)
+                        {
+                            await fs.WriteAsync(bodyBytes, 0, bodyBytes.Length);
+                            partLength += bodyBytes.Length;
                         }
                     }
                 }

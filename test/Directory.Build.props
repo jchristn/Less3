@@ -1,0 +1,22 @@
+<Project>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Version>2.1.0</Version>
+    <Authors>jchristn</Authors>
+    <Company>Joel Christner</Company>
+    <Copyright>(c)2026 Joel Christner</Copyright>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>1701;1702;CS1591;CS1587;CS1572;IDE0063;CS1998;CS8600;CS8602;CS8603;CS8618;CS8625;CS0108;CS8601;CS0618</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;CS1591;CS1587;CS1572;IDE0063;CS1998;CS8600;CS8602;CS8603;CS8618;CS8625;CS0108;CS8601;CS0618</NoWarn>
+  </PropertyGroup>
+
+</Project>

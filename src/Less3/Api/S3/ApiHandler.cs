@@ -81,6 +81,15 @@
             return _Settings.RegionString;
         }
 
+        internal string GetSecretKey(S3Context ctx)
+        {
+            if (ctx == null || ctx.Request == null || String.IsNullOrEmpty(ctx.Request.AccessKey))
+                return null;
+
+            Credential cred = _Config.GetCredentialByAccessKey(ctx.Request.AccessKey);
+            return cred?.SecretKey;
+        }
+
         internal string FindMatchingBaseDomain(string hostname)
         {
             if (String.IsNullOrEmpty(hostname)) return null;

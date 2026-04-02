@@ -127,11 +127,13 @@
             {
                 if (!_Bucket.EnableVersioning)
                 {
-                    _Logging.Warn("BucketClient Add versioning disabled and object " + _Bucket.Name + "/" + obj.Key + " already exists");
-                    return false;
+                    ReplaceLatestUnversionedObject(test);
+                    obj.Version = 1;
                 }
-
-                obj.Version = (test.Version + 1);
+                else
+                {
+                    obj.Version = (test.Version + 1);
+                }
             }
             else
             {
@@ -162,11 +164,13 @@
             {
                 if (!_Bucket.EnableVersioning)
                 {
-                    _Logging.Warn("BucketClient Add versioning disabled and object " + _Bucket.Name + "/" + obj.Key + " already exists");
-                    return false;
+                    ReplaceLatestUnversionedObject(test);
+                    obj.Version = 1;
                 }
-
-                obj.Version = (test.Version + 1);
+                else
+                {
+                    obj.Version = (test.Version + 1);
+                }
             }
             else
             {
@@ -444,6 +448,34 @@
             out int nextStartIndex,
             out bool isTruncated)
         {
+            EnumerateInternal(delimiter, prefix, startIndex, maxResults, true, true, out objects, out prefixes, out nextStartIndex, out isTruncated);
+        }
+
+        internal void EnumerateVersions(
+            string delimiter,
+            string prefix,
+            int startIndex,
+            int maxResults,
+            out List<Obj> objects,
+            out List<string> prefixes,
+            out int nextStartIndex,
+            out bool isTruncated)
+        {
+            EnumerateInternal(delimiter, prefix, startIndex, maxResults, false, false, out objects, out prefixes, out nextStartIndex, out isTruncated);
+        }
+
+        private void EnumerateInternal(
+            string delimiter,
+            string prefix,
+            int startIndex,
+            int maxResults,
+            bool excludeDeleteMarkers,
+            bool latestOnly,
+            out List<Obj> objects,
+            out List<string> prefixes,
+            out int nextStartIndex,
+            out bool isTruncated)
+        {
             objects = new List<Obj>();
             prefixes = new List<string>();
             nextStartIndex = startIndex;
@@ -458,15 +490,21 @@
                     OperatorEnum.Equals,
                     _Bucket.GUID);
 
+                ResultOrder[] ro = new ResultOrder[1];
+                ro[0] = new ResultOrder(_ORM.GetColumnName<Obj>(nameof(Obj.Id)), OrderDirectionEnum.Ascending);
+
                 e.PrependAnd(
                     _ORM.GetColumnName<Obj>(nameof(Obj.Id)),
                     OperatorEnum.GreaterThanOrEqualTo,
                     nextStartIndex);
 
-                e.PrependAnd(
-                    _ORM.GetColumnName<Obj>(nameof(Obj.DeleteMarker)),
-                    OperatorEnum.Equals,
-                    false);
+                if (excludeDeleteMarkers)
+                {
+                    e.PrependAnd(
+                        _ORM.GetColumnName<Obj>(nameof(Obj.DeleteMarker)),
+                        OperatorEnum.Equals,
+                        false);
+                }
 
                 if (!String.IsNullOrEmpty(prefix))
                 {
@@ -476,7 +514,7 @@
                     prefix);
                 }
 
-                List<Obj> tempObjects = _ORM.SelectMany<Obj>(null, maxResults, e);
+                List<Obj> tempObjects = _ORM.SelectMany<Obj>(null, maxResults, e, ro);
                 if (tempObjects == null || tempObjects.Count < 1)
                 {
                     break;
@@ -524,7 +562,7 @@
                         }
                     }
 
-                    if (String.IsNullOrEmpty(currPrefix) && objects.Count <= maxResults)
+                    if (String.IsNullOrEmpty(currPrefix) && objects.Count < maxResults)
                     {
                         objects.Add(obj);
                     }
@@ -541,21 +579,31 @@
                 #endregion
             }
 
-            // Filter to only the latest version of each key
-            List<Obj> latestObjects = new List<Obj>();
-            Dictionary<string, Obj> latestByKey = new Dictionary<string, Obj>();
-            foreach (Obj obj in objects)
+            if (latestOnly)
             {
-                if (!latestByKey.ContainsKey(obj.Key))
+                Dictionary<string, Obj> latestByKey = new Dictionary<string, Obj>();
+                foreach (Obj obj in objects)
                 {
-                    latestByKey[obj.Key] = obj;
+                    if (!latestByKey.ContainsKey(obj.Key))
+                    {
+                        latestByKey[obj.Key] = obj;
+                    }
+                    else if (obj.Version > latestByKey[obj.Key].Version)
+                    {
+                        latestByKey[obj.Key] = obj;
+                    }
                 }
-                else if (obj.Version > latestByKey[obj.Key].Version)
-                {
-                    latestByKey[obj.Key] = obj;
-                }
+
+                objects = latestByKey.Values.OrderBy(o => o.Key).ThenBy(o => o.Id).ToList();
             }
-            objects = latestByKey.Values.ToList();
+            else
+            {
+                objects = objects
+                    .OrderBy(o => o.Key, StringComparer.Ordinal)
+                    .ThenByDescending(o => o.Version)
+                    .ThenByDescending(o => o.Id)
+                    .ToList();
+            }
 
             return;
         }
@@ -964,6 +1012,20 @@
 
                 default:
                     throw new ArgumentException("Unknown storage driver type '" + _Bucket.StorageType.ToString() + "' in bucket GUID " + _Bucket.GUID + ".");
+            }
+        }
+
+        private void ReplaceLatestUnversionedObject(Obj obj)
+        {
+            if (obj == null) throw new ArgumentNullException(nameof(obj));
+
+            DeleteObjectVersionAcl(obj.Key, obj.Version);
+            DeleteObjectVersionTags(obj.Key, obj.Version);
+            _ORM.Delete<Obj>(obj);
+
+            if (!obj.DeleteMarker && _StorageDriver.Exists(obj.BlobFilename))
+            {
+                _StorageDriver.Delete(obj.BlobFilename);
             }
         }
         

@@ -276,20 +276,12 @@
             _S3Settings.Logging.SignatureV4Validation = _Settings.Logging.LogSignatureValidation;
             _S3Settings.Logger = Console.WriteLine;
             _S3Settings.EnableSignatures = _Settings.ValidateSignatures;
-            _S3Settings.UseTcpServer = _Settings.UseTcpServer;
             _S3Settings.Webserver = _Settings.Webserver;
 
             _S3Server = new S3Server(_S3Settings);
             _S3Server.Webserver.Routes.Preflight = PreflightRoute;
 
-            if (_S3Settings.UseTcpServer)
-            {
-                Console.WriteLine("| " + _Settings.Webserver.Prefix + " (TCP server)");
-            }
-            else
-            {
-                Console.WriteLine("| " + _Settings.Webserver.Prefix);
-            }
+            Console.WriteLine("| " + _Settings.Webserver.Prefix);
 
             Console.WriteLine("| Initializing S3 server APIs");
 
@@ -311,6 +303,7 @@
 
             _S3Server.Service.ListBuckets = _ApiHandler.ServiceListBuckets;
             _S3Server.Service.ServiceExists = _ApiHandler.ServiceExists;
+            _S3Server.Service.GetSecretKey = _ApiHandler.GetSecretKey;
             _S3Server.Service.FindMatchingBaseDomain = _ApiHandler.FindMatchingBaseDomain;
 
             _S3Server.Bucket.Delete = _ApiHandler.BucketDelete;

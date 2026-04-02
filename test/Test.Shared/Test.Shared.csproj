@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Shared test infrastructure for Less3</Description>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.S3" Version="4.0.20.2" />
+    <ProjectReference Include="..\..\src\Less3\Less3.csproj" />
+  </ItemGroup>
+
+</Project>

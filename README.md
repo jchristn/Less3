@@ -17,13 +17,13 @@ Core use cases for Less3:
 
 ## Current Version
 
-v2.1.17
+v2.2.0
 
-- **Multipart upload support** - InitiateMultipartUpload, UploadPart, CompleteMultipartUpload, AbortMultipartUpload, ListParts, ListMultipartUploads
-- Enhanced AWS CLI compatibility
-- Dependency updates for improved stability
-- `UseTcpServer` option in `system.json` to support clients that send headers with invalid payloads
-- See `AWSCLI.md` for comprehensive testing commands
+- Updated to `S3Server v7.0.3`
+- Expanded native `AWSSDK.S3` compatibility validation across ACLs, tagging, versioning, multipart upload, and signature enforcement
+- Fixed object overwrite behavior for unversioned buckets, including multipart completion
+- Improved S3 protocol handling around range reads, version enumeration, and signature validation
+- See `CHANGELOG.md` for release details
 
 ## Help and Feedback
 

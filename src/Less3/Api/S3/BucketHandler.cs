@@ -214,7 +214,7 @@
             foreach (Obj curr in objects)
             {
                 ObjectMetadata c = new ObjectMetadata();
-                c.ETag = "\"" + curr.Md5 + "\"";
+                c.ETag = "\"" + (curr.Etag ?? curr.Md5) + "\"";
                 c.Key = curr.Key;
                 c.LastModified = curr.LastUpdateUtc;
                 c.Size = curr.ContentLength;
@@ -318,7 +318,7 @@
             List<string> prefixes = new List<string>();
             int nextStartIndex = startIndex;
             bool isTruncated = false;
-            md.BucketClient.Enumerate(
+            md.BucketClient.EnumerateVersions(
                 ctx.Request.Delimiter, 
                 ctx.Request.Prefix, 
                 startIndex, 
@@ -331,7 +331,6 @@
             string lastKey = null; 
             if (objects.Count > 0)
             {
-                objects = objects.OrderBy(p => p.Id).ToList(); 
                 lastKey = objects[objects.Count - 1].Key; 
             }
              
@@ -350,7 +349,7 @@
                 if (curr.DeleteMarker)
                 {
                     DeleteMarker d = new DeleteMarker();
-                    d.IsLatest = IsLatest(objects, curr.Key, curr.LastAccessUtc);
+                    d.IsLatest = IsLatest(objects, curr.Key, curr.Version);
                     d.Key = curr.Key;
                     d.LastModified = curr.LastUpdateUtc;
                     d.VersionId = curr.Version.ToString();
@@ -374,9 +373,9 @@
                 {
                     S3ServerLibrary.S3Objects.ObjectVersion v = new S3ServerLibrary.S3Objects.ObjectVersion();
                     v.ETag = null;
-                    v.IsLatest = IsLatest(objects, curr.Key, curr.LastAccessUtc);
+                    v.IsLatest = IsLatest(objects, curr.Key, curr.Version);
                     v.Key = curr.Key;
-                    v.ETag = "\"" + curr.Md5 + "\"";
+                    v.ETag = "\"" + (curr.Etag ?? curr.Md5) + "\"";
                     v.LastModified = curr.LastUpdateUtc;
                     v.VersionId = curr.Version.ToString();
                     v.Size = curr.ContentLength;
@@ -745,11 +744,11 @@
             return Convert.ToInt32(Common.Base64ToString(base64));
         }
 
-        private bool IsLatest(List<Obj> objs, string key, DateTime lastAccessUtc)
+        private bool IsLatest(List<Obj> objs, string key, long version)
         {
             bool laterObjExists = objs.Exists(o =>
                 o.Key.Equals(key)
-                && o.LastAccessUtc > lastAccessUtc);
+                && o.Version > version);
 
             return !laterObjExists;
         }

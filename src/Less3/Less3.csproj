@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net10.0</TargetFramework>
-		<Version>2.1.13</Version>
+		<Version>2.2.0</Version>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Authors>Joel Christner</Authors>
 		<Company>Joel Christner</Company>
@@ -16,7 +16,7 @@
 		<RepositoryUrl>https://github.com/jchristn/less3</RepositoryUrl>
 		<RepositoryType>Github</RepositoryType>
 		<PackageTags>S3 storage blob object storage rest restful</PackageTags>
-		<PackageReleaseNotes>Dependency update, validation with AWS CLI</PackageReleaseNotes>
+		<PackageReleaseNotes>S3Server 7.0.3 integration, expanded AWSSDK-based S3 compatibility validation, and object/versioning/multipart fixes.</PackageReleaseNotes>
 		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
 		<PackageIcon>favicon.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>

@@ -91,13 +91,11 @@
                 return;
             }
 
-            byte[] data = null;
             Bucket bucket = null;
 
             try
             {
-                data = Common.StreamToBytes(ctx.Request.Data);
-                bucket = SerializationHelper.DeserializeJson<Bucket>(Encoding.UTF8.GetString(data));
+                bucket = SerializationHelper.DeserializeJson<Bucket>(ctx.Request.DataAsString);
             }
             catch (Exception)
             {
@@ -172,13 +170,11 @@
                 return;
             }
 
-            byte[] data = null;
             Credential cred = null;
 
             try
             {
-                data = Common.StreamToBytes(ctx.Request.Data);
-                cred = SerializationHelper.DeserializeJson<Credential>(Encoding.UTF8.GetString(data));
+                cred = SerializationHelper.DeserializeJson<Credential>(ctx.Request.DataAsString);
             }
             catch (Exception)
             {

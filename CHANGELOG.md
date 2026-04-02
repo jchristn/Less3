@@ -2,12 +2,20 @@
 
 ## Current Version
 
+v2.2.0
+
+- Updated to `S3Server v7.0.3`
+- Added broad native `AWSSDK.S3` integration coverage for bucket APIs, object APIs, ACLs, tagging, versioning, multipart upload, protocol/error shapes, and signature validation
+- Fixed unversioned object overwrite behavior for both standard uploads and multipart completion
+- Fixed version enumeration so `ListObjectVersions` returns the full object history
+- Tightened range-read handling and validation against native AWS SDK behavior
+
+## Previous Versions
+
 v2.1.x
 
 - Dependency update and changes to improve compatibility with AWS CLI
 - Testing with key AWS CLI capabilities, see AWSCLI.md
-
-## Previous Versions
 
 v2.0.0
 

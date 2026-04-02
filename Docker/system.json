@@ -1,6 +1,6 @@
 {
   "EnableConsole": false,
-  "ValidateSignatures": true,
+  "ValidateSignatures": false,
   "UseTcpServer": false,
   "HeaderApiKey": "x-api-key",
   "AdminApiKey": "less3admin",

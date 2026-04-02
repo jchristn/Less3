@@ -494,18 +494,20 @@
 
             if (ctx.Http.Request.Url.Elements == null || ctx.Http.Request.Url.Elements.Length < 1)
             {
-                if (ctx.Http.Request.Method == WatsonWebserver.Core.HttpMethod.GET)
-                {
-                    ctx.Response.StatusCode = 200;
-                    ctx.Response.ContentType = "text/html";
-                    await ctx.Response.Send(DefaultPage("https://github.com/jchristn/less3"));
-                    return true;
-                }
-                else if (ctx.Http.Request.Method == WatsonWebserver.Core.HttpMethod.HEAD)
+                if (ctx.Http.Request.Method == WatsonWebserver.Core.HttpMethod.HEAD)
                 {
                     ctx.Response.StatusCode = 200;
                     ctx.Response.ContentType = "text/html";
                     await ctx.Response.Send();
+                    return true;
+                }
+
+                if (ctx.Http.Request.Method == WatsonWebserver.Core.HttpMethod.GET
+                    && !ctx.Http.Request.Headers.AllKeys.Contains("Authorization"))
+                {
+                    ctx.Response.StatusCode = 200;
+                    ctx.Response.ContentType = "text/html";
+                    await ctx.Response.Send(DefaultPage("https://github.com/jchristn/less3"));
                     return true;
                 }
             }

@@ -5,12 +5,9 @@
     using System.IO;
     using System.Net;
     using SyslogLogging;
-    using DatabaseWrapper.Core;
     using Less3.Storage;
     using S3ServerLibrary;
-    using Watson.ORM.Core;
     using WatsonWebserver.Core;
-    using Less3;
 
     /// <summary>
     /// Debug settings.

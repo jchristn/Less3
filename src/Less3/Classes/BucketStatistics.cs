@@ -56,7 +56,10 @@
         /// <param name="bytes">Number of bytes.</param>
         public BucketStatistics(string name, string guid, long objects, long bytes)
         {
-
+            Name = name;
+            GUID = guid;
+            Objects = objects;
+            Bytes = bytes;
         }
 
         #endregion

@@ -1,15 +1,13 @@
-﻿namespace Less3.Classes
+namespace Less3.Classes
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
+
+    using Less3.Database;
     using Less3.Settings;
     using SyslogLogging;
-    using Watson.ORM;
 
     /// <summary>
     /// Bucket manager.
@@ -25,21 +23,21 @@
         private SettingsBase _Settings;
         private LoggingModule _Logging;
         private ConfigManager _Config;
-        private WatsonORM _ORM;
+        private DatabaseDriverBase _Database;
 
         private readonly object _BucketsLock = new object();
         private List<BucketClient> _Buckets = new List<BucketClient>();
-         
+
         #endregion
 
         #region Constructors-and-Factories
 
-        internal BucketManager(SettingsBase settings, LoggingModule logging, ConfigManager config, WatsonORM orm)
+        internal BucketManager(SettingsBase settings, LoggingModule logging, ConfigManager config, DatabaseDriverBase database)
         {
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _Logging = logging ?? throw new ArgumentNullException(nameof(logging));
             _Config = config ?? throw new ArgumentNullException(nameof(config));
-            _ORM = orm ?? throw new ArgumentNullException(nameof(orm));
+            _Database = database ?? throw new ArgumentNullException(nameof(database));
 
             InitializeBuckets();
         }
@@ -47,7 +45,7 @@
         #endregion
 
         #region Internal-Methods
-         
+
         internal bool Add(Bucket bucket)
         {
             if (bucket == null) throw new ArgumentNullException(nameof(bucket));
@@ -55,7 +53,7 @@
             bool success = _Config.AddBucket(bucket);
             if (success)
             {
-                BucketClient client = new BucketClient(_Settings, _Logging, bucket, _ORM);
+                BucketClient client = new BucketClient(_Settings, _Logging, bucket, _Database);
 
                 lock (_BucketsLock)
                 {
@@ -65,7 +63,7 @@
                 InitializeBucket(bucket);
             }
 
-            return success; 
+            return success;
         }
 
         internal bool Remove(Bucket bucket, bool destroy)
@@ -129,7 +127,7 @@
         }
 
         internal BucketClient GetClient(string bucketName)
-        { 
+        {
             if (String.IsNullOrEmpty(bucketName)) throw new ArgumentNullException(nameof(bucketName));
 
             lock (_BucketsLock)
@@ -141,7 +139,7 @@
         }
 
         internal List<Bucket> GetUserBuckets(string userGuid)
-        { 
+        {
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
             return _Config.GetBucketsByUser(userGuid);
         }
@@ -167,13 +165,13 @@
         {
             lock (_BucketsLock)
             {
-                BucketClient client = new BucketClient(_Settings, _Logging, bucket, _ORM);
+                BucketClient client = new BucketClient(_Settings, _Logging, bucket, _Database);
                 _Buckets.Add(client);
             }
         }
 
         private bool Destroy(Bucket bucket)
-        {  
+        {
             #region Delete-Object-Files
 
             bool objectFilesDelete = false;
@@ -244,7 +242,7 @@
 
             #endregion
 
-            _Logging.Info("Destroy bucket " + bucket.Name + ": " + 
+            _Logging.Info("Destroy bucket " + bucket.Name + ": " +
                 "obj files [" + objectFilesDelete + "] " +
                 "obj dir [" + objectsDirectoryDelete + "] " +
                 "root files [" + rootFilesDelete + "] " +

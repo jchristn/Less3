@@ -1,17 +1,11 @@
 ﻿namespace Less3.Classes
 {
     using System;
-    using System.Collections.Generic;
-    using System.Data;
-    using System.Text;
-    using System.Text.Json;
     using System.Text.Json.Serialization;
-    using Watson.ORM.Core;
 
     /// <summary>
     /// Credential.
     /// </summary>
-    [Table("credential")]
     public class Credential
     {
         #region Public-Members
@@ -20,49 +14,41 @@
         /// Database identifier.
         /// </summary>
         [JsonIgnore]
-        [Column("id", true, DataTypes.Int, false)]
         public int Id { get; set; } = 0;
 
         /// <summary>
         /// GUID of the credential.
         /// </summary>
-        [Column("guid", false, DataTypes.Nvarchar, 64, false)]
         public string GUID { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// User GUID.
         /// </summary>
-        [Column("userguid", false, DataTypes.Nvarchar, 64, false)]
         public string UserGUID { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Description.
         /// </summary>
-        [Column("description", false, DataTypes.Nvarchar, 256, true)]
         public string Description { get; set; } = null;
 
         /// <summary>
         /// Access key.
         /// </summary>
-        [Column("accesskey", false, DataTypes.Nvarchar, 256, false)]
         public string AccessKey { get; set; } = null;
 
         /// <summary>
         /// Secret key.
         /// </summary>
-        [Column("secretkey", false, DataTypes.Nvarchar, 256, false)]
         public string SecretKey { get; set; } = null;
 
         /// <summary>
         /// Indicates if the secret key is base64 encoded.
         /// </summary>
-        [Column("isbase64", false, DataTypes.Boolean, false)]
         public bool IsBase64 { get; set; } = false;
 
         /// <summary>
         /// Timestamp from record creation, in UTC time.
         /// </summary>
-        [Column("createdutc", false, DataTypes.DateTime, 6, 6, false)]
         public DateTime CreatedUtc { get; set; } = DateTime.Now.ToUniversalTime();
 
         #endregion

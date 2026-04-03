@@ -1,16 +1,10 @@
-﻿namespace Less3.Settings
+namespace Less3.Settings
 {
     using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Net;
-    using SyslogLogging;
-    using DatabaseWrapper.Core;
+    using Less3.Database;
     using Less3.Storage;
-    using S3ServerLibrary;
-    using Watson.ORM.Core;
+    using SyslogLogging;
     using WatsonWebserver.Core;
-    using Less3;
 
     /// <summary>
     /// Less3 settings.

@@ -1,20 +1,14 @@
-﻿namespace Less3.Classes
+namespace Less3.Classes
 {
     using System;
     using System.Collections.Generic;
-    using System.Data;
     using System.IO;
     using System.Linq;
-    using System.Text;
 
-    using DatabaseWrapper.Core;
-    using ExpressionTree;
-    using Watson.ORM;
-    using Watson.ORM.Core;
-    using SyslogLogging;
-
-    using Less3.Storage;
+    using Less3.Database;
     using Less3.Settings;
+    using Less3.Storage;
+    using SyslogLogging;
 
     /// <summary>
     /// Bucket client.  All object construction, authentication, and authorization must occur prior to using bucket methods.
@@ -41,7 +35,7 @@
             get
             {
                 return _Bucket.Name;
-            } 
+            }
         }
 
         internal string GUID
@@ -59,7 +53,7 @@
         private SettingsBase _Settings = null;
         private LoggingModule _Logging = null;
         private Bucket _Bucket = null;
-        private WatsonORM _ORM = null;
+        private DatabaseDriverBase _Database = null;
         private long _StreamReadBufferSize = 65536;
         private StorageDriverBase _StorageDriver = null;
 
@@ -72,14 +66,14 @@
 
         }
 
-        internal BucketClient(SettingsBase settings, LoggingModule logging, Bucket bucket, WatsonORM orm)
+        internal BucketClient(SettingsBase settings, LoggingModule logging, Bucket bucket, DatabaseDriverBase database)
         {
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _Logging = logging ?? throw new ArgumentNullException(nameof(logging));
             _Bucket = bucket ?? throw new ArgumentNullException(nameof(bucket));
-            _ORM = orm ?? throw new ArgumentNullException(nameof(orm));
-             
-            InitializeStorageDriver(); 
+            _Database = database ?? throw new ArgumentNullException(nameof(database));
+
+            InitializeStorageDriver();
         }
 
         #endregion
@@ -153,7 +147,7 @@
             obj.LastUpdateUtc = ts;
             obj.ExpirationUtc = null;
 
-            _ORM.Insert<Obj>(obj);
+            _Database.Objects.Insert(obj);
             return true;
         }
 
@@ -179,14 +173,14 @@
             {
                 obj.Version = 1;
             }
-             
+
             DateTime ts = DateTime.Now.ToUniversalTime();
             obj.CreatedUtc = ts;
             obj.LastAccessUtc = ts;
             obj.LastUpdateUtc = ts;
             obj.ExpirationUtc = null;
 
-            _ORM.Insert<Obj>(obj);
+            _Database.Objects.Insert(obj);
             return true;
         }
 
@@ -201,7 +195,7 @@
             data = _StorageDriver.Read(obj.BlobFilename);
             return true;
         }
-         
+
         internal bool GetObjectLatest(string key, out long contentLength, out Stream stream)
         {
             contentLength = 0;
@@ -229,54 +223,26 @@
 
             ObjectStream objStream = _StorageDriver.ReadRangeStream(obj.BlobFilename, startPosition, length);
             stream = objStream.Data;
-            return true; 
+            return true;
         }
 
         internal long GetObjectLatestVersion(string key)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-
-            ResultOrder[] ro = new ResultOrder[1];
-            ro[0] = new ResultOrder(_ORM.GetColumnName<Obj>(nameof(Obj.Version)), OrderDirectionEnum.Descending);
-            
-            Expr e = new Expr(_ORM.GetColumnName<Obj>(nameof(Obj.Key)), OperatorEnum.Equals, key);
-            List<Obj> versions = _ORM.SelectMany<Obj>(null, null, e, ro);
-
-            if (versions != null && versions.Count > 0) return versions[0].Version;
-            return 0;
+            return _Database.Objects.GetLatestVersion(key, _Bucket.GUID);
         }
 
         internal BucketStatistics GetFullStatistics()
         {
-            BucketStatistics ret = new BucketStatistics(_Bucket.Name, _Bucket.GUID, 0, 0);
-
-            string countQuery = "SELECT COUNT(*) AS numobjects, SUM(contentlength) AS totalbytes FROM objects WHERE bucketguid = '" + _Bucket.GUID + "'";
-            DataTable result = _ORM.Query(countQuery);
-
-            if (result != null && result.Rows.Count == 1)
-            {
-                if (result.Rows[0].Table.Columns.Contains("numobjects")
-                    && result.Rows[0]["NumObjects"] != DBNull.Value
-                    && result.Rows[0]["NumObjects"] != null)
-                {
-                    ret.Objects = Convert.ToInt64(result.Rows[0]["numobjects"]);
-                }
-
-                if (result.Rows[0].Table.Columns.Contains("totalbytes")
-                    && result.Rows[0]["TotalBytes"] != DBNull.Value
-                    && result.Rows[0]["TotalBytes"] != null)
-                {
-                    ret.Bytes = Convert.ToInt64(result.Rows[0]["totalbytes"]);
-                } 
-            }
-
+            BucketStatistics ret = _Database.Objects.GetStatistics(_Bucket.GUID);
+            ret.Name = _Bucket.Name;
             return ret;
         }
 
         internal BucketStatistics GetStatistics(List<Obj> objects)
         {
             BucketStatistics ret = new BucketStatistics(_Bucket.Name, _Bucket.GUID, 0, 0);
-            
+
             if (objects != null && objects.Count > 0)
             {
                 ret.Objects = objects.Count;
@@ -287,66 +253,25 @@
         }
 
         internal Obj GetObjectLatestMetadata(string key)
-        { 
+        {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-
-            ResultOrder[] ro = new ResultOrder[1];
-            ro[0] = new ResultOrder(_ORM.GetColumnName<Obj>(nameof(Obj.Version)), OrderDirectionEnum.Descending);
-
-            Expr e = new Expr(
-                _ORM.GetColumnName<Obj>(nameof(Obj.Key)),
-                OperatorEnum.Equals,
-                key);
-
-            e.PrependAnd(
-                _ORM.GetColumnName<Obj>(nameof(Obj.BucketGUID)),
-                OperatorEnum.Equals,
-                _Bucket.GUID);
-
-            return _ORM.SelectFirst<Obj>(e, ro);
+            return _Database.Objects.GetLatestByKey(key, _Bucket.GUID);
         }
 
         internal Obj GetObjectVersionMetadata(string key, long version = 1)
-        { 
+        {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-
-            Expr e = new Expr(
-                _ORM.GetColumnName<Obj>(nameof(Obj.Key)),
-                OperatorEnum.Equals,
-                key);
-
-            e.PrependAnd(
-                _ORM.GetColumnName<Obj>(nameof(Obj.Version)),
-                OperatorEnum.Equals,
-                version);
-
-            e.PrependAnd(
-                _ORM.GetColumnName<Obj>(nameof(Obj.BucketGUID)),
-                OperatorEnum.Equals,
-                _Bucket.GUID);
-             
-            return _ORM.SelectFirst<Obj>(e);
+            return _Database.Objects.GetByKeyAndVersion(key, version, _Bucket.GUID);
         }
 
         internal Obj GetObjectMetadataByGuid(string guid)
-        { 
+        {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-
-            Expr e = new Expr(
-                _ORM.GetColumnName<Obj>(nameof(Obj.GUID)),
-                OperatorEnum.Equals,
-                guid);
-
-            e.PrependAnd(
-                _ORM.GetColumnName<Obj>(nameof(Obj.BucketGUID)),
-                OperatorEnum.Equals,
-                _Bucket.GUID);
-
-            return _ORM.SelectFirst<Obj>(e);
+            return _Database.Objects.GetByGuid(guid, _Bucket.GUID);
         }
 
         internal bool ObjectExists(string key)
-        { 
+        {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
             Obj obj = GetObjectLatestMetadata(key);
             if (obj != null) return true;
@@ -354,7 +279,7 @@
         }
 
         internal bool ObjectVersionExists(string key, long version)
-        { 
+        {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
             Obj obj = GetObjectVersionMetadata(key, version);
             if (obj != null) return true;
@@ -371,18 +296,18 @@
                 _Logging.Debug("Delete unable to find key " + _Bucket.Name + "/" + key);
                 return false;
             }
-              
+
             if (_Bucket.EnableVersioning)
             {
                 _Logging.Info("Delete marking key " + _Bucket.Name + "/" + key + " as deleted");
                 obj.DeleteMarker = true;
-                _ORM.Update<Obj>(obj);
+                _Database.Objects.Update(obj);
                 return true;
             }
             else
             {
                 _Logging.Info("Delete deleting key " + _Bucket.Name + "/" + key);
-                _ORM.Delete<Obj>(obj);
+                _Database.Objects.Delete(obj);
                 _StorageDriver.Delete(obj.BlobFilename);
                 return true;
             }
@@ -398,18 +323,18 @@
                 _Logging.Debug("Delete unable to find key " + _Bucket.Name + "/" + key + " version " + version);
                 return false;
             }
-             
+
             if (_Bucket.EnableVersioning)
             {
                 _Logging.Info("Delete marking key " + _Bucket.Name + "/" + key + " version " + version + " as deleted");
                 obj.DeleteMarker = true;
-                _ORM.Update<Obj>(obj);
-                return true; 
+                _Database.Objects.Update(obj);
+                return true;
             }
             else
             {
                 _Logging.Info("Delete deleting key " + _Bucket.Name + "/" + key + " version " + version);
-                _ORM.Delete<Obj>(obj);
+                _Database.Objects.Delete(obj);
                 _StorageDriver.Delete(obj.BlobFilename);
                 return true;
             }
@@ -425,18 +350,18 @@
                 _Logging.Debug("Delete unable to find key " + _Bucket.Name + "/" + key + " version " + version);
                 return false;
             }
-             
+
             if (_Bucket.EnableVersioning)
             {
                 _Logging.Info("Delete marking key " + _Bucket.Name + "/" + key + " as deleted");
                 obj.DeleteMarker = true;
-                _ORM.Update<Obj>(obj);
+                _Database.Objects.Update(obj);
                 return true;
             }
             else
             {
                 _Logging.Info("Delete deleting key " + _Bucket.Name + "/" + key);
-                _ORM.Delete<Obj>(obj); 
+                _Database.Objects.Delete(obj);
                 return true;
             }
         }
@@ -483,41 +408,18 @@
             prefixes = new List<string>();
             nextStartIndex = startIndex;
             isTruncated = false;
-             
+
             while (true)
             {
                 #region Retrieve-Records
 
-                Expr e = new Expr(
-                    _ORM.GetColumnName<Obj>(nameof(Obj.BucketGUID)),
-                    OperatorEnum.Equals,
-                    _Bucket.GUID);
-
-                ResultOrder[] ro = new ResultOrder[1];
-                ro[0] = new ResultOrder(_ORM.GetColumnName<Obj>(nameof(Obj.Id)), OrderDirectionEnum.Ascending);
-
-                e.PrependAnd(
-                    _ORM.GetColumnName<Obj>(nameof(Obj.Id)),
-                    OperatorEnum.GreaterThanOrEqualTo,
-                    nextStartIndex);
-
-                if (excludeDeleteMarkers)
-                {
-                    e.PrependAnd(
-                        _ORM.GetColumnName<Obj>(nameof(Obj.DeleteMarker)),
-                        OperatorEnum.Equals,
-                        false);
-                }
-
-                if (!String.IsNullOrEmpty(prefix))
-                {
-                    e.PrependAnd(
-                    _ORM.GetColumnName<Obj>(nameof(Obj.Key)),
-                    OperatorEnum.StartsWith,
+                List<Obj> tempObjects = _Database.Objects.Enumerate(
+                    _Bucket.GUID,
+                    nextStartIndex,
+                    maxResults,
+                    excludeDeleteMarkers,
                     prefix);
-                }
 
-                List<Obj> tempObjects = _ORM.SelectMany<Obj>(null, maxResults, e, ro);
                 if (tempObjects == null || tempObjects.Count < 1)
                 {
                     break;
@@ -532,9 +434,6 @@
                     string currPrefix = null;
                     string tempKey = obj.Key;
 
-                    // Strip the current prefix to get the relative key.
-                    // Use StartsWith + Substring rather than Replace to avoid
-                    // removing repeated segments within the key.
                     if (!String.IsNullOrEmpty(prefix) && tempKey.StartsWith(prefix))
                         tempKey = tempKey.Substring(prefix.Length);
 
@@ -542,8 +441,6 @@
                     {
                         if (tempKey.Contains(delimiter))
                         {
-                            // Key contains the delimiter — extract the immediate
-                            // child prefix (one level deep from current prefix).
                             int delimiterPos = tempKey.IndexOf(delimiter);
                             currPrefix = prefix + tempKey.Substring(0, delimiterPos + delimiter.Length);
                             if (!prefixes.Contains(currPrefix))
@@ -553,9 +450,6 @@
                         }
                         else if (obj.IsFolder && obj.ContentLength == 0 && !String.IsNullOrEmpty(tempKey))
                         {
-                            // Folder marker without a trailing delimiter in its
-                            // relative key (e.g. key "myfolder" with IsFolder=true).
-                            // Treat it as an immediate child prefix.
                             currPrefix = prefix + tempKey;
                             if (!currPrefix.EndsWith(delimiter)) currPrefix += delimiter;
                             if (!prefixes.Contains(currPrefix))
@@ -620,9 +514,9 @@
                 foreach (BucketTag tag in tags)
                 {
                     tag.BucketGUID = _Bucket.GUID;
-                    _ORM.Insert<BucketTag>(tag);
+                    _Database.BucketTags.Insert(tag);
                 }
-            } 
+            }
         }
 
         internal void AddObjectVersionTags(string key, long version, List<ObjectTag> tags)
@@ -637,19 +531,14 @@
                 foreach (ObjectTag tag in tags)
                 {
                     tag.BucketGUID = _Bucket.GUID;
-                    _ORM.Insert<ObjectTag>(tag);
+                    _Database.ObjectTags.Insert(tag);
                 }
             }
         }
 
         internal List<BucketTag> GetBucketTags()
         {
-            Expr e = new Expr(
-                _ORM.GetColumnName<BucketTag>(nameof(BucketTag.BucketGUID)),
-                OperatorEnum.Equals,
-                _Bucket.GUID);
-
-            return _ORM.SelectMany<BucketTag>(e);
+            return _Database.BucketTags.GetByBucketGuid(_Bucket.GUID);
         }
 
         internal List<ObjectTag> GetObjectTags(string key, long version)
@@ -664,49 +553,18 @@
                 return null;
             }
 
-            Expr e = new Expr(
-                _ORM.GetColumnName<Obj>(nameof(Obj.Key)),
-                OperatorEnum.Equals,
-                key);
-
-            e.PrependAnd(
-                _ORM.GetColumnName<Obj>(nameof(Obj.Version)),
-                OperatorEnum.Equals,
-                version);
-
-            e.PrependAnd(
-                _ORM.GetColumnName<Obj>(nameof(Obj.BucketGUID)),
-                OperatorEnum.Equals,
-                _Bucket.GUID);
-
-            return _ORM.SelectMany<ObjectTag>(e);
+            return _Database.ObjectTags.GetByObjectGuid(obj.GUID, _Bucket.GUID);
         }
 
         internal List<ObjectTag> GetObjectTags(string guid)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid)); 
-             
-            Expr e = new Expr(
-                _ORM.GetColumnName<ObjectTag>(nameof(ObjectTag.ObjectGUID)),
-                OperatorEnum.Equals,
-                guid);
-
-            e.PrependAnd(
-                _ORM.GetColumnName<ObjectTag>(nameof(ObjectTag.BucketGUID)),
-                OperatorEnum.Equals,
-                _Bucket.GUID);
-
-            return _ORM.SelectMany<ObjectTag>(e);
+            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
+            return _Database.ObjectTags.GetByObjectGuid(guid, _Bucket.GUID);
         }
 
         internal void DeleteBucketTags()
         {
-            Expr eBucket = new Expr(
-                _ORM.GetColumnName<BucketTag>(nameof(BucketTag.BucketGUID)),
-                OperatorEnum.Equals,
-                _Bucket.GUID);
-
-            _ORM.DeleteMany<BucketTag>(eBucket);
+            _Database.BucketTags.DeleteByBucketGuid(_Bucket.GUID);
         }
 
         internal void DeleteObjectVersionTags(string key, long version)
@@ -720,17 +578,7 @@
                 return;
             }
 
-            Expr e = new Expr(
-                _ORM.GetColumnName<ObjectTag>(nameof(ObjectTag.BucketGUID)),
-                OperatorEnum.Equals,
-                _Bucket.GUID);
-
-            e.PrependAnd(
-                _ORM.GetColumnName<ObjectTag>(nameof(ObjectTag.ObjectGUID)),
-                OperatorEnum.Equals,
-                obj.GUID);
-             
-            _ORM.DeleteMany<ObjectTag>(e);
+            _Database.ObjectTags.DeleteByObjectGuid(obj.GUID, _Bucket.GUID);
         }
 
         internal bool ObjectGroupAclExists(string groupName, string key, long version)
@@ -745,22 +593,7 @@
                 return false;
             }
 
-            Expr e = new Expr(
-                _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
-                OperatorEnum.Equals,
-                _Bucket.GUID);
-
-            e.PrependAnd(
-                _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.UserGroup)),
-                OperatorEnum.Equals,
-                groupName);
-
-            e.PrependAnd(
-                _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.ObjectGUID)),
-                OperatorEnum.Equals,
-                obj.GUID);
-
-            return _ORM.Exists<ObjectAcl>(e);
+            return _Database.ObjectAcls.ExistsByGroupName(groupName, obj.GUID, _Bucket.GUID);
         }
 
         internal bool ObjectUserAclExists(string userGuid, string key, long version)
@@ -775,66 +608,24 @@
                 return false;
             }
 
-            Expr e = new Expr(
-                _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
-                OperatorEnum.Equals,
-                _Bucket.GUID);
-
-            e.PrependAnd(
-                _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.UserGUID)),
-                OperatorEnum.Equals,
-                userGuid);
-
-            e.PrependAnd(
-                _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.ObjectGUID)),
-                OperatorEnum.Equals,
-                obj.GUID);
-
-            return _ORM.Exists<ObjectAcl>(e);
+            return _Database.ObjectAcls.ExistsByUserGuid(userGuid, obj.GUID, _Bucket.GUID);
         }
 
         internal bool BucketGroupAclExists(string groupName)
         {
-            if (String.IsNullOrEmpty(groupName)) throw new ArgumentNullException(nameof(groupName)); 
-             
-            Expr e = new Expr(
-                _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
-                OperatorEnum.Equals,
-                _Bucket.GUID);
-
-            e.PrependAnd(
-                _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.UserGroup)),
-                OperatorEnum.Equals,
-                groupName);
-
-            return _ORM.Exists<BucketAcl>(e);
+            if (String.IsNullOrEmpty(groupName)) throw new ArgumentNullException(nameof(groupName));
+            return _Database.BucketAcls.ExistsByGroupName(groupName, _Bucket.GUID);
         }
 
         internal bool BucketUserAclExists(string userGuid)
         {
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
-
-            Expr e = new Expr(
-                _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
-                OperatorEnum.Equals,
-                _Bucket.GUID);
-
-            e.PrependAnd(
-                _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.UserGUID)),
-                OperatorEnum.Equals,
-                userGuid);
-
-            return _ORM.Exists<BucketAcl>(e);
+            return _Database.BucketAcls.ExistsByUserGuid(userGuid, _Bucket.GUID);
         }
 
         internal List<BucketAcl> GetBucketAcl()
         {
-            Expr e = new Expr(
-                _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
-                OperatorEnum.Equals,
-                _Bucket.GUID);
-
-            return _ORM.SelectMany<BucketAcl>(e); 
+            return _Database.BucketAcls.GetByBucketGuid(_Bucket.GUID);
         }
 
         internal List<ObjectAcl> GetObjectVersionAcl(string key, long version)
@@ -848,34 +639,13 @@
                 return null;
             }
 
-            Expr e = new Expr(
-                _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
-                OperatorEnum.Equals,
-                _Bucket.GUID);
-
-            e.PrependAnd(
-                _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.ObjectGUID)),
-                OperatorEnum.Equals,
-                obj.GUID);
-
-            return _ORM.SelectMany<ObjectAcl>(e);
+            return _Database.ObjectAcls.GetByObjectGuid(obj.GUID, _Bucket.GUID);
         }
 
         internal List<ObjectAcl> GetObjectAcl(string guid)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-              
-            Expr e = new Expr(
-                _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
-                OperatorEnum.Equals,
-                _Bucket.GUID);
-
-            e.PrependAnd(
-                _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.ObjectGUID)),
-                OperatorEnum.Equals,
-                guid);
-
-            return _ORM.SelectMany<ObjectAcl>(e);
+            return _Database.ObjectAcls.GetByObjectGuid(guid, _Bucket.GUID);
         }
 
         internal void AddBucketAcl(BucketAcl acl)
@@ -883,7 +653,7 @@
             if (acl != null)
             {
                 acl.BucketGUID = _Bucket.GUID;
-                _ORM.Insert<BucketAcl>(acl);
+                _Database.BucketAcls.Insert(acl);
             }
         }
 
@@ -896,7 +666,7 @@
                 foreach (BucketAcl acl in acls)
                 {
                     acl.BucketGUID = _Bucket.GUID;
-                    _ORM.Insert<BucketAcl>(acl);
+                    _Database.BucketAcls.Insert(acl);
                 }
             }
         }
@@ -914,7 +684,7 @@
 
                 acl.BucketGUID = _Bucket.GUID;
                 acl.ObjectGUID = obj.GUID;
-                _ORM.Insert<ObjectAcl>(acl);
+                _Database.ObjectAcls.Insert(acl);
             }
         }
 
@@ -937,19 +707,14 @@
                 {
                     acl.BucketGUID = _Bucket.GUID;
                     acl.ObjectGUID = obj.GUID;
-                    _ORM.Insert<ObjectAcl>(acl);
+                    _Database.ObjectAcls.Insert(acl);
                 }
             }
         }
 
         internal void DeleteBucketAcl()
         {
-            Expr e = new Expr(
-                _ORM.GetColumnName<BucketAcl>(nameof(BucketAcl.BucketGUID)),
-                OperatorEnum.Equals,
-                _Bucket.GUID);
-
-            _ORM.DeleteMany<BucketAcl>(e);
+            _Database.BucketAcls.DeleteByBucketGuid(_Bucket.GUID);
         }
 
         internal void DeleteObjectVersionAcl(string key, long version)
@@ -963,17 +728,7 @@
                 return;
             }
 
-            Expr e = new Expr(
-                _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
-                OperatorEnum.Equals,
-                _Bucket.GUID);
-
-            e.PrependAnd(
-                _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.ObjectGUID)),
-                OperatorEnum.Equals,
-                obj.GUID);
-
-            _ORM.DeleteMany<ObjectAcl>(e);
+            _Database.ObjectAcls.DeleteByObjectGuidAndBucketGuid(obj.GUID, _Bucket.GUID);
         }
 
         internal void DeleteObjectAcl(string key)
@@ -987,23 +742,13 @@
                 return;
             }
 
-            Expr e = new Expr(
-                _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.BucketGUID)),
-                OperatorEnum.Equals,
-                _Bucket.GUID);
-
-            e.PrependAnd(
-                _ORM.GetColumnName<ObjectAcl>(nameof(ObjectAcl.ObjectGUID)),
-                OperatorEnum.Equals,
-                obj.GUID);
-
-            _ORM.DeleteMany<ObjectAcl>(e);
+            _Database.ObjectAcls.DeleteByObjectGuidAndBucketGuid(obj.GUID, _Bucket.GUID);
         }
 
         #endregion
 
         #region Private-Methods
-          
+
         private void InitializeStorageDriver()
         {
             switch (_Bucket.StorageType)
@@ -1024,14 +769,14 @@
 
             DeleteObjectVersionAcl(obj.Key, obj.Version);
             DeleteObjectVersionTags(obj.Key, obj.Version);
-            _ORM.Delete<Obj>(obj);
+            _Database.Objects.Delete(obj);
 
             if (!obj.DeleteMarker && _StorageDriver.Exists(obj.BlobFilename))
             {
                 _StorageDriver.Delete(obj.BlobFilename);
             }
         }
-        
+
         #endregion
     }
 }

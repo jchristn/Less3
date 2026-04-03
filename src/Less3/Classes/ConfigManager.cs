@@ -1,16 +1,11 @@
-﻿namespace Less3.Classes
+namespace Less3.Classes
 {
     using System;
     using System.Collections.Generic;
-    using System.Data;
-    using System.Text;
 
-    using DatabaseWrapper.Core;
-    using ExpressionTree;
+    using Less3.Database;
     using Less3.Settings;
     using SyslogLogging;
-    using Watson.ORM;
-    using Watson.ORM.Core;
 
     /// <summary>
     /// Configuration manager.
@@ -25,17 +20,17 @@
 
         private SettingsBase _Settings = null;
         private LoggingModule _Logging = null;
-        private WatsonORM _ORM = null;
+        private DatabaseDriverBase _Database = null;
 
         #endregion
 
         #region Constructors-and-Factories
-         
-        internal ConfigManager(SettingsBase settings, LoggingModule logging, WatsonORM orm)
+
+        internal ConfigManager(SettingsBase settings, LoggingModule logging, DatabaseDriverBase database)
         {
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _Logging = logging ?? throw new ArgumentNullException(nameof(logging));
-            _ORM = orm ?? throw new ArgumentNullException(nameof(orm));
+            _Database = database ?? throw new ArgumentNullException(nameof(database));
         }
 
         #endregion
@@ -48,79 +43,41 @@
 
         internal List<User> GetUsers()
         {
-            Expr e = new Expr(
-                _ORM.GetColumnName<User>(nameof(User.Id)),
-                OperatorEnum.GreaterThan,
-                0);
-            return _ORM.SelectMany<User>(e);
+            return _Database.Users.GetAll();
         }
 
         internal bool UserGuidExists(string guid)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-
-            Expr e = new Expr(
-                _ORM.GetColumnName<User>(nameof(User.GUID)),
-                OperatorEnum.Equals,
-                guid);
-
-            User user = _ORM.SelectFirst<User>(e);
-            if (user != null) return true;
-            return false;
+            return _Database.Users.ExistsByGuid(guid);
         }
 
         internal bool UserEmailExists(string email)
         {
             if (String.IsNullOrEmpty(email)) throw new ArgumentNullException(nameof(email));
-
-            Expr e = new Expr(
-                _ORM.GetColumnName<User>(nameof(User.Email)),
-                OperatorEnum.Equals,
-                email);
-
-            User user = _ORM.SelectFirst<User>(e);
-            if (user != null) return true;
-            return false;
+            return _Database.Users.ExistsByEmail(email);
         }
 
         internal User GetUserByGuid(string guid)
-        { 
+        {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-
-            Expr e = new Expr(
-                _ORM.GetColumnName<User>(nameof(User.GUID)),
-                OperatorEnum.Equals,
-                guid);
-
-            return _ORM.SelectFirst<User>(e);
+            return _Database.Users.GetByGuid(guid);
         }
 
         internal User GetUserByName(string name)
-        { 
+        {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
-
-            Expr e = new Expr(
-                _ORM.GetColumnName<User>(nameof(User.Name)),
-                OperatorEnum.Equals,
-                name);
-
-            return _ORM.SelectFirst<User>(e);
+            return _Database.Users.GetByName(name);
         }
 
         internal User GetUserByEmail(string email)
-        { 
+        {
             if (String.IsNullOrEmpty(email)) throw new ArgumentNullException(nameof(email));
-
-            Expr e = new Expr(
-                _ORM.GetColumnName<User>(nameof(User.Email)),
-                OperatorEnum.Equals,
-                email);
-
-            return _ORM.SelectFirst<User>(e);
+            return _Database.Users.GetByEmail(email);
         }
 
         internal User GetUserByAccessKey(string accessKey)
-        { 
+        {
             if (String.IsNullOrEmpty(accessKey)) throw new ArgumentNullException(nameof(accessKey));
 
             Credential cred = GetCredentialByAccessKey(accessKey);
@@ -168,81 +125,47 @@
                 return false;
             }
 
-            _ORM.Insert<User>(user);
+            _Database.Users.Insert(user);
             return true;
         }
 
         internal void DeleteUser(string guid)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            User tempUser = GetUserByGuid(guid);
-            if (tempUser != null)
-            {
-                _ORM.Delete<User>(tempUser);
-            }
+            _Database.Users.DeleteByGuid(guid);
         }
-         
+
         #endregion
 
         #region Internal-Credential-Methods
 
         internal List<Credential> GetCredentials()
         {
-            Expr e = new Expr(
-                _ORM.GetColumnName<Credential>(nameof(Credential.Id)),
-                OperatorEnum.GreaterThan,
-                0);
-            return _ORM.SelectMany<Credential>(e); 
+            return _Database.Credentials.GetAll();
         }
 
         internal bool CredentialGuidExists(string guid)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-
-            Expr e = new Expr(
-                _ORM.GetColumnName<Credential>(nameof(Credential.GUID)),
-                OperatorEnum.Equals,
-                guid);
-
-            Credential cred = _ORM.SelectFirst<Credential>(e);
-            if (cred != null) return true;
-            return false;
+            return _Database.Credentials.ExistsByGuid(guid);
         }
 
         internal Credential GetCredentialByGuid(string guid)
-        { 
+        {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-
-            Expr e = new Expr(
-                _ORM.GetColumnName<Credential>(nameof(Credential.GUID)),
-                OperatorEnum.Equals,
-                guid);
-
-            return _ORM.SelectFirst<Credential>(e);
+            return _Database.Credentials.GetByGuid(guid);
         }
 
         internal List<Credential> GetCredentialsByUser(string userGuid)
-        { 
+        {
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
-
-            Expr e = new Expr(
-                _ORM.GetColumnName<Credential>(nameof(Credential.UserGUID)),
-                OperatorEnum.Equals,
-                userGuid);
-
-            return _ORM.SelectMany<Credential>(e);
+            return _Database.Credentials.GetByUserGuid(userGuid);
         }
 
         internal Credential GetCredentialByAccessKey(string accessKey)
-        { 
+        {
             if (String.IsNullOrEmpty(accessKey)) throw new ArgumentNullException(nameof(accessKey));
-             
-            Expr e = new Expr(
-                _ORM.GetColumnName<Credential>(nameof(Credential.AccessKey)),
-                OperatorEnum.Equals,
-                accessKey);
-
-            return _ORM.SelectFirst<Credential>(e);
+            return _Database.Credentials.GetByAccessKey(accessKey);
         }
 
         internal bool AddCredential(string userGuid, string description, string accessKey, string secretKey, bool isBase64)
@@ -273,82 +196,47 @@
                 return false;
             }
 
-            _ORM.Insert<Credential>(cred); 
+            _Database.Credentials.Insert(cred);
             return true;
         }
 
         internal void DeleteCredential(string guid)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            Credential tempCred = GetCredentialByGuid(guid);
-            if (tempCred != null)
-            {
-                _ORM.Delete<Credential>(tempCred);
-            }
+            _Database.Credentials.DeleteByGuid(guid);
         }
-         
+
         #endregion
 
         #region Internal-Bucket-Methods
 
         internal List<Bucket> GetBuckets()
         {
-            Expr e = new Expr(
-                _ORM.GetColumnName<Bucket>(nameof(Bucket.Id)),
-                OperatorEnum.GreaterThan,
-                0);
-
-            return _ORM.SelectMany<Bucket>(e); 
+            return _Database.Buckets.GetAll();
         }
 
         internal bool BucketExists(string name)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
-
-            Expr e = new Expr(
-                _ORM.GetColumnName<Bucket>(nameof(Bucket.Name)),
-                OperatorEnum.Equals,
-                name);
-
-            Bucket bucket = _ORM.SelectFirst<Bucket>(e);
-            if (bucket != null) return true;
-            return false;
+            return _Database.Buckets.ExistsByName(name);
         }
 
         internal List<Bucket> GetBucketsByUser(string userGuid)
-        { 
+        {
             if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
-
-            Expr e = new Expr(
-                _ORM.GetColumnName<Bucket>(nameof(Bucket.OwnerGUID)),
-                OperatorEnum.Equals,
-                userGuid);
-
-            return _ORM.SelectMany<Bucket>(e); 
+            return _Database.Buckets.GetByOwnerGuid(userGuid);
         }
 
         internal Bucket GetBucketByGuid(string guid)
-        { 
+        {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-
-            Expr e = new Expr(
-                _ORM.GetColumnName<Bucket>(nameof(Bucket.GUID)),
-                OperatorEnum.Equals,
-                guid);
-
-            return _ORM.SelectFirst<Bucket>(e);
+            return _Database.Buckets.GetByGuid(guid);
         }
 
         internal Bucket GetBucketByName(string name)
-        { 
+        {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
-
-            Expr e = new Expr(
-                _ORM.GetColumnName<Bucket>(nameof(Bucket.Name)),
-                OperatorEnum.Equals,
-                name);
-
-            return _ORM.SelectFirst<Bucket>(e);
+            return _Database.Buckets.GetByName(name);
         }
 
         internal bool AddBucket(string userGuid, string name)
@@ -376,20 +264,16 @@
                 return false;
             }
 
-            _ORM.Insert<Bucket>(bucket);
+            _Database.Buckets.Insert(bucket);
             return true;
         }
 
         internal void DeleteBucket(string guid)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            Bucket bucket = GetBucketByGuid(guid);
-            if (bucket != null)
-            {
-                _ORM.Delete<Bucket>(bucket);
-            }
+            _Database.Buckets.DeleteByGuid(guid);
         }
-         
+
         #endregion
 
         #region Internal-Upload-Methods
@@ -397,83 +281,85 @@
         internal Less3.Classes.Upload GetUploadByGuid(string uploadGuid)
         {
             if (String.IsNullOrEmpty(uploadGuid)) return null;
-
-            Expr e = new Expr(
-                _ORM.GetColumnName<Less3.Classes.Upload>(nameof(Less3.Classes.Upload.GUID)),
-                OperatorEnum.Equals,
-                uploadGuid);
-
-            return _ORM.SelectFirst<Less3.Classes.Upload>(e);
+            return _Database.Uploads.GetByGuid(uploadGuid);
         }
 
         internal List<Less3.Classes.Upload> GetUploads()
         {
-            Expr e = new Expr(
-                _ORM.GetColumnName<Less3.Classes.Upload>(nameof(Less3.Classes.Upload.Id)),
-                OperatorEnum.GreaterThan,
-                0);
-
-            return _ORM.SelectMany<Less3.Classes.Upload>(e);
+            return _Database.Uploads.GetAll();
         }
 
         internal List<Less3.Classes.Upload> GetUploadsByBucketGuid(string bucketGuid)
         {
             if (String.IsNullOrEmpty(bucketGuid)) return new List<Less3.Classes.Upload>();
-
-            Expr e = new Expr(
-                _ORM.GetColumnName<Less3.Classes.Upload>(nameof(Less3.Classes.Upload.BucketGUID)),
-                OperatorEnum.Equals,
-                bucketGuid);
-
-            return _ORM.SelectMany<Less3.Classes.Upload>(e);
+            return _Database.Uploads.GetByBucketGuid(bucketGuid);
         }
 
         internal void AddUpload(Less3.Classes.Upload upload)
         {
             if (upload == null) throw new ArgumentNullException(nameof(upload));
-            _ORM.Insert<Less3.Classes.Upload>(upload);
+            _Database.Uploads.Insert(upload);
         }
 
         internal void DeleteUpload(string uploadGuid)
         {
             if (String.IsNullOrEmpty(uploadGuid)) return;
-
-            Expr e = new Expr(
-                _ORM.GetColumnName<Less3.Classes.Upload>(nameof(Less3.Classes.Upload.GUID)),
-                OperatorEnum.Equals,
-                uploadGuid);
-
-            _ORM.DeleteMany<Less3.Classes.Upload>(e);
+            _Database.Uploads.DeleteByGuid(uploadGuid);
         }
 
         internal void AddUploadPart(UploadPart part)
         {
             if (part == null) throw new ArgumentNullException(nameof(part));
-            _ORM.Insert<UploadPart>(part);
+            _Database.UploadParts.Insert(part);
         }
 
         internal List<UploadPart> GetUploadPartsByUploadGuid(string uploadGuid)
         {
             if (String.IsNullOrEmpty(uploadGuid)) return null;
-
-            Expr e = new Expr(
-                _ORM.GetColumnName<UploadPart>(nameof(UploadPart.UploadGUID)),
-                OperatorEnum.Equals,
-                Guid.Parse(uploadGuid));
-
-            return _ORM.SelectMany<UploadPart>(e);
+            return _Database.UploadParts.GetByUploadGuid(uploadGuid);
         }
 
         internal void DeleteUploadParts(string uploadGuid)
         {
             if (String.IsNullOrEmpty(uploadGuid)) return;
+            _Database.UploadParts.DeleteByUploadGuid(uploadGuid);
+        }
 
-            Expr e = new Expr(
-                _ORM.GetColumnName<UploadPart>(nameof(UploadPart.UploadGUID)),
-                OperatorEnum.Equals,
-                Guid.Parse(uploadGuid));
+        #endregion
 
-            _ORM.DeleteMany<UploadPart>(e);
+        #region Internal-RequestHistory-Methods
+
+        internal List<RequestHistory> GetRequestHistories()
+        {
+            return _Database.RequestHistory.GetAll();
+        }
+
+        internal RequestHistory GetRequestHistoryByGuid(string guid)
+        {
+            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
+            return _Database.RequestHistory.GetByGuid(guid);
+        }
+
+        internal void AddRequestHistory(RequestHistory entry)
+        {
+            if (entry == null) throw new ArgumentNullException(nameof(entry));
+            _Database.RequestHistory.Insert(entry);
+        }
+
+        internal void DeleteRequestHistory(string guid)
+        {
+            if (String.IsNullOrEmpty(guid)) return;
+            _Database.RequestHistory.DeleteByGuid(guid);
+        }
+
+        internal void DeleteRequestHistoriesOlderThan(DateTime cutoff)
+        {
+            _Database.RequestHistory.DeleteOlderThan(cutoff);
+        }
+
+        internal List<RequestHistory> GetRequestHistoriesInRange(DateTime startUtc, DateTime endUtc)
+        {
+            return _Database.RequestHistory.GetInRange(startUtc, endUtc);
         }
 
         #endregion

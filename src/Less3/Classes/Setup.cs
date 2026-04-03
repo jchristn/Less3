@@ -6,12 +6,11 @@
     using System.Net;
     using System.Text;
     using SyslogLogging;
-    using DatabaseWrapper.Core;
     using GetSomeInput;
-    using S3ServerLibrary;
-    using Watson.ORM.Core;
+    using Less3.Database;
     using Less3.Storage;
     using Less3.Settings;
+    using S3ServerLibrary;
 
     /// <summary>
     /// Setup workflow.
@@ -129,7 +128,7 @@
                         break;
                     case "mysql": 
                         settings.Database = new DatabaseSettings(
-                            DbTypeEnum.Mysql,
+                            DatabaseTypeEnum.Mysql,
                             Inputty.GetString("Hostname:", "localhost", false),
                             Inputty.GetInteger("Port:", 3306, true, false),
                             Inputty.GetString("Username:", "root", false),
@@ -140,7 +139,7 @@
                         break;
                     case "postgresql":
                         settings.Database = new DatabaseSettings(
-                            DbTypeEnum.Postgresql,
+                            DatabaseTypeEnum.Postgresql,
                             Inputty.GetString("Hostname:", "localhost", false),
                             Inputty.GetInteger("Port:", 5432, true, false),
                             Inputty.GetString("Username:", "postgres", false),
@@ -168,24 +167,9 @@
 
             #region Create-Configuration-Database
 
-            Watson.ORM.WatsonORM orm = new Watson.ORM.WatsonORM(settings.Database);
+            DatabaseDriverBase database = DatabaseDriverFactory.Create(settings.Database, logging);
 
-            orm.InitializeDatabase(); 
-            orm.InitializeTables(new List<Type>
-            {
-                typeof(Bucket),
-                typeof(BucketAcl),
-                typeof(BucketTag),
-                typeof(Credential),
-                typeof(Obj),
-                typeof(ObjectAcl),
-                typeof(ObjectTag),
-                typeof(Upload),
-                typeof(UploadPart),
-                typeof(User)
-            });
-
-            ConfigManager config = new ConfigManager(settings, logging, orm);
+            ConfigManager config = new ConfigManager(settings, logging, database);
 
             string userGuid = "default";
             config.AddUser(new User(userGuid, "Default user", "default@default.com"));
@@ -207,7 +191,7 @@
 
             #region Write-Sample-Objects
 
-            BucketClient bucket = new BucketClient(settings, logging, bucketConfig, orm);
+            BucketClient bucket = new BucketClient(settings, logging, bucketConfig, database);
 
             DateTime ts = DateTime.Now.ToUniversalTime();
 

@@ -6,13 +6,11 @@
   "AdminApiKey": "less3admin",
   "RegionString": "us-west-1",
   "Database": {
-    "Filename": "./less3.db",
     "Type": "Sqlite",
+    "Filename": "./less3.db",
     "Port": 0,
-    "Debug": {
-      "EnableForQueries": false,
-      "EnableForResults": false
-    }
+    "RequireEncryption": false,
+    "LogQueries": false
   },
   "Webserver": {
     "Hostname": "*",

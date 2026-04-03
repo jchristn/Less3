@@ -1,17 +1,11 @@
 ﻿namespace Less3.Classes
 {
     using System;
-    using System.Collections.Generic;
-    using System.Data;
-    using System.Text;
-    using System.Text.Json;
     using System.Text.Json.Serialization;
-    using Watson.ORM.Core;
 
     /// <summary>
     /// Tag entry for a bucket.
     /// </summary>
-    [Table("buckettags")]
     public class BucketTag
     {
         #region Public-Members
@@ -20,37 +14,31 @@
         /// Database identifier.
         /// </summary>
         [JsonIgnore]
-        [Column("id", true, DataTypes.Int, false)]
         public int Id { get; set; } = 0;
 
         /// <summary>
         /// GUID.
         /// </summary>
-        [Column("guid", false, DataTypes.Nvarchar, 64, false)]
         public string GUID { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// GUID of the bucket.
         /// </summary>
-        [Column("bucketguid", false, DataTypes.Nvarchar, 64, false)]
         public string BucketGUID { get; set; } = null;
 
         /// <summary>
         /// Key.
         /// </summary>
-        [Column("tagkey", false, DataTypes.Nvarchar, 256, false)]
         public string Key { get; set; } = null;
 
         /// <summary>
         /// Value.
         /// </summary>
-        [Column("tagvalue", false, DataTypes.Nvarchar, 1024, true)]
         public string Value { get; set; } = null;
 
         /// <summary>
         /// Timestamp from record creation, in UTC time.
         /// </summary>
-        [Column("createdutc", false, DataTypes.DateTime, 6, 6, false)]
         public DateTime CreatedUtc { get; set; } = DateTime.Now.ToUniversalTime();
 
         #endregion

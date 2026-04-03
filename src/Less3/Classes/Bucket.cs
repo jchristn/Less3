@@ -1,19 +1,12 @@
 ﻿namespace Less3.Classes
 {
     using System;
-    using System.Collections.Generic;
-    using System.Data;
-    using System.IO;
-    using System.Text;
-    using System.Text.Json;
     using System.Text.Json.Serialization;
-    using Watson.ORM.Core;
     using Less3.Storage;
 
     /// <summary>
     /// Bucket configuration.
     /// </summary>
-    [Table("buckets")]
     public class Bucket
     {
         #region Public-Members
@@ -22,67 +15,56 @@
         /// Database identifier.
         /// </summary>
         [JsonIgnore]
-        [Column("id", true, DataTypes.Int, false)]
         public int Id { get; set; } = 0;
 
         /// <summary>
         /// GUID of the bucket.
         /// </summary>
-        [Column("guid", false, DataTypes.Nvarchar, 64, false)]
         public string GUID { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// GUID of the owner.
         /// </summary>
-        [Column("ownerguid", false, DataTypes.Nvarchar, 64, false)]
         public string OwnerGUID { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Name of the bucket.
         /// </summary>
-        [Column("name", false, DataTypes.Nvarchar, 256, false)]
         public string Name { get; set; } = null;
 
         /// <summary>
         /// Bucket region string.
         /// </summary>
-        [Column("regionstring", false, DataTypes.Nvarchar, 32, false)]
         public string RegionString { get; set; } = "us-west-1";
 
         /// <summary>
         /// Type of storage driver.
         /// </summary>
-        [Column("storagetype", false, DataTypes.Enum, 16, false)]
         public StorageDriverType StorageType { get; set; } = StorageDriverType.Disk;
 
         /// <summary>
         /// Objects directory.
         /// </summary>
-        [Column("diskdirectory", false, DataTypes.Nvarchar, 256, false)]
         public string DiskDirectory { get; set; } = "./disk/";
 
         /// <summary>
         /// Enable or disable versioning.
         /// </summary>
-        [Column("enableversioning", false, DataTypes.Boolean, false)]
         public bool EnableVersioning { get; set; } = false;
 
         /// <summary>
         /// Enable or disable public write.
         /// </summary>
-        [Column("enablepublicwrite", false, DataTypes.Boolean, false)]
         public bool EnablePublicWrite { get; set; } = false;
 
         /// <summary>
         /// Enable or disable public read.
         /// </summary>
-        [Column("enablepublicread", false, DataTypes.Boolean, false)]
         public bool EnablePublicRead { get; set; } = false;
 
         /// <summary>
         /// Creation timestamp.
         /// </summary>
-        [Column("createdutc", false, DataTypes.DateTime, false)]
         public DateTime CreatedUtc { get; set; } = DateTime.Now.ToUniversalTime();
 
         #endregion

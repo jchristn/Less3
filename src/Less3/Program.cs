@@ -17,7 +17,7 @@
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using Watson.ORM;
+    using Less3.Database;
     using WatsonWebserver;
     using WatsonWebserver.Core;
 
@@ -32,7 +32,7 @@
         private static string _Version;
         private static SettingsBase _Settings;
         private static LoggingModule _Logging;
-        private static WatsonORM _ORM;
+        private static DatabaseDriverBase _Database;
         private static ConfigManager _Config;
         private static BucketManager _Buckets;
         private static ApiHandler _ApiHandler;
@@ -234,27 +234,13 @@
             //             0        1         2         3         4         5
             //             123456789012345678901234567890123456789012345678901234567890
             Console.WriteLine("| Initializing database");
-            _ORM = new WatsonORM(_Settings.Database);
-            _ORM.InitializeDatabase();
-            _ORM.InitializeTables(new List<Type>
-            {
-                typeof(Bucket),
-                typeof(BucketAcl),
-                typeof(BucketTag),
-                typeof(Credential),
-                typeof(Obj),
-                typeof(ObjectAcl),
-                typeof(ObjectTag),
-                typeof(Upload),
-                typeof(UploadPart),
-                typeof(User)
-            });
+            _Database = DatabaseDriverFactory.Create(_Settings.Database, _Logging);
 
             Console.WriteLine("| Initializing configuration manager");
-            _Config = new ConfigManager(_Settings, _Logging, _ORM);
+            _Config = new ConfigManager(_Settings, _Logging, _Database);
 
             Console.WriteLine("| Initializing bucket manager");
-            _Buckets = new BucketManager(_Settings, _Logging, _Config, _ORM);
+            _Buckets = new BucketManager(_Settings, _Logging, _Config, _Database);
 
             Console.WriteLine("| Initializing authentication manager");
             _Auth = new AuthManager(_Settings, _Logging, _Config, _Buckets);
@@ -658,13 +644,43 @@
         private static async Task PostRequestHandler(S3Context ctx)
         {
             ctx.Http.Timestamp.End = DateTime.UtcNow;
+
             _Logging.Debug(
-                ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " 
-                + ctx.Http.Request.Method.ToString() + " " 
+                ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " "
+                + ctx.Http.Request.Method.ToString() + " "
                 + ctx.Http.Request.Url.RawWithQuery + " "
                 + ctx.Request.RequestType.ToString() + " "
-                + ctx.Http.Response.StatusCode + " " 
+                + ctx.Http.Response.StatusCode + " "
                 + ctx.Http.Timestamp.TotalMs + "ms");
+
+            try
+            {
+                RequestHistory entry = new RequestHistory();
+                entry.HttpMethod = ctx.Http.Request.Method.ToString();
+                entry.RequestUrl = ctx.Http.Request.Url.RawWithQuery;
+                entry.SourceIp = ctx.Http.Request.Source.IpAddress;
+                entry.StatusCode = ctx.Http.Response.StatusCode;
+                entry.Success = ctx.Http.Response.StatusCode < 400;
+                entry.DurationMs = (long)ctx.Http.Timestamp.TotalMs;
+                entry.RequestType = ctx.Request.RequestType.ToString();
+
+                RequestMetadata md = ctx.Metadata as RequestMetadata;
+                if (md != null)
+                {
+                    if (md.User != null) entry.UserGUID = md.User.GUID;
+                    if (md.Credential != null) entry.AccessKey = md.Credential.AccessKey;
+                }
+
+                try { entry.RequestContentType = ctx.Http.Request.ContentType; } catch { }
+                try { entry.RequestBodyLength = ctx.Http.Request.ContentLength; } catch { }
+                try { entry.ResponseContentType = ctx.Response.ContentType; } catch { }
+
+                _Config.AddRequestHistory(entry);
+            }
+            catch (Exception e)
+            {
+                _Logging.Debug("PostRequestHandler failed to persist request history: " + e.Message);
+            }
         }
 
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously

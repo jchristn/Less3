@@ -1,17 +1,11 @@
 ﻿namespace Less3.Classes
 {
     using System;
-    using System.Collections.Generic;
-    using System.Data;
-    using System.Text;
-    using System.Text.Json;
     using System.Text.Json.Serialization;
-    using Watson.ORM.Core;
 
     /// <summary>
     /// Access control list entry for a bucket.
     /// </summary>
-    [Table("bucketacls")]
     public class BucketAcl
     {
         #region Public-Members
@@ -20,73 +14,61 @@
         /// Database identifier.
         /// </summary>
         [JsonIgnore]
-        [Column("id", true, DataTypes.Int, false)]
         public int Id { get; set; } = 0;
 
         /// <summary>
         /// GUID.
         /// </summary>
-        [Column("guid", false, DataTypes.Nvarchar, 64, false)]
         public string GUID { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// User group.
         /// </summary>
-        [Column("usergroup", false, DataTypes.Nvarchar, 256, true)]
         public string UserGroup { get; set; } = null;
 
         /// <summary>
         /// Bucket GUID.
         /// </summary>
-        [Column("bucketguid", false, DataTypes.Nvarchar, 64, true)]
         public string BucketGUID { get; set; } = null;
 
         /// <summary>
         /// User GUID.
         /// </summary>
-        [Column("userguid", false, DataTypes.Nvarchar, 64, true)]
         public string UserGUID { get; set; } = null;
 
         /// <summary>
         /// GUID of the issuing user.
         /// </summary>
-        [Column("issuedbyuserguid", false, DataTypes.Nvarchar, 64, true)]
         public string IssuedByUserGUID { get; set; } = null;
 
         /// <summary>
         /// Permit read operations.
         /// </summary>
-        [Column("permitread", false, DataTypes.Boolean, false)]
         public bool PermitRead { get; set; } = false;
-        
+
         /// <summary>
         /// Permit write operations.
         /// </summary>
-        [Column("permitwrite", false, DataTypes.Boolean, false)]
         public bool PermitWrite { get; set; } = false;
 
         /// <summary>
         /// Permit access control read operations.
         /// </summary>
-        [Column("permitreadacp", false, DataTypes.Boolean, false)]
         public bool PermitReadAcp { get; set; } = false;
 
         /// <summary>
         /// Permit access control write operations.
         /// </summary>
-        [Column("permitwriteacp", false, DataTypes.Boolean, false)]
         public bool PermitWriteAcp { get; set; } = false;
 
         /// <summary>
         /// Permit full control.
         /// </summary>
-        [Column("permitfullcontrol", false, DataTypes.Boolean, false)]
         public bool FullControl { get; set; } = false;
 
         /// <summary>
         /// Timestamp from record creation, in UTC time.
         /// </summary>
-        [Column("createdutc", false, DataTypes.DateTime, 6, 6, false)]
         public DateTime CreatedUtc { get; set; } = DateTime.Now.ToUniversalTime();
 
         #endregion

@@ -60,25 +60,27 @@
             }
             else
             {
-                EventWaitHandle waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
-                AssemblyLoadContext.Default.Unloading += (ctx) => waitHandle.Set();
-                Console.CancelKeyPress += (sender, eventArgs) =>
+                using (EventWaitHandle waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset))
                 {
-                    if (!_Exiting)
+                    AssemblyLoadContext.Default.Unloading += (ctx) => waitHandle.Set();
+                    Console.CancelKeyPress += (sender, eventArgs) =>
                     {
-                        _Logging.Info(_Header + "termination signal received");
-                        _Exiting = true;
-                        waitHandle.Set();
-                        eventArgs.Cancel = true;
-                    }
-                };
+                        if (!_Exiting)
+                        {
+                            _Logging.Info(_Header + "termination signal received");
+                            _Exiting = true;
+                            waitHandle.Set();
+                            eventArgs.Cancel = true;
+                        }
+                    };
 
-                bool waitHandleSignal = false;
-                do
-                {
-                    waitHandleSignal = waitHandle.WaitOne(1000);
+                    bool waitHandleSignal = false;
+                    do
+                    {
+                        waitHandleSignal = waitHandle.WaitOne(1000);
+                    }
+                    while (!waitHandleSignal);
                 }
-                while (!waitHandleSignal);
 
                 _Logging.Info(_Header + "stopping at " + DateTime.UtcNow);
             }

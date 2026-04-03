@@ -183,9 +183,9 @@
                     ClearDirectory(bucket.DiskDirectory);
                 objectFilesDelete = true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-
+                _Logging.Warn("Destroy bucket " + bucket.Name + " failed to clear object files: " + e.Message);
             }
 
             #endregion
@@ -199,9 +199,9 @@
                     Directory.Delete(bucket.DiskDirectory);
                 objectsDirectoryDelete = true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-
+                _Logging.Warn("Destroy bucket " + bucket.Name + " failed to remove objects directory: " + e.Message);
             }
 
             #endregion
@@ -218,9 +218,9 @@
                     rootFilesDelete = true;
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
-
+                _Logging.Warn("Destroy bucket " + bucket.Name + " failed to clear root files: " + e.Message);
             }
 
             #endregion
@@ -237,9 +237,9 @@
                     rootDirectoryDelete = true;
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
-
+                _Logging.Warn("Destroy bucket " + bucket.Name + " failed to remove root directory: " + e.Message);
             }
 
             #endregion

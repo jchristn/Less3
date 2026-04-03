@@ -89,7 +89,9 @@
         public void Dispose()
         {
             if (_StorageDriver != null)
-            { 
+            {
+                if (_StorageDriver is IDisposable disposable)
+                    disposable.Dispose();
                 _StorageDriver = null;
             }
         }
@@ -101,19 +103,20 @@
         internal bool AddObject(Obj obj, byte[] data)
         {
             if (obj == null) throw new ArgumentNullException(nameof(obj));
-             
-            long len = 0;
-            MemoryStream ms = new MemoryStream();
 
-            if (data != null && data.Length > 0)
-            { 
-                len = data.Length;
-                ms.Write(data, 0, data.Length);
-                ms.Seek(0, SeekOrigin.Begin);
+            long len = 0;
+            using (MemoryStream ms = new MemoryStream())
+            {
+                if (data != null && data.Length > 0)
+                {
+                    len = data.Length;
+                    ms.Write(data, 0, data.Length);
+                    ms.Seek(0, SeekOrigin.Begin);
+                }
+
+                obj.ContentLength = len;
+                return AddObject(obj, ms);
             }
-             
-            obj.ContentLength = len;
-            return AddObject(obj, ms);
         }
 
         internal bool AddObject(Obj obj, Stream stream)

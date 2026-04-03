@@ -231,9 +231,12 @@
                     else
                     {
                         User u = _Config.GetUserByGuid(curr.OwnerGUID);
-                        c.Owner.DisplayName = u.Name;
-                        c.Owner.ID = u.GUID;
-                        ownerCache.Add(u.GUID, c.Owner);
+                        if (u != null)
+                        {
+                            c.Owner.DisplayName = u.Name;
+                            c.Owner.ID = u.GUID;
+                            ownerCache.Add(u.GUID, c.Owner);
+                        }
                     }
                 }
 

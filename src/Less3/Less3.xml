@@ -1643,6 +1643,7 @@
         <member name="T:Less3.Storage.ObjectStream">
             <summary>
             Stream of data for an object.
+            Implements IDisposable to ensure the underlying data stream is properly released.
             </summary>
         </member>
         <member name="P:Less3.Storage.ObjectStream.Key">
@@ -1667,6 +1668,17 @@
             <param name="key">Object key.</param>
             <param name="contentLength">Content length.</param>
             <param name="data">Stream containing data.</param>
+        </member>
+        <member name="M:Less3.Storage.ObjectStream.Dispose">
+            <summary>
+            Dispose of the object stream and release the underlying data stream.
+            </summary>
+        </member>
+        <member name="M:Less3.Storage.ObjectStream.Dispose(System.Boolean)">
+            <summary>
+            Dispose of the object stream.
+            </summary>
+            <param name="disposing">Disposing managed resources.</param>
         </member>
         <member name="T:Less3.Storage.StorageDriverBase">
             <summary>

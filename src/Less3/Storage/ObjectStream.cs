@@ -7,8 +7,9 @@
 
     /// <summary>
     /// Stream of data for an object.
+    /// Implements IDisposable to ensure the underlying data stream is properly released.
     /// </summary>
-    public class ObjectStream
+    public class ObjectStream : IDisposable
     {
         #region Public-Members
 
@@ -29,6 +30,12 @@
 
         #endregion
 
+        #region Private-Members
+
+        private bool _Disposed = false;
+
+        #endregion
+
         #region Constructors-and-Factories
 
         /// <summary>
@@ -46,6 +53,43 @@
             Key = key;
             ContentLength = contentLength;
             Data = data;
+        }
+
+        #endregion
+
+        #region Public-Methods
+
+        /// <summary>
+        /// Dispose of the object stream and release the underlying data stream.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
+        #region Private-Methods
+
+        /// <summary>
+        /// Dispose of the object stream.
+        /// </summary>
+        /// <param name="disposing">Disposing managed resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_Disposed) return;
+
+            if (disposing)
+            {
+                if (Data != null)
+                {
+                    Data.Dispose();
+                    Data = null;
+                }
+            }
+
+            _Disposed = true;
         }
 
         #endregion

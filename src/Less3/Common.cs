@@ -409,15 +409,20 @@
         public static byte[] Md5(byte[] data)
         {
             if (data == null) return null;
-            return MD5.Create().ComputeHash(data);
+            using (MD5 md5 = MD5.Create())
+            {
+                return md5.ComputeHash(data);
+            }
         }
 
         public static byte[] Md5(Stream stream)
         {
             if (stream == null || !stream.CanRead) return null;
 
-            MD5 md5 = MD5.Create();
-            return md5.ComputeHash(stream);
+            using (MD5 md5 = MD5.Create())
+            {
+                return md5.ComputeHash(stream);
+            }
         }
 
         public static async Task<byte[]> Md5Async(Stream stream, int bufferSize)

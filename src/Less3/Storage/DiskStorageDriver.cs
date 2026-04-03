@@ -5,7 +5,6 @@
     using System.IO;
     using System.Security.Cryptography;
     using System.Text;
-    using System.Threading;
     using System.Threading.Tasks;
     using Less3.Classes;
 
@@ -36,8 +35,6 @@
 
         #region Private-Members
 
-        private CancellationTokenSource _TokenSource = new CancellationTokenSource();
-        private CancellationToken _Token;
         private string _BaseDirectory = null;
         private int _StreamBufferSize = 65536;
 
@@ -58,7 +55,6 @@
             if (!baseDirectory.EndsWith("/")) baseDirectory += "/";
 
             _BaseDirectory = baseDirectory;
-            _Token = _TokenSource.Token;
         }
 
         #endregion
@@ -248,28 +244,36 @@
 
             if (indexStart + count > contentLength) throw new ArgumentException("Index start combined with count must not result in a position that exceeds the size of the file.");
 
-            using (FileStream fs = new FileStream(file, FileMode.Open))
+            MemoryStream ms = new MemoryStream();
+            try
             {
-                long bytesRemaining = count;
-                int read = 0;
-                byte[] buffer = null;
-                Stream ms = new MemoryStream(); 
-
-                while (bytesRemaining > 0)
+                using (FileStream fs = new FileStream(file, FileMode.Open))
                 {
-                    if (bytesRemaining > _StreamBufferSize) buffer = new byte[_StreamBufferSize];
-                    else buffer = new byte[bytesRemaining];
+                    long bytesRemaining = count;
+                    int read = 0;
+                    byte[] buffer = null;
 
-                    read = fs.Read(buffer, 0, buffer.Length);
-                    if (read > 0)
+                    while (bytesRemaining > 0)
                     {
-                        ms.Write(buffer, 0, read);
-                        bytesRemaining -= read;
+                        if (bytesRemaining > _StreamBufferSize) buffer = new byte[_StreamBufferSize];
+                        else buffer = new byte[bytesRemaining];
+
+                        read = fs.Read(buffer, 0, buffer.Length);
+                        if (read > 0)
+                        {
+                            ms.Write(buffer, 0, read);
+                            bytesRemaining -= read;
+                        }
                     }
                 }
 
                 ms.Seek(0, SeekOrigin.Begin);
                 return new ObjectStream(key, count, ms);
+            }
+            catch
+            {
+                ms.Dispose();
+                throw;
             }
         }
 
@@ -293,28 +297,36 @@
 
             if (indexStart + count > contentLength) throw new ArgumentException("Index start combined with count must not result in a position that exceeds the size of the file.");
 
-            using (FileStream fs = new FileStream(file, FileMode.Open))
+            MemoryStream ms = new MemoryStream();
+            try
             {
-                long bytesRemaining = count;
-                int read = 0;
-                byte[] buffer = null;
-                Stream ms = new MemoryStream();
-
-                while (bytesRemaining > 0)
+                using (FileStream fs = new FileStream(file, FileMode.Open))
                 {
-                    if (bytesRemaining > _StreamBufferSize) buffer = new byte[_StreamBufferSize];
-                    else buffer = new byte[bytesRemaining];
+                    long bytesRemaining = count;
+                    int read = 0;
+                    byte[] buffer = null;
 
-                    read = await fs.ReadAsync(buffer, 0, buffer.Length);
-                    if (read > 0)
+                    while (bytesRemaining > 0)
                     {
-                        await ms.WriteAsync(buffer, 0, read);
-                        bytesRemaining -= read;
+                        if (bytesRemaining > _StreamBufferSize) buffer = new byte[_StreamBufferSize];
+                        else buffer = new byte[bytesRemaining];
+
+                        read = await fs.ReadAsync(buffer, 0, buffer.Length);
+                        if (read > 0)
+                        {
+                            await ms.WriteAsync(buffer, 0, read);
+                            bytesRemaining -= read;
+                        }
                     }
                 }
 
                 ms.Seek(0, SeekOrigin.Begin);
                 return new ObjectStream(key, count, ms);
+            }
+            catch
+            {
+                ms.Dispose();
+                throw;
             }
         }
 
@@ -325,12 +337,14 @@
         /// <param name="data">Data.</param> 
         /// <returns>MD5 hash.</returns>
         public override byte[] Write(string key, byte[] data)
-        { 
+        {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
             if (data == null) data = new byte[0];
-            MemoryStream ms = new MemoryStream(data);
-            ms.Seek(0, SeekOrigin.Begin);
-            return Write(key, data.Length, ms);
+            using (MemoryStream ms = new MemoryStream(data))
+            {
+                ms.Seek(0, SeekOrigin.Begin);
+                return Write(key, data.Length, ms);
+            }
         }
 
         /// <summary>
@@ -343,9 +357,11 @@
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
             if (data == null) data = new byte[0];
-            MemoryStream ms = new MemoryStream(data);
-            ms.Seek(0, SeekOrigin.Begin);
-            return await WriteAsync(key, data.Length, ms);
+            using (MemoryStream ms = new MemoryStream(data))
+            {
+                ms.Seek(0, SeekOrigin.Begin);
+                return await WriteAsync(key, data.Length, ms);
+            }
         }
 
         /// <summary>

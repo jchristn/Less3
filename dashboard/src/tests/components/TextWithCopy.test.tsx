@@ -1,13 +1,11 @@
 import { render, screen, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import TextWithCopy from "#/components/text-with-copy/TextWithCopy";
+import { copyToClipboard } from "#/utils/clipboardUtils";
 
-// Mock navigator.clipboard
-Object.assign(navigator, {
-  clipboard: {
-    writeText: jest.fn().mockResolvedValue(undefined),
-  },
-});
+jest.mock("#/utils/clipboardUtils", () => ({
+  copyToClipboard: jest.fn(),
+}));
 
 describe("TextWithCopy", () => {
   beforeEach(() => {
@@ -34,7 +32,7 @@ describe("TextWithCopy", () => {
       const copyButton = screen.getByRole("button");
       await userEvent.click(copyButton);
 
-      expect(navigator.clipboard.writeText).toHaveBeenCalledWith("Text to copy");
+      expect(copyToClipboard).toHaveBeenCalledWith("Text to copy");
     });
 
     it("should show 'Copied' tooltip after copying", async () => {

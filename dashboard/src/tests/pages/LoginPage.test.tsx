@@ -44,9 +44,9 @@ describe("LoginPage", () => {
 
   describe("Rendering", () => {
     it("should render login form", () => {
-      renderWithRedux(<LoginPage />, true);
+      renderWithRedux(<LoginPage />, false, undefined, true);
       const input = screen.getByPlaceholderText("https://your-less3-server.com");
-      const submitButton = screen.getByRole("button");
+      const submitButton = screen.getByRole("button", { name: "arrow-right" });
 
       expect(screen.getByLabelText("Less3 Server URL")).toBeInTheDocument();
       expect(input).toBeInTheDocument();
@@ -70,7 +70,7 @@ describe("LoginPage", () => {
       localStorage.setItem(localStorageKeys.less3APIUrl, savedUrl);
       mockValidateConnectivity.mockResolvedValue({ unwrap: () => Promise.resolve(true) });
 
-      renderWithRedux(<LoginPage />, true);
+      renderWithRedux(<LoginPage />, false, undefined, true);
 
       await waitFor(() => {
         const input = screen.getByPlaceholderText("https://your-less3-server.com");
@@ -81,7 +81,7 @@ describe("LoginPage", () => {
 
   describe("User Interactions", () => {
     it("should update URL input value", async () => {
-      renderWithRedux(<LoginPage />, true);
+      renderWithRedux(<LoginPage />, false, undefined, true);
       const input = screen.getByPlaceholderText("https://your-less3-server.com");
 
       await userEvent.clear(input);
@@ -93,9 +93,9 @@ describe("LoginPage", () => {
     it("should validate connectivity on form submit", async () => {
       mockValidateConnectivity.mockResolvedValue({ unwrap: () => Promise.resolve(true) });
 
-      renderWithRedux(<LoginPage />, true);
+      renderWithRedux(<LoginPage />, false, undefined, true);
       const input = screen.getByPlaceholderText("https://your-less3-server.com");
-      const submitButton = screen.getByRole("button");
+      const submitButton = screen.getByRole("button", { name: "arrow-right" });
 
       await userEvent.clear(input);
       await userEvent.type(input, "http://test.com");
@@ -114,9 +114,9 @@ describe("LoginPage", () => {
       });
       const { message } = require("antd");
 
-      renderWithRedux(<LoginPage />, true);
+      renderWithRedux(<LoginPage />, false, undefined, true);
       const input = screen.getByPlaceholderText("https://your-less3-server.com");
-      const submitButton = screen.getByRole("button");
+      const submitButton = screen.getByRole("button", { name: "arrow-right" });
 
       await userEvent.clear(input);
       await userEvent.type(input, "http://test.com");
@@ -138,9 +138,9 @@ describe("LoginPage", () => {
         unwrap: jest.fn().mockResolvedValue(true),
       });
 
-      renderWithRedux(<LoginPage />, true);
+      renderWithRedux(<LoginPage />, false, undefined, true);
       const input = screen.getByPlaceholderText("https://your-less3-server.com");
-      const submitButton = screen.getByRole("button");
+      const submitButton = screen.getByRole("button", { name: "arrow-right" });
 
       await userEvent.clear(input);
       await userEvent.type(input, "http://test.com");
@@ -154,7 +154,7 @@ describe("LoginPage", () => {
 
   describe("Snapshots", () => {
     it("should match default render", () => {
-      const { container } = renderWithRedux(<LoginPage />, true);
+      const { container } = renderWithRedux(<LoginPage />, false, undefined, true);
       expect(container.firstChild).toMatchSnapshot();
     });
   });

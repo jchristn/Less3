@@ -22,7 +22,7 @@ describe("DashboardPage", () => {
       expect(
         container.textContent?.replace(/\s+/g, " ").trim()
       ).toMatchInlineSnapshot(
-        `"HomeBucketsObjectsUsersCredentialsChange Server URLHomeWelcome to Less3Manage your storage buckets and configure your storage infrastructure from this centralized home. Use the navigation menu to access different sections and manage your resources."`
+        `"http://localhost:3000LogoutHomeBucketsObjectsUsersCredentialsHomeWelcome to Less3Manage your storage buckets and configure your storage infrastructure from this centralized home. Use the navigation menu to access different sections and manage your resources."`
       );
     });
 

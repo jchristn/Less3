@@ -39,6 +39,7 @@ const TextWithCopy = ({ text, className }: TextWithCopyProps) => {
       <Less3Text>{text}</Less3Text>
       <Less3Tooltip title={isCopied ? 'Copied' : 'Copy'} placement="top" color={isCopied ? 'success' : 'default'}>
         <span
+          role="button"
           onClick={handleCopy}
           style={{
             cursor: 'pointer',

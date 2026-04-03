@@ -10,7 +10,8 @@ import { Provider } from "react-redux";
 export const renderWithRedux = (
   ui: React.ReactNode,
   loginLayout?: boolean,
-  reduxState?: RootState
+  reduxState?: RootState,
+  noLayout?: boolean
 ) => {
   const reduxStore = reduxState
     ? configureStore({
@@ -28,13 +29,14 @@ export const renderWithRedux = (
             serializableCheck: false,
           }).concat(apiMiddleWares),
       });
+  const wrappedUi = noLayout
+    ? ui
+    : loginLayout
+      ? <LoginLayout>{ui}</LoginLayout>
+      : <DashboardLayout>{ui}</DashboardLayout>;
   return render(
     <Provider store={reduxStore}>
-      {loginLayout ? (
-        <LoginLayout>{ui}</LoginLayout>
-      ) : (
-        <DashboardLayout>{ui}</DashboardLayout>
-      )}
+      {wrappedUi}
     </Provider>
   );
 };

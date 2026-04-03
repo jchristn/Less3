@@ -13,6 +13,7 @@ jest.mock("next/navigation", () => ({
     replace: jest.fn(),
   }),
   usePathname: () => "/admin/objects",
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 jest.mock("#/store/slice/bucketsSlice", () => ({
@@ -40,6 +41,9 @@ jest.mock("#/store/slice/bucketsSlice", () => ({
     { isLoading: false },
   ],
   useDeleteBucketObjectMutation: () => [mockDeleteBucketObject, { isLoading: false }],
+  useWriteBucketObjectMutation: () => [jest.fn(), { isLoading: false }],
+  useUploadBucketObjectMutation: () => [jest.fn(), { isLoading: false }],
+  useDeleteMultipleObjectsMutation: () => [jest.fn(), { isLoading: false }],
   useWriteObjectTagsMutation: () => [jest.fn(), { isLoading: false }],
   useGetObjectTagsQuery: () => ({
     data: null,
@@ -96,8 +100,8 @@ describe("ObjectsPage", () => {
       // The component auto-selects the first bucket via useEffect
       // Just verify the page rendered - the selector might not render immediately in tests
       await waitFor(() => {
-        const pageTitle = screen.queryByText("Objects");
-        expect(pageTitle).toBeInTheDocument();
+        const pageTitles = screen.queryAllByText("Objects");
+        expect(pageTitles.length).toBeGreaterThan(0);
       }, { timeout: 3000 });
     }, 10000);
 
@@ -107,8 +111,8 @@ describe("ObjectsPage", () => {
       // The component auto-selects, but might not work in test environment
       // Just verify the page renders - this is a rendering test, not an interaction test
       await waitFor(() => {
-        const pageTitle = screen.queryByText("Objects");
-        expect(pageTitle).toBeInTheDocument();
+        const pageTitles = screen.queryAllByText("Objects");
+        expect(pageTitles.length).toBeGreaterThan(0);
       }, { timeout: 3000 });
     }, 10000);
 
@@ -118,8 +122,8 @@ describe("ObjectsPage", () => {
       // The query is skipped until bucket is selected
       // Just verify the page renders - objects might not load in test environment
       await waitFor(() => {
-        const pageTitle = screen.queryByText("Objects");
-        expect(pageTitle).toBeInTheDocument();
+        const pageTitles = screen.queryAllByText("Objects");
+        expect(pageTitles.length).toBeGreaterThan(0);
       }, { timeout: 3000 });
     }, 10000);
   });
@@ -173,7 +177,8 @@ describe("ObjectsPage", () => {
         const deleteButton = await screen.findByText("Delete Object", { timeout: 3000 });
         await userEvent.click(deleteButton);
         // Delete confirmation button says "Delete" not "OK"
-        const confirmButton = await screen.findByText("Delete", { timeout: 3000 });
+        const deleteButtons = await screen.findAllByText("Delete", { }, { timeout: 3000 });
+        const confirmButton = deleteButtons[deleteButtons.length - 1];
         await userEvent.click(confirmButton);
         // Verify API was called and success message was shown
         await waitFor(() => {
@@ -223,7 +228,8 @@ describe("ObjectsPage", () => {
         await userEvent.click(moreButton);
         const deleteButton = await screen.findByText("Delete Object", { timeout: 3000 });
         await userEvent.click(deleteButton);
-        const confirmButton = await screen.findByText("Delete", { timeout: 3000 });
+        const deleteButtons = await screen.findAllByText("Delete", { }, { timeout: 3000 });
+        const confirmButton = deleteButtons[deleteButtons.length - 1];
         await userEvent.click(confirmButton);
 
         await waitFor(() => {

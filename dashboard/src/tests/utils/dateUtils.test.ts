@@ -8,7 +8,7 @@ import {
 describe("dateUtils", () => {
   describe("formatDateTime", () => {
     it("returns formatted string when a valid date is provided", () => {
-      const formatted = formatDateTime("2024-01-02T03:04:05Z", "YYYY/MM/DD");
+      const formatted = formatDateTime("2024-01-02T15:04:05Z", "YYYY/MM/DD");
       expect(formatted).toBe("2024/01/02");
     });
 

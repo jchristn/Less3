@@ -18,6 +18,7 @@
     using System.Threading;
     using System.Threading.Tasks;
     using Less3.Database;
+    using Timestamps;
     using WatsonWebserver;
     using WatsonWebserver.Core;
 
@@ -430,9 +431,11 @@
         {
             /*
              * Return true if a response was sent
-             * 
+             *
              */
-                        
+
+            ctx.Http.Timestamp = new Timestamp();
+
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Http.Request.Method.ToString() + " " + ctx.Http.Request.Url.RawWithoutQuery + "] ";
 
             while (ctx.Http.Request.Url.RawWithoutQuery.Contains("\\\\")) ctx.Http.Request.Url.RawWithoutQuery.Replace("\\\\", "\\");
@@ -677,22 +680,28 @@
 
                 try
                 {
-                    string reqBody = ctx.Request.DataAsString;
-                    if (!String.IsNullOrEmpty(reqBody))
+                    if (IsTextContentType(entry.RequestContentType))
                     {
-                        if (reqBody.Length > 16384) reqBody = reqBody.Substring(0, 16384);
-                        entry.RequestBody = reqBody;
+                        string reqBody = ctx.Request.DataAsString;
+                        if (!String.IsNullOrEmpty(reqBody))
+                        {
+                            if (reqBody.Length > 16384) reqBody = reqBody.Substring(0, 16384);
+                            entry.RequestBody = reqBody;
+                        }
                     }
                 }
                 catch { }
 
                 try
                 {
-                    string respBody = ctx.Response.DataAsString;
-                    if (!String.IsNullOrEmpty(respBody))
+                    if (IsTextContentType(entry.ResponseContentType))
                     {
-                        if (respBody.Length > 16384) respBody = respBody.Substring(0, 16384);
-                        entry.ResponseBody = respBody;
+                        string respBody = ctx.Response.DataAsString;
+                        if (!String.IsNullOrEmpty(respBody))
+                        {
+                            if (respBody.Length > 16384) respBody = respBody.Substring(0, 16384);
+                            entry.ResponseBody = respBody;
+                        }
                     }
                 }
                 catch { }
@@ -703,6 +712,18 @@
             {
                 _Logging.Debug("PostRequestHandler failed to persist request history: " + e.Message);
             }
+        }
+
+        private static bool IsTextContentType(string contentType)
+        {
+            if (String.IsNullOrEmpty(contentType)) return false;
+            string ct = contentType.ToLower();
+            return ct.Contains("text/")
+                || ct.Contains("application/json")
+                || ct.Contains("application/xml")
+                || ct.Contains("application/x-www-form-urlencoded")
+                || ct.Contains("+xml")
+                || ct.Contains("+json");
         }
 
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously

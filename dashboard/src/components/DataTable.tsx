@@ -137,76 +137,6 @@ const DataTable = <T extends Record<string, any>>({
 
   return (
     <div className="datatable-wrapper">
-      <div className="datatable-scroll">
-        <table className="datatable">
-          <thead>
-            <tr>
-              {columns.map((col) => {
-                const isSortable = col.sortable !== false && !col.isAction;
-                return (
-                  <th
-                    key={col.key}
-                    style={col.width ? { width: col.width, minWidth: col.width } : undefined}
-                    className={isSortable ? 'sortable' : ''}
-                    onClick={isSortable ? () => handleSort(col.key) : undefined}
-                    title={col.tooltip}
-                  >
-                    <div className="datatable-th-content">
-                      <span>{col.label}</span>
-                      {isSortable && getSortIndicator(col.key)}
-                    </div>
-                  </th>
-                );
-              })}
-            </tr>
-            {hasAnyFilter && (
-              <tr className="datatable-filter-row">
-                {columns.map((col) => {
-                  const isFilterable = col.filterable !== false && !col.isAction;
-                  return (
-                    <th key={`filter-${col.key}`}>
-                      {isFilterable && (
-                        <input
-                          type="text"
-                          className="datatable-filter-input"
-                          placeholder={`Filter...`}
-                          value={filters[col.key] || ''}
-                          onChange={(e) => handleFilterChange(col.key, e.target.value)}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      )}
-                    </th>
-                  );
-                })}
-              </tr>
-            )}
-          </thead>
-          <tbody>
-            {paginatedData.length === 0 ? (
-              <tr>
-                <td colSpan={columns.length} className="datatable-empty">
-                  No data available
-                </td>
-              </tr>
-            ) : (
-              paginatedData.map((item, rowIndex) => (
-                <tr
-                  key={item[rowKey] ?? rowIndex}
-                  onClick={onRowClick ? () => onRowClick(item) : undefined}
-                  className={onRowClick ? 'clickable' : ''}
-                >
-                  {columns.map((col) => (
-                    <td key={col.key}>
-                      {col.render ? col.render(item) : (item[col.key] ?? '')}
-                    </td>
-                  ))}
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
       {!hidePagination && filteredData.length > 0 && (
         <div className="datatable-pagination">
           <div className="datatable-pagination-info">
@@ -277,6 +207,76 @@ const DataTable = <T extends Record<string, any>>({
           </div>
         </div>
       )}
+      <div className="datatable-scroll">
+        <table className="datatable">
+          <thead>
+            <tr>
+              {columns.map((col) => {
+                const isSortable = col.sortable !== false && !col.isAction;
+                return (
+                  <th
+                    key={col.key}
+                    style={col.width ? { width: col.width, minWidth: col.width } : undefined}
+                    className={isSortable ? 'sortable' : ''}
+                    onClick={isSortable ? () => handleSort(col.key) : undefined}
+                    title={col.tooltip}
+                  >
+                    <div className="datatable-th-content">
+                      <span>{col.label}</span>
+                      {isSortable && getSortIndicator(col.key)}
+                    </div>
+                  </th>
+                );
+              })}
+            </tr>
+            {hasAnyFilter && (
+              <tr className="datatable-filter-row">
+                {columns.map((col) => {
+                  const isFilterable = col.filterable !== false && !col.isAction;
+                  return (
+                    <th key={`filter-${col.key}`}>
+                      {isFilterable && (
+                        <input
+                          type="text"
+                          className="datatable-filter-input"
+                          placeholder={`Filter...`}
+                          value={filters[col.key] || ''}
+                          onChange={(e) => handleFilterChange(col.key, e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      )}
+                    </th>
+                  );
+                })}
+              </tr>
+            )}
+          </thead>
+          <tbody>
+            {paginatedData.length === 0 ? (
+              <tr>
+                <td colSpan={columns.length} className="datatable-empty">
+                  No data available
+                </td>
+              </tr>
+            ) : (
+              paginatedData.map((item, rowIndex) => (
+                <tr
+                  key={item[rowKey] ?? rowIndex}
+                  onClick={onRowClick ? () => onRowClick(item) : undefined}
+                  className={onRowClick ? 'clickable' : ''}
+                >
+                  {columns.map((col) => (
+                    <td key={col.key}>
+                      {col.render ? col.render(item) : (item[col.key] ?? '')}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
     </div>
   );
 };

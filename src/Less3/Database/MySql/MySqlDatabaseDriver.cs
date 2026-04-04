@@ -99,6 +99,8 @@ namespace Less3.Database.MySql
                 }
             }
 
+            RunMigrations();
+
             ExecuteQuery(SetupQueries.AnalyzeTables()).Wait();
 
             _Logging.Info(_Header + "initialized using " + _Settings.Hostname + ":" + csb.Port + "/" + csb.Database);
@@ -221,6 +223,22 @@ namespace Less3.Database.MySql
         #endregion
 
         #region Private-Methods
+
+        private void RunMigrations()
+        {
+            List<string> migrations = MigrationQueries.GetMigrations();
+            foreach (string migration in migrations)
+            {
+                try
+                {
+                    ExecuteQuery(migration, true).Wait();
+                }
+                catch (Exception)
+                {
+                    // Column may already exist; ignore
+                }
+            }
+        }
 
         #endregion
     }

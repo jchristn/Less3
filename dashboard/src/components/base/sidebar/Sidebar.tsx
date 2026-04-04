@@ -9,6 +9,8 @@ import {
   FolderOutlined,
   UserOutlined,
   KeyOutlined,
+  HistoryOutlined,
+  ApiOutlined,
 } from '@ant-design/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -34,6 +36,8 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onCollapse, showLo
     if (pathname.startsWith('/admin/objects')) return ['objects'];
     if (pathname.startsWith('/admin/users')) return ['users'];
     if (pathname.startsWith('/admin/credentials')) return ['credentials'];
+    if (pathname.startsWith('/admin/request-history')) return ['request-history'];
+    if (pathname.startsWith('/admin/api-explorer')) return ['api-explorer'];
     return [];
   };
 
@@ -62,6 +66,16 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onCollapse, showLo
       key: 'credentials',
       icon: <KeyOutlined />,
       label: <Link href="/admin/credentials">Credentials</Link>,
+    },
+    {
+      key: 'request-history',
+      icon: <HistoryOutlined />,
+      label: <Link href="/admin/request-history">Request History</Link>,
+    },
+    {
+      key: 'api-explorer',
+      icon: <ApiOutlined />,
+      label: <Link href="/admin/api-explorer">API Explorer</Link>,
     },
   ];
 

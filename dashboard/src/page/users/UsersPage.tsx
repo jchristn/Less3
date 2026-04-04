@@ -13,6 +13,7 @@ import Less3Flex from '#/components/base/flex/Flex';
 import Less3Dropdown from '#/components/base/dropdown/Dropdown';
 import Less3Text from '#/components/base/typograpghy/Text';
 import GuidDisplay from '#/components/guid-display';
+import TextWithCopy from '#/components/text-with-copy/TextWithCopy';
 import {
   useGetUsersQuery,
   useGetUserByIdQuery,
@@ -106,7 +107,9 @@ const UsersPage: React.FC = () => {
     {
       key: 'Email',
       label: 'Email',
-      width: '250px',
+      width: '280px',
+      render: (item) => <TextWithCopy text={item.Email} className="code-font-style" />,
+      filterValue: (item) => item.Email,
     },
     {
       key: 'CreatedUtc',
@@ -282,7 +285,7 @@ const UsersPage: React.FC = () => {
               <Less3Text>{userMetadata.Name}</Less3Text>
             </Descriptions.Item>
             <Descriptions.Item label="Email">
-              <Less3Text>{userMetadata.Email}</Less3Text>
+              <TextWithCopy text={userMetadata.Email} className="code-font-style" />
             </Descriptions.Item>
             <Descriptions.Item label="Created At">
               <Less3Text>

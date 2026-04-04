@@ -36,7 +36,7 @@ const TextWithCopy = ({ text, className }: TextWithCopyProps) => {
       gap={10}
       className={classNames(className, 'mb-0')}
     >
-      <Less3Text>{text}</Less3Text>
+      <Less3Text className={className}>{text}</Less3Text>
       <Less3Tooltip title={isCopied ? 'Copied' : 'Copy'} placement="top" color={isCopied ? 'success' : 'default'}>
         <span
           role="button"

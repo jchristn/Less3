@@ -77,6 +77,8 @@ namespace Less3.Database.PostgreSql.Implementations
                 entry.RequestBodyLength = Convert.ToInt64(row["requestbodylength"]);
                 entry.ResponseContentType = row["responsecontenttype"] != DBNull.Value ? row["responsecontenttype"].ToString() : null;
                 entry.ResponseBodyLength = Convert.ToInt64(row["responsebodylength"]);
+                entry.RequestBody = row["requestbody"] != DBNull.Value ? row["requestbody"].ToString() : null;
+                entry.ResponseBody = row["responsebody"] != DBNull.Value ? row["responsebody"].ToString() : null;
                 entry.CreatedUtc = Convert.ToDateTime(row["createdutc"]).ToUniversalTime();
                 entries.Add(entry);
             }

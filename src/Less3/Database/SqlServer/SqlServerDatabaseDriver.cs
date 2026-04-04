@@ -90,6 +90,8 @@ namespace Less3.Database.SqlServer
 
             ExecuteQuery(SetupQueries.CreateTablesAndIndices(), true).Wait();
 
+            RunMigrations();
+
             ExecuteQuery("EXEC sp_updatestats;").Wait();
 
             _Logging.Info(_Header + "initialized using " + _Settings.Hostname + "/" + _Settings.DatabaseName);
@@ -212,6 +214,22 @@ namespace Less3.Database.SqlServer
         #endregion
 
         #region Private-Methods
+
+        private void RunMigrations()
+        {
+            List<string> migrations = MigrationQueries.GetMigrations();
+            foreach (string migration in migrations)
+            {
+                try
+                {
+                    ExecuteQuery(migration, true).Wait();
+                }
+                catch (Exception)
+                {
+                    // Column may already exist; ignore
+                }
+            }
+        }
 
         #endregion
     }

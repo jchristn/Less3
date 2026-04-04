@@ -75,6 +75,11 @@
                 await DeleteCredentials(ctx);
                 return;
             }
+            else if (ctx.Http.Request.Url.Elements[1].Equals("requesthistory"))
+            {
+                await DeleteRequestHistory(ctx);
+                return;
+            }
 
             await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest);
         }
@@ -153,6 +158,31 @@
             }
 
             _Config.DeleteCredential(cred.GUID);
+
+            ctx.Response.StatusCode = 204;
+            ctx.Response.ContentType = "text/plain";
+            await ctx.Response.Send();
+            return;
+        }
+
+        private async Task DeleteRequestHistory(S3Context ctx)
+        {
+            if (ctx.Http.Request.Url.Elements.Length != 3)
+            {
+                await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest);
+                return;
+            }
+
+            RequestHistory entry = _Config.GetRequestHistoryByGuid(ctx.Http.Request.Url.Elements[2]);
+            if (entry == null)
+            {
+                ctx.Response.StatusCode = 404;
+                ctx.Response.ContentType = "text/plain";
+                await ctx.Response.Send();
+                return;
+            }
+
+            _Config.DeleteRequestHistory(entry.GUID);
 
             ctx.Response.StatusCode = 204;
             ctx.Response.ContentType = "text/plain";

@@ -14,4 +14,6 @@ export const paths = {
   objects: `/admin/objects`,
   users: `/admin/users`,
   credentials: `/admin/credentials`,
+  requestHistory: `/admin/request-history`,
+  apiExplorer: `/admin/api-explorer`,
 };

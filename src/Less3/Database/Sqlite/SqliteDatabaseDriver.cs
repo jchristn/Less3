@@ -73,6 +73,8 @@ namespace Less3.Database.Sqlite
 
             ExecuteQuery(SetupQueries.CreateTablesAndIndices(), true).Wait();
 
+            RunMigrations();
+
             ExecuteQuery("ANALYZE;").Wait();
 
             _Logging.Info(_Header + "initialized using " + _Settings.Filename);
@@ -240,6 +242,22 @@ namespace Less3.Database.Sqlite
             }
 
             _Disposed = true;
+        }
+
+        private void RunMigrations()
+        {
+            List<string> migrations = MigrationQueries.GetMigrations();
+            foreach (string migration in migrations)
+            {
+                try
+                {
+                    ExecuteQuery(migration, true).Wait();
+                }
+                catch (Exception)
+                {
+                    // Column may already exist; ignore
+                }
+            }
         }
 
         private bool IsWriteQuery(string query)

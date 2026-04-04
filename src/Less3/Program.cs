@@ -675,6 +675,28 @@
                 try { entry.RequestBodyLength = ctx.Http.Request.ContentLength; } catch { }
                 try { entry.ResponseContentType = ctx.Response.ContentType; } catch { }
 
+                try
+                {
+                    string reqBody = ctx.Request.DataAsString;
+                    if (!String.IsNullOrEmpty(reqBody))
+                    {
+                        if (reqBody.Length > 16384) reqBody = reqBody.Substring(0, 16384);
+                        entry.RequestBody = reqBody;
+                    }
+                }
+                catch { }
+
+                try
+                {
+                    string respBody = ctx.Response.DataAsString;
+                    if (!String.IsNullOrEmpty(respBody))
+                    {
+                        if (respBody.Length > 16384) respBody = respBody.Substring(0, 16384);
+                        entry.ResponseBody = respBody;
+                    }
+                }
+                catch { }
+
                 _Config.AddRequestHistory(entry);
             }
             catch (Exception e)

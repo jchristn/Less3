@@ -7,7 +7,7 @@ namespace Less3.Database.Sqlite.Queries
     {
         internal static string InsertQuery(RequestHistory entry)
         {
-            return "INSERT INTO requesthistory (guid, httpmethod, requesturl, sourceip, statuscode, success, durationms, requesttype, userguid, accesskey, requestcontenttype, requestbodylength, responsecontenttype, responsebodylength, createdutc) VALUES ("
+            return "INSERT INTO requesthistory (guid, httpmethod, requesturl, sourceip, statuscode, success, durationms, requesttype, userguid, accesskey, requestcontenttype, requestbodylength, responsecontenttype, responsebodylength, requestbody, responsebody, createdutc) VALUES ("
                 + "'" + Sanitizer.SanitizeString(entry.GUID) + "', "
                 + "'" + Sanitizer.SanitizeString(entry.HttpMethod) + "', "
                 + "'" + Sanitizer.SanitizeString(entry.RequestUrl) + "', "
@@ -22,6 +22,8 @@ namespace Less3.Database.Sqlite.Queries
                 + entry.RequestBodyLength + ", "
                 + "'" + Sanitizer.SanitizeString(entry.ResponseContentType) + "', "
                 + entry.ResponseBodyLength + ", "
+                + "'" + Sanitizer.SanitizeString(entry.RequestBody) + "', "
+                + "'" + Sanitizer.SanitizeString(entry.ResponseBody) + "', "
                 + "'" + entry.CreatedUtc.ToString(Sanitizer.TimestampFormat) + "'"
                 + ");";
         }

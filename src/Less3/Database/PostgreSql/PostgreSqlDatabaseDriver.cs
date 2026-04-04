@@ -56,6 +56,8 @@ namespace Less3.Database.PostgreSql
             string setupQuery = SetupQueries.CreateTablesAndIndices();
             ExecuteQuery(setupQuery, false).Wait();
 
+            RunMigrations();
+
             ExecuteQuery("ANALYZE;", false).Wait();
 
             _Logging.Info("PostgreSqlDatabaseDriver initialized successfully");
@@ -176,6 +178,22 @@ namespace Less3.Database.PostgreSql
         #endregion
 
         #region Private-Methods
+
+        private void RunMigrations()
+        {
+            List<string> migrations = MigrationQueries.GetMigrations();
+            foreach (string migration in migrations)
+            {
+                try
+                {
+                    ExecuteQuery(migration, false).Wait();
+                }
+                catch (Exception)
+                {
+                    // Column may already exist; ignore
+                }
+            }
+        }
 
         private string BuildConnectionString(DatabaseSettings settings)
         {

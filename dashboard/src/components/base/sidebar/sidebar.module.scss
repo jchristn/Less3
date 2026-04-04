@@ -1,5 +1,5 @@
 .sidebarContainer {
-  border-right: 1px solid var(--ant-color-border);
+  border-right: 1px solid var(--color-separator);
   height: 100vh;
   overflow: auto;
   position: fixed !important;
@@ -29,7 +29,7 @@
 
 .logoContainer {
   height: 64px;
-  border-bottom: 1px solid var(--ant-color-border);
+  border-bottom: 1px solid var(--color-separator);
   padding: 0 16px;
 }
 

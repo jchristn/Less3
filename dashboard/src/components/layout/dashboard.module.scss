@@ -43,7 +43,7 @@
 }
 
 .header {
-  border-bottom: 1px solid var(--ant-color-border);
+  border-bottom: 1px solid var(--color-separator);
   background: var(--ant-layout-light-sider-bg) !important;
   padding: 0 var(--ant-padding) !important;
   height: 65px;
@@ -67,7 +67,7 @@
   left: 0;
   right: 0;
   z-index: 101;
-  border-bottom: 1px solid var(--ant-color-border);
+  border-bottom: 1px solid var(--color-separator);
   background: var(--ant-layout-light-sider-bg) !important;
   padding: 0 24px !important;
   height: 65px;

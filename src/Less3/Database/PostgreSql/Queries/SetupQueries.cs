@@ -193,6 +193,8 @@ namespace Less3.Database.PostgreSql.Queries
                     requestbodylength BIGINT NOT NULL DEFAULT 0,
                     responsecontenttype VARCHAR(256),
                     responsebodylength BIGINT NOT NULL DEFAULT 0,
+                    requestbody TEXT,
+                    responsebody TEXT,
                     createdutc TIMESTAMPTZ NOT NULL
                 );
 

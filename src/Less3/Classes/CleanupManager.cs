@@ -119,6 +119,7 @@ namespace Less3.Classes
                 _Logging.Debug("CleanupManager starting cleanup cycle");
 
                 CleanupExpiredUploads();
+                CleanupOldRequestHistory();
 
                 _Logging.Debug("CleanupManager completed cleanup cycle");
             }
@@ -189,6 +190,20 @@ namespace Less3.Classes
             catch (Exception e)
             {
                 _Logging.Exception(e, "CleanupManager", "CleanupExpiredUploads");
+            }
+        }
+
+        private void CleanupOldRequestHistory()
+        {
+            try
+            {
+                DateTime cutoff = DateTime.UtcNow.AddDays(-30);
+                _Config.DeleteRequestHistoriesOlderThan(cutoff);
+                _Logging.Debug("CleanupManager purged request history entries older than 30 days");
+            }
+            catch (Exception e)
+            {
+                _Logging.Exception(e, "CleanupManager", "CleanupOldRequestHistory");
             }
         }
 

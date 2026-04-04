@@ -14,6 +14,7 @@ import Less3Flex from '#/components/base/flex/Flex';
 import Less3Dropdown from '#/components/base/dropdown/Dropdown';
 import Less3Text from '#/components/base/typograpghy/Text';
 import GuidDisplay from '#/components/guid-display';
+import TextWithCopy from '#/components/text-with-copy/TextWithCopy';
 import {
   useGetCredentialsQuery,
   useGetCredentialByIdQuery,
@@ -139,7 +140,9 @@ const CredentialsPage: React.FC = () => {
     {
       key: 'AccessKey',
       label: 'Access Key',
-      width: '150px',
+      width: '250px',
+      render: (item) => <TextWithCopy text={item.AccessKey} className="code-font-style" />,
+      filterValue: (item) => item.AccessKey,
     },
     {
       key: 'CreatedUtc',
@@ -340,7 +343,7 @@ const CredentialsPage: React.FC = () => {
               <Less3Text>{credentialMetadata.Description}</Less3Text>
             </Descriptions.Item>
             <Descriptions.Item label="Access Key">
-              <Less3Text>{credentialMetadata.AccessKey}</Less3Text>
+              <TextWithCopy text={credentialMetadata.AccessKey} className="code-font-style" />
             </Descriptions.Item>
             <Descriptions.Item label="Secret Key">
               <Less3Text>{credentialMetadata.SecretKey}</Less3Text>

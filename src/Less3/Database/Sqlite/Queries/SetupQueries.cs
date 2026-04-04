@@ -193,6 +193,8 @@ namespace Less3.Database.Sqlite.Queries
                     requestbodylength INTEGER NOT NULL DEFAULT 0,
                     responsecontenttype VARCHAR(256),
                     responsebodylength INTEGER NOT NULL DEFAULT 0,
+                    requestbody TEXT,
+                    responsebody TEXT,
                     createdutc VARCHAR(64) NOT NULL
                 );
 

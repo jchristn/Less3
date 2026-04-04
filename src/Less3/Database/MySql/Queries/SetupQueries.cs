@@ -159,6 +159,8 @@ namespace Less3.Database.MySql.Queries
                     requestbodylength BIGINT NOT NULL DEFAULT 0,
                     responsecontenttype VARCHAR(256),
                     responsebodylength BIGINT NOT NULL DEFAULT 0,
+                    requestbody MEDIUMTEXT,
+                    responsebody MEDIUMTEXT,
                     createdutc DATETIME(6) NOT NULL
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
                 ";

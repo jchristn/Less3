@@ -87,6 +87,18 @@ namespace Less3.Classes
         public long ResponseBodyLength { get; set; } = 0;
 
         /// <summary>
+        /// Request body content, or null if empty or not captured.
+        /// Large bodies may be truncated.
+        /// </summary>
+        public string RequestBody { get; set; } = null;
+
+        /// <summary>
+        /// Response body content, or null if empty or not captured.
+        /// Large bodies may be truncated.
+        /// </summary>
+        public string ResponseBody { get; set; } = null;
+
+        /// <summary>
         /// Creation timestamp in UTC.
         /// </summary>
         public DateTime CreatedUtc { get; set; } = DateTime.Now.ToUniversalTime();

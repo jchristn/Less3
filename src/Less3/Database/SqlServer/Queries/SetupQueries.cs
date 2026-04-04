@@ -229,6 +229,8 @@ namespace Less3.Database.SqlServer.Queries
                     requestbodylength BIGINT NOT NULL DEFAULT 0,
                     responsecontenttype NVARCHAR(256),
                     responsebodylength BIGINT NOT NULL DEFAULT 0,
+                    requestbody NVARCHAR(MAX),
+                    responsebody NVARCHAR(MAX),
                     createdutc NVARCHAR(64) NOT NULL
                 );
 

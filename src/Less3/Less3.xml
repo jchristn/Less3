@@ -863,6 +863,174 @@
             <param name="key">Key.</param>
             <param name="val">Value.</param>
         </member>
+        <member name="T:Less3.Classes.RequestHistory">
+            <summary>
+            Request history entry tracking an API call made to Less3.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistory.Id">
+            <summary>
+            Database identifier.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistory.GUID">
+            <summary>
+            GUID of the request history entry.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistory.HttpMethod">
+            <summary>
+            HTTP method string (e.g. GET, PUT, DELETE).
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistory.RequestUrl">
+            <summary>
+            Full request URL.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistory.SourceIp">
+            <summary>
+            Client IP address.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistory.StatusCode">
+            <summary>
+            HTTP response status code.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistory.Success">
+            <summary>
+            True if the response status code is less than 400, indicating a successful request.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistory.DurationMs">
+            <summary>
+            Request processing duration in milliseconds.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistory.RequestType">
+            <summary>
+            S3 request type string (e.g. ListBuckets, GetObject, PutObject).
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistory.UserGUID">
+            <summary>
+            GUID of the authenticated user, or null if unauthenticated.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistory.AccessKey">
+            <summary>
+            Credential access key used for the request, or null if none provided.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistory.RequestContentType">
+            <summary>
+            Content type of the request body.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistory.RequestBodyLength">
+            <summary>
+            Length of the request body in bytes.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistory.ResponseContentType">
+            <summary>
+            Content type of the response body.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistory.ResponseBodyLength">
+            <summary>
+            Length of the response body in bytes.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistory.RequestBody">
+            <summary>
+            Request body content, or null if empty or not captured.
+            Large bodies may be truncated.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistory.ResponseBody">
+            <summary>
+            Response body content, or null if empty or not captured.
+            Large bodies may be truncated.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistory.CreatedUtc">
+            <summary>
+            Creation timestamp in UTC.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.RequestHistory.#ctor">
+            <summary>
+            Instantiate.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.RequestHistorySummaryBucket">
+            <summary>
+            A single time bucket within a request history summary, containing success and failure counts for that interval.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistorySummaryBucket.TimestampUtc">
+            <summary>
+            UTC timestamp representing the start of this time bucket.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistorySummaryBucket.SuccessCount">
+            <summary>
+            Number of successful requests (status code less than 400) in this time bucket.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistorySummaryBucket.FailureCount">
+            <summary>
+            Number of failed requests (status code 400 or greater) in this time bucket.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.RequestHistorySummaryBucket.#ctor">
+            <summary>
+            Instantiate.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.RequestHistorySummaryResult">
+            <summary>
+            Result containing a time-series summary of request history data over a specified date range and interval.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistorySummaryResult.Data">
+            <summary>
+            Time-series data containing success and failure counts per time bucket.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistorySummaryResult.StartUtc">
+            <summary>
+            UTC timestamp for the start of the summary range.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistorySummaryResult.EndUtc">
+            <summary>
+            UTC timestamp for the end of the summary range.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistorySummaryResult.Interval">
+            <summary>
+            Time interval used for bucketing (e.g. "hour", "day", "minute").
+            Default value is "hour".
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistorySummaryResult.TotalSuccess">
+            <summary>
+            Total number of successful requests across all time buckets.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestHistorySummaryResult.TotalFailure">
+            <summary>
+            Total number of failed requests across all time buckets.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.RequestHistorySummaryResult.#ctor">
+            <summary>
+            Instantiate.
+            </summary>
+        </member>
         <member name="T:Less3.Classes.RequestMetadata">
             <summary>
             Less3 request metadata.
@@ -1142,6 +1310,1395 @@
             <summary>
             Common static methods.
             </summary>
+        </member>
+        <member name="T:Less3.Database.DatabaseDriverBase">
+            <summary>
+            Abstract base class for database drivers.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseDriverBase.Users">
+            <summary>
+            User methods.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseDriverBase.Credentials">
+            <summary>
+            Credential methods.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseDriverBase.Buckets">
+            <summary>
+            Bucket methods.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseDriverBase.Objects">
+            <summary>
+            Object methods.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseDriverBase.BucketAcls">
+            <summary>
+            Bucket ACL methods.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseDriverBase.ObjectAcls">
+            <summary>
+            Object ACL methods.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseDriverBase.BucketTags">
+            <summary>
+            Bucket tag methods.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseDriverBase.ObjectTags">
+            <summary>
+            Object tag methods.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseDriverBase.Uploads">
+            <summary>
+            Upload methods.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseDriverBase.UploadParts">
+            <summary>
+            Upload part methods.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseDriverBase.RequestHistory">
+            <summary>
+            Request history methods.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.DatabaseDriverBase.#ctor">
+            <summary>
+            Database driver base class.
+            Derived classes must initialize all interface properties in their constructors.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.DatabaseDriverBase.ExecuteQuery(System.String,System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Execute a query.
+            </summary>
+            <param name="query">Query.</param>
+            <param name="isTransaction">Boolean to indicate if it should be within a transaction.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Data table.</returns>
+        </member>
+        <member name="M:Less3.Database.DatabaseDriverBase.ExecuteQueries(System.Collections.Generic.IEnumerable{System.String},System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Execute multiple queries.
+            </summary>
+            <param name="queries">Queries.</param>
+            <param name="isTransaction">Boolean to indicate if it should be within a transaction.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Data table.</returns>
+        </member>
+        <member name="T:Less3.Database.DatabaseDriverFactory">
+            <summary>
+            Factory for creating database driver instances based on configuration.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.DatabaseDriverFactory.Create(Less3.Database.DatabaseSettings,SyslogLogging.LoggingModule)">
+            <summary>
+            Create a database driver instance based on the supplied settings.
+            </summary>
+            <param name="settings">Database settings.</param>
+            <param name="logging">Logging module.</param>
+            <returns>Database driver instance.</returns>
+        </member>
+        <member name="T:Less3.Database.DatabaseSettings">
+            <summary>
+            Database settings.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseSettings.Type">
+            <summary>
+            Database type.
+            Default value is Sqlite.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseSettings.Filename">
+            <summary>
+            Filename for SQLite databases.
+            Default value is "./less3.db".
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseSettings.Hostname">
+            <summary>
+            Hostname for network database connections.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseSettings.Port">
+            <summary>
+            Port number for network database connections.
+            Default value is 0. Minimum value is 0. Maximum value is 65535.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseSettings.Username">
+            <summary>
+            Username for network database connections.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseSettings.Password">
+            <summary>
+            Password for network database connections.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseSettings.Instance">
+            <summary>
+            Instance name for SQL Server connections.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseSettings.DatabaseName">
+            <summary>
+            Database name for network database connections.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseSettings.RequireEncryption">
+            <summary>
+            Boolean indicating if encryption is required for network database connections.
+            Default value is false.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseSettings.LogQueries">
+            <summary>
+            Boolean indicating if queries should be logged.
+            Default value is false.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.DatabaseSettings.#ctor">
+            <summary>
+            Instantiate with default settings (SQLite, ./less3.db).
+            </summary>
+        </member>
+        <member name="M:Less3.Database.DatabaseSettings.#ctor(System.String)">
+            <summary>
+            Instantiate for SQLite with specified filename.
+            </summary>
+            <param name="filename">SQLite database filename.</param>
+        </member>
+        <member name="M:Less3.Database.DatabaseSettings.#ctor(System.String,System.Int32,System.String,System.String,System.String,System.String)">
+            <summary>
+            Instantiate for SQL Server with hostname, port, credentials, instance, and database name.
+            </summary>
+            <param name="hostname">Hostname.</param>
+            <param name="port">Port number.</param>
+            <param name="username">Username.</param>
+            <param name="password">Password.</param>
+            <param name="instance">Instance name (for SQL Server Express).</param>
+            <param name="databaseName">Database name.</param>
+        </member>
+        <member name="M:Less3.Database.DatabaseSettings.#ctor(Less3.Database.DatabaseTypeEnum,System.String,System.Int32,System.String,System.String,System.String)">
+            <summary>
+            Instantiate for a specific database type with hostname, port, credentials, and database name.
+            </summary>
+            <param name="type">Database type.</param>
+            <param name="hostname">Hostname.</param>
+            <param name="port">Port number.</param>
+            <param name="username">Username.</param>
+            <param name="password">Password.</param>
+            <param name="databaseName">Database name.</param>
+        </member>
+        <member name="T:Less3.Database.DatabaseTypeEnum">
+            <summary>
+            Enumeration containing the supported database types.
+            </summary>
+        </member>
+        <member name="F:Less3.Database.DatabaseTypeEnum.Sqlite">
+            <summary>
+            SQLite.
+            </summary>
+        </member>
+        <member name="F:Less3.Database.DatabaseTypeEnum.SqlServer">
+            <summary>
+            Microsoft SQL Server.
+            </summary>
+        </member>
+        <member name="F:Less3.Database.DatabaseTypeEnum.Mysql">
+            <summary>
+            MySQL.
+            </summary>
+        </member>
+        <member name="F:Less3.Database.DatabaseTypeEnum.Postgresql">
+            <summary>
+            PostgreSQL.
+            </summary>
+        </member>
+        <member name="T:Less3.Database.Interfaces.IBucketAclMethods">
+            <summary>
+            Interface for bucket ACL database methods.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketAclMethods.ExistsByGroupName(System.String,System.String)">
+            <summary>
+            Check if a bucket group ACL exists.
+            </summary>
+            <param name="groupName">Group name.</param>
+            <param name="bucketGuid">Bucket GUID.</param>
+            <returns>True if the ACL exists.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketAclMethods.ExistsByUserGuid(System.String,System.String)">
+            <summary>
+            Check if a bucket user ACL exists.
+            </summary>
+            <param name="userGuid">User GUID.</param>
+            <param name="bucketGuid">Bucket GUID.</param>
+            <returns>True if the ACL exists.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketAclMethods.GetByBucketGuid(System.String)">
+            <summary>
+            Retrieve all ACLs for a bucket.
+            </summary>
+            <param name="bucketGuid">Bucket GUID.</param>
+            <returns>List of bucket ACLs.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketAclMethods.Insert(Less3.Classes.BucketAcl)">
+            <summary>
+            Insert a new bucket ACL.
+            </summary>
+            <param name="acl">Bucket ACL to insert.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketAclMethods.DeleteByBucketGuid(System.String)">
+            <summary>
+            Delete all ACLs for a bucket.
+            </summary>
+            <param name="bucketGuid">Bucket GUID.</param>
+        </member>
+        <member name="T:Less3.Database.Interfaces.IBucketMethods">
+            <summary>
+            Interface for bucket database methods.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketMethods.GetAll">
+            <summary>
+            Retrieve all buckets.
+            </summary>
+            <returns>List of buckets.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketMethods.ExistsByName(System.String)">
+            <summary>
+            Check if a bucket exists by name.
+            </summary>
+            <param name="name">Bucket name.</param>
+            <returns>True if the bucket exists.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketMethods.GetByOwnerGuid(System.String)">
+            <summary>
+            Retrieve buckets by owner GUID.
+            </summary>
+            <param name="ownerGuid">Owner GUID.</param>
+            <returns>List of buckets.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketMethods.GetByGuid(System.String)">
+            <summary>
+            Retrieve a bucket by GUID.
+            </summary>
+            <param name="guid">Bucket GUID.</param>
+            <returns>Bucket or null if not found.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketMethods.GetByName(System.String)">
+            <summary>
+            Retrieve a bucket by name.
+            </summary>
+            <param name="name">Bucket name.</param>
+            <returns>Bucket or null if not found.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketMethods.Insert(Less3.Classes.Bucket)">
+            <summary>
+            Insert a new bucket.
+            </summary>
+            <param name="bucket">Bucket to insert.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketMethods.DeleteByGuid(System.String)">
+            <summary>
+            Delete a bucket by GUID.
+            </summary>
+            <param name="guid">Bucket GUID.</param>
+        </member>
+        <member name="T:Less3.Database.Interfaces.IBucketTagMethods">
+            <summary>
+            Interface for bucket tag database methods.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketTagMethods.Insert(Less3.Classes.BucketTag)">
+            <summary>
+            Insert a new bucket tag.
+            </summary>
+            <param name="tag">Bucket tag to insert.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketTagMethods.GetByBucketGuid(System.String)">
+            <summary>
+            Retrieve all tags for a bucket.
+            </summary>
+            <param name="bucketGuid">Bucket GUID.</param>
+            <returns>List of bucket tags.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketTagMethods.DeleteByBucketGuid(System.String)">
+            <summary>
+            Delete all tags for a bucket.
+            </summary>
+            <param name="bucketGuid">Bucket GUID.</param>
+        </member>
+        <member name="T:Less3.Database.Interfaces.ICredentialMethods">
+            <summary>
+            Interface for credential database methods.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.ICredentialMethods.GetAll">
+            <summary>
+            Retrieve all credentials.
+            </summary>
+            <returns>List of credentials.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.ICredentialMethods.ExistsByGuid(System.String)">
+            <summary>
+            Check if a credential exists by GUID.
+            </summary>
+            <param name="guid">Credential GUID.</param>
+            <returns>True if the credential exists.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.ICredentialMethods.GetByGuid(System.String)">
+            <summary>
+            Retrieve a credential by GUID.
+            </summary>
+            <param name="guid">Credential GUID.</param>
+            <returns>Credential or null if not found.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.ICredentialMethods.GetByUserGuid(System.String)">
+            <summary>
+            Retrieve credentials by user GUID.
+            </summary>
+            <param name="userGuid">User GUID.</param>
+            <returns>List of credentials.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.ICredentialMethods.GetByAccessKey(System.String)">
+            <summary>
+            Retrieve a credential by access key.
+            </summary>
+            <param name="accessKey">Access key.</param>
+            <returns>Credential or null if not found.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.ICredentialMethods.Insert(Less3.Classes.Credential)">
+            <summary>
+            Insert a new credential.
+            </summary>
+            <param name="credential">Credential to insert.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.ICredentialMethods.DeleteByGuid(System.String)">
+            <summary>
+            Delete a credential by GUID.
+            </summary>
+            <param name="guid">Credential GUID.</param>
+        </member>
+        <member name="T:Less3.Database.Interfaces.IObjectAclMethods">
+            <summary>
+            Interface for object ACL database methods.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjectAclMethods.ExistsByGroupName(System.String,System.String,System.String)">
+            <summary>
+            Check if an object group ACL exists.
+            </summary>
+            <param name="groupName">Group name.</param>
+            <param name="objectGuid">Object GUID.</param>
+            <param name="bucketGuid">Bucket GUID.</param>
+            <returns>True if the ACL exists.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjectAclMethods.ExistsByUserGuid(System.String,System.String,System.String)">
+            <summary>
+            Check if an object user ACL exists.
+            </summary>
+            <param name="userGuid">User GUID.</param>
+            <param name="objectGuid">Object GUID.</param>
+            <param name="bucketGuid">Bucket GUID.</param>
+            <returns>True if the ACL exists.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjectAclMethods.GetByObjectGuid(System.String,System.String)">
+            <summary>
+            Retrieve ACLs for an object by object GUID and bucket GUID.
+            </summary>
+            <param name="objectGuid">Object GUID.</param>
+            <param name="bucketGuid">Bucket GUID.</param>
+            <returns>List of object ACLs.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjectAclMethods.GetByBucketGuid(System.String)">
+            <summary>
+            Retrieve all object ACLs for a bucket.
+            </summary>
+            <param name="bucketGuid">Bucket GUID.</param>
+            <returns>List of object ACLs.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjectAclMethods.Insert(Less3.Classes.ObjectAcl)">
+            <summary>
+            Insert a new object ACL.
+            </summary>
+            <param name="acl">Object ACL to insert.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjectAclMethods.DeleteByObjectGuidAndBucketGuid(System.String,System.String)">
+            <summary>
+            Delete all ACLs for a specific object within a bucket.
+            </summary>
+            <param name="objectGuid">Object GUID.</param>
+            <param name="bucketGuid">Bucket GUID.</param>
+        </member>
+        <member name="T:Less3.Database.Interfaces.IObjectTagMethods">
+            <summary>
+            Interface for object tag database methods.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjectTagMethods.Insert(Less3.Classes.ObjectTag)">
+            <summary>
+            Insert a new object tag.
+            </summary>
+            <param name="tag">Object tag to insert.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjectTagMethods.GetByObjectGuid(System.String,System.String)">
+            <summary>
+            Retrieve tags for an object by object GUID and bucket GUID.
+            </summary>
+            <param name="objectGuid">Object GUID.</param>
+            <param name="bucketGuid">Bucket GUID.</param>
+            <returns>List of object tags.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjectTagMethods.DeleteByObjectGuid(System.String,System.String)">
+            <summary>
+            Delete all tags for an object by object GUID and bucket GUID.
+            </summary>
+            <param name="objectGuid">Object GUID.</param>
+            <param name="bucketGuid">Bucket GUID.</param>
+        </member>
+        <member name="T:Less3.Database.Interfaces.IObjMethods">
+            <summary>
+            Interface for object database methods.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjMethods.Insert(Less3.Classes.Obj)">
+            <summary>
+            Insert a new object.
+            </summary>
+            <param name="obj">Object to insert.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjMethods.GetLatestByKey(System.String,System.String)">
+            <summary>
+            Retrieve the latest version of an object by key within a bucket.
+            </summary>
+            <param name="key">Object key.</param>
+            <param name="bucketGuid">Bucket GUID.</param>
+            <returns>Object or null if not found.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjMethods.GetByKeyAndVersion(System.String,System.Int64,System.String)">
+            <summary>
+            Retrieve an object by key and version within a bucket.
+            </summary>
+            <param name="key">Object key.</param>
+            <param name="version">Object version.</param>
+            <param name="bucketGuid">Bucket GUID.</param>
+            <returns>Object or null if not found.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjMethods.GetByGuid(System.String,System.String)">
+            <summary>
+            Retrieve an object by GUID within a bucket.
+            </summary>
+            <param name="guid">Object GUID.</param>
+            <param name="bucketGuid">Bucket GUID.</param>
+            <returns>Object or null if not found.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjMethods.GetLatestVersion(System.String,System.String)">
+            <summary>
+            Get the latest version number for a given key within a bucket.
+            </summary>
+            <param name="key">Object key.</param>
+            <param name="bucketGuid">Bucket GUID.</param>
+            <returns>Latest version number, or 0 if none found.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjMethods.Update(Less3.Classes.Obj)">
+            <summary>
+            Update an existing object record.
+            </summary>
+            <param name="obj">Object to update.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjMethods.Delete(Less3.Classes.Obj)">
+            <summary>
+            Delete an object record.
+            </summary>
+            <param name="obj">Object to delete.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjMethods.Enumerate(System.String,System.Int32,System.Int32,System.Boolean,System.String)">
+            <summary>
+            Enumerate objects in a bucket with pagination, optional prefix filter, and optional delete marker exclusion.
+            Results are ordered by ID ascending.
+            </summary>
+            <param name="bucketGuid">Bucket GUID.</param>
+            <param name="startIndex">Minimum ID to start from.</param>
+            <param name="maxResults">Maximum number of results to return.</param>
+            <param name="excludeDeleteMarkers">Whether to exclude objects with delete markers.</param>
+            <param name="prefix">Optional key prefix filter.</param>
+            <returns>List of matching objects.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjMethods.GetStatistics(System.String)">
+            <summary>
+            Get object count and total bytes for a bucket.
+            </summary>
+            <param name="bucketGuid">Bucket GUID.</param>
+            <returns>Bucket statistics.</returns>
+        </member>
+        <member name="T:Less3.Database.Interfaces.IRequestHistoryMethods">
+            <summary>
+            Interface for request history database methods.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IRequestHistoryMethods.GetAll">
+            <summary>
+            Retrieve all request history entries.
+            </summary>
+            <returns>List of request history entries.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IRequestHistoryMethods.GetByGuid(System.String)">
+            <summary>
+            Retrieve a request history entry by GUID.
+            </summary>
+            <param name="guid">Request history GUID.</param>
+            <returns>Request history entry or null if not found.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IRequestHistoryMethods.Insert(Less3.Classes.RequestHistory)">
+            <summary>
+            Insert a new request history entry.
+            </summary>
+            <param name="entry">Request history entry to insert.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IRequestHistoryMethods.DeleteByGuid(System.String)">
+            <summary>
+            Delete a request history entry by GUID.
+            </summary>
+            <param name="guid">Request history GUID.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IRequestHistoryMethods.DeleteOlderThan(System.DateTime)">
+            <summary>
+            Delete all request history entries older than the specified cutoff.
+            </summary>
+            <param name="cutoff">Cutoff datetime in UTC.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IRequestHistoryMethods.GetInRange(System.DateTime,System.DateTime)">
+            <summary>
+            Retrieve request history entries within a date range.
+            </summary>
+            <param name="startUtc">Start datetime in UTC.</param>
+            <param name="endUtc">End datetime in UTC.</param>
+            <returns>List of matching request history entries.</returns>
+        </member>
+        <member name="T:Less3.Database.Interfaces.IUploadMethods">
+            <summary>
+            Interface for upload database methods.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUploadMethods.GetByGuid(System.String)">
+            <summary>
+            Retrieve an upload by GUID.
+            </summary>
+            <param name="guid">Upload GUID.</param>
+            <returns>Upload or null if not found.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUploadMethods.GetAll">
+            <summary>
+            Retrieve all uploads.
+            </summary>
+            <returns>List of uploads.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUploadMethods.GetByBucketGuid(System.String)">
+            <summary>
+            Retrieve uploads by bucket GUID.
+            </summary>
+            <param name="bucketGuid">Bucket GUID.</param>
+            <returns>List of uploads.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUploadMethods.Insert(Less3.Classes.Upload)">
+            <summary>
+            Insert a new upload.
+            </summary>
+            <param name="upload">Upload to insert.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUploadMethods.DeleteByGuid(System.String)">
+            <summary>
+            Delete an upload by GUID.
+            </summary>
+            <param name="guid">Upload GUID.</param>
+        </member>
+        <member name="T:Less3.Database.Interfaces.IUploadPartMethods">
+            <summary>
+            Interface for upload part database methods.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUploadPartMethods.Insert(Less3.Classes.UploadPart)">
+            <summary>
+            Insert a new upload part.
+            </summary>
+            <param name="part">Upload part to insert.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUploadPartMethods.GetByUploadGuid(System.String)">
+            <summary>
+            Retrieve all parts for an upload by upload GUID.
+            </summary>
+            <param name="uploadGuid">Upload GUID.</param>
+            <returns>List of upload parts.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUploadPartMethods.DeleteByUploadGuid(System.String)">
+            <summary>
+            Delete all parts for an upload by upload GUID.
+            </summary>
+            <param name="uploadGuid">Upload GUID.</param>
+        </member>
+        <member name="T:Less3.Database.Interfaces.IUserMethods">
+            <summary>
+            Interface for user database methods.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUserMethods.GetAll">
+            <summary>
+            Retrieve all users.
+            </summary>
+            <returns>List of users.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUserMethods.ExistsByGuid(System.String)">
+            <summary>
+            Check if a user exists by GUID.
+            </summary>
+            <param name="guid">User GUID.</param>
+            <returns>True if the user exists.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUserMethods.ExistsByEmail(System.String)">
+            <summary>
+            Check if a user exists by email.
+            </summary>
+            <param name="email">Email address.</param>
+            <returns>True if the user exists.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUserMethods.GetByGuid(System.String)">
+            <summary>
+            Retrieve a user by GUID.
+            </summary>
+            <param name="guid">User GUID.</param>
+            <returns>User or null if not found.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUserMethods.GetByName(System.String)">
+            <summary>
+            Retrieve a user by name.
+            </summary>
+            <param name="name">User name.</param>
+            <returns>User or null if not found.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUserMethods.GetByEmail(System.String)">
+            <summary>
+            Retrieve a user by email.
+            </summary>
+            <param name="email">Email address.</param>
+            <returns>User or null if not found.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUserMethods.Insert(Less3.Classes.User)">
+            <summary>
+            Insert a new user.
+            </summary>
+            <param name="user">User to insert.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUserMethods.DeleteByGuid(System.String)">
+            <summary>
+            Delete a user by GUID.
+            </summary>
+            <param name="guid">User GUID.</param>
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketAclMethods.ExistsByGroupName(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketAclMethods.ExistsByUserGuid(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketAclMethods.GetByBucketGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketAclMethods.Insert(Less3.Classes.BucketAcl)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketAclMethods.DeleteByBucketGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketMethods.GetAll">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketMethods.ExistsByName(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketMethods.GetByOwnerGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketMethods.GetByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketMethods.GetByName(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketMethods.Insert(Less3.Classes.Bucket)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketMethods.DeleteByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketTagMethods.Insert(Less3.Classes.BucketTag)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketTagMethods.GetByBucketGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketTagMethods.DeleteByBucketGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.GetAll">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.ExistsByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.GetByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.GetByUserGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.GetByAccessKey(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.Insert(Less3.Classes.Credential)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.DeleteByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.ExistsByGroupName(System.String,System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.ExistsByUserGuid(System.String,System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.GetByObjectGuid(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.GetByBucketGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.Insert(Less3.Classes.ObjectAcl)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.DeleteByObjectGuidAndBucketGuid(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjectTagMethods.Insert(Less3.Classes.ObjectTag)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjectTagMethods.GetByObjectGuid(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjectTagMethods.DeleteByObjectGuid(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjMethods.Insert(Less3.Classes.Obj)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjMethods.GetLatestByKey(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjMethods.GetByKeyAndVersion(System.String,System.Int64,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjMethods.GetByGuid(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjMethods.GetLatestVersion(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjMethods.Update(Less3.Classes.Obj)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjMethods.Delete(Less3.Classes.Obj)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjMethods.Enumerate(System.String,System.Int32,System.Int32,System.Boolean,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjMethods.GetStatistics(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.RequestHistoryMethods.GetAll">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.RequestHistoryMethods.GetByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.RequestHistoryMethods.Insert(Less3.Classes.RequestHistory)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.RequestHistoryMethods.DeleteByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.RequestHistoryMethods.DeleteOlderThan(System.DateTime)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.RequestHistoryMethods.GetInRange(System.DateTime,System.DateTime)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UploadMethods.GetByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UploadMethods.GetAll">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UploadMethods.GetByBucketGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UploadMethods.Insert(Less3.Classes.Upload)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UploadMethods.DeleteByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UploadPartMethods.Insert(Less3.Classes.UploadPart)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UploadPartMethods.GetByUploadGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UploadPartMethods.DeleteByUploadGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UserMethods.GetAll">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UserMethods.ExistsByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UserMethods.ExistsByEmail(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UserMethods.GetByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UserMethods.GetByName(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UserMethods.GetByEmail(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UserMethods.Insert(Less3.Classes.User)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UserMethods.DeleteByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="T:Less3.Database.MySql.MySqlDatabaseDriver">
+            <summary>
+            MySQL database driver for Less3.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.MySql.MySqlDatabaseDriver.#ctor(Less3.Database.DatabaseSettings,SyslogLogging.LoggingModule)">
+            <summary>
+            Instantiate the MySQL database driver.
+            </summary>
+            <param name="settings">Database settings.</param>
+            <param name="logging">Logging module.</param>
+        </member>
+        <member name="M:Less3.Database.MySql.MySqlDatabaseDriver.ExecuteQuery(System.String,System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Execute a query against the MySQL database.
+            </summary>
+            <param name="query">SQL query string.</param>
+            <param name="isTransaction">Boolean indicating whether to wrap in a transaction.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>DataTable containing the results.</returns>
+        </member>
+        <member name="M:Less3.Database.MySql.MySqlDatabaseDriver.ExecuteQueries(System.Collections.Generic.IEnumerable{System.String},System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Execute multiple queries against the MySQL database.
+            Queries are combined into a single statement if under the maximum statement length, otherwise executed individually.
+            </summary>
+            <param name="queries">Collection of SQL query strings.</param>
+            <param name="isTransaction">Boolean indicating whether to wrap in a transaction.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>DataTable containing the results of the last query.</returns>
+        </member>
+        <member name="T:Less3.Database.PostgreSql.PostgreSqlDatabaseDriver">
+            <summary>
+            PostgreSQL database driver for Less3.
+            No application-level locking is used; PostgreSQL handles concurrent access natively through connection pools.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.PostgreSql.PostgreSqlDatabaseDriver.#ctor(Less3.Database.DatabaseSettings,SyslogLogging.LoggingModule)">
+            <summary>
+            Instantiate the PostgreSQL database driver.
+            </summary>
+            <param name="settings">Database settings.</param>
+            <param name="logging">Logging module.</param>
+        </member>
+        <member name="M:Less3.Database.PostgreSql.PostgreSqlDatabaseDriver.ExecuteQuery(System.String,System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Execute a query against the PostgreSQL database.
+            </summary>
+            <param name="query">Query.</param>
+            <param name="isTransaction">Boolean to indicate if it should be within a transaction.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Data table.</returns>
+        </member>
+        <member name="M:Less3.Database.PostgreSql.PostgreSqlDatabaseDriver.ExecuteQueries(System.Collections.Generic.IEnumerable{System.String},System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Execute multiple queries against the PostgreSQL database.
+            </summary>
+            <param name="queries">Queries.</param>
+            <param name="isTransaction">Boolean to indicate if it should be within a transaction.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Data table from the last query.</returns>
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.ExistsByGroupName(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.ExistsByUserGuid(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.GetByBucketGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.Insert(Less3.Classes.BucketAcl)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.DeleteByBucketGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.GetAll">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.ExistsByName(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.GetByOwnerGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.GetByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.GetByName(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.Insert(Less3.Classes.Bucket)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.DeleteByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketTagMethods.Insert(Less3.Classes.BucketTag)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketTagMethods.GetByBucketGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketTagMethods.DeleteByBucketGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.GetAll">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.ExistsByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.GetByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.GetByUserGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.GetByAccessKey(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.Insert(Less3.Classes.Credential)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.DeleteByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.ExistsByGroupName(System.String,System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.ExistsByUserGuid(System.String,System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.GetByObjectGuid(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.GetByBucketGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.Insert(Less3.Classes.ObjectAcl)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.DeleteByObjectGuidAndBucketGuid(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectTagMethods.Insert(Less3.Classes.ObjectTag)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectTagMethods.GetByObjectGuid(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectTagMethods.DeleteByObjectGuid(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjMethods.Insert(Less3.Classes.Obj)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjMethods.GetLatestByKey(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjMethods.GetByKeyAndVersion(System.String,System.Int64,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjMethods.GetByGuid(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjMethods.GetLatestVersion(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjMethods.Update(Less3.Classes.Obj)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjMethods.Delete(Less3.Classes.Obj)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjMethods.Enumerate(System.String,System.Int32,System.Int32,System.Boolean,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjMethods.GetStatistics(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.RequestHistoryMethods.GetAll">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.RequestHistoryMethods.GetByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.RequestHistoryMethods.Insert(Less3.Classes.RequestHistory)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.RequestHistoryMethods.DeleteByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.RequestHistoryMethods.DeleteOlderThan(System.DateTime)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.RequestHistoryMethods.GetInRange(System.DateTime,System.DateTime)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UploadMethods.GetByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UploadMethods.GetAll">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UploadMethods.GetByBucketGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UploadMethods.Insert(Less3.Classes.Upload)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UploadMethods.DeleteByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UploadPartMethods.Insert(Less3.Classes.UploadPart)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UploadPartMethods.GetByUploadGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UploadPartMethods.DeleteByUploadGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.GetAll">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.ExistsByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.ExistsByEmail(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.GetByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.GetByName(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.GetByEmail(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.Insert(Less3.Classes.User)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.DeleteByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="T:Less3.Database.Sqlite.SqliteDatabaseDriver">
+            <summary>
+            SQLite database driver for Less3.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Sqlite.SqliteDatabaseDriver.#ctor(Less3.Database.DatabaseSettings,SyslogLogging.LoggingModule)">
+            <summary>
+            Instantiate the SQLite database driver.
+            </summary>
+            <param name="settings">Database settings.</param>
+            <param name="logging">Logging module.</param>
+        </member>
+        <member name="M:Less3.Database.Sqlite.SqliteDatabaseDriver.ExecuteQuery(System.String,System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Execute a query against the SQLite database.
+            </summary>
+            <param name="query">SQL query string.</param>
+            <param name="isTransaction">Boolean indicating whether to wrap in a transaction.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>DataTable containing the results.</returns>
+        </member>
+        <member name="M:Less3.Database.Sqlite.SqliteDatabaseDriver.ExecuteQueries(System.Collections.Generic.IEnumerable{System.String},System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Execute multiple queries against the SQLite database.
+            Queries are combined into a single statement if under the maximum statement length, otherwise executed individually.
+            </summary>
+            <param name="queries">Collection of SQL query strings.</param>
+            <param name="isTransaction">Boolean indicating whether to wrap in a transaction.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>DataTable containing the results of the last query.</returns>
+        </member>
+        <member name="M:Less3.Database.Sqlite.SqliteDatabaseDriver.Dispose">
+            <summary>
+            Dispose of resources.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Sqlite.SqliteDatabaseDriver.Dispose(System.Boolean)">
+            <summary>
+            Dispose of resources.
+            </summary>
+            <param name="disposing">True if disposing managed resources.</param>
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketAclMethods.ExistsByGroupName(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketAclMethods.ExistsByUserGuid(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketAclMethods.GetByBucketGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketAclMethods.Insert(Less3.Classes.BucketAcl)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketAclMethods.DeleteByBucketGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.GetAll">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.ExistsByName(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.GetByOwnerGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.GetByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.GetByName(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.Insert(Less3.Classes.Bucket)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.DeleteByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketTagMethods.Insert(Less3.Classes.BucketTag)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketTagMethods.GetByBucketGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketTagMethods.DeleteByBucketGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.GetAll">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.ExistsByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.GetByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.GetByUserGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.GetByAccessKey(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.Insert(Less3.Classes.Credential)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.DeleteByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.ExistsByGroupName(System.String,System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.ExistsByUserGuid(System.String,System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.GetByObjectGuid(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.GetByBucketGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.Insert(Less3.Classes.ObjectAcl)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.DeleteByObjectGuidAndBucketGuid(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectTagMethods.Insert(Less3.Classes.ObjectTag)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectTagMethods.GetByObjectGuid(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectTagMethods.DeleteByObjectGuid(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjMethods.Insert(Less3.Classes.Obj)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjMethods.GetLatestByKey(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjMethods.GetByKeyAndVersion(System.String,System.Int64,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjMethods.GetByGuid(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjMethods.GetLatestVersion(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjMethods.Update(Less3.Classes.Obj)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjMethods.Delete(Less3.Classes.Obj)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjMethods.Enumerate(System.String,System.Int32,System.Int32,System.Boolean,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjMethods.GetStatistics(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.RequestHistoryMethods.GetAll">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.RequestHistoryMethods.GetByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.RequestHistoryMethods.Insert(Less3.Classes.RequestHistory)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.RequestHistoryMethods.DeleteByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.RequestHistoryMethods.DeleteOlderThan(System.DateTime)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.RequestHistoryMethods.GetInRange(System.DateTime,System.DateTime)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UploadMethods.GetByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UploadMethods.GetAll">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UploadMethods.GetByBucketGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UploadMethods.Insert(Less3.Classes.Upload)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UploadMethods.DeleteByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UploadPartMethods.Insert(Less3.Classes.UploadPart)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UploadPartMethods.GetByUploadGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UploadPartMethods.DeleteByUploadGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.GetAll">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.ExistsByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.ExistsByEmail(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.GetByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.GetByName(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.GetByEmail(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.Insert(Less3.Classes.User)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.DeleteByGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="T:Less3.Database.SqlServer.SqlServerDatabaseDriver">
+            <summary>
+            SQL Server database driver for Less3.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.SqlServer.SqlServerDatabaseDriver.#ctor(Less3.Database.DatabaseSettings,SyslogLogging.LoggingModule)">
+            <summary>
+            Instantiate the SQL Server database driver.
+            </summary>
+            <param name="settings">Database settings.</param>
+            <param name="logging">Logging module.</param>
+        </member>
+        <member name="M:Less3.Database.SqlServer.SqlServerDatabaseDriver.ExecuteQuery(System.String,System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Execute a query against the SQL Server database.
+            </summary>
+            <param name="query">SQL query string.</param>
+            <param name="isTransaction">Boolean indicating whether to wrap in a transaction.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>DataTable containing the results.</returns>
+        </member>
+        <member name="M:Less3.Database.SqlServer.SqlServerDatabaseDriver.ExecuteQueries(System.Collections.Generic.IEnumerable{System.String},System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Execute multiple queries against the SQL Server database.
+            Queries are combined into a single statement if under the maximum statement length, otherwise executed individually.
+            </summary>
+            <param name="queries">Collection of SQL query strings.</param>
+            <param name="isTransaction">Boolean indicating whether to wrap in a transaction.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>DataTable containing the results of the last query.</returns>
         </member>
         <member name="T:Less3.Helpers.AclConverter">
             <summary>

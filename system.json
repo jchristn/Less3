@@ -1,0 +1,132 @@
+{
+  "EnableConsole": true,
+  "ValidateSignatures": true,
+  "HeaderApiKey": "x-api-key",
+  "AdminApiKey": "less3admin",
+  "RegionString": "us-west-1",
+  "Database": {
+    "Type": "Sqlite",
+    "Filename": "./less3.db",
+    "Port": 0,
+    "RequireEncryption": false,
+    "LogQueries": false
+  },
+  "Webserver": {
+    "Hostname": "localhost",
+    "Port": 8000,
+    "Prefix": "http://localhost:8000/",
+    "Protocols": {
+      "EnableHttp1": true,
+      "EnableHttp2": false,
+      "EnableHttp3": false,
+      "EnableHttp2Cleartext": false,
+      "MaxConcurrentStreams": 100,
+      "Http2": {
+        "HeaderTableSize": 4096,
+        "EnablePush": false,
+        "MaxConcurrentStreams": 100,
+        "InitialWindowSize": 65535,
+        "MaxFrameSize": 16384,
+        "MaxHeaderListSize": 65536
+      },
+      "Http3": {
+        "MaxFieldSectionSize": 0,
+        "QpackMaxTableCapacity": 0,
+        "QpackBlockedStreams": 0,
+        "EnableDatagram": false
+      },
+      "IdleTimeoutMs": 120000
+    },
+    "AltSvc": {
+      "Enabled": false,
+      "Port": 0,
+      "Http3Alpn": "h3",
+      "MaxAgeSeconds": 86400
+    },
+    "IO": {
+      "Http1": {
+        "PoolMaxRetainedPerType": 256,
+        "ResponseHeaderTemplateCacheSize": 256,
+        "StatusLineCacheSize": 64
+      },
+      "StreamBufferSize": 65536,
+      "MaxRequests": 1024,
+      "ReadTimeoutMs": 10000,
+      "MaxIncomingHeadersSize": 65536,
+      "EnableKeepAlive": false,
+      "MaxRequestBodySize": 0,
+      "MaxHeaderCount": 64
+    },
+    "Ssl": {
+      "Enable": false,
+      "MutuallyAuthenticate": false,
+      "AcceptInvalidAcertificates": true
+    },
+    "Headers": {
+      "IncludeContentLength": true,
+      "DefaultHeaders": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "OPTIONS, HEAD, GET, PUT, POST, DELETE, PATCH",
+        "Access-Control-Allow-Headers": "*",
+        "Access-Control-Expose-Headers": "",
+        "Accept": "*/*",
+        "Accept-Language": "en-US, en",
+        "Accept-Charset": "ISO-8859-1, utf-8",
+        "Cache-Control": "no-cache",
+        "Connection": "close",
+        "Host": "localhost:8000"
+      }
+    },
+    "AccessControl": {
+      "DenyList": {},
+      "PermitList": {},
+      "Mode": "DefaultPermit"
+    },
+    "Debug": {
+      "AccessControl": false,
+      "Routing": false,
+      "Requests": false,
+      "Responses": false
+    },
+    "Timeout": {
+      "DefaultTimeout": "00:00:00"
+    },
+    "WebSockets": {
+      "Enable": false,
+      "MaxMessageSize": 16777216,
+      "ReceiveBufferSize": 65536,
+      "CloseHandshakeTimeoutMs": 5000,
+      "AllowClientSuppliedGuid": false,
+      "ClientGuidHeaderName": "x-guid",
+      "SupportedVersions": [
+        "13"
+      ],
+      "EnableHttp1": true,
+      "EnableHttp2": false,
+      "EnableHttp3": false
+    },
+    "UseMachineHostname": false
+  },
+  "Storage": {
+    "TempDirectory": "./temp/",
+    "StorageType": "Disk",
+    "DiskDirectory": "./disk/"
+  },
+  "Logging": {
+    "SyslogServerIp": "127.0.0.1",
+    "SyslogServerPort": 514,
+    "MinimumLevel": "Info",
+    "LogHttpRequests": false,
+    "LogS3Requests": false,
+    "LogExceptions": false,
+    "LogSignatureValidation": false,
+    "ConsoleLogging": true,
+    "DiskLogging": true,
+    "DiskDirectory": "./logs/"
+  },
+  "Debug": {
+    "Authentication": false,
+    "S3Requests": false,
+    "Exceptions": false
+  }
+}

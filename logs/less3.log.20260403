@@ -1,0 +1,5 @@
+2026-04-04 04:03:34 THINKPAD Info [SqliteDatabaseDriver] initialized using ./less3.db
+2026-04-04 04:03:34 THINKPAD Info CleanupManager initialized with cleanup interval 3600000ms
+2026-04-04 04:14:28 THINKPAD Debug 127.0.0.1:52587 GET /admin/requesthistory/summary?startUtc=2026-04-04T03%3A14%3A00.000Z&endUtc=2026-04-04T04%3A13%3A59.999Z&interval=minute ObjectRead 200 0ms
+2026-04-04 04:14:39 THINKPAD Debug 127.0.0.1:65041 GET /admin/requesthistory/summary?startUtc=2026-04-04T03%3A14%3A00.000Z&endUtc=2026-04-04T04%3A13%3A59.999Z&interval=minute ObjectRead 200 0ms
+2026-04-04 04:14:50 THINKPAD Debug 127.0.0.1:65043 GET /admin/requesthistory/summary?startUtc=2026-04-04T03%3A14%3A00.000Z&endUtc=2026-04-04T04%3A13%3A59.999Z&interval=minute ObjectRead 200 0ms

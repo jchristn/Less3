@@ -186,17 +186,7 @@
             if (md.Bucket.EnableVersioning)
                 ctx.Response.Headers.Add("x-amz-version-id", md.Obj.Version.ToString());
 
-            if (md.Obj.Metadata != null)
-            {
-                Dictionary<string, string> userMeta = SerializationHelper.DeserializeJson<Dictionary<string, string>>(md.Obj.Metadata);
-                if (userMeta != null)
-                {
-                    foreach (KeyValuePair<string, string> kvp in userMeta)
-                    {
-                        ctx.Response.Headers.Add("x-amz-meta-" + kvp.Key, kvp.Value);
-                    }
-                }
-            }
+            AddUserMetadataHeaders(md.Obj, ctx, header);
 
             return metadata;
         }
@@ -220,17 +210,7 @@
             if (md.Bucket.EnableVersioning)
                 ctx.Response.Headers.Add("x-amz-version-id", md.Obj.Version.ToString());
 
-            if (md.Obj.Metadata != null)
-            {
-                Dictionary<string, string> userMeta = SerializationHelper.DeserializeJson<Dictionary<string, string>>(md.Obj.Metadata);
-                if (userMeta != null)
-                {
-                    foreach (KeyValuePair<string, string> kvp in userMeta)
-                    {
-                        ctx.Response.Headers.Add("x-amz-meta-" + kvp.Key, kvp.Value);
-                    }
-                }
-            }
+            AddUserMetadataHeaders(md.Obj, ctx, header);
 
             FileStream fs = new FileStream(GetObjectBlobFile(md.Bucket, md.Obj), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             return new S3Object(md.Obj.Key, md.Obj.Version.ToString(), isLatest, md.Obj.LastUpdateUtc, md.Obj.Etag, md.Obj.ContentLength, GetOwnerFromUserGuid(md.Obj.OwnerGUID), fs, md.Obj.ContentType);
@@ -1122,6 +1102,28 @@
             }
 
             return tempDir + bucketGuid + "-upload-" + uploadGuid + "-part-" + partNumber;
+        }
+
+        private void AddUserMetadataHeaders(Obj obj, S3Context ctx, string header)
+        {
+            if (obj == null) throw new ArgumentNullException(nameof(obj));
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            if (String.IsNullOrWhiteSpace(obj.Metadata)) return;
+
+            try
+            {
+                Dictionary<string, string> userMeta = SerializationHelper.DeserializeJson<Dictionary<string, string>>(obj.Metadata);
+                if (userMeta == null || userMeta.Count < 1) return;
+
+                foreach (KeyValuePair<string, string> kvp in userMeta)
+                {
+                    ctx.Response.Headers.Add("x-amz-meta-" + kvp.Key, kvp.Value);
+                }
+            }
+            catch (System.Text.Json.JsonException)
+            {
+                _Logging.Warn(header + "ignoring invalid object metadata for object GUID " + obj.GUID);
+            }
         }
 
         private Dictionary<string, string> ExtractMetadataFromHeaders(NameValueCollection headers)

@@ -1,10 +1,9 @@
 ﻿#
 #
 # Run the docker build command from src, not from the project directory.
-# Requires --build-context s3server=<path-to-s3server-6.0-repo>
 #
 # Example:
-#   docker buildx build -f Less3\Dockerfile --build-context s3server=..\..\s3server-6.0 ...
+#   docker buildx build -f Less3\Dockerfile ...
 #
 #
 
@@ -22,13 +21,6 @@ WORKDIR /build/less3/src
 
 # Copy Less3 source from primary context
 COPY . .
-
-# Copy S3Server source from named build context (s3server-6.0 repo).
-# The directory structure must preserve the relative project reference path
-# in Less3.csproj: ..\..\..\s3server-6.0\src\S3Server\S3Server.csproj
-COPY --from=s3server src/S3Server/ /build/s3server-6.0/src/S3Server/
-COPY --from=s3server LICENSE.md /build/s3server-6.0/LICENSE.md
-COPY --from=s3server README.md /build/s3server-6.0/README.md
 
 # Restore dependencies
 RUN dotnet restore "Less3/Less3.csproj"

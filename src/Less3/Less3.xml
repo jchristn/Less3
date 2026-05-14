@@ -482,6 +482,11 @@
             Console for less3.
             </summary>
         </member>
+        <member name="T:Less3.Classes.ContainerBootstrapSettingsFactory">
+            <summary>
+            Creates the default runtime configuration used for container bootstrap.
+            </summary>
+        </member>
         <member name="T:Less3.Classes.Credential">
             <summary>
             Credential.
@@ -552,6 +557,11 @@
             <param name="accessKey">Access key.</param>
             <param name="secretKey">Secret key.</param>
             <param name="isBase64">Is base64 encoded.</param>
+        </member>
+        <member name="T:Less3.Classes.DefaultDataSeeder">
+            <summary>
+            Seeds the default user, credential, bucket, and sample content used by setup and Docker bootstrap.
+            </summary>
         </member>
         <member name="T:Less3.Classes.HashResult">
             <summary>

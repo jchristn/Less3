@@ -54,11 +54,12 @@ REM -------------------------------------------------------------------------
 REM Restore factory database
 REM -------------------------------------------------------------------------
 echo [2/5] Restoring factory database...
-del /q "%DOCKER_DIR%less3.db" 2>nul
-del /q "%DOCKER_DIR%less3.db-shm" 2>nul
-del /q "%DOCKER_DIR%less3.db-wal" 2>nul
-copy /y "%FACTORY_DIR%less3.db" "%DOCKER_DIR%less3.db" >nul
-echo         Restored less3.db
+if not exist "%DOCKER_DIR%db" mkdir "%DOCKER_DIR%db" 2>nul
+del /q "%DOCKER_DIR%db\less3.db" 2>nul
+del /q "%DOCKER_DIR%db\less3.db-shm" 2>nul
+del /q "%DOCKER_DIR%db\less3.db-wal" 2>nul
+copy /y "%FACTORY_DIR%less3.db" "%DOCKER_DIR%db\less3.db" >nul
+echo         Restored db\less3.db
 
 REM -------------------------------------------------------------------------
 REM Clear object storage

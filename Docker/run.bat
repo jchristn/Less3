@@ -1,37 +1,43 @@
 @echo off
 
-IF "%1" == "" GOTO :Usage
+set IMG_TAG=%1
+if "%IMG_TAG%"=="" set IMG_TAG=v2.2.0
 
-if not exist system.json (
-  echo Configuration file system.json not found.
-  exit /b 1
-)
+if not exist db mkdir db
+if not exist logs mkdir logs
+if not exist temp mkdir temp
+if not exist disk mkdir disk
 
 REM Items that require persistence
 REM   system.json
-REM   less3.db
+REM   db\
 REM   logs/
 REM   temp/
 REM   disk/
 
-REM Argument order matters!
-
-docker run ^
-  -p 8000:8000 ^
-  -t ^
-  -i ^
-  -e "TERM=xterm-256color" ^
-  -v .\system.json:/app/system.json ^
-  -v .\less3.db:/app/less3.db ^
-  -v .\logs\:/app/logs/ ^
-  -v .\temp\:/app/temp/ ^
-  -v .\disk\:/app/disk/ ^
-  jchristn/less3:%1
-
-GOTO :Done
-
-:Usage
-ECHO Provide one argument indicating the tag. 
-ECHO Example: dockerrun.bat v2.1.11
-:Done
-@echo on
+if exist system.json (
+  echo Using mounted system.json from the Docker directory.
+  docker run ^
+    -p 8000:8000 ^
+    -t ^
+    -i ^
+    -e "TERM=xterm-256color" ^
+    -v .\system.json:/app/system.json ^
+    -v .\db\:/app/db/ ^
+    -v .\logs\:/app/logs/ ^
+    -v .\temp\:/app/temp/ ^
+    -v .\disk\:/app/disk/ ^
+    jchristn77/less3:%IMG_TAG%
+) else (
+  echo system.json not found. Less3 will generate a default container configuration.
+  docker run ^
+    -p 8000:8000 ^
+    -t ^
+    -i ^
+    -e "TERM=xterm-256color" ^
+    -v .\db\:/app/db/ ^
+    -v .\logs\:/app/logs/ ^
+    -v .\temp\:/app/temp/ ^
+    -v .\disk\:/app/disk/ ^
+    jchristn77/less3:%IMG_TAG%
+)

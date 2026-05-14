@@ -199,7 +199,16 @@
                 if (String.Compare(args[0], "setup") == 0) initialSetup = true;
             }
 
-            if (!File.Exists("system.json")) initialSetup = true;
+            if (!File.Exists("system.json"))
+            {
+                if (IsRunningInContainer() && !initialSetup)
+                {
+                    BootstrapContainerSettings();
+                }
+
+                if (!File.Exists("system.json")) initialSetup = true;
+            }
+
             if (initialSetup)
             {
                 Setup setup = new Setup();
@@ -239,6 +248,7 @@
 
             Console.WriteLine("| Initializing configuration manager");
             _Config = new ConfigManager(_Settings, _Logging, _Database);
+            EnsureContainerBootstrapData();
 
             Console.WriteLine("| Initializing bucket manager");
             _Buckets = new BucketManager(_Settings, _Logging, _Config, _Database);
@@ -331,6 +341,35 @@
 
             Console.ForegroundColor = prior;
             Console.WriteLine("");
+        }
+
+        private static void EnsureContainerBootstrapData()
+        {
+            if (!IsRunningInContainer()) return;
+
+            if (_Config.GetUsers().Count > 0) return;
+            if (_Config.GetCredentials().Count > 0) return;
+            if (_Config.GetBuckets().Count > 0) return;
+
+            Console.WriteLine("| Seeding default container data");
+            _Logging.Info(_Header + "detected empty configuration database in container, seeding default Docker data");
+            DefaultDataSeeder.Seed(_Settings, _Logging, _Database, _Config);
+        }
+
+        private static bool IsRunningInContainer()
+        {
+            string runningInContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER");
+            return String.Equals(runningInContainer, "true", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static void BootstrapContainerSettings()
+        {
+            Console.WriteLine("| system.json not found; generating default container configuration");
+
+            SettingsBase settings = ContainerBootstrapSettingsFactory.CreateDefaults();
+            ContainerBootstrapSettingsFactory.EnsureDirectories(settings);
+
+            File.WriteAllText("./system.json", SerializationHelper.SerializeJson(settings, true));
         }
 
         private static string DefaultPage(string link)

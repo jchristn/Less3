@@ -256,21 +256,46 @@ Less3 is built using a series of open-source packages, including:
 
 ## Docker Deployment
 
-Less3 is available on [DockerHub](https://hub.docker.com/r/jchristn/less3).
+Less3 is available on [DockerHub](https://hub.docker.com/r/jchristn77/less3).
 
-### Quick Start with Docker Compose
+### Fresh Clone: Build from Source
 
 1. Navigate to the `Docker` directory
 2. Run the deployment:
    ```bash
    cd Docker
-   docker compose up -d
+   docker compose up --build -d
    ```
 
 The `Docker` directory contains:
-- `compose.yaml` - Docker Compose configuration
-- `system.json` - Pre-configured Less3 settings
-- `less3.db` - SQLite database (will be created on first run)
+- `compose.yaml` - Docker Compose configuration that builds from the local `src/` tree
+- `compose.image.yaml` - Docker Compose configuration that uses the published `jchristn77/less3:v2.2.0` image
+- `system.json` - Pre-configured Less3 settings for the local-build compose path
+- `db/less3.db` - SQLite database file created inside the mounted `db/` directory
+- `factory/less3.db` - Factory-reset seed used by the reset scripts
+
+### Fresh Pull: Run the Published Image
+
+If you want to validate startup from the published image instead of building locally:
+
+```bash
+cd Docker
+docker compose -f compose.image.yaml up -d
+```
+
+`compose.image.yaml` mounts the repository's `system.json` into the container so the current published `jchristn77/less3:v2.2.0` image starts cleanly on a fresh checkout.
+
+You can also run the image directly from the `Docker` directory:
+
+```bash
+docker run --rm -p 8000:8000 \
+  -v ./system.json:/app/system.json \
+  -v ./db:/app/db \
+  -v ./logs:/app/logs \
+  -v ./temp:/app/temp \
+  -v ./disk:/app/disk \
+  jchristn77/less3:v2.2.0
+```
 
 ### Default Configuration
 - **Port**: 8000
@@ -280,13 +305,19 @@ The `Docker` directory contains:
 - **URL Style**: Path-style (`http://localhost:8000/bucket/key`)
 - **Hostname**: `*` (accepts all incoming requests)
 
+On the first Docker startup, Less3 detects an empty configuration database and seeds the default `default` access key, `default` secret key, and `default` bucket automatically.
+
+When rebuilt from this source, Less3 can also generate a default container configuration if `/app/system.json` is not mounted, then seed the default data set into an empty database. The current repository compose files still mount `system.json` so the published `v2.2.0` image works cleanly today.
+
 ### Volume Mounts
 The Docker deployment maps the following directories for persistence:
-- `./system.json` → `/app/system.json` - Configuration file
-- `./less3.db` → `/app/less3.db` - Database
-- `./logs/` → `/app/logs/` - Log files
-- `./temp/` → `/app/temp/` - Temporary files during uploads
-- `./disk/` → `/app/disk/` - Object storage data
+- `compose.yaml` mounts `./system.json` -> `/app/system.json`
+- `compose.image.yaml` mounts `./system.json` -> `/app/system.json` so the published image follows the same startup path as the local-build compose file
+- Current repo layout: `./db/` -> `/app/db/` and `system.json` points SQLite at `./db/less3.db`
+- `./db/` -> `/app/db/` - SQLite database directory
+- `./logs/` -> `/app/logs/` - Log files
+- `./temp/` -> `/app/temp/` - Temporary files during uploads
+- `./disk/` -> `/app/disk/` - Object storage data
 
 ### Building Your Own Image
 ```bash

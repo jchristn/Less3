@@ -47,6 +47,8 @@ namespace Test.Automated
                 runner.AddSuite(new ObjectAdvancedApiTests(server));
                 runner.AddSuite(new MultipartApiTests(server));
                 runner.AddSuite(new S3ProtocolComplianceTests(server));
+                runner.AddSuite(new DockerBootstrapTests());
+                runner.AddSuite(new ContainerAutoconfigTests());
                 runner.AddSuite(new SignatureValidationApiTests());
 
                 int exitCode = await runner.RunAllAsync().ConfigureAwait(false);

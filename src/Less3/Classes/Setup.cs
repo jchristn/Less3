@@ -1,14 +1,10 @@
 ﻿namespace Less3.Classes
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Net;
-    using System.Text;
     using SyslogLogging;
     using GetSomeInput;
     using Less3.Database;
-    using Less3.Storage;
     using Less3.Settings;
     using S3ServerLibrary;
 
@@ -171,86 +167,11 @@
 
             ConfigManager config = new ConfigManager(settings, logging, database);
 
-            string userGuid = "default";
-            config.AddUser(new User(userGuid, "Default user", "default@default.com"));
-            config.AddCredential(userGuid, "My first access key", "default", "default", false);
-
-            Bucket bucketConfig = new Bucket(
-                "default",
-                userGuid,
-                userGuid,
-                StorageDriverType.Disk,
-                settings.Storage.DiskDirectory + "default/Objects/");
-            bucketConfig.EnablePublicRead = true;
-            bucketConfig.EnablePublicWrite = false;
-            bucketConfig.EnableVersioning = false;
-
-            config.AddBucket(bucketConfig);
+            DefaultDataSeeder.Seed(settings, logging, database, config);
 
             #endregion
-
-            #region Write-Sample-Objects
-
-            BucketClient bucket = new BucketClient(settings, logging, bucketConfig, database);
-
-            DateTime ts = DateTime.Now.ToUniversalTime();
-
-            string htmlFile = SampleHtmlFile("http://github.com/jchristn/less3");
-            string textFile = SampleTextFile("http://github.com/jchristn/less3");
-            string jsonFile = SampleJsonFile("http://github.com/jchristn/less3");
-
-            Obj obj1 = new Obj();
-            obj1.OwnerGUID = "default";
-            obj1.AuthorGUID = "default";
-            obj1.BlobFilename = Guid.NewGuid().ToString();
-            obj1.ContentLength = htmlFile.Length;
-            obj1.ContentType = "text/html";
-            obj1.Key = "hello.html";
-            obj1.Md5 = Common.BytesToHexString(Common.Md5(Encoding.UTF8.GetBytes(htmlFile)));
-            obj1.Version = 1;
-            obj1.IsFolder = false;
-            obj1.DeleteMarker = false;
-            obj1.CreatedUtc = ts;
-            obj1.LastUpdateUtc = ts;
-            obj1.LastAccessUtc = ts;
-
-            Obj obj2 = new Obj();
-            obj2.OwnerGUID = "default";
-            obj2.AuthorGUID = "default";
-            obj2.BlobFilename = Guid.NewGuid().ToString();
-            obj2.ContentLength = htmlFile.Length;
-            obj2.ContentType = "text/plain";
-            obj2.Key = "hello.txt";
-            obj2.Md5 = Common.BytesToHexString(Common.Md5(Encoding.UTF8.GetBytes(textFile)));
-            obj2.Version = 1;
-            obj2.IsFolder = false;
-            obj2.DeleteMarker = false;
-            obj2.CreatedUtc = ts;
-            obj2.LastUpdateUtc = ts;
-            obj2.LastAccessUtc = ts;
-
-            Obj obj3 = new Obj();
-            obj3.OwnerGUID = "default";
-            obj3.AuthorGUID = "default";
-            obj3.BlobFilename = Guid.NewGuid().ToString();
-            obj3.ContentLength = htmlFile.Length;
-            obj3.ContentType = "application/json";
-            obj3.Key = "hello.json";
-            obj3.Md5 = Common.BytesToHexString(Common.Md5(Encoding.UTF8.GetBytes(jsonFile)));
-            obj3.Version = 1;
-            obj3.IsFolder = false;
-            obj3.DeleteMarker = false;
-            obj3.CreatedUtc = ts;
-            obj3.LastUpdateUtc = ts;
-            obj3.LastAccessUtc = ts;
-             
-            bucket.AddObject(obj1, Encoding.UTF8.GetBytes(htmlFile));
-            bucket.AddObject(obj2, Encoding.UTF8.GetBytes(textFile));
-            bucket.AddObject(obj3, Encoding.UTF8.GetBytes(jsonFile)); 
-
-            Common.WriteFile("./system.json", Encoding.UTF8.GetBytes(SerializationHelper.SerializeJson(settings, true)));
-
-            #endregion 
+            
+            Common.WriteFile("./system.json", SerializationHelper.SerializeJson(settings, true), false);
 
             #region Wrap-Up
 
@@ -283,77 +204,6 @@
             #endregion
         }
          
-        private string SampleHtmlFile(string link)
-        {
-            string html =
-                "<html>" + Environment.NewLine +
-                "   <head>" + Environment.NewLine +
-                "      <title>&lt;3 :: Less3 :: S3-Compatible Object Storage</title>" + Environment.NewLine +
-                "      <style>" + Environment.NewLine +
-                "          body {" + Environment.NewLine +
-                "            font-family: arial;" + Environment.NewLine +
-                "          }" + Environment.NewLine +
-                "          pre {" + Environment.NewLine +
-                "            background-color: #e5e7ea;" + Environment.NewLine +
-                "            color: #333333; " + Environment.NewLine +
-                "          }" + Environment.NewLine +
-                "          h3 {" + Environment.NewLine +
-                "            color: #333333; " + Environment.NewLine +
-                "            padding: 4px;" + Environment.NewLine +
-                "            border: 4px;" + Environment.NewLine +
-                "          }" + Environment.NewLine +
-                "          p {" + Environment.NewLine +
-                "            color: #333333; " + Environment.NewLine +
-                "            padding: 4px;" + Environment.NewLine +
-                "            border: 4px;" + Environment.NewLine +
-                "          }" + Environment.NewLine +
-                "          a {" + Environment.NewLine +
-                "            background-color: #4cc468;" + Environment.NewLine +
-                "            color: white;" + Environment.NewLine +
-                "            padding: 4px;" + Environment.NewLine +
-                "            border: 4px;" + Environment.NewLine +
-                "         text-decoration: none; " + Environment.NewLine +
-                "          }" + Environment.NewLine +
-                "          li {" + Environment.NewLine +
-                "            padding: 6px;" + Environment.NewLine +
-                "            border: 6px;" + Environment.NewLine +
-                "          }" + Environment.NewLine +
-                "      </style>" + Environment.NewLine +
-                 "   </head>" + Environment.NewLine +
-                "   <body>" + Environment.NewLine +
-                "      <pre>" + Environment.NewLine +
-                WebUtility.HtmlEncode(Constants.Logo) +
-                "      </pre>" + Environment.NewLine +
-                "      <p>Congratulations, your Less3 node is running!</p>" + Environment.NewLine +
-                "      <p>" + Environment.NewLine +
-                "        <a href='" + link + "' target='_blank'>Source Code</a>" + Environment.NewLine +
-                "      </p>" + Environment.NewLine +
-                "   </body>" + Environment.NewLine +
-                "</html>";
-
-            return html;
-        }
-
-        private string SampleJsonFile(string link)
-        {
-            Dictionary<string, object> ret = new Dictionary<string, object>();
-            ret.Add("Title", "Welcome to Less3");
-            ret.Add("Body", "If you can see this file, your Less3 node is running!");
-            ret.Add("Github", link);
-            return SerializationHelper.SerializeJson(ret, true);
-        }
-
-        private string SampleTextFile(string link)
-        {
-            string text =
-                "Welcome to Less3!" + Environment.NewLine + Environment.NewLine +
-                "If you can see this file, your Less3 node is running!  Now try " +
-                "accessing this same URL in your browser, but use the .html extension!" + Environment.NewLine + Environment.NewLine +
-                "Find us on Github here: " + link + Environment.NewLine + Environment.NewLine;
-
-            return text;
-        }
-
         #endregion
     }
 }

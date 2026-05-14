@@ -53,11 +53,12 @@ docker compose down 2>/dev/null || true
 # Restore factory database
 # -------------------------------------------------------------------------
 echo "[2/5] Restoring factory database..."
-rm -f "$DOCKER_DIR/less3.db"
-rm -f "$DOCKER_DIR/less3.db-shm"
-rm -f "$DOCKER_DIR/less3.db-wal"
-cp "$FACTORY_DIR/less3.db" "$DOCKER_DIR/less3.db"
-echo "        Restored less3.db"
+mkdir -p "$DOCKER_DIR/db"
+rm -f "$DOCKER_DIR/db/less3.db"
+rm -f "$DOCKER_DIR/db/less3.db-shm"
+rm -f "$DOCKER_DIR/db/less3.db-wal"
+cp "$FACTORY_DIR/less3.db" "$DOCKER_DIR/db/less3.db"
+echo "        Restored db/less3.db"
 
 # -------------------------------------------------------------------------
 # Clear object storage

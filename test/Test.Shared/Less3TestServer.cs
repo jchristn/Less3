@@ -29,6 +29,8 @@ namespace Test.Shared
         private string _AccessKey = "testaccess";
         private string _SecretKey = "testsecret";
         private bool _ValidateSignatures = false;
+        private bool _SimulateContainerEnvironment = false;
+        private bool _OmitSystemJson = false;
         private Process? _Process;
         private bool _Disposed = false;
         private HttpClient _HttpClient;
@@ -90,11 +92,23 @@ namespace Test.Shared
         /// Initializes a new instance of the <see cref="Less3TestServer"/> class.
         /// Does not start the server; call <see cref="StartAsync"/> to begin.
         /// </summary>
-        public Less3TestServer(bool validateSignatures = false)
+        public Less3TestServer(
+            bool validateSignatures = false,
+            bool simulateContainerEnvironment = false,
+            bool omitSystemJson = false)
         {
             _Port = GetRandomPort();
             _TempDirectory = Path.Combine(Path.GetTempPath(), "less3-test-" + Guid.NewGuid().ToString("N"));
             _ValidateSignatures = validateSignatures;
+            _SimulateContainerEnvironment = simulateContainerEnvironment;
+            _OmitSystemJson = omitSystemJson;
+
+            if (_OmitSystemJson)
+            {
+                _AdminApiKey = "less3admin";
+                _AccessKey = "default";
+                _SecretKey = "default";
+            }
 
             SocketsHttpHandler handler = new SocketsHttpHandler
             {
@@ -121,10 +135,18 @@ namespace Test.Shared
         /// <returns>A task representing the asynchronous operation.</returns>
         public async Task StartAsync(CancellationToken cancellationToken = default)
         {
+            if (_OmitSystemJson && !_SimulateContainerEnvironment)
+            {
+                throw new InvalidOperationException("Omitting system.json requires simulateContainerEnvironment=true.");
+            }
+
             Directory.CreateDirectory(_TempDirectory);
-            Directory.CreateDirectory(Path.Combine(_TempDirectory, "disk"));
-            Directory.CreateDirectory(Path.Combine(_TempDirectory, "temp"));
-            Directory.CreateDirectory(Path.Combine(_TempDirectory, "logs"));
+            if (!_OmitSystemJson)
+            {
+                Directory.CreateDirectory(Path.Combine(_TempDirectory, "disk"));
+                Directory.CreateDirectory(Path.Combine(_TempDirectory, "temp"));
+                Directory.CreateDirectory(Path.Combine(_TempDirectory, "logs"));
+            }
 
             string? assetsSource = FindAssetsDirectory();
             if (assetsSource != null)
@@ -137,7 +159,7 @@ namespace Test.Shared
                 }
             }
 
-            WriteSystemJson();
+            if (!_OmitSystemJson) WriteSystemJson();
             WriteLess3Database();
 
             string less3Dll = FindLess3Dll();
@@ -154,6 +176,14 @@ namespace Test.Shared
             };
 
             psi.Environment["DOTNET_ENVIRONMENT"] = "Test";
+            if (_SimulateContainerEnvironment)
+            {
+                psi.Environment["DOTNET_RUNNING_IN_CONTAINER"] = "true";
+            }
+            if (_OmitSystemJson)
+            {
+                psi.Environment["LESS3_PORT"] = _Port.ToString();
+            }
 
             _Process = Process.Start(psi);
             if (_Process == null)

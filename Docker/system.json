@@ -7,7 +7,7 @@
   "RegionString": "us-west-1",
   "Database": {
     "Type": "Sqlite",
-    "Filename": "./less3.db",
+    "Filename": "./db/less3.db",
     "Port": 0,
     "RequireEncryption": false,
     "LogQueries": false

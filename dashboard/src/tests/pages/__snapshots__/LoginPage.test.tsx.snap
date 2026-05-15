@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`LoginPage Snapshots should match default render 1`] = `
+exports[`LoginPage matches the login page snapshot 1`] = `
 <div
   class="loginLayout ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-align-stretch ant-flex-justify-space-between ant-flex-vertical"
 >
@@ -38,37 +38,54 @@ exports[`LoginPage Snapshots should match default render 1`] = `
     class="content"
   >
     <div
-      class="loginBox ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-align-center ant-flex-justify-center ant-flex-vertical"
+      class="loginShell"
     >
-      <div
-        class="ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-align-center"
-        style="gap: 10px;"
-      >
-        <img
-          alt="Less3"
-          data-nimg="1"
-          decoding="async"
-          height="50"
-          loading="lazy"
-          src="/_next/image?url=%2Fassets%2Flogo.png&w=128&q=75"
-          srcset="/_next/image?url=%2Fassets%2Flogo.png&w=64&q=75 1x, /_next/image?url=%2Fassets%2Flogo.png&w=128&q=75 2x"
-          style="color: transparent;"
-          width="50"
-        />
-      </div>
-      <div
-        class="ant-divider css-dev-only-do-not-override-mncuj7 ant-divider-horizontal"
-        role="separator"
-      />
-      <form
-        class="ant-form ant-form-vertical ant-form-hide-required-mark css-dev-only-do-not-override-mncuj7"
+      <section
+        class="formPanel"
       >
         <div
-          class="ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-align-center"
+          class="formHeader"
         >
           <div
-            class="ant-form-item css-dev-only-do-not-override-mncuj7 ant-form-item-vertical"
-            style="width: 400px;"
+            class="brandBadge"
+          >
+            <div
+              class="ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-align-center"
+              style="gap: 10px;"
+            >
+              <img
+                alt="Less3"
+                data-nimg="1"
+                decoding="async"
+                height="32"
+                loading="lazy"
+                src="/_next/image?url=%2Fassets%2Flogo.png&w=64&q=75"
+                srcset="/_next/image?url=%2Fassets%2Flogo.png&w=32&q=75 1x, /_next/image?url=%2Fassets%2Flogo.png&w=64&q=75 2x"
+                style="color: transparent;"
+                width="32"
+              />
+            </div>
+            <span>
+              Less3 Dashboard
+            </span>
+          </div>
+          <h3
+            class="ant-typography formTitle css-dev-only-do-not-override-mncuj7"
+            style="text-align: left;"
+          >
+            Admin Sign In
+          </h3>
+          <span
+            class="ant-typography formDescription css-dev-only-do-not-override-mncuj7"
+          >
+            Use the same API key configured on the server to unlock dashboard access.
+          </span>
+        </div>
+        <form
+          class="ant-form ant-form-vertical ant-form-hide-required-mark css-dev-only-do-not-override-mncuj7 form"
+        >
+          <div
+            class="ant-form-item css-dev-only-do-not-override-mncuj7 ant-form-item-has-success ant-form-item-vertical"
           >
             <div
               class="ant-row ant-form-item-row css-dev-only-do-not-override-mncuj7"
@@ -77,7 +94,7 @@ exports[`LoginPage Snapshots should match default render 1`] = `
                 class="ant-col ant-form-item-label css-dev-only-do-not-override-mncuj7"
               >
                 <label
-                  class="ant-form-item-required ant-form-item-required-mark-hidden"
+                  class="ant-form-item-required-mark-hidden"
                   for="less3APIUrl"
                   title="Less3 Server URL"
                 >
@@ -94,56 +111,192 @@ exports[`LoginPage Snapshots should match default render 1`] = `
                     class="ant-form-item-control-input-content"
                   >
                     <span
-                      class="ant-input-group-wrapper ant-input-group-wrapper-lg ant-input-group-wrapper-outlined css-dev-only-do-not-override-mncuj7 ant-input-search ant-input-search-large ant-input-search-with-button"
+                      class="ant-input-affix-wrapper ant-input-affix-wrapper-focused ant-input-affix-wrapper-lg css-dev-only-do-not-override-mncuj7 ant-input-outlined ant-input-status-success"
                     >
                       <span
-                        class="ant-input-wrapper ant-input-group css-dev-only-do-not-override-mncuj7"
+                        class="ant-input-prefix"
                       >
-                        <input
-                          aria-required="true"
-                          class="ant-input ant-input-lg css-dev-only-do-not-override-mncuj7 ant-input-outlined"
-                          id="less3APIUrl"
-                          placeholder="https://your-less3-server.com"
-                          type="search"
-                          value="http://localhost:8000"
-                        />
                         <span
-                          class="ant-input-group-addon"
+                          aria-label="link"
+                          class="anticon anticon-link fieldIcon"
+                          role="img"
                         >
-                          <button
-                            class="ant-btn css-dev-only-do-not-override-mncuj7 ant-btn-default ant-btn-color-primary ant-btn-variant-solid ant-btn-lg ant-input-search-button"
-                            type="button"
+                          <svg
+                            aria-hidden="true"
+                            data-icon="link"
+                            fill="currentColor"
+                            focusable="false"
+                            height="1em"
+                            viewBox="64 64 896 896"
+                            width="1em"
                           >
-                            <span
-                              aria-label="arrow-right"
-                              class="anticon anticon-arrow-right"
-                              role="img"
-                            >
-                              <svg
-                                aria-hidden="true"
-                                data-icon="arrow-right"
-                                fill="currentColor"
-                                focusable="false"
-                                height="1em"
-                                viewBox="64 64 896 896"
-                                width="1em"
-                              >
-                                <path
-                                  d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 000-48.4z"
-                                />
-                              </svg>
-                            </span>
-                          </button>
+                            <path
+                              d="M574 665.4a8.03 8.03 0 00-11.3 0L446.5 781.6c-53.8 53.8-144.6 59.5-204 0-59.5-59.5-53.8-150.2 0-204l116.2-116.2c3.1-3.1 3.1-8.2 0-11.3l-39.8-39.8a8.03 8.03 0 00-11.3 0L191.4 526.5c-84.6 84.6-84.6 221.5 0 306s221.5 84.6 306 0l116.2-116.2c3.1-3.1 3.1-8.2 0-11.3L574 665.4zm258.6-474c-84.6-84.6-221.5-84.6-306 0L410.3 307.6a8.03 8.03 0 000 11.3l39.7 39.7c3.1 3.1 8.2 3.1 11.3 0l116.2-116.2c53.8-53.8 144.6-59.5 204 0 59.5 59.5 53.8 150.2 0 204L665.3 562.6a8.03 8.03 0 000 11.3l39.8 39.8c3.1 3.1 8.2 3.1 11.3 0l116.2-116.2c84.5-84.6 84.5-221.5 0-306.1zM610.1 372.3a8.03 8.03 0 00-11.3 0L372.3 598.7a8.03 8.03 0 000 11.3l39.6 39.6c3.1 3.1 8.2 3.1 11.3 0l226.4-226.4c3.1-3.1 3.1-8.2 0-11.3l-39.5-39.6z"
+                            />
+                          </svg>
                         </span>
                       </span>
+                      <input
+                        class="ant-input ant-input-lg css-dev-only-do-not-override-mncuj7"
+                        id="less3APIUrl"
+                        placeholder="https://your-less3-server.com"
+                        type="text"
+                        value="http://localhost:8000"
+                      />
                     </span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+          <div
+            class="ant-form-item css-dev-only-do-not-override-mncuj7 ant-form-item-has-success ant-form-item-vertical"
+          >
+            <div
+              class="ant-row ant-form-item-row css-dev-only-do-not-override-mncuj7"
+            >
+              <div
+                class="ant-col ant-form-item-label css-dev-only-do-not-override-mncuj7"
+              >
+                <label
+                  class="ant-form-item-required ant-form-item-required-mark-hidden"
+                  for="adminApiKey"
+                  title="Admin API Key"
+                >
+                  Admin API Key
+                </label>
+              </div>
+              <div
+                class="ant-col ant-form-item-control css-dev-only-do-not-override-mncuj7"
+              >
+                <div
+                  class="ant-form-item-control-input"
+                >
+                  <div
+                    class="ant-form-item-control-input-content"
+                  >
+                    <span
+                      class="ant-input-affix-wrapper ant-input-affix-wrapper-lg css-dev-only-do-not-override-mncuj7 ant-input-outlined ant-input-status-success ant-input-password ant-input-password-large"
+                    >
+                      <span
+                        class="ant-input-prefix"
+                      >
+                        <span
+                          aria-label="key"
+                          class="anticon anticon-key fieldIcon"
+                          role="img"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            data-icon="key"
+                            fill="currentColor"
+                            focusable="false"
+                            height="1em"
+                            viewBox="64 64 896 896"
+                            width="1em"
+                          >
+                            <path
+                              d="M608 112c-167.9 0-304 136.1-304 304 0 70.3 23.9 135 63.9 186.5l-41.1 41.1-62.3-62.3a8.15 8.15 0 00-11.4 0l-39.8 39.8a8.15 8.15 0 000 11.4l62.3 62.3-44.9 44.9-62.3-62.3a8.15 8.15 0 00-11.4 0l-39.8 39.8a8.15 8.15 0 000 11.4l62.3 62.3-65.3 65.3a8.03 8.03 0 000 11.3l42.3 42.3c3.1 3.1 8.2 3.1 11.3 0l253.6-253.6A304.06 304.06 0 00608 720c167.9 0 304-136.1 304-304S775.9 112 608 112zm161.2 465.2C726.2 620.3 668.9 644 608 644c-60.9 0-118.2-23.7-161.2-66.8-43.1-43-66.8-100.3-66.8-161.2 0-60.9 23.7-118.2 66.8-161.2 43-43.1 100.3-66.8 161.2-66.8 60.9 0 118.2 23.7 161.2 66.8 43.1 43 66.8 100.3 66.8 161.2 0 60.9-23.7 118.2-66.8 161.2z"
+                            />
+                          </svg>
+                        </span>
+                      </span>
+                      <input
+                        aria-describedby="adminApiKey_extra"
+                        aria-required="true"
+                        autocomplete="current-password"
+                        class="ant-input ant-input-lg css-dev-only-do-not-override-mncuj7"
+                        id="adminApiKey"
+                        placeholder="Paste the server admin API key"
+                        type="password"
+                        value=""
+                      />
+                      <span
+                        class="ant-input-suffix"
+                      >
+                        <span
+                          aria-label="eye-invisible"
+                          class="anticon anticon-eye-invisible ant-input-password-icon"
+                          role="img"
+                          tabindex="-1"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            data-icon="eye-invisible"
+                            fill="currentColor"
+                            focusable="false"
+                            height="1em"
+                            viewBox="64 64 896 896"
+                            width="1em"
+                          >
+                            <path
+                              d="M942.2 486.2Q889.47 375.11 816.7 305l-50.88 50.88C807.31 395.53 843.45 447.4 874.7 512 791.5 684.2 673.4 766 512 766q-72.67 0-133.87-22.38L323 798.75Q408 838 512 838q288.3 0 430.2-300.3a60.29 60.29 0 000-51.5zm-63.57-320.64L836 122.88a8 8 0 00-11.32 0L715.31 232.2Q624.86 186 512 186q-288.3 0-430.2 300.3a60.3 60.3 0 000 51.5q56.69 119.4 136.5 191.41L112.48 835a8 8 0 000 11.31L155.17 889a8 8 0 0011.31 0l712.15-712.12a8 8 0 000-11.32zM149.3 512C232.6 339.8 350.7 258 512 258c54.54 0 104.13 9.36 149.12 28.39l-70.3 70.3a176 176 0 00-238.13 238.13l-83.42 83.42C223.1 637.49 183.3 582.28 149.3 512zm246.7 0a112.11 112.11 0 01146.2-106.69L401.31 546.2A112 112 0 01396 512z"
+                            />
+                            <path
+                              d="M508 624c-3.46 0-6.87-.16-10.25-.47l-52.82 52.82a176.09 176.09 0 00227.42-227.42l-52.82 52.82c.31 3.38.47 6.79.47 10.25a111.94 111.94 0 01-112 112z"
+                            />
+                          </svg>
+                        </span>
+                      </span>
+                    </span>
+                  </div>
+                </div>
+                <div
+                  class="ant-form-item-additional"
+                >
+                  <div
+                    class="ant-form-item-extra"
+                    id="adminApiKey_extra"
+                  >
+                    Use the AdminApiKey value from the Less3 server's system.json file.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button
+            class="ant-btn css-dev-only-do-not-override-mncuj7 ant-btn-primary ant-btn-color-primary ant-btn-variant-solid ant-btn-lg ant-btn-block submitButton"
+            type="submit"
+          >
+            <span
+              class="ant-btn-icon"
+            >
+              <span
+                aria-label="arrow-right"
+                class="anticon anticon-arrow-right"
+                role="img"
+              >
+                <svg
+                  aria-hidden="true"
+                  data-icon="arrow-right"
+                  fill="currentColor"
+                  focusable="false"
+                  height="1em"
+                  viewBox="64 64 896 896"
+                  width="1em"
+                >
+                  <path
+                    d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 000-48.4z"
+                  />
+                </svg>
+              </span>
+            </span>
+            <span>
+              Sign In to Dashboard
+            </span>
+          </button>
+        </form>
+        <div
+          class="formFooter ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-align-center ant-flex-justify-space-between"
+          style="gap: 12px;"
+        >
+          <span
+            class="ant-typography footerNote css-dev-only-do-not-override-mncuj7"
+          >
+            Use the exact URL and key served by the target Less3 instance.
+          </span>
         </div>
-      </form>
+      </section>
     </div>
   </div>
   <div

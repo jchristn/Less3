@@ -1,17 +1,23 @@
-import { render, screen, waitFor, act } from "@testing-library/react";
+import { renderWithRedux } from "../store/utils";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import LoginPage from "#/page/login/LoginPage";
-import { renderWithRedux } from "../store/utils";
 import { useValidateConnectivityMutation } from "#/store/slice/sdkSlice";
-import { getInitialApiEndpoint, updateSdkEndPoint } from "#/services/sdk.service";
-import { localStorageKeys } from "#/constants/constant";
+import {
+  getInitialAdminApiKey,
+  getInitialApiEndpoint,
+  persistDashboardSession,
+} from "#/services/sdk.service";
 import { message } from "#/utils/message";
 
 jest.mock("#/store/slice/sdkSlice");
 jest.mock("#/services/sdk.service");
+
+const mockPush = jest.fn();
+
 jest.mock("next/navigation", () => ({
   useRouter: () => ({
-    push: jest.fn(),
+    push: mockPush,
     replace: jest.fn(),
   }),
   usePathname: () => "/",
@@ -19,7 +25,6 @@ jest.mock("next/navigation", () => ({
 
 describe("LoginPage", () => {
   const mockValidateConnectivity = jest.fn();
-  const mockPush = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -29,125 +34,86 @@ describe("LoginPage", () => {
       { isLoading: false },
     ]);
     (getInitialApiEndpoint as jest.Mock).mockReturnValue("http://localhost:8000");
-    (updateSdkEndPoint as jest.Mock).mockImplementation(() => {});
+    (getInitialAdminApiKey as jest.Mock).mockReturnValue("");
+    (persistDashboardSession as jest.Mock).mockImplementation(() => {});
   });
 
-  describe("Rendering", () => {
-    it("should render login form", () => {
-      renderWithRedux(<LoginPage />, false, undefined, true);
-      const input = screen.getByPlaceholderText("https://your-less3-server.com");
-      const submitButton = screen.getByRole("button", { name: "arrow-right" });
+  it("renders the admin login form", () => {
+    renderWithRedux(<LoginPage />, false, undefined, true);
 
-      expect(screen.getByLabelText("Less3 Server URL")).toBeInTheDocument();
-      expect(input).toBeInTheDocument();
-      expect({
-        label: screen.getByLabelText("Less3 Server URL").textContent,
-        placeholder: input.getAttribute("placeholder"),
-        buttonTag: submitButton.tagName,
-        hasIcon: submitButton.querySelector("svg") !== null,
-      }).toMatchInlineSnapshot(`
-{
-  "buttonTag": "BUTTON",
-  "hasIcon": true,
-  "label": "",
-  "placeholder": "https://your-less3-server.com",
-}
-`);
+    expect(screen.getByText("Admin Sign In")).toBeInTheDocument();
+    expect(screen.getByLabelText("Less3 Server URL")).toBeInTheDocument();
+    expect(screen.getByLabelText("Admin API Key")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Sign In to Dashboard/i })).toBeInTheDocument();
+  });
+
+  it("loads saved URL and API key values", async () => {
+    (getInitialApiEndpoint as jest.Mock).mockReturnValue("http://saved-url.com");
+    (getInitialAdminApiKey as jest.Mock).mockReturnValue("saved-secret");
+    mockValidateConnectivity.mockReturnValue({
+      unwrap: jest.fn().mockResolvedValue(true),
     });
 
-    it("should load saved URL from localStorage", async () => {
-      const savedUrl = "http://saved-url.com";
-      localStorage.setItem(localStorageKeys.less3APIUrl, savedUrl);
-      (getInitialApiEndpoint as jest.Mock).mockReturnValue(savedUrl);
-      mockValidateConnectivity.mockReturnValue({ unwrap: () => Promise.resolve(true) });
+    renderWithRedux(<LoginPage />, false, undefined, true);
 
-      renderWithRedux(<LoginPage />, false, undefined, true);
-
-      await waitFor(() => {
-        const input = screen.getByPlaceholderText("https://your-less3-server.com");
-        expect(input).toHaveValue(savedUrl);
-      });
+    await waitFor(() => {
+      expect(screen.getByLabelText("Less3 Server URL")).toHaveValue("http://saved-url.com");
+      expect(screen.getByLabelText("Admin API Key")).toHaveValue("saved-secret");
     });
   });
 
-  describe("User Interactions", () => {
-    it("should update URL input value", async () => {
-      renderWithRedux(<LoginPage />, false, undefined, true);
-      const input = screen.getByPlaceholderText("https://your-less3-server.com");
-
-      await userEvent.clear(input);
-      await userEvent.type(input, "http://test.com");
-
-      expect(input).toHaveValue("http://test.com");
+  it("submits URL and API key for validation", async () => {
+    mockValidateConnectivity.mockReturnValue({
+      unwrap: jest.fn().mockResolvedValue(true),
     });
 
-    it("should validate connectivity on form submit", async () => {
-      mockValidateConnectivity.mockReturnValue({ unwrap: () => Promise.resolve(true) });
+    renderWithRedux(<LoginPage />, false, undefined, true);
 
-      renderWithRedux(<LoginPage />, false, undefined, true);
-      const input = screen.getByPlaceholderText("https://your-less3-server.com");
-      const submitButton = screen.getByRole("button", { name: "arrow-right" });
+    await userEvent.clear(screen.getByLabelText("Less3 Server URL"));
+    await userEvent.type(screen.getByLabelText("Less3 Server URL"), "http://test.com");
+    await userEvent.type(screen.getByLabelText("Admin API Key"), "super-secret");
+    await userEvent.click(screen.getByRole("button", { name: /Sign In to Dashboard/i }));
 
-      await userEvent.clear(input);
-      await userEvent.type(input, "http://test.com");
-      await userEvent.click(submitButton);
-
-      await waitFor(() => {
-        expect(mockValidateConnectivity).toHaveBeenCalled();
-        expect(updateSdkEndPoint).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(mockValidateConnectivity).toHaveBeenCalledWith({
+        endpoint: "http://test.com",
+        apiKey: "super-secret",
       });
-    });
-
-    it("should handle connectivity validation error", async () => {
-      const error = { data: { data: "The server URL did not return a Less3 admin API response. Check the Less3 Server URL." } };
-      mockValidateConnectivity.mockReturnValue({
-        unwrap: jest.fn().mockRejectedValue(error),
-      });
-
-      renderWithRedux(<LoginPage />, false, undefined, true);
-      const input = screen.getByPlaceholderText("https://your-less3-server.com");
-      const submitButton = screen.getByRole("button", { name: "arrow-right" });
-
-      await userEvent.clear(input);
-      await userEvent.type(input, "http://test.com");
-      await userEvent.click(submitButton);
-
-      await waitFor(() => {
-        expect(message.error).toHaveBeenCalledWith(
-          "The server URL did not return a Less3 admin API response. Check the Less3 Server URL."
-        );
-      });
-    });
-
-    it("should handle successful connection and navigate", async () => {
-      const mockPush = jest.fn();
-      jest.spyOn(require("next/navigation"), "useRouter").mockReturnValue({
-        push: mockPush,
-        replace: jest.fn(),
-      });
-
-      mockValidateConnectivity.mockReturnValue({
-        unwrap: jest.fn().mockResolvedValue(true),
-      });
-
-      renderWithRedux(<LoginPage />, false, undefined, true);
-      const input = screen.getByPlaceholderText("https://your-less3-server.com");
-      const submitButton = screen.getByRole("button", { name: "arrow-right" });
-
-      await userEvent.clear(input);
-      await userEvent.type(input, "http://test.com");
-      await userEvent.click(submitButton);
-
-      await waitFor(() => {
-        expect(mockPush).toHaveBeenCalled();
-      });
+      expect(persistDashboardSession).toHaveBeenCalledWith("http://test.com", "super-secret");
+      expect(mockPush).toHaveBeenCalledWith("/dashboard");
     });
   });
 
-  describe("Snapshots", () => {
-    it("should match default render", () => {
-      const { container } = renderWithRedux(<LoginPage />, false, undefined, true);
-      expect(container.firstChild).toMatchSnapshot();
+  it("shows the API key mismatch error returned by validation", async () => {
+    const error = {
+      data: {
+        data: "The admin API key does not match the server configuration. Check AdminApiKey in system.json.",
+      },
+    };
+
+    mockValidateConnectivity.mockReturnValue({
+      unwrap: jest.fn().mockRejectedValue(error),
     });
+
+    renderWithRedux(<LoginPage />, false, undefined, true);
+
+    await userEvent.clear(screen.getByLabelText("Less3 Server URL"));
+    await userEvent.type(screen.getByLabelText("Less3 Server URL"), "http://test.com");
+    await userEvent.type(screen.getByLabelText("Admin API Key"), "wrong-key");
+    await userEvent.click(screen.getByRole("button", { name: /Sign In to Dashboard/i }));
+
+    await waitFor(() => {
+      expect(message.error).toHaveBeenCalledWith(
+        "The admin API key does not match the server configuration. Check AdminApiKey in system.json."
+      );
+      expect(
+        screen.getByText("The admin API key does not match the server configuration. Check AdminApiKey in system.json.")
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("matches the login page snapshot", () => {
+    const { container } = renderWithRedux(<LoginPage />, false, undefined, true);
+    expect(container.firstChild).toMatchSnapshot();
   });
 });

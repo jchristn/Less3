@@ -1,6 +1,5 @@
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query/react';
-import { API_KEY } from '#/constants/config';
-import { buildApiUrl } from '#/services/sdk.service';
+import { buildAdminApiHeaders, buildApiUrl } from '#/services/sdk.service';
 import sdkSlice, { ApiBaseQueryArgs } from '#/store/rtk/rtkSdkInstance';
 import type { DashboardStatsResponse } from './dashboardStatsTypes';
 
@@ -24,9 +23,7 @@ const dashboardStatsSliceInstance = enhancedSdk.injectEndpoints({
         try {
           const response = await fetch(buildApiUrl('admin/stats'), {
             method: 'GET',
-            headers: {
-              'x-api-key': API_KEY,
-            },
+            headers: buildAdminApiHeaders(),
             cache: 'no-store',
           });
 

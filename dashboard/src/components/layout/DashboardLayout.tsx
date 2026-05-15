@@ -4,10 +4,9 @@ import { LogoutOutlined, GithubOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
 import CopyToClipboard from '#/components/copy-to-clipboard/CopyToClipboard';
 import Less3Logo from '#/components/logo/Logo';
-import { apiEndpointURL } from '#/constants/config';
-import { localStorageKeys, paths } from '#/constants/constant';
+import { paths } from '#/constants/constant';
 import ErrorBoundary from '#/hoc/ErrorBoundary';
-import { getApiEndpoint, updateSdkEndPoint } from '#/services/sdk.service';
+import { clearDashboardSession, getApiEndpoint } from '#/services/sdk.service';
 import Less3Button from '../base/button/Button';
 import Less3Flex from '../base/flex/Flex';
 import Sidebar from '../base/sidebar';
@@ -31,8 +30,7 @@ const DashboardLayout = ({ children }: LayoutWrapperProps) => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem(localStorageKeys.less3APIUrl);
-    updateSdkEndPoint(apiEndpointURL);
+    clearDashboardSession();
     router.push(paths.login);
   };
 

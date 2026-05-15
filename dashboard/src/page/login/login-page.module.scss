@@ -1,5 +1,85 @@
-.loginBox {
-  max-width: 500px;
+.loginShell {
   width: 100%;
-  margin: auto;
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+}
+
+.brandBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  width: fit-content;
+  color: var(--ant-color-text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.formPanel {
+  width: 100%;
+  min-height: 500px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--ant-color-border);
+  border-radius: 10px;
+  background: var(--ant-color-bg-container);
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.1);
+  padding: 30px 24px 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 22px;
+}
+
+.formHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.formTitle {
+  margin: 0 !important;
+}
+
+.formDescription {
+  color: var(--ant-color-text-secondary);
+  line-height: 1.55;
+}
+
+.form {
+  width: 100%;
+}
+
+.fieldIcon {
+  color: var(--ant-color-text-secondary);
+}
+
+.validationAlert {
+  margin-bottom: 12px;
+  border-radius: 10px;
+}
+
+.submitButton {
+  margin-top: 2px;
+  height: 44px;
+  font-weight: 600;
+}
+
+.formFooter {
+  padding-top: 4px;
+  border-top: 1px solid var(--ant-color-border-secondary);
+}
+
+.footerNote {
+  color: var(--ant-color-text-secondary);
+  line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+  .formPanel {
+    min-height: auto;
+    padding: 22px 18px 16px;
+    border-radius: 10px;
+  }
 }

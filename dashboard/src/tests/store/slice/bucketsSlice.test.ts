@@ -2,6 +2,7 @@
  * Buckets slice coverage: exercise several endpoints with mocked fetch.
  */
 import { configureStore } from "@reduxjs/toolkit";
+import { localStorageKeys } from "#/constants/constant";
 import { bucketsSliceApi } from "#/store/slice/bucketsSlice";
 
 /**
@@ -18,8 +19,13 @@ describe("bucketsSlice endpoints", () => {
       middleware: (gDM) => gDM().concat(bucketsSliceApi.middleware),
     });
 
+  beforeEach(() => {
+    localStorage.setItem(localStorageKeys.adminApiKey, "less3admin");
+  });
+
   afterEach(() => {
     jest.clearAllMocks();
+    localStorage.clear();
     global.fetch = originalFetch as any;
   });
 

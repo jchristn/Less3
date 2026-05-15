@@ -1,7 +1,6 @@
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query/react';
-import { API_KEY } from '#/constants/config';
 import sdkSlice, { ApiBaseQueryArgs } from '#/store/rtk/rtkSdkInstance';
-import { buildApiUrl, getBaseUrl } from '#/services/sdk.service';
+import { buildAdminApiHeaders, buildApiUrl, getBaseUrl } from '#/services/sdk.service';
 import {
   parseListBucketResult,
   parseBucketTagging,
@@ -171,9 +170,7 @@ const normalizeS3Headers = (headers?: Record<string, string | undefined>): Recor
 const fetchAdminCredentials = async (): Promise<S3CredentialLike[]> => {
   const response = await fetch(buildApiUrl('admin/credentials'), {
     method: 'GET',
-    headers: {
-      'x-api-key': API_KEY,
-    },
+    headers: buildAdminApiHeaders(),
     cache: 'no-store',
   });
 
@@ -188,9 +185,7 @@ const fetchAdminCredentials = async (): Promise<S3CredentialLike[]> => {
 const fetchCredentialByGuid = async (guid: string): Promise<S3CredentialLike | null> => {
   const response = await fetch(buildApiUrl(`admin/credentials/${guid}`), {
     method: 'GET',
-    headers: {
-      'x-api-key': API_KEY,
-    },
+    headers: buildAdminApiHeaders(),
     cache: 'no-store',
   });
 
@@ -275,9 +270,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
         try {
           const response = await fetch(buildApiUrl('admin/buckets'), {
             method: 'GET',
-            headers: {
-              'x-api-key': API_KEY,
-            },
+            headers: buildAdminApiHeaders(),
             cache: 'no-store',
           });
 
@@ -326,10 +319,9 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
         try {
           const response = await fetch(buildApiUrl('admin/buckets'), {
             method: 'POST',
-            headers: {
+            headers: buildAdminApiHeaders({
               'Content-Type': 'application/json',
-              'x-api-key': API_KEY,
-            },
+            }),
             body: JSON.stringify({ Name: bucketName }),
           });
 
@@ -365,9 +357,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
         try {
           const response = await fetch(buildApiUrl(`admin/buckets/${guid}?destroy=true`), {
             method: 'DELETE',
-            headers: {
-              'x-api-key': API_KEY,
-            },
+            headers: buildAdminApiHeaders(),
           });
 
           if (!response.ok) {

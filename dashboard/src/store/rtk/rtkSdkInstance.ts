@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery, BaseQueryFn, BaseQueryApi } from '@reduxjs/toolkit/query/react';
-import { keepUnusedDataFor, API_KEY } from '#/constants/config';
-import { getApiEndpoint } from '#/services/sdk.service';
+import { keepUnusedDataFor } from '#/constants/config';
+import { getAdminApiKey, getApiEndpoint } from '#/services/sdk.service';
 
 export interface ApiBaseQueryArgs {
   url: string;
@@ -22,7 +22,12 @@ export const dynamicBaseQuery: BaseQueryFn<ApiBaseQueryArgs, unknown, unknown> =
     baseUrl: baseUrl,
     prepareHeaders: (headers: Headers) => {
       headers.set('Content-Type', 'application/json');
-      headers.set('x-api-key', API_KEY);
+
+      const adminApiKey = getAdminApiKey();
+      if (adminApiKey) {
+        headers.set('x-api-key', adminApiKey);
+      }
+
       return headers;
     },
   });

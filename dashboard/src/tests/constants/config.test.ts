@@ -1,4 +1,4 @@
-import { apiEndpointURL, MIN_PASSWORD_LENGTH, keepUnusedDataFor, API_KEY } from "#/constants/config";
+import { apiEndpointURL, MIN_PASSWORD_LENGTH, keepUnusedDataFor } from "#/constants/config";
 
 describe("config", () => {
   it("should have apiEndpointURL", () => {
@@ -13,9 +13,4 @@ describe("config", () => {
   it("should have keepUnusedDataFor", () => {
     expect(keepUnusedDataFor).toBe(300);
   });
-
-  it("should have API_KEY", () => {
-    expect(API_KEY).toBe("less3admin");
-  });
 });
-

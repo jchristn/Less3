@@ -1,5 +1,4 @@
 import { getApiEndpoint } from "#/services/sdk.service";
-import { API_KEY } from "#/constants/config";
 import sdkSlice, { ApiBaseQueryArgs } from "#/store/rtk/rtkSdkInstance";
 
 jest.mock("#/services/sdk.service");
@@ -98,4 +97,3 @@ describe("rtkSdkInstance", () => {
     });
   });
 });
-

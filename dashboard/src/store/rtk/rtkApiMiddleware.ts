@@ -31,8 +31,6 @@ const getMessageFromValue = (value: unknown): string | null => {
 
 export const errorHandler = (err: any, dispatch: Dispatch<UnknownAction>) => {
   const error = err?.payload || {};
-  //eslint-disable-next-line no-console
-  console.log(error, "chk errorHandler error");
   message.error(getMessageFromValue(error) || "Something went wrong.");
   if (error.Error === "NotAuthorized") {
     message.error("Session expired. Redirecting to login page...");

@@ -17,8 +17,7 @@ import Less3Select from '#/components/base/select/Select';
 import Less3Tabs from '#/components/base/tabs/Tabs';
 import Less3Text from '#/components/base/typograpghy/Text';
 import CopyToClipboard from '#/components/copy-to-clipboard/CopyToClipboard';
-import { API_KEY } from '#/constants/config';
-import { getApiEndpoint } from '#/services/sdk.service';
+import { getAdminApiKey, getApiEndpoint } from '#/services/sdk.service';
 import { useGetCredentialByIdQuery, useGetCredentialsQuery } from '#/store/slice/credentialsSlice';
 import { getPrettyPrintedTextContent } from '#/utils/objectContentUtils';
 import {
@@ -334,7 +333,15 @@ const ApiExplorerPage: React.FC = () => {
       const fetchHeaders: Record<string, string> = {};
 
       if (selectedOperationApiType === 'admin') {
-        fetchHeaders['x-api-key'] = API_KEY;
+        const adminApiKey = getAdminApiKey();
+        if (!adminApiKey) {
+          message.error('No admin API key is saved. Sign in again to use admin requests.');
+          setIsLoading(false);
+          abortControllerRef.current = null;
+          return;
+        }
+
+        fetchHeaders['x-api-key'] = adminApiKey;
       } else if (selectedCredentialGuid !== NO_CREDENTIAL_VALUE) {
         if (!activeS3Credential?.AccessKey || !activeS3Credential?.SecretKey) {
           message.error('Selected S3 credential is unavailable');
@@ -460,7 +467,7 @@ const ApiExplorerPage: React.FC = () => {
     let curl = `curl -X ${selectedOp.method}`;
 
     if (selectedOperationApiType === 'admin') {
-      curl += ` \\\n  -H 'x-api-key: ${API_KEY}'`;
+      curl += ` \\\n  -H 'x-api-key: <saved-admin-api-key>'`;
     }
 
     if (selectedOperationApiType === 's3' && activeS3Credential?.AccessKey) {
@@ -640,7 +647,7 @@ const ApiExplorerPage: React.FC = () => {
                 <Less3Text type="secondary" fontSize={11} style={{ display: 'block', marginTop: 4 }}>
                   {selectedOperationApiType === 's3'
                     ? 'The selected credential will be used for this S3 request. Choose "No credential" to send it unsigned.'
-                    : 'Credential selection is preserved for S3 requests. Admin requests continue to use x-api-key.'}
+                    : 'Credential selection is preserved for S3 requests. Admin requests use the saved dashboard API key.'}
                 </Less3Text>
               </div>
 

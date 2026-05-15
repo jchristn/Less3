@@ -1,7 +1,6 @@
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query/react';
 import sdkSlice, { ApiBaseQueryArgs } from '#/store/rtk/rtkSdkInstance';
-import { buildApiUrl } from '#/services/sdk.service';
-import { API_KEY } from '#/constants/config';
+import { buildAdminApiHeaders, buildApiUrl, buildApiUrlFromEndpoint } from '#/services/sdk.service';
 
 const enhancedSdk = sdkSlice.enhanceEndpoints({
   addTagTypes: [],
@@ -9,24 +8,39 @@ const enhancedSdk = sdkSlice.enhanceEndpoints({
 
 const INVALID_SERVER_URL_MESSAGE =
   'The server URL did not return a Less3 admin API response. Check the Less3 Server URL.';
+const INVALID_API_KEY_MESSAGE =
+  'The admin API key does not match the server configuration. Check AdminApiKey in system.json.';
 
 const sdkSliceInstance = enhancedSdk.injectEndpoints({
   overrideExisting: true,
   endpoints: (build: EndpointBuilder<BaseQueryFn<ApiBaseQueryArgs, unknown, unknown>, never, 'sdk'>) => ({
-    validateConnectivity: build.mutation<boolean, void>({
-      async queryFn() {
+    validateConnectivity: build.mutation<boolean, { apiKey?: string; endpoint?: string } | void>({
+      async queryFn(args) {
         try {
-          const url = buildApiUrl('admin/users');
+          const url = args?.endpoint
+            ? buildApiUrlFromEndpoint(args.endpoint, 'admin/users')
+            : buildApiUrl('admin/users');
           const response = await fetch(url, {
             method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-api-key': API_KEY,
-            },
+            headers: buildAdminApiHeaders(
+              {
+                'Content-Type': 'application/json',
+              },
+              args?.apiKey
+            ),
             cache: 'no-store',
           });
 
           if (!response.ok) {
+            if (response.status === 401) {
+              return {
+                error: {
+                  status: response.status,
+                  data: INVALID_API_KEY_MESSAGE,
+                },
+              };
+            }
+
             return {
               error: {
                 status: response.status,

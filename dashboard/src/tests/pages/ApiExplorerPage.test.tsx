@@ -62,7 +62,7 @@ describe('ApiExplorerPage', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText('Credential selection is preserved for S3 requests. Admin requests continue to use x-api-key.')
+        screen.getByText('Credential selection is preserved for S3 requests. Admin requests use the saved dashboard API key.')
       ).toBeInTheDocument();
     });
 

@@ -1,8 +1,9 @@
 import { dynamicBaseQuery } from "#/store/rtk/rtkSdkInstance";
-import { getApiEndpoint } from "#/services/sdk.service";
+import { getAdminApiKey, getApiEndpoint } from "#/services/sdk.service";
 
 jest.mock("#/services/sdk.service", () => ({
   getApiEndpoint: jest.fn(),
+  getAdminApiKey: jest.fn(),
 }));
 
 describe("dynamicBaseQuery", () => {
@@ -26,6 +27,7 @@ describe("dynamicBaseQuery", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     (getApiEndpoint as jest.Mock).mockReturnValue(baseUrl);
+    (getAdminApiKey as jest.Mock).mockReturnValue("less3admin");
     fetchMock.mockResolvedValue(createResponse());
     global.fetch = fetchMock as any;
   });
@@ -127,4 +129,3 @@ describe("dynamicBaseQuery", () => {
     });
   });
 });
-

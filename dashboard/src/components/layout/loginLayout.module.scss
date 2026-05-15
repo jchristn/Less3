@@ -1,18 +1,31 @@
 .loginLayout {
   min-height: 100vh;
-  background-color: var(--ant-color-bg-base);
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top left, rgba(34, 175, 121, 0.18), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(17, 24, 39, 0.08), transparent 28%),
+    var(--ant-color-bg-base);
 }
 
 .header {
-  padding: var(--ant-padding);
-  border-bottom: 1px solid var(--ant-color-border);
-  margin: 0 var(--ant-margin-lg);
+  position: relative;
+  z-index: 1;
+  padding: 20px 24px 0;
 }
 
 .content {
-  padding: var(--ant-padding);
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
 }
 
 .footer {
-  padding: var(--ant-padding);
+  position: relative;
+  z-index: 1;
+  padding: 0 24px 20px;
 }

@@ -6,6 +6,10 @@ describe("constants", () => {
       expect(localStorageKeys.less3APIUrl).toBe("less3APIUrl");
     });
 
+    it("should have adminApiKey key", () => {
+      expect(localStorageKeys.adminApiKey).toBe("less3AdminApiKey");
+    });
+
     it("should have theme key", () => {
       expect(localStorageKeys.theme).toBe("theme");
     });
@@ -43,4 +47,3 @@ describe("constants", () => {
     });
   });
 });
-

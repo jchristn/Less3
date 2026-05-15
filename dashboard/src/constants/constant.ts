@@ -1,5 +1,6 @@
 export const localStorageKeys = {
   less3APIUrl: 'less3APIUrl',
+  adminApiKey: 'less3AdminApiKey',
   theme: 'theme',
 };
 

@@ -5,15 +5,19 @@ import LoginLayout from '#/components/layout/LoginLayout';
 import styles from './login-page.module.scss';
 import Less3Logo from '#/components/logo/Logo';
 import Less3Flex from '#/components/base/flex/Flex';
+import Less3Button from '#/components/base/button/Button';
 import Less3Text from '#/components/base/typograpghy/Text';
-import Less3Divider from '#/components/base/divider/Divider';
-import PageLoading from '#/components/base/loading/PageLoading';
-import { Form, Input } from 'antd';
-import { ArrowRightOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import Less3Title from '#/components/base/typograpghy/Title';
+import { Alert, Form, Input } from 'antd';
+import { ArrowRightOutlined, KeyOutlined, LinkOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
 import { useValidateConnectivityMutation } from '#/store/slice/sdkSlice';
-import { getInitialApiEndpoint, updateSdkEndPoint } from '#/services/sdk.service';
-import { localStorageKeys, paths } from '#/constants/constant';
+import {
+  getInitialAdminApiKey,
+  getInitialApiEndpoint,
+  persistDashboardSession,
+} from '#/services/sdk.service';
+import { paths } from '#/constants/constant';
 import { message } from '#/utils/message';
 
 const getErrorMessage = (error: any): string => {
@@ -32,126 +36,210 @@ const getErrorMessage = (error: any): string => {
   );
 };
 
+const validateUrl = (_rule: unknown, value: string) => {
+  if (!value?.trim()) {
+    return Promise.reject(new Error('Please enter your Less3 server URL.'));
+  }
+
+  try {
+    new URL(value);
+    return Promise.resolve();
+  } catch {
+    return Promise.reject(new Error('Enter a full URL including http:// or https://.'));
+  }
+};
+
+type ValidationState =
+  | {
+      type: 'info' | 'success' | 'error';
+      message: string;
+    }
+  | null;
+
 //eslint-disable-next-line max-lines-per-function
 const LoginPage = () => {
   const [loading, setLoading] = useState(false);
-  const [less3APIUrl, setLess3APIUrl] = useState(getInitialApiEndpoint());
   const [form] = Form.useForm();
   const router = useRouter();
-  const [isFormSubmitted, setIsFormSubmitted] = useState(false);
-  const [hasValidated, setHasValidated] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [isError, setIsError] = useState(false);
+  const [validationState, setValidationState] = useState<ValidationState>(null);
   const [validateConnectivityMutation] = useValidateConnectivityMutation();
 
-  useEffect(() => {
-    const initialUrl = getInitialApiEndpoint();
-    setLess3APIUrl(initialUrl);
-    form.setFieldsValue({ less3APIUrl: initialUrl });
-
-    if (localStorage.getItem(localStorageKeys.less3APIUrl)) {
-      // Optionally validate connectivity on mount
-      validateConnectivity(initialUrl, false);
+  const validateConnectivity = async (
+    newURL: string,
+    newApiKey: string,
+    options?: {
+      navigate?: boolean;
+      restoring?: boolean;
     }
-  }, [form]);
+  ) => {
+    const navigate = options?.navigate ?? false;
+    const restoring = options?.restoring ?? false;
 
-  const validateConnectivity = async (newURL: string, navigate: boolean = false) => {
-    updateSdkEndPoint(newURL);
     setLoading(true);
-    setHasValidated(true);
+    setValidationState({
+      type: 'info',
+      message: restoring ? 'Restoring your previous dashboard session...' : 'Validating admin API access...',
+    });
+
     try {
-      const response = await validateConnectivityMutation().unwrap();
+      const response = await validateConnectivityMutation({
+        endpoint: newURL,
+        apiKey: newApiKey,
+      }).unwrap();
+
       if (response) {
-        setIsSuccess(true);
-        setIsError(false);
-        message.success('Connected successfully!');
-        localStorage.setItem(localStorageKeys.less3APIUrl, newURL);
+        persistDashboardSession(newURL, newApiKey);
+        setValidationState({
+          type: 'success',
+          message: 'Authenticated against the Less3 admin API.',
+        });
+
+        if (!restoring) {
+          message.success('Connected successfully!');
+        }
+
         if (navigate) {
           router.push(paths.dashboard);
         }
       } else {
-        setIsSuccess(false);
-        setIsError(true);
-        message.error('Unable to connect to Less3 services');
+        setValidationState({
+          type: 'error',
+          message: 'Unable to connect to Less3 services.',
+        });
+        if (!restoring) {
+          message.error('Unable to connect to Less3 services');
+        }
       }
     } catch (err) {
-      console.log(err);
-      setIsSuccess(false);
-      setIsError(true);
-      message.error(getErrorMessage(err));
+      const errorMessage = getErrorMessage(err);
+      setValidationState({
+        type: 'error',
+        message: errorMessage,
+      });
+
+      if (!restoring) {
+        message.error(errorMessage);
+      } else {
+        persistDashboardSession(newURL, '');
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    const initialUrl = getInitialApiEndpoint();
+    const initialApiKey = getInitialAdminApiKey();
+
+    form.setFieldsValue({
+      less3APIUrl: initialUrl,
+      adminApiKey: initialApiKey,
+    });
+
+    if (initialUrl && initialApiKey) {
+      void validateConnectivity(initialUrl, initialApiKey, {
+        navigate: true,
+        restoring: true,
+      });
+    }
+  }, [form]);
+
   const handleSubmit = async () => {
     const values = await form.validateFields();
-    setLoading(true);
-    setIsFormSubmitted(true);
-    const newURL = values.less3APIUrl;
-    if (newURL) {
-      await validateConnectivity(newURL, true);
-    } else {
-      message.error('Something went wrong.');
-      setHasValidated(false);
-    }
+    await validateConnectivity(values.less3APIUrl, values.adminApiKey, { navigate: true });
   };
 
   return (
     <LoginLayout>
-      <Less3Flex justify="center" align="center" vertical className={styles.loginBox}>
-        <Less3Logo imageSize={50} showOnlyIcon />
-        <Less3Divider />
-        <Form
-          initialValues={{ less3APIUrl }}
-          layout="vertical"
-          form={form}
-          onFinish={handleSubmit}
-          requiredMark={false}
-          style={{ width: 'fit-content' }}
-        >
-          <Less3Flex align="center" gap={0}>
+      <div className={styles.loginShell}>
+        <section className={styles.formPanel}>
+          <div className={styles.formHeader}>
+            <div className={styles.brandBadge}>
+              <Less3Logo imageSize={32} showOnlyIcon />
+              <span>Less3 Dashboard</span>
+            </div>
+            <Less3Title level={3} className={styles.formTitle}>
+              Admin Sign In
+            </Less3Title>
+            <Less3Text className={styles.formDescription}>
+              Use the same API key configured on the server to unlock dashboard access.
+            </Less3Text>
+          </div>
+
+          <Form
+            layout="vertical"
+            form={form}
+            onFinish={handleSubmit}
+            requiredMark={false}
+            className={styles.form}
+          >
             <Form.Item
               label="Less3 Server URL"
               name="less3APIUrl"
               rules={[
                 {
-                  required: true,
-                  message: 'Please enter a valid Less3 URL',
+                  validator: validateUrl,
                 },
               ]}
-              required
-              style={{ width: '400px' }}
             >
-              <Input.Search
+              <Input
                 size="large"
-                loading={loading}
                 autoFocus
                 disabled={loading}
-                value={less3APIUrl}
-                onChange={(e: any) => setLess3APIUrl(e.target.value)}
-                enterButton={<ArrowRightOutlined />}
-                onSearch={handleSubmit}
+                prefix={<LinkOutlined className={styles.fieldIcon} />}
                 placeholder="https://your-less3-server.com"
               />
             </Form.Item>
+
+            <Form.Item
+              label="Admin API Key"
+              name="adminApiKey"
+              extra="Use the AdminApiKey value from the Less3 server's system.json file."
+              rules={[
+                {
+                  required: true,
+                  message: 'Please enter the Less3 admin API key.',
+                },
+              ]}
+            >
+              <Input.Password
+                size="large"
+                disabled={loading}
+                prefix={<KeyOutlined className={styles.fieldIcon} />}
+                placeholder="Paste the server admin API key"
+                autoComplete="current-password"
+              />
+            </Form.Item>
+
+            {validationState && (
+              <Alert
+                type={validationState.type}
+                showIcon
+                message={validationState.message}
+                className={styles.validationAlert}
+              />
+            )}
+
+            <Less3Button
+              htmlType="submit"
+              type="primary"
+              size="large"
+              block
+              loading={loading}
+              icon={<ArrowRightOutlined />}
+              className={styles.submitButton}
+            >
+              Sign In to Dashboard
+            </Less3Button>
+          </Form>
+
+          <Less3Flex className={styles.formFooter} justify="space-between" align="center" gap={12}>
+            <Less3Text className={styles.footerNote}>
+              Use the exact URL and key served by the target Less3 instance.
+            </Less3Text>
           </Less3Flex>
-        </Form>
-
-        {loading && <PageLoading message="Connecting..." />}
-
-        {isSuccess && hasValidated && !loading && !isFormSubmitted && (
-          <Less3Text className="text-color-success mt">
-            <CheckCircleOutlined /> Your Less3 node is operational.
-          </Less3Text>
-        )}
-
-        {isError && hasValidated && !loading && (
-          <Less3Text className="text-color-error mt">
-            <CloseCircleOutlined /> Unable to connect to Less3 services
-          </Less3Text>
-        )}
-      </Less3Flex>
+        </section>
+      </div>
     </LoginLayout>
   );
 };

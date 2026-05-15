@@ -8,8 +8,7 @@ const enhancedSdk = sdkSlice.enhanceEndpoints({
 
 const INVALID_SERVER_URL_MESSAGE =
   'The server URL did not return a Less3 admin API response. Check the Less3 Server URL.';
-const INVALID_API_KEY_MESSAGE =
-  'The admin API key does not match the server configuration. Check AdminApiKey in system.json.';
+const INVALID_API_KEY_MESSAGE = 'We are unable to authenticate using the supplied API key.';
 
 const sdkSliceInstance = enhancedSdk.injectEndpoints({
   overrideExisting: true,

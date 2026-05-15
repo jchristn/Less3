@@ -86,9 +86,7 @@ describe("LoginPage", () => {
 
   it("shows the API key mismatch error returned by validation", async () => {
     const error = {
-      data: {
-        data: "The admin API key does not match the server configuration. Check AdminApiKey in system.json.",
-      },
+      data: "We are unable to authenticate using the supplied API key.",
     };
 
     mockValidateConnectivity.mockReturnValue({
@@ -104,10 +102,10 @@ describe("LoginPage", () => {
 
     await waitFor(() => {
       expect(message.error).toHaveBeenCalledWith(
-        "The admin API key does not match the server configuration. Check AdminApiKey in system.json."
+        "We are unable to authenticate using the supplied API key."
       );
       expect(
-        screen.getByText("The admin API key does not match the server configuration. Check AdminApiKey in system.json.")
+        screen.getByText("We are unable to authenticate using the supplied API key.")
       ).toBeInTheDocument();
     });
   });

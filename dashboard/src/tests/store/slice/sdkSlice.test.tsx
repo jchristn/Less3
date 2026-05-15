@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import { useValidateConnectivityMutation } from "#/store/slice/sdkSlice";
@@ -56,7 +56,10 @@ describe("sdkSlice", () => {
       const { result } = renderHook(() => useValidateConnectivityMutation(), { wrapper });
       const [validateConnectivity] = result.current;
 
-      const promise = validateConnectivity();
+      let promise: ReturnType<typeof validateConnectivity>;
+      await act(async () => {
+        promise = validateConnectivity();
+      });
       await waitFor(() => {
         expect(result.current[1].isLoading).toBe(false);
       });
@@ -81,9 +84,40 @@ describe("sdkSlice", () => {
       const { result } = renderHook(() => useValidateConnectivityMutation(), { wrapper });
       const [validateConnectivity] = result.current;
 
-      const promise = validateConnectivity();
+      let promise: ReturnType<typeof validateConnectivity>;
+      await act(async () => {
+        promise = validateConnectivity();
+      });
 
-      await expect(promise.unwrap()).rejects.toBeDefined();
+      await expect(promise!.unwrap()).rejects.toBeDefined();
+    });
+
+    it("should surface the invalid API key message on 401", async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        statusText: "Unauthorized",
+      });
+
+      const store = createTestStore();
+      const wrapper = ({ children }: { children: React.ReactNode }) => (
+        <Provider store={store}>{children}</Provider>
+      );
+
+      const { result } = renderHook(() => useValidateConnectivityMutation(), { wrapper });
+      const [validateConnectivity] = result.current;
+
+      let promise: ReturnType<typeof validateConnectivity>;
+      await act(async () => {
+        promise = validateConnectivity();
+      });
+
+      await expect(promise!.unwrap()).rejects.toEqual(
+        expect.objectContaining({
+          status: 401,
+          data: "We are unable to authenticate using the supplied API key.",
+        })
+      );
     });
   });
 });

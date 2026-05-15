@@ -14,9 +14,18 @@ import { apiEndpointURL } from "#/constants/config";
 import { localStorageKeys } from "#/constants/constant";
 
 describe("sdk.service", () => {
+  const originalLocation = window.location;
+
   beforeEach(() => {
     localStorage.clear();
     clearDashboardSession();
+  });
+
+  afterEach(() => {
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: originalLocation,
+    });
   });
 
   describe("getApiEndpoint", () => {
@@ -38,6 +47,19 @@ describe("sdk.service", () => {
       expect(getInitialApiEndpoint()).toBe(apiEndpointURL);
       expect(localStorage.getItem("less3APIUrl")).toBeNull();
       expect(getApiEndpoint()).toBe(normalizedDefaultEndpoint);
+    });
+
+    it("should derive the default API host from the current browser hostname", () => {
+      Object.defineProperty(window, "location", {
+        configurable: true,
+        value: {
+          ...originalLocation,
+          hostname: "public.less3.example",
+        },
+      });
+
+      expect(getInitialApiEndpoint()).toBe("http://public.less3.example:8000");
+      expect(getApiEndpoint()).toBe("http://public.less3.example:8000/");
     });
   });
 

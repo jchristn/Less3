@@ -3,6 +3,11 @@ import { localStorageKeys } from '#/constants/constant';
 
 const legacyDashboardApiEndpoint = 'http://localhost:3000';
 
+const isLoopbackHostname = (hostname: string): boolean => {
+  const normalizedHostname = hostname.trim().toLowerCase();
+  return normalizedHostname === 'localhost' || normalizedHostname === '127.0.0.1' || normalizedHostname === '::1';
+};
+
 const normalizeApiEndpoint = (endpoint: string): string => {
   const trimmedEndpoint = endpoint.trim();
   if (!trimmedEndpoint) {
@@ -46,13 +51,39 @@ const getStoredApiEndpoint = (): string | null => {
   return storedEndpoint;
 };
 
-export const getInitialApiEndpoint = (): string => getStoredApiEndpoint() || apiEndpointURL;
+const getBrowserAwareDefaultApiEndpoint = (): string => {
+  if (typeof window === 'undefined') {
+    return apiEndpointURL;
+  }
+
+  try {
+    const configuredUrl = new URL(apiEndpointURL);
+    const browserHostname = window.location.hostname?.trim();
+
+    if (!browserHostname) {
+      return apiEndpointURL;
+    }
+
+    if (!isLoopbackHostname(configuredUrl.hostname) || isLoopbackHostname(browserHostname)) {
+      return apiEndpointURL;
+    }
+
+    const derivedUrl = `${configuredUrl.protocol}//${browserHostname}${configuredUrl.port ? `:${configuredUrl.port}` : ''}`;
+    return derivedUrl;
+  } catch {
+    return apiEndpointURL;
+  }
+};
+
+export const getInitialApiEndpoint = (): string => getStoredApiEndpoint() || getBrowserAwareDefaultApiEndpoint();
 export const getInitialAdminApiKey = (): string => getStorageValue(localStorageKeys.adminApiKey) || '';
 
 export const getApiEndpoint = (): string => {
   const storedEndpoint = getStoredApiEndpoint();
   if (storedEndpoint) {
     apiEndpoint = normalizeApiEndpoint(storedEndpoint);
+  } else if (!apiEndpoint || apiEndpoint === normalizeApiEndpoint(apiEndpointURL)) {
+    apiEndpoint = normalizeApiEndpoint(getBrowserAwareDefaultApiEndpoint());
   }
 
   return apiEndpoint;

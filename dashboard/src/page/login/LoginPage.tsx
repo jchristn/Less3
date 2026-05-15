@@ -20,21 +20,27 @@ import {
 import { paths } from '#/constants/constant';
 import { message } from '#/utils/message';
 
-const getErrorMessage = (error: any): string => {
-  if (typeof error === 'string' && error.trim()) {
-    return error;
+const extractErrorMessage = (value: unknown): string | null => {
+  if (typeof value === 'string' && value.trim()) {
+    return value;
   }
 
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+
+  const record = value as Record<string, unknown>;
+
   return (
-    error?.data?.Message ||
-    error?.data?.Description ||
-    error?.data?.message ||
-    error?.data?.error ||
-    error?.data?.data ||
-    error?.message ||
-    'Something went wrong.'
+    extractErrorMessage(record.Message) ||
+    extractErrorMessage(record.Description) ||
+    extractErrorMessage(record.message) ||
+    extractErrorMessage(record.error) ||
+    extractErrorMessage(record.data)
   );
 };
+
+const getErrorMessage = (error: unknown): string => extractErrorMessage(error) || 'Something went wrong.';
 
 const validateUrl = (_rule: unknown, value: string) => {
   if (!value?.trim()) {

@@ -20,6 +20,8 @@ import {
 import { paths } from '#/constants/constant';
 import { message } from '#/utils/message';
 
+const SERVER_CONNECTION_ERROR_MESSAGE = 'Unable to connect to specified server.';
+
 const extractErrorMessage = (value: unknown): string | null => {
   if (typeof value === 'string' && value.trim()) {
     return value;
@@ -40,7 +42,19 @@ const extractErrorMessage = (value: unknown): string | null => {
   );
 };
 
-const getErrorMessage = (error: unknown): string => extractErrorMessage(error) || 'Something went wrong.';
+const getErrorMessage = (error: unknown): string => {
+  const errorMessage = extractErrorMessage(error);
+
+  if (!errorMessage) {
+    return 'Something went wrong.';
+  }
+
+  if (errorMessage === 'Failed to fetch') {
+    return SERVER_CONNECTION_ERROR_MESSAGE;
+  }
+
+  return errorMessage;
+};
 
 const validateUrl = (_rule: unknown, value: string) => {
   if (!value?.trim()) {

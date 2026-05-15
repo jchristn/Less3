@@ -110,6 +110,28 @@ describe("LoginPage", () => {
     });
   });
 
+  it("shows a server connectivity message for fetch failures", async () => {
+    mockValidateConnectivity.mockReturnValue({
+      unwrap: jest.fn().mockRejectedValue(new Error("Failed to fetch")),
+    });
+
+    renderWithRedux(<LoginPage />, false, undefined, true);
+
+    await userEvent.clear(screen.getByLabelText("Less3 Server URL"));
+    await userEvent.type(screen.getByLabelText("Less3 Server URL"), "http://test.com");
+    await userEvent.type(screen.getByLabelText("Admin API Key"), "some-key");
+    await userEvent.click(screen.getByRole("button", { name: /Sign In to Dashboard/i }));
+
+    await waitFor(() => {
+      expect(message.error).toHaveBeenCalledWith(
+        "Unable to connect to specified server."
+      );
+      expect(
+        screen.getByText("Unable to connect to specified server.")
+      ).toBeInTheDocument();
+    });
+  });
+
   it("matches the login page snapshot", () => {
     const { container } = renderWithRedux(<LoginPage />, false, undefined, true);
     expect(container.firstChild).toMatchSnapshot();

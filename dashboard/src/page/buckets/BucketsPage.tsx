@@ -37,6 +37,7 @@ import {
   useGetBucketACLQuery,
   Bucket,
 } from '#/store/slice/bucketsSlice';
+import { useGetDashboardStatsQuery } from '#/store/slice/dashboardStatsSlice';
 import { formatDate } from '#/utils/dateUtils';
 import type { ACLOwner, ACLGrant, ACLGrantee } from '#/utils/xmlUtils';
 import type { BucketTag } from '#/utils/xmlUtils';
@@ -74,6 +75,18 @@ const DEFAULT_ACL_OWNER = {
   DisplayName: 'default',
 };
 
+interface BucketRow extends Bucket {
+  ObjectCount: number;
+  TotalBytes: number;
+}
+
+const formatBytes = (bytes: number): string => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+};
+
 const BucketsPage: React.FC = () => {
   const { theme } = useAppContext();
   const router = useRouter();
@@ -98,6 +111,7 @@ const BucketsPage: React.FC = () => {
   const [viewingBucket, setViewingBucket] = useState<Bucket | null>(null);
 
   const { data, isLoading, refetch } = useGetBucketsQuery();
+  const { data: dashboardStats } = useGetDashboardStatsQuery();
 
   const [createBucket, { isLoading: isCreating }] = useCreateBucketMutation();
   const [deleteBucket, { isLoading: isDeleting }] = useDeleteBucketMutation();
@@ -385,7 +399,7 @@ const BucketsPage: React.FC = () => {
     }
   };
 
-  const columns: DataTableColumn<Bucket>[] = [
+  const columns: DataTableColumn<BucketRow>[] = [
     {
       key: 'Name',
       label: 'Name',
@@ -406,8 +420,24 @@ const BucketsPage: React.FC = () => {
       ),
     },
     {
+      key: 'ObjectCount',
+      label: 'Objects',
+      width: '120px',
+      render: (item) => String(item.ObjectCount),
+      sortValue: (item) => item.ObjectCount,
+      filterValue: (item) => String(item.ObjectCount),
+    },
+    {
+      key: 'TotalBytes',
+      label: 'Total Size',
+      width: '140px',
+      render: (item) => formatBytes(item.TotalBytes),
+      sortValue: (item) => item.TotalBytes,
+      filterValue: (item) => formatBytes(item.TotalBytes),
+    },
+    {
       key: 'CreationDate',
-      label: 'Date Created',
+      label: 'Created',
       render: (item) => formatDate(item.CreationDate || item.CreatedUtc || ''),
       filterValue: (item) => formatDate(item.CreationDate || item.CreatedUtc || ''),
     },
@@ -515,17 +545,43 @@ const BucketsPage: React.FC = () => {
     },
   ];
 
-  const filteredData = useMemo(() => {
+  const filteredData = useMemo<BucketRow[]>(() => {
     if (!data) return [];
 
-    const q = searchText.trim().toLowerCase();
-    if (!q) return data;
+    const bucketStatsMap = new Map(
+      (dashboardStats?.Buckets || []).flatMap((bucketStats) => {
+        const entries: Array<[string, typeof bucketStats]> = [];
 
-    return data.filter((bucket) => {
+        if (bucketStats.GUID) {
+          entries.push([bucketStats.GUID, bucketStats]);
+        }
+
+        if (bucketStats.Name) {
+          entries.push([bucketStats.Name, bucketStats]);
+        }
+
+        return entries;
+      })
+    );
+
+    const bucketsWithStats = data.map((bucket) => {
+      const bucketStats = bucketStatsMap.get(bucket.GUID || '') || bucketStatsMap.get(bucket.Name);
+
+      return {
+        ...bucket,
+        ObjectCount: bucketStats?.Objects ?? 0,
+        TotalBytes: bucketStats?.Bytes ?? 0,
+      };
+    });
+
+    const q = searchText.trim().toLowerCase();
+    if (!q) return bucketsWithStats;
+
+    return bucketsWithStats.filter((bucket) => {
       const name = bucket.Name?.toLowerCase() ?? '';
       return name.includes(q);
     });
-  }, [data, searchText]);
+  }, [dashboardStats?.Buckets, data, searchText]);
 
   return (
     <PageContainer

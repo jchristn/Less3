@@ -57,6 +57,22 @@ jest.mock("#/store/slice/bucketsSlice", () => ({
   }),
 }));
 
+jest.mock("#/store/slice/dashboardStatsSlice", () => ({
+  useGetDashboardStatsQuery: () => ({
+    data: {
+      BucketCount: 2,
+      TotalObjectCount: 7,
+      TotalBytes: 3072,
+      GeneratedUtc: "2026-05-15T12:00:00.000Z",
+      Buckets: [
+        { Name: "test-bucket", GUID: "bucket-guid", Objects: 3, Bytes: 1024 },
+        { Name: "test-bucket-2", GUID: "bucket-guid-2", Objects: 4, Bytes: 2048 },
+      ],
+    },
+    isLoading: false,
+  }),
+}));
+
 const findDropdownMenuItem = async (label: string) => {
   const matches = await screen.findAllByText(label, {}, { timeout: 3000 });
   return matches.find((element) => element.classList.contains("ant-dropdown-menu-title-content")) || matches[0];
@@ -85,9 +101,15 @@ describe("BucketsPage", () => {
   describe("Rendering", () => {
     it("should render buckets page", () => {
       renderWithRedux(<BucketsPage />);
+      const table = screen.getByRole("table");
       const bucketsTexts = screen.getAllByText("Buckets");
       expect(bucketsTexts.length).toBeGreaterThan(0);
-      expect(screen.getByText("test-bucket")).toBeInTheDocument();
+      expect(within(table).getByText("test-bucket")).toBeInTheDocument();
+      expect(within(table).getByText("Objects")).toBeInTheDocument();
+      expect(within(table).getByText("Total Size")).toBeInTheDocument();
+      expect(within(table).getByText("Created")).toBeInTheDocument();
+      expect(within(table).getByText("3")).toBeInTheDocument();
+      expect(within(table).getByText("1.0 KB")).toBeInTheDocument();
     });
 
     it("should open bucket details modal when a row is clicked", async () => {

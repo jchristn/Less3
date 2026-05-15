@@ -9,6 +9,10 @@ v2.2.0
 - Fixed unversioned object overwrite behavior for both standard uploads and multipart completion
 - Fixed version enumeration so `ListObjectVersions` returns the full object history
 - Tightened range-read handling and validation against native AWS SDK behavior
+- Expanded the dashboard with object upload/view/edit workflows, row-click detail modals, centered/full-screen content viewers, standardized copy-to-clipboard controls, and request/response pretty-print tools
+- Added credential selection in API Explorer, improved request validation, and aligned dashboard bucket management with admin APIs and signed S3 object requests
+- Added admin statistics APIs and dashboard summary cards for total buckets, total objects, total storage, plus per-bucket object count and total size in the Buckets table
+- Added admin-side user and credential edit flows backed by update endpoints, with clearer dashboard error reporting during connectivity and admin operations
 
 ## Previous Versions
 

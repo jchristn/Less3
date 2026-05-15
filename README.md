@@ -23,6 +23,8 @@ v2.2.0
 - Expanded native `AWSSDK.S3` compatibility validation across ACLs, tagging, versioning, multipart upload, and signature enforcement
 - Fixed object overwrite behavior for unversioned buckets, including multipart completion
 - Improved S3 protocol handling around range reads, version enumeration, and signature validation
+- Expanded the dashboard with object upload/view/edit workflows, row-click detail modals, standardized copy actions, and API Explorer credential selection plus pretty-print tools
+- Added admin dashboard statistics for total buckets, total objects, total storage, and per-bucket object count/size visibility in the Buckets table
 - See `CHANGELOG.md` for release details
 
 ## Help and Feedback
@@ -74,6 +76,8 @@ npm run start
 ```
 
 The dashboard will be available at `http://localhost:3000`.
+
+By default, the dashboard expects the Less3 server to be available at `http://localhost:8000` and validates that the configured endpoint exposes the Less3 admin API before saving it.
 
 For development, you can use:
 ```bash
@@ -236,10 +240,16 @@ http://hostname:port/admin/{resource}/{operation}
 - **users** - Manage user accounts
 - **credentials** - Manage access keys and secret keys
 - **buckets** - Manage buckets and bucket configuration
+- **stats** - Retrieve aggregate bucket, object, and storage metrics for dashboard and admin views
 
 ### Example
 ```bash
 curl -X GET http://localhost:8000/admin/users/list \
+  -H "x-api-key: less3admin"
+```
+
+```bash
+curl -X GET http://localhost:8000/admin/stats \
   -H "x-api-key: less3admin"
 ```
 

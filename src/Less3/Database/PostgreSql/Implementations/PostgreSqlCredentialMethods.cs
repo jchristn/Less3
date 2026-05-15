@@ -62,6 +62,12 @@ namespace Less3.Database.PostgreSql.Implementations
             _Driver.ExecuteQuery(CredentialQueries.InsertQuery(credential), true).Wait();
         }
 
+        public void Update(Credential credential)
+        {
+            if (credential == null) throw new ArgumentNullException(nameof(credential));
+            _Driver.ExecuteQuery(CredentialQueries.UpdateQuery(credential), true).Wait();
+        }
+
         public void DeleteByGuid(string guid)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));

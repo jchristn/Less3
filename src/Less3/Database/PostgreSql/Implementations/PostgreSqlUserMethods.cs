@@ -73,6 +73,12 @@ namespace Less3.Database.PostgreSql.Implementations
             _Driver.ExecuteQuery(UserQueries.InsertQuery(user), true).Wait();
         }
 
+        public void Update(User user)
+        {
+            if (user == null) throw new ArgumentNullException(nameof(user));
+            _Driver.ExecuteQuery(UserQueries.UpdateQuery(user), true).Wait();
+        }
+
         public void DeleteByGuid(string guid)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));

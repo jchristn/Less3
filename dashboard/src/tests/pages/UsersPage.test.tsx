@@ -2,8 +2,10 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import UsersPage from "#/page/users/UsersPage";
 import { renderWithRedux } from "../store/utils";
+import { message } from "#/utils/message";
 
 const mockCreateUser = jest.fn();
+const mockUpdateUser = jest.fn();
 const mockDeleteUser = jest.fn();
 const mockRefetch = jest.fn();
 
@@ -30,24 +32,17 @@ jest.mock("#/store/slice/usersSlice", () => ({
     isLoading: false,
   }),
   useCreateUserMutation: () => [mockCreateUser, { isLoading: false }],
+  useUpdateUserMutation: () => [mockUpdateUser, { isLoading: false }],
   useDeleteUserMutation: () => [mockDeleteUser, { isLoading: false }],
 }));
-
-jest.mock("antd", () => {
-  const actual = jest.requireActual("antd");
-  return {
-    ...actual,
-    message: {
-      success: jest.fn(),
-      error: jest.fn(),
-    },
-  };
-});
 
 describe("UsersPage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockCreateUser.mockReturnValue({
+      unwrap: jest.fn().mockResolvedValue({}),
+    });
+    mockUpdateUser.mockReturnValue({
       unwrap: jest.fn().mockResolvedValue({}),
     });
     mockDeleteUser.mockReturnValue({
@@ -66,7 +61,8 @@ describe("UsersPage", () => {
 
     it("should render create user button", () => {
       renderWithRedux(<UsersPage />);
-      expect(screen.getByText("Create User")).toBeInTheDocument();
+      const createButtons = screen.getAllByText("Create User");
+      expect(createButtons.length).toBeGreaterThan(0);
     });
 
     it("should render search input", () => {
@@ -121,8 +117,35 @@ describe("UsersPage", () => {
       }
     });
 
+    it("should open edit modal and update user when a row is clicked", async () => {
+      renderWithRedux(<UsersPage />);
+
+      await userEvent.click(screen.getByText("John Doe"));
+
+      const modal = await screen.findByRole("dialog", { timeout: 2000 });
+      expect(screen.getByText("Edit User")).toBeInTheDocument();
+
+      const nameInput = modal.querySelector('input[id="Name"]') as HTMLInputElement;
+      if (nameInput) {
+        await userEvent.clear(nameInput);
+        await userEvent.type(nameInput, "John Updated");
+      }
+
+      const okButton = modal.querySelector('button[class*="ant-btn-primary"]') as HTMLButtonElement;
+      if (okButton) {
+        await userEvent.click(okButton);
+      }
+
+      await waitFor(() => {
+        expect(mockUpdateUser).toHaveBeenCalledWith({
+          GUID: "1",
+          Name: "John Updated",
+          Email: "john@example.com",
+        });
+      });
+    });
+
     it("should delete user when delete is clicked", async () => {
-      const { message } = require("antd");
       renderWithRedux(<UsersPage />);
       // Wait for table to render first
       await waitFor(() => {
@@ -161,16 +184,10 @@ describe("UsersPage", () => {
         // Wait for dropdown menu
         const viewMetadataButton = await screen.findByText("View Metadata", { timeout: 3000 });
         await userEvent.click(viewMetadataButton);
-        // Wait for metadata modal to appear
-        await waitFor(() => {
-          const modal = screen.getByRole("dialog");
-          expect(modal).toBeInTheDocument();
-        }, { timeout: 3000 });
-        // Verify metadata content is displayed
-        await waitFor(() => {
-          const metadataTexts = screen.getAllByText(/Metadata/i);
-          expect(metadataTexts.length).toBeGreaterThan(0);
-        }, { timeout: 3000 });
+        // Wait for the metadata modal content instead of a generic dialog role,
+        // since the create/edit modal is force-rendered in the DOM even when closed.
+        expect(await screen.findByText("Created At", {}, { timeout: 3000 })).toBeInTheDocument();
+        expect(screen.getAllByText("john@example.com").length).toBeGreaterThan(0);
       }
     }, 10000);
   });

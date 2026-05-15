@@ -2,6 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ObjectsPage from "#/page/objects/ObjectsPage";
 import { renderWithRedux } from "../store/utils";
+import { message } from "#/utils/message";
 
 const mockDownloadBucketObject = jest.fn();
 const mockDeleteBucketObject = jest.fn();
@@ -56,18 +57,6 @@ jest.mock("#/store/slice/bucketsSlice", () => ({
     isLoading: false,
   }),
 }));
-
-jest.mock("antd", () => {
-  const actual = jest.requireActual("antd");
-  return {
-    ...actual,
-    message: {
-      success: jest.fn(),
-      error: jest.fn(),
-      warning: jest.fn(),
-    },
-  };
-});
 
 // Mock window.URL methods
 global.URL.createObjectURL = jest.fn(() => "blob:mock-url");
@@ -130,7 +119,6 @@ describe("ObjectsPage", () => {
 
   describe("User Interactions", () => {
     it("should download object when download is clicked", async () => {
-      const { message } = require("antd");
       renderWithRedux(<ObjectsPage />);
       // Wait for bucket to be selected and objects to load
       // If objects don't render, skip the interaction test
@@ -157,7 +145,6 @@ describe("ObjectsPage", () => {
     }, 20000);
 
     it("should delete object when delete is clicked", async () => {
-      const { message } = require("antd");
       renderWithRedux(<ObjectsPage />);
       // Wait for bucket to be selected and objects to load
       // If objects don't render, skip the interaction test
@@ -189,7 +176,6 @@ describe("ObjectsPage", () => {
     }, 20000);
 
     it("should show error when download fails", async () => {
-      const { message } = require("antd");
       mockDownloadBucketObject.mockReturnValue({
         unwrap: jest.fn().mockRejectedValue(new Error("fail")),
       });
@@ -213,7 +199,6 @@ describe("ObjectsPage", () => {
     }, 20000);
 
     it("should show error when delete fails", async () => {
-      const { message } = require("antd");
       mockDeleteBucketObject.mockReturnValue({
         unwrap: jest.fn().mockRejectedValue(new Error("fail")),
       });
@@ -240,7 +225,6 @@ describe("ObjectsPage", () => {
     }, 20000);
 
     it("should show warning when write object is clicked without bucket", async () => {
-      const { message } = require("antd");
       renderWithRedux(<ObjectsPage />);
       // This test would need to clear the selected bucket first
       // For now, just verify the component renders

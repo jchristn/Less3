@@ -5,22 +5,35 @@ import {
   MiddlewareAPI,
   UnknownAction,
 } from "@reduxjs/toolkit";
-import { message } from "antd";
+import { message } from "#/utils/message";
+
+const getMessageFromValue = (value: unknown): string | null => {
+  if (typeof value === "string" && value.trim()) {
+    return value;
+  }
+
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const record = value as Record<string, unknown>;
+
+  return (
+    getMessageFromValue(record.Message) ||
+    getMessageFromValue(record.Description) ||
+    getMessageFromValue(record.message) ||
+    getMessageFromValue(record.error) ||
+    getMessageFromValue(record.title) ||
+    getMessageFromValue(record.detail) ||
+    getMessageFromValue(record.data)
+  );
+};
+
 export const errorHandler = (err: any, dispatch: Dispatch<UnknownAction>) => {
   const error = err?.payload || {};
   //eslint-disable-next-line no-console
   console.log(error, "chk errorHandler error");
-  if (error?.Message) {
-    message.error(error?.Message);
-  } else if (error?.Description) {
-    message.error(error?.Description);
-  } else if (error?.message) {
-    message.error(error?.message);
-  } else if (error?.data == "Network Error") {
-    message.error("Network Error");
-  } else {
-    message.error("Something went wrong.");
-  }
+  message.error(getMessageFromValue(error) || "Something went wrong.");
   if (error.Error === "NotAuthorized") {
     message.error("Session expired. Redirecting to login page...");
     setTimeout(() => {

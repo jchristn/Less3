@@ -1,4 +1,26 @@
 import "@testing-library/jest-dom";
+import { webcrypto } from "node:crypto";
+
+if (!globalThis.crypto?.subtle) {
+  Object.defineProperty(globalThis, "crypto", {
+    configurable: true,
+    value: webcrypto,
+  });
+}
+
+jest.mock("#/utils/message", () => ({
+  message: {
+    success: jest.fn(),
+    error: jest.fn(),
+    warning: jest.fn(),
+    info: jest.fn(),
+    loading: jest.fn(),
+    open: jest.fn(),
+    destroy: jest.fn(),
+  },
+  setMessageInstance: jest.fn(),
+  clearMessageInstance: jest.fn(),
+}));
 
 // Mock next/navigation
 jest.mock("next/navigation", () => ({

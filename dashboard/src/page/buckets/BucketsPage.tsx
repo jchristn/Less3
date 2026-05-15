@@ -1,7 +1,7 @@
 /* eslint-disable max-lines-per-function */
 'use client';
 import React, { useMemo, useState, useEffect } from 'react';
-import { Form, message, MenuProps } from 'antd';
+import { Form, MenuProps } from 'antd';
 import {
   PlusOutlined,
   SearchOutlined,
@@ -24,6 +24,8 @@ import PageContainer from '#/components/base/pageContainer/PageContainer';
 import Less3Flex from '#/components/base/flex/Flex';
 import Less3Dropdown from '#/components/base/dropdown/Dropdown';
 import Less3Text from '#/components/base/typograpghy/Text';
+import GuidDisplay from '#/components/guid-display';
+import JsonViewerModal from '#/components/json-viewer-modal/JsonViewerModal';
 import {
   useGetBucketsQuery,
   useCreateBucketMutation,
@@ -41,6 +43,7 @@ import type { BucketTag } from '#/utils/xmlUtils';
 import { Less3Theme } from '#/theme/theme';
 import { useAppContext } from '#/hooks/appHooks';
 import { ThemeEnum } from '#/types/types';
+import { message } from '#/utils/message';
 
 interface BucketFormValues {
   Name: string;
@@ -88,6 +91,11 @@ const BucketsPage: React.FC = () => {
   const [deletingBucket, setDeletingBucket] = useState<Bucket | null>(null);
   const [searchText, setSearchText] = useState('');
   const [openDropdownKey, setOpenDropdownKey] = useState<string | null>(null);
+  const [isJsonModalVisible, setIsJsonModalVisible] = useState(false);
+  const [jsonModalTitle, setJsonModalTitle] = useState('Bucket JSON');
+  const [jsonModalData, setJsonModalData] = useState<unknown>(null);
+  const [isBucketDetailsModalVisible, setIsBucketDetailsModalVisible] = useState(false);
+  const [viewingBucket, setViewingBucket] = useState<Bucket | null>(null);
 
   const { data, isLoading, refetch } = useGetBucketsQuery();
 
@@ -187,6 +195,17 @@ const BucketsPage: React.FC = () => {
   const handleViewACL = (record: Bucket) => {
     setSelectedBucket(record);
     setIsViewACLModalVisible(true);
+  };
+
+  const handleViewJson = (title: string, record: unknown) => {
+    setJsonModalTitle(title);
+    setJsonModalData(record);
+    setIsJsonModalVisible(true);
+  };
+
+  const handleViewBucketDetails = (record: Bucket) => {
+    setViewingBucket(record);
+    setIsBucketDetailsModalVisible(true);
   };
 
   const handleWriteACLOk = async () => {
@@ -350,10 +369,13 @@ const BucketsPage: React.FC = () => {
   };
 
   const handleDeleteConfirm = async () => {
-    if (!deletingBucket?.Name) return;
+    if (!deletingBucket?.Name || !deletingBucket?.GUID) {
+      message.error('Bucket GUID not available');
+      return;
+    }
 
     try {
-      await deleteBucket({ bucketName: deletingBucket.Name }).unwrap();
+      await deleteBucket({ guid: deletingBucket.GUID, bucketName: deletingBucket.Name }).unwrap();
       message.success('Bucket deleted successfully');
       setIsDeleteModalVisible(false);
       setDeletingBucket(null);
@@ -372,7 +394,11 @@ const BucketsPage: React.FC = () => {
           <FolderOutlined style={{ color: 'var(--ant-color-primary)', fontSize: 16 }} />
           <span
             style={{ cursor: 'pointer', color: 'var(--ant-color-primary)' }}
-            onClick={() => handleViewObjects(item)}
+            data-row-click-ignore="true"
+            onClick={(event) => {
+              event.stopPropagation();
+              handleViewObjects(item);
+            }}
           >
             {item.Name}
           </span>
@@ -382,8 +408,8 @@ const BucketsPage: React.FC = () => {
     {
       key: 'CreationDate',
       label: 'Date Created',
-      render: (item) => formatDate(item.CreationDate),
-      filterValue: (item) => formatDate(item.CreationDate),
+      render: (item) => formatDate(item.CreationDate || item.CreatedUtc || ''),
+      filterValue: (item) => formatDate(item.CreationDate || item.CreatedUtc || ''),
     },
     {
       key: 'actions',
@@ -397,6 +423,15 @@ const BucketsPage: React.FC = () => {
         const isOpen = openDropdownKey === dropdownKey;
 
         const menuItems: MenuProps['items'] = [
+          {
+            key: 'view-details',
+            label: 'View Details',
+            onClick: () => {
+              setOpenDropdownKey(null);
+              handleViewBucketDetails(item);
+            },
+          },
+          { type: 'divider' },
           {
             key: 'view-objects',
             icon: <FolderOpenOutlined />,
@@ -468,7 +503,12 @@ const BucketsPage: React.FC = () => {
               setOpenDropdownKey(open ? dropdownKey : null);
             }}
           >
-            <Less3Button type="text" icon={<MoreOutlined />} size="small" />
+            <Less3Button
+              type="text"
+              icon={<MoreOutlined />}
+              size="small"
+              onClick={(event) => event.stopPropagation()}
+            />
           </Less3Dropdown>
         );
       },
@@ -516,11 +556,84 @@ const BucketsPage: React.FC = () => {
         data={filteredData}
         loading={isLoading}
         rowKey="Name"
+        onRowClick={(item) => {
+          if (openDropdownKey) {
+            return;
+          }
+
+          handleViewBucketDetails(item);
+        }}
       />
+
+      <Less3Modal
+        title={`Bucket Details - ${viewingBucket?.Name || ''}`}
+        open={isBucketDetailsModalVisible}
+        onCancel={() => {
+          setIsBucketDetailsModalVisible(false);
+          setViewingBucket(null);
+        }}
+        footer={[
+          <Less3Button
+            key="close"
+            onClick={() => {
+              setIsBucketDetailsModalVisible(false);
+              setViewingBucket(null);
+            }}
+          >
+            Close
+          </Less3Button>,
+        ]}
+        width={720}
+        centered
+        keyboard={true}
+      >
+        {viewingBucket ? (
+          <table
+            style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              tableLayout: 'fixed',
+            }}
+          >
+            <tbody>
+              {[
+                { label: 'Name', value: viewingBucket.Name },
+                { label: 'GUID', value: viewingBucket.GUID || '' },
+                { label: 'Date Created', value: formatDate(viewingBucket.CreationDate || viewingBucket.CreatedUtc || '') },
+                { label: 'Owner GUID', value: viewingBucket.OwnerGUID || 'Not set' },
+                { label: 'Region', value: viewingBucket.RegionString || 'us-west-1' },
+                { label: 'Storage Type', value: String(viewingBucket.StorageType || 'Disk') },
+                { label: 'Objects Directory', value: viewingBucket.DiskDirectory || 'Not set' },
+                { label: 'Versioning', value: viewingBucket.EnableVersioning ? 'Enabled' : 'Disabled' },
+                { label: 'Public Read', value: viewingBucket.EnablePublicRead ? 'Enabled' : 'Disabled' },
+                { label: 'Public Write', value: viewingBucket.EnablePublicWrite ? 'Enabled' : 'Disabled' },
+              ].map((item) => (
+                <tr key={item.label}>
+                  <td style={{ width: 150, padding: '8px 12px 8px 0', verticalAlign: 'top' }}>
+                    <Less3Text type="secondary" fontSize={12}>
+                      {item.label}
+                    </Less3Text>
+                  </td>
+                  <td style={{ padding: '8px 0', verticalAlign: 'top' }}>
+                    {item.label === 'GUID' ? (
+                      <GuidDisplay guid={item.value} />
+                    ) : (
+                      <Less3Text style={{ wordBreak: 'break-all' }}>{item.value}</Less3Text>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '20px' }}>No bucket details available</div>
+        )}
+      </Less3Modal>
 
       <Less3Modal
         title="Create Bucket"
         open={isModalVisible}
+        forceRender
         onOk={handleModalOk}
         onCancel={() => {
           setIsModalVisible(false);
@@ -576,6 +689,7 @@ const BucketsPage: React.FC = () => {
       <Less3Modal
         title={'Write Tags'}
         open={isWriteTagsModalVisible}
+        forceRender
         onOk={handleWriteTagsOk}
         onCancel={() => {
           setIsWriteTagsModalVisible(false);
@@ -679,6 +793,7 @@ const BucketsPage: React.FC = () => {
             loading={isLoadingTags}
             hidePagination
             rowKey="_id"
+            onRowClick={(item) => handleViewJson(`Bucket Tag JSON - ${selectedBucket?.Name || 'Bucket'}`, item)}
           />
         ) : (
           <div style={{ textAlign: 'center', padding: '40px' }}>
@@ -716,6 +831,7 @@ const BucketsPage: React.FC = () => {
       <Less3Modal
         title={`Write ACL - ${selectedBucket?.Name || ''}`}
         open={isWriteACLModalVisible}
+        forceRender
         onOk={handleWriteACLOk}
         onCancel={() => {
           setIsWriteACLModalVisible(false);
@@ -843,6 +959,7 @@ const BucketsPage: React.FC = () => {
                       loading={isLoadingACL}
                       hidePagination
                       rowKey="_id"
+                      onRowClick={(item) => handleViewJson(`Bucket ACL Grant JSON - ${selectedBucket?.Name || 'Bucket'}`, item)}
                     />
                   </div>
                 );
@@ -855,6 +972,14 @@ const BucketsPage: React.FC = () => {
           </div>
         )}
       </Less3Modal>
+
+      <JsonViewerModal
+        open={isJsonModalVisible}
+        title={jsonModalTitle}
+        data={jsonModalData}
+        onClose={() => setIsJsonModalVisible(false)}
+        width={760}
+      />
     </PageContainer>
   );
 };

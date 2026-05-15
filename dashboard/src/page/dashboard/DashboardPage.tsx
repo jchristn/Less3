@@ -1,13 +1,14 @@
 /* eslint-disable max-lines-per-function */
 'use client';
 import React, { useState, useMemo } from 'react';
-import { DatabaseOutlined, FolderOutlined, UserOutlined, KeyOutlined } from '@ant-design/icons';
+import { DatabaseOutlined, FolderOutlined, UserOutlined, KeyOutlined, HddOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
 import PageContainer from '#/components/base/pageContainer/PageContainer';
 import Less3Card from '#/components/base/card/Card';
 import Less3Flex from '#/components/base/flex/Flex';
 import Less3Text from '#/components/base/typograpghy/Text';
 import SummaryChart, { getQuickRange } from '#/page/request-history/SummaryChart';
+import { useGetDashboardStatsQuery } from '#/store/slice/dashboardStatsSlice';
 import { useGetRequestHistorySummaryQuery } from '#/store/slice/requestHistorySlice';
 
 interface QuickActionCardProps {
@@ -52,6 +53,13 @@ const QuickActionCard: React.FC<QuickActionCardProps> = ({ title, description, i
   </Less3Card>
 );
 
+const formatBytes = (bytes: number): string => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+};
+
 const DashboardPage: React.FC = () => {
   const router = useRouter();
   const [timeRange, setTimeRange] = useState('day');
@@ -68,10 +76,91 @@ const DashboardPage: React.FC = () => {
   const { data: summary, isLoading: summaryLoading, refetch: refetchSummary } = useGetRequestHistorySummaryQuery(summaryParams, {
     pollingInterval: 10000,
   });
+  const { data: dashboardStats, isLoading: dashboardStatsLoading } = useGetDashboardStatsQuery(undefined, {
+    pollingInterval: 10000,
+  });
 
   return (
     <PageContainer pageTitle="Home">
       <Less3Flex vertical gap={24}>
+        <Less3Flex gap={16} wrap="wrap">
+          <Less3Card style={{ flex: '1 1 240px', minWidth: 240 }}>
+            <Less3Flex align="center" gap={14}>
+              <div
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 12,
+                  background: '#22AF7914',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#22AF79',
+                  fontSize: 20,
+                }}
+              >
+                <DatabaseOutlined />
+              </div>
+              <Less3Flex vertical gap={2}>
+                <Less3Text type="secondary" fontSize={12}>Total Buckets</Less3Text>
+                <Less3Text weight={700} fontSize={24}>
+                  {dashboardStatsLoading ? '...' : String(dashboardStats?.BucketCount ?? 0)}
+                </Less3Text>
+              </Less3Flex>
+            </Less3Flex>
+          </Less3Card>
+          <Less3Card style={{ flex: '1 1 240px', minWidth: 240 }}>
+            <Less3Flex align="center" gap={14}>
+              <div
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 12,
+                  background: '#fa8c1614',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fa8c16',
+                  fontSize: 20,
+                }}
+              >
+                <FolderOutlined />
+              </div>
+              <Less3Flex vertical gap={2}>
+                <Less3Text type="secondary" fontSize={12}>Total Objects</Less3Text>
+                <Less3Text weight={700} fontSize={24}>
+                  {dashboardStatsLoading ? '...' : String(dashboardStats?.TotalObjectCount ?? 0)}
+                </Less3Text>
+              </Less3Flex>
+            </Less3Flex>
+          </Less3Card>
+          <Less3Card style={{ flex: '1 1 240px', minWidth: 240 }}>
+            <Less3Flex align="center" gap={14}>
+              <div
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 12,
+                  background: '#1890ff14',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#1890ff',
+                  fontSize: 20,
+                }}
+              >
+                <HddOutlined />
+              </div>
+              <Less3Flex vertical gap={2}>
+                <Less3Text type="secondary" fontSize={12}>Total Storage</Less3Text>
+                <Less3Text weight={700} fontSize={24}>
+                  {dashboardStatsLoading ? '...' : formatBytes(dashboardStats?.TotalBytes ?? 0)}
+                </Less3Text>
+              </Less3Flex>
+            </Less3Flex>
+          </Less3Card>
+        </Less3Flex>
+
         <SummaryChart
           summary={summary || null}
           timeRange={timeRange}

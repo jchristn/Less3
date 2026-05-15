@@ -81,6 +81,13 @@ namespace Less3.Database.MySql.Implementations
         }
 
         /// <inheritdoc />
+        public void Update(User user)
+        {
+            if (user == null) throw new ArgumentNullException(nameof(user));
+            _Database.ExecuteQuery(UserQueries.UpdateQuery(user), true).Wait();
+        }
+
+        /// <inheritdoc />
         public void DeleteByGuid(string guid)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));

@@ -1,5 +1,5 @@
-import { message } from "antd";
 import { v4 } from "uuid";
+import { message } from "#/utils/message";
 
 export const toTitleCase = (str: string): string => {
   return str

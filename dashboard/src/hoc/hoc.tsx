@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, ComponentType } from 'react';
+import { useRouter } from 'next/navigation';
 import { useValidateConnectivityMutation } from '#/store/slice/sdkSlice';
 import PageLoading from '../components/base/loading/PageLoading';
 import FallBack from '../components/base/fallback/FallBack';
@@ -9,9 +10,9 @@ import SharpText from '#/components/base/typograpghy/Text';
 import SharpFlex from '#/components/base/flex/Flex';
 import SharpTitle from '#/components/base/typograpghy/Title';
 import PageContainer from '#/components/base/pageContainer/PageContainer';
-import { localStorageKeys } from '#/constants/constant';
+import { localStorageKeys, paths } from '#/constants/constant';
 import { apiEndpointURL } from '#/constants/config';
-import { updateSdkEndPoint } from '#/services/sdk.service';
+import { getInitialApiEndpoint, updateSdkEndPoint } from '#/services/sdk.service';
 
 /**
  * Higher-Order Component that validates connectivity before rendering the wrapped component
@@ -21,11 +22,7 @@ import { updateSdkEndPoint } from '#/services/sdk.service';
  */
 
 const getInitialLess3APIUrl = () => {
-  if (typeof localStorage !== 'undefined') {
-    const initialSharpAPIUrl = localStorage.getItem(localStorageKeys.less3APIUrl);
-    return initialSharpAPIUrl || apiEndpointURL;
-  }
-  return apiEndpointURL;
+  return getInitialApiEndpoint();
 };
 
 // Simple cache to store validation result per URL
@@ -38,6 +35,7 @@ export function withConnectivityValidation<P extends object>(WrappedComponent: C
 
   const ConnectivityValidatedComponent: React.FC<P> = (props: P) => {
     const [validateConnectivity, { isLoading, isSuccess, isError, error }] = useValidateConnectivityMutation();
+    const router = useRouter();
 
     // Initialize cachedValid from cache synchronously to avoid "Initializing..." flash
     const [cachedValid, setCachedValid] = useState(() => {
@@ -78,6 +76,7 @@ export function withConnectivityValidation<P extends object>(WrappedComponent: C
 
     const handleRetry = () => {
       const url = getInitialLess3APIUrl();
+      updateSdkEndPoint(url);
       validationCache = null;
       setCachedValid(false);
       validateConnectivity()
@@ -90,7 +89,15 @@ export function withConnectivityValidation<P extends object>(WrappedComponent: C
           validationCache = null;
           setCachedValid(false);
         });
-    };                                 
+    };
+
+    const handleChangeServerUrl = () => {
+      localStorage.removeItem(localStorageKeys.less3APIUrl);
+      updateSdkEndPoint(apiEndpointURL);
+      validationCache = null;
+      setCachedValid(false);
+      router.push(paths.login);
+    };
 
     // Show loading state while validation is in progress
     if (isLoading && !cachedValid) {
@@ -120,11 +127,14 @@ export function withConnectivityValidation<P extends object>(WrappedComponent: C
               {errorMessage}
             </SharpTitle>
             {isError && <SharpText>{JSON.stringify((error as any)?.message || error)}</SharpText>}
-            {retryEnabled && (
-              <SharpButton type="primary" onClick={handleRetry}>
-                Retry
-              </SharpButton>
-            )}
+            <SharpFlex gap={8}>
+              {retryEnabled && (
+                <SharpButton type="primary" onClick={handleRetry}>
+                  Retry
+                </SharpButton>
+              )}
+              <SharpButton onClick={handleChangeServerUrl}>Change Server URL</SharpButton>
+            </SharpFlex>
           </SharpFlex>
         </FallBack>
       );

@@ -1,11 +1,5 @@
 import { toTitleCase, getFirstLetterOfTheWord, uuid, decodePayload } from "#/utils/stringUtils";
-import { message } from "antd";
-
-jest.mock("antd", () => ({
-  message: {
-    error: jest.fn(),
-  },
-}));
+import { message } from "#/utils/message";
 
 describe("stringUtils", () => {
   describe("toTitleCase", () => {
@@ -128,4 +122,3 @@ describe("stringUtils", () => {
     });
   });
 });
-

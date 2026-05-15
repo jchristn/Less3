@@ -45,6 +45,14 @@ namespace Less3.Database.SqlServer.Queries
             return "SELECT COUNT(*) AS cnt FROM users WHERE email = '" + Sanitizer.SanitizeString(email) + "';";
         }
 
+        internal static string UpdateQuery(User user)
+        {
+            return "UPDATE users SET "
+                + "name = '" + Sanitizer.SanitizeString(user.Name) + "', "
+                + "email = '" + Sanitizer.SanitizeString(user.Email) + "' "
+                + "WHERE guid = '" + Sanitizer.SanitizeString(user.GUID) + "';";
+        }
+
         internal static string DeleteByGuid(string guid)
         {
             return "DELETE FROM users WHERE guid = '" + Sanitizer.SanitizeString(guid) + "';";

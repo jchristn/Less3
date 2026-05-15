@@ -18,6 +18,13 @@ export interface CreateUserRequest {
   [key: string]: any;
 }
 
+export interface UpdateUserRequest {
+  GUID: string;
+  Name: string;
+  Email: string;
+  [key: string]: any;
+}
+
 export interface DeleteUserParams {
   guid: string;
 }

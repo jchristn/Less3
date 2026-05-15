@@ -2,8 +2,10 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import CredentialsPage from "#/page/credentials/CredentialsPage";
 import { renderWithRedux } from "../store/utils";
+import { message } from "#/utils/message";
 
 const mockCreateCredential = jest.fn();
+const mockUpdateCredential = jest.fn();
 const mockDeleteCredential = jest.fn();
 const mockRefetch = jest.fn();
 
@@ -41,6 +43,7 @@ jest.mock("#/store/slice/credentialsSlice", () => ({
     isLoading: false,
   }),
   useCreateCredentialMutation: () => [mockCreateCredential, { isLoading: false }],
+  useUpdateCredentialMutation: () => [mockUpdateCredential, { isLoading: false }],
   useDeleteCredentialMutation: () => [mockDeleteCredential, { isLoading: false }],
 }));
 
@@ -51,21 +54,13 @@ jest.mock("#/store/slice/usersSlice", () => ({
   }),
 }));
 
-jest.mock("antd", () => {
-  const actual = jest.requireActual("antd");
-  return {
-    ...actual,
-    message: {
-      success: jest.fn(),
-      error: jest.fn(),
-    },
-  };
-});
-
 describe("CredentialsPage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockCreateCredential.mockReturnValue({
+      unwrap: jest.fn().mockResolvedValue({}),
+    });
+    mockUpdateCredential.mockReturnValue({
       unwrap: jest.fn().mockResolvedValue({}),
     });
     mockDeleteCredential.mockReturnValue({
@@ -83,7 +78,8 @@ describe("CredentialsPage", () => {
 
     it("should render create credential button", () => {
       renderWithRedux(<CredentialsPage />);
-      expect(screen.getByText("Create Credential")).toBeInTheDocument();
+      const createButtons = screen.getAllByText("Create Credential");
+      expect(createButtons.length).toBeGreaterThan(0);
     });
 
     it("should render search input", () => {
@@ -114,7 +110,6 @@ describe("CredentialsPage", () => {
     });
 
     it("should create credential on form submit", async () => {
-      const { message } = require("antd");
       renderWithRedux(<CredentialsPage />);
       const createButtons = screen.getAllByText("Create Credential");
       const createButton = createButtons.find((btn) => btn.closest("button"));
@@ -136,8 +131,38 @@ describe("CredentialsPage", () => {
       }
     }, 10000);
 
+    it("should open edit modal and update credential when a row is clicked", async () => {
+      renderWithRedux(<CredentialsPage />);
+
+      await userEvent.click(screen.getByText("Test Credential"));
+
+      const modal = await screen.findByRole("dialog", { timeout: 2000 });
+      expect(screen.getByText("Edit Credential")).toBeInTheDocument();
+
+      const descriptionInput = modal.querySelector('input[id="Description"]') as HTMLInputElement;
+      if (descriptionInput) {
+        await userEvent.clear(descriptionInput);
+        await userEvent.type(descriptionInput, "Updated Credential");
+      }
+
+      const okButton = modal.querySelector('button[class*="ant-btn-primary"]') as HTMLButtonElement;
+      if (okButton) {
+        await userEvent.click(okButton);
+      }
+
+      await waitFor(() => {
+        expect(mockUpdateCredential).toHaveBeenCalledWith({
+          GUID: "1",
+          UserGUID: "user1",
+          Description: "Updated Credential",
+          AccessKey: "AK123",
+          SecretKey: "SK123",
+          IsBase64: undefined,
+        });
+      });
+    });
+
     it("should delete credential when delete is clicked", async () => {
-      const { message } = require("antd");
       renderWithRedux(<CredentialsPage />);
       // Wait for table to render - check for GUID or Description from mock data
       await waitFor(() => {

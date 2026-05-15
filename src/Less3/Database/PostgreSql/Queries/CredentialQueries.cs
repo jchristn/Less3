@@ -43,6 +43,17 @@ namespace Less3.Database.PostgreSql.Queries
             return "SELECT COUNT(*) AS cnt FROM credential WHERE guid = '" + Sanitizer.SanitizeString(guid) + "';";
         }
 
+        internal static string UpdateQuery(Credential cred)
+        {
+            return "UPDATE credential SET "
+                + "userguid = '" + Sanitizer.SanitizeString(cred.UserGUID) + "', "
+                + "description = '" + Sanitizer.SanitizeString(cred.Description) + "', "
+                + "accesskey = '" + Sanitizer.SanitizeString(cred.AccessKey) + "', "
+                + "secretkey = '" + Sanitizer.SanitizeString(cred.SecretKey) + "', "
+                + "isbase64 = " + (cred.IsBase64 ? "TRUE" : "FALSE") + " "
+                + "WHERE guid = '" + Sanitizer.SanitizeString(cred.GUID) + "';";
+        }
+
         internal static string DeleteByGuid(string guid)
         {
             return "DELETE FROM credential WHERE guid = '" + Sanitizer.SanitizeString(guid) + "';";

@@ -105,7 +105,7 @@ exports[`LoginPage Snapshots should match default render 1`] = `
                           id="less3APIUrl"
                           placeholder="https://your-less3-server.com"
                           type="search"
-                          value="http://localhost:3000"
+                          value="http://localhost:8000"
                         />
                         <span
                           class="ant-input-group-addon"

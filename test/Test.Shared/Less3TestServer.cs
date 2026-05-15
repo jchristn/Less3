@@ -163,7 +163,6 @@ namespace Test.Shared
             WriteLess3Database();
 
             string less3Dll = FindLess3Dll();
-
             ProcessStartInfo psi = new ProcessStartInfo
             {
                 FileName = "dotnet",
@@ -229,6 +228,21 @@ namespace Test.Shared
         public async Task<HttpResponseMessage> AdminPostAsync(string path, string jsonBody, CancellationToken cancellationToken = default)
         {
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/admin/{path}");
+            request.Headers.Add("x-api-key", _AdminApiKey);
+            request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+            return await _HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Sends a PUT request to the admin API with a JSON body.
+        /// </summary>
+        /// <param name="path">The admin API path.</param>
+        /// <param name="jsonBody">The JSON body string.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The HTTP response.</returns>
+        public async Task<HttpResponseMessage> AdminPutAsync(string path, string jsonBody, CancellationToken cancellationToken = default)
+        {
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Put, $"{BaseUrl}/admin/{path}");
             request.Headers.Add("x-api-key", _AdminApiKey);
             request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
             return await _HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
@@ -408,10 +422,10 @@ namespace Test.Shared
             // Look for the built Less3.dll relative to the test project
             string[] searchPaths = new string[]
             {
-                Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "Less3", "bin", "Debug", "net10.0", "Less3.dll")),
                 Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "Less3", "bin", "Release", "net10.0", "Less3.dll")),
-                Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "src", "Less3", "bin", "Debug", "net10.0", "Less3.dll")),
+                Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "Less3", "bin", "Debug", "net10.0", "Less3.dll")),
                 Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "src", "Less3", "bin", "Release", "net10.0", "Less3.dll")),
+                Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "src", "Less3", "bin", "Debug", "net10.0", "Less3.dll")),
             };
 
             foreach (string path in searchPaths)

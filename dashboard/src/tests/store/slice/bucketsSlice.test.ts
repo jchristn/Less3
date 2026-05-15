@@ -28,14 +28,39 @@ describe("bucketsSlice endpoints", () => {
       ok: true,
       status: 200,
       statusText: "OK",
-      text: async () =>
-        `<ListAllMyBucketsResult><Buckets><Bucket><Name>one</Name><CreationDate>now</CreationDate></Bucket></Buckets></ListAllMyBucketsResult>`,
+      json: async () => [{ GUID: "bucket-guid", Name: "one", CreatedUtc: "now" }],
     }) as any;
 
     const store = makeStore();
     const promise = store.dispatch(bucketsSliceApi.endpoints.getBuckets.initiate());
     const result = await promise.unwrap();
-    expect(result).toEqual([{ Name: "one", CreationDate: "now" }]);
+    expect(result).toEqual([{ GUID: "bucket-guid", Name: "one", CreatedUtc: "now", CreationDate: "now" }]);
+    promise.unsubscribe?.();
+  });
+
+  it("deleteBucket uses admin bucket guid", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 204,
+      statusText: "No Content",
+      text: async () => "",
+    }) as any;
+
+    const store = makeStore();
+    const promise = store.dispatch(
+      bucketsSliceApi.endpoints.deleteBucket.initiate({ guid: "bucket-guid", bucketName: "one" })
+    );
+    const result = await promise.unwrap();
+    expect(result).toEqual({ success: true });
+    expect(global.fetch).toHaveBeenCalledWith(
+      "http://localhost:8000/admin/buckets/bucket-guid?destroy=true",
+      expect.objectContaining({
+        method: "DELETE",
+        headers: expect.objectContaining({
+          "x-api-key": "less3admin",
+        }),
+      })
+    );
     promise.unsubscribe?.();
   });
 
@@ -44,6 +69,7 @@ describe("bucketsSlice endpoints", () => {
       ok: false,
       status: 500,
       statusText: "Bad",
+      text: async () => "",
     }) as any;
 
     const store = makeStore();
@@ -55,13 +81,21 @@ describe("bucketsSlice endpoints", () => {
   });
 
   it("listBucketObjects returns contents", async () => {
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      statusText: "OK",
-      text: async () =>
-        `<ListBucketResult><Contents><Key>file.txt</Key><Size>1</Size><LastModified>now</LastModified><ContentType>text/plain</ContentType></Contents></ListBucketResult>`,
-    }) as any;
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        json: async () => [{ GUID: "cred-guid", AccessKey: "default", SecretKey: "default" }],
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        text: async () =>
+          `<ListBucketResult><Contents><Key>file.txt</Key><Size>1</Size><LastModified>now</LastModified><ContentType>text/plain</ContentType></Contents></ListBucketResult>`,
+      }) as any;
 
     const store = makeStore();
     const promise = store.dispatch(
@@ -73,15 +107,46 @@ describe("bucketsSlice endpoints", () => {
     );
     const res = await promise.unwrap();
     expect(res).toHaveProperty("Contents");
+    expect(global.fetch).toHaveBeenNthCalledWith(
+      1,
+      "http://localhost:8000/admin/credentials",
+      expect.objectContaining({
+        method: "GET",
+        headers: expect.objectContaining({
+          "x-api-key": "less3admin",
+        }),
+      })
+    );
+    expect(global.fetch).toHaveBeenNthCalledWith(
+      2,
+      "http://localhost:8000/g/",
+      expect.objectContaining({
+        method: "GET",
+        headers: expect.objectContaining({
+          Authorization: expect.stringContaining("Credential=default/"),
+          "x-amz-content-sha256": expect.any(String),
+          "x-amz-date": expect.any(String),
+        }),
+      })
+    );
     promise.unsubscribe?.();
   });
 
   it("downloadBucketObject error is returned", async () => {
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: false,
-      status: 404,
-      statusText: "Not Found",
-    }) as any;
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        json: async () => [{ GUID: "cred-guid", AccessKey: "default", SecretKey: "default" }],
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        statusText: "Not Found",
+        text: async () => "<Error><Code>NoSuchKey</Code><Message>Missing</Message></Error>",
+      }) as any;
 
     const store = makeStore();
     const promise = store.dispatch(
@@ -94,4 +159,3 @@ describe("bucketsSlice endpoints", () => {
     promise.unsubscribe?.();
   });
 });
-

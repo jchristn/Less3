@@ -3,6 +3,8 @@
 export interface Bucket {
   Name: string;
   CreationDate: string;
+  GUID?: string;
+  CreatedUtc?: string;
   [key: string]: any;
 }
 
@@ -25,6 +27,7 @@ export interface UpdateBucketRequest {
 }
 
 export interface DeleteBucketParams {
+  guid: string;
   bucketName: string;
 }
 
@@ -54,6 +57,7 @@ export interface WriteBucketObjectParams {
   bucketGUID: string;
   objectKey: string;
   content: string;
+  contentType?: string;
 }
 
 export interface WriteBucketObjectResponse {

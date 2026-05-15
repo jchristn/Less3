@@ -3,8 +3,9 @@ import userEvent from "@testing-library/user-event";
 import LoginPage from "#/page/login/LoginPage";
 import { renderWithRedux } from "../store/utils";
 import { useValidateConnectivityMutation } from "#/store/slice/sdkSlice";
-import { updateSdkEndPoint } from "#/services/sdk.service";
+import { getInitialApiEndpoint, updateSdkEndPoint } from "#/services/sdk.service";
 import { localStorageKeys } from "#/constants/constant";
+import { message } from "#/utils/message";
 
 jest.mock("#/store/slice/sdkSlice");
 jest.mock("#/services/sdk.service");
@@ -15,18 +16,6 @@ jest.mock("next/navigation", () => ({
   }),
   usePathname: () => "/",
 }));
-
-jest.mock("antd", () => {
-  const actual = jest.requireActual("antd");
-  return {
-    ...actual,
-    message: {
-      success: jest.fn(),
-      error: jest.fn(),
-      warning: jest.fn(),
-    },
-  };
-});
 
 describe("LoginPage", () => {
   const mockValidateConnectivity = jest.fn();
@@ -39,6 +28,7 @@ describe("LoginPage", () => {
       mockValidateConnectivity,
       { isLoading: false },
     ]);
+    (getInitialApiEndpoint as jest.Mock).mockReturnValue("http://localhost:8000");
     (updateSdkEndPoint as jest.Mock).mockImplementation(() => {});
   });
 
@@ -68,7 +58,8 @@ describe("LoginPage", () => {
     it("should load saved URL from localStorage", async () => {
       const savedUrl = "http://saved-url.com";
       localStorage.setItem(localStorageKeys.less3APIUrl, savedUrl);
-      mockValidateConnectivity.mockResolvedValue({ unwrap: () => Promise.resolve(true) });
+      (getInitialApiEndpoint as jest.Mock).mockReturnValue(savedUrl);
+      mockValidateConnectivity.mockReturnValue({ unwrap: () => Promise.resolve(true) });
 
       renderWithRedux(<LoginPage />, false, undefined, true);
 
@@ -91,7 +82,7 @@ describe("LoginPage", () => {
     });
 
     it("should validate connectivity on form submit", async () => {
-      mockValidateConnectivity.mockResolvedValue({ unwrap: () => Promise.resolve(true) });
+      mockValidateConnectivity.mockReturnValue({ unwrap: () => Promise.resolve(true) });
 
       renderWithRedux(<LoginPage />, false, undefined, true);
       const input = screen.getByPlaceholderText("https://your-less3-server.com");
@@ -108,11 +99,10 @@ describe("LoginPage", () => {
     });
 
     it("should handle connectivity validation error", async () => {
-      const error = { message: "Connection failed" };
+      const error = { data: { data: "The server URL did not return a Less3 admin API response. Check the Less3 Server URL." } };
       mockValidateConnectivity.mockReturnValue({
         unwrap: jest.fn().mockRejectedValue(error),
       });
-      const { message } = require("antd");
 
       renderWithRedux(<LoginPage />, false, undefined, true);
       const input = screen.getByPlaceholderText("https://your-less3-server.com");
@@ -123,7 +113,9 @@ describe("LoginPage", () => {
       await userEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(message.error).toHaveBeenCalled();
+        expect(message.error).toHaveBeenCalledWith(
+          "The server URL did not return a Less3 admin API response. Check the Less3 Server URL."
+        );
       });
     });
 
@@ -159,4 +151,3 @@ describe("LoginPage", () => {
     });
   });
 });
-

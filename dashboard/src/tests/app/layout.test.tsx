@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import RootLayout from "#/app/layout";
 import { localStorageKeys } from "#/constants/constant";
 import { ThemeEnum } from "#/types/types";
@@ -27,23 +27,24 @@ describe("RootLayout", () => {
     });
 
     it("should use light theme by default", () => {
-      const { container } = render(
+      render(
         <RootLayout>
           <div>Content</div>
         </RootLayout>
       );
-      expect(container.querySelector("body")).not.toHaveClass("theme-dark-mode");
+      expect(document.body).not.toHaveClass("theme-dark-mode");
     });
 
-    it("should use dark theme from localStorage", () => {
+    it("should use dark theme from localStorage", async () => {
       localStorage.setItem(localStorageKeys.theme, ThemeEnum.DARK);
-      const { container } = render(
+      render(
         <RootLayout>
           <div>Content</div>
         </RootLayout>
       );
-      expect(container.querySelector("body")).toHaveClass("theme-dark-mode");
+      await waitFor(() => {
+        expect(document.body).toHaveClass("theme-dark-mode");
+      });
     });
   });
 });
-

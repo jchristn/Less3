@@ -49,6 +49,12 @@ namespace Less3.Database.Interfaces
         void Insert(Credential credential);
 
         /// <summary>
+        /// Update an existing credential.
+        /// </summary>
+        /// <param name="credential">Credential to update.</param>
+        void Update(Credential credential);
+
+        /// <summary>
         /// Delete a credential by GUID.
         /// </summary>
         /// <param name="guid">Credential GUID.</param>

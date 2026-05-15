@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`DashboardPage Snapshots should match default render 1`] = `
+exports[`DashboardPage Snapshots matches the default render 1`] = `
 <div
   class="ant-layout css-dev-only-do-not-override-mncuj7"
   style="min-height: 100vh;"
@@ -42,13 +42,18 @@ exports[`DashboardPage Snapshots should match default render 1`] = `
         <span
           class="serverUrlValue"
         >
-          http://localhost:3000
+          http://localhost:8000/
         </span>
-        <span
+        <button
           aria-describedby="test-id"
-          class="serverUrlCopy"
+          aria-label="Copy server URL"
+          class="copyButton"
+          data-row-click-ignore="true"
+          style="--copy-button-size: 20px;"
+          type="button"
         >
           <svg
+            aria-hidden="true"
             fill="none"
             height="12"
             stroke="currentColor"
@@ -70,7 +75,7 @@ exports[`DashboardPage Snapshots should match default render 1`] = `
               d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
             />
           </svg>
-        </span>
+        </button>
       </span>
     </div>
     <div
@@ -399,6 +404,80 @@ exports[`DashboardPage Snapshots should match default render 1`] = `
               </a>
             </span>
           </li>
+          <li
+            aria-describedby="test-id"
+            class="ant-menu-item"
+            data-menu-id="rc-menu-uuid-test-request-history"
+            role="menuitem"
+            style="padding-left: 24px;"
+            tabindex="-1"
+          >
+            <span
+              aria-label="history"
+              class="anticon anticon-history ant-menu-item-icon"
+              role="img"
+            >
+              <svg
+                aria-hidden="true"
+                data-icon="history"
+                fill="currentColor"
+                focusable="false"
+                height="1em"
+                viewBox="64 64 896 896"
+                width="1em"
+              >
+                <path
+                  d="M536.1 273H488c-4.4 0-8 3.6-8 8v275.3c0 2.6 1.2 5 3.3 6.5l165.3 120.7c3.6 2.6 8.6 1.9 11.2-1.7l28.6-39c2.7-3.7 1.9-8.7-1.7-11.2L544.1 528.5V281c0-4.4-3.6-8-8-8zm219.8 75.2l156.8 38.3c5 1.2 9.9-2.6 9.9-7.7l.8-161.5c0-6.7-7.7-10.5-12.9-6.3L752.9 334.1a8 8 0 003 14.1zm167.7 301.1l-56.7-19.5a8 8 0 00-10.1 4.8c-1.9 5.1-3.9 10.1-6 15.1-17.8 42.1-43.3 80-75.9 112.5a353 353 0 01-112.5 75.9 352.18 352.18 0 01-137.7 27.8c-47.8 0-94.1-9.3-137.7-27.8a353 353 0 01-112.5-75.9c-32.5-32.5-58-70.4-75.9-112.5A353.44 353.44 0 01171 512c0-47.8 9.3-94.2 27.8-137.8 17.8-42.1 43.3-80 75.9-112.5a353 353 0 01112.5-75.9C430.6 167.3 477 158 524.8 158s94.1 9.3 137.7 27.8A353 353 0 01775 261.7c10.2 10.3 19.8 21 28.6 32.3l59.8-46.8C784.7 146.6 662.2 81.9 524.6 82 285 82.1 92.6 276.7 95 516.4 97.4 751.9 288.9 942 524.8 942c185.5 0 343.5-117.6 403.7-282.3 1.5-4.2-.7-8.9-4.9-10.4z"
+                />
+              </svg>
+            </span>
+            <span
+              class="ant-menu-title-content"
+            >
+              <a
+                href="/admin/request-history"
+              >
+                Request History
+              </a>
+            </span>
+          </li>
+          <li
+            aria-describedby="test-id"
+            class="ant-menu-item"
+            data-menu-id="rc-menu-uuid-test-api-explorer"
+            role="menuitem"
+            style="padding-left: 24px;"
+            tabindex="-1"
+          >
+            <span
+              aria-label="api"
+              class="anticon anticon-api ant-menu-item-icon"
+              role="img"
+            >
+              <svg
+                aria-hidden="true"
+                data-icon="api"
+                fill="currentColor"
+                focusable="false"
+                height="1em"
+                viewBox="64 64 896 896"
+                width="1em"
+              >
+                <path
+                  d="M917.7 148.8l-42.4-42.4c-1.6-1.6-3.6-2.3-5.7-2.3s-4.1.8-5.7 2.3l-76.1 76.1a199.27 199.27 0 00-112.1-34.3c-51.2 0-102.4 19.5-141.5 58.6L432.3 308.7a8.03 8.03 0 000 11.3L704 591.7c1.6 1.6 3.6 2.3 5.7 2.3 2 0 4.1-.8 5.7-2.3l101.9-101.9c68.9-69 77-175.7 24.3-253.5l76.1-76.1c3.1-3.2 3.1-8.3 0-11.4zM769.1 441.7l-59.4 59.4-186.8-186.8 59.4-59.4c24.9-24.9 58.1-38.7 93.4-38.7 35.3 0 68.4 13.7 93.4 38.7 24.9 24.9 38.7 58.1 38.7 93.4 0 35.3-13.8 68.4-38.7 93.4zm-190.2 105a8.03 8.03 0 00-11.3 0L501 613.3 410.7 523l66.7-66.7c3.1-3.1 3.1-8.2 0-11.3L441 408.6a8.03 8.03 0 00-11.3 0L363 475.3l-43-43a7.85 7.85 0 00-5.7-2.3c-2 0-4.1.8-5.7 2.3L206.8 534.2c-68.9 69-77 175.7-24.3 253.5l-76.1 76.1a8.03 8.03 0 000 11.3l42.4 42.4c1.6 1.6 3.6 2.3 5.7 2.3s4.1-.8 5.7-2.3l76.1-76.1c33.7 22.9 72.9 34.3 112.1 34.3 51.2 0 102.4-19.5 141.5-58.6l101.9-101.9c3.1-3.1 3.1-8.2 0-11.3l-43-43 66.7-66.7c3.1-3.1 3.1-8.2 0-11.3l-36.6-36.2zM441.7 769.1a131.32 131.32 0 01-93.4 38.7c-35.3 0-68.4-13.7-93.4-38.7a131.32 131.32 0 01-38.7-93.4c0-35.3 13.7-68.4 38.7-93.4l59.4-59.4 186.8 186.8-59.4 59.4z"
+                />
+              </svg>
+            </span>
+            <span
+              class="ant-menu-title-content"
+            >
+              <a
+                href="/admin/api-explorer"
+              >
+                API Explorer
+              </a>
+            </span>
+          </li>
         </ul>
         <div
           aria-hidden="true"
@@ -441,54 +520,559 @@ exports[`DashboardPage Snapshots should match default render 1`] = `
               style="gap: 24px;"
             >
               <div
+                class="ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-wrap-wrap"
+                style="gap: 16px;"
+              >
+                <div
+                  class="ant-card ant-card-bordered css-dev-only-do-not-override-mncuj7"
+                  style="flex: 1 1 240px; min-width: 240px;"
+                >
+                  <div
+                    class="ant-card-body"
+                  >
+                    <div
+                      class="ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-align-center"
+                      style="gap: 14px;"
+                    >
+                      <div
+                        style="width: 44px; height: 44px; border-radius: 12px; background: rgba(34, 175, 121, 0.078); display: flex; align-items: center; justify-content: center; color: rgb(34, 175, 121); font-size: 20px;"
+                      >
+                        <span
+                          aria-label="database"
+                          class="anticon anticon-database"
+                          role="img"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            data-icon="database"
+                            fill="currentColor"
+                            focusable="false"
+                            height="1em"
+                            viewBox="64 64 896 896"
+                            width="1em"
+                          >
+                            <path
+                              d="M832 64H192c-17.7 0-32 14.3-32 32v832c0 17.7 14.3 32 32 32h640c17.7 0 32-14.3 32-32V96c0-17.7-14.3-32-32-32zm-600 72h560v208H232V136zm560 480H232V408h560v208zm0 272H232V680h560v208zM304 240a40 40 0 1080 0 40 40 0 10-80 0zm0 272a40 40 0 1080 0 40 40 0 10-80 0zm0 272a40 40 0 1080 0 40 40 0 10-80 0z"
+                            />
+                          </svg>
+                        </span>
+                      </div>
+                      <div
+                        class="ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-align-stretch ant-flex-vertical"
+                        style="gap: 2px;"
+                      >
+                        <span
+                          class="ant-typography ant-typography-secondary css-dev-only-do-not-override-mncuj7"
+                          style="font-size: 12px;"
+                        >
+                          Total Buckets
+                        </span>
+                        <span
+                          class="ant-typography css-dev-only-do-not-override-mncuj7"
+                          style="font-weight: 700; font-size: 24px;"
+                        >
+                          12
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="ant-card ant-card-bordered css-dev-only-do-not-override-mncuj7"
+                  style="flex: 1 1 240px; min-width: 240px;"
+                >
+                  <div
+                    class="ant-card-body"
+                  >
+                    <div
+                      class="ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-align-center"
+                      style="gap: 14px;"
+                    >
+                      <div
+                        style="width: 44px; height: 44px; border-radius: 12px; background: rgba(250, 140, 22, 0.078); display: flex; align-items: center; justify-content: center; color: rgb(250, 140, 22); font-size: 20px;"
+                      >
+                        <span
+                          aria-label="folder"
+                          class="anticon anticon-folder"
+                          role="img"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            data-icon="folder"
+                            fill="currentColor"
+                            focusable="false"
+                            height="1em"
+                            viewBox="64 64 896 896"
+                            width="1em"
+                          >
+                            <path
+                              d="M880 298.4H521L403.7 186.2a8.15 8.15 0 00-5.5-2.2H144c-17.7 0-32 14.3-32 32v592c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V330.4c0-17.7-14.3-32-32-32zM840 768H184V256h188.5l119.6 114.4H840V768z"
+                            />
+                          </svg>
+                        </span>
+                      </div>
+                      <div
+                        class="ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-align-stretch ant-flex-vertical"
+                        style="gap: 2px;"
+                      >
+                        <span
+                          class="ant-typography ant-typography-secondary css-dev-only-do-not-override-mncuj7"
+                          style="font-size: 12px;"
+                        >
+                          Total Objects
+                        </span>
+                        <span
+                          class="ant-typography css-dev-only-do-not-override-mncuj7"
+                          style="font-weight: 700; font-size: 24px;"
+                        >
+                          25
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="ant-card ant-card-bordered css-dev-only-do-not-override-mncuj7"
+                  style="flex: 1 1 240px; min-width: 240px;"
+                >
+                  <div
+                    class="ant-card-body"
+                  >
+                    <div
+                      class="ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-align-center"
+                      style="gap: 14px;"
+                    >
+                      <div
+                        style="width: 44px; height: 44px; border-radius: 12px; background: rgba(24, 144, 255, 0.078); display: flex; align-items: center; justify-content: center; color: rgb(24, 144, 255); font-size: 20px;"
+                      >
+                        <span
+                          aria-label="hdd"
+                          class="anticon anticon-hdd"
+                          role="img"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            data-icon="hdd"
+                            fill="currentColor"
+                            focusable="false"
+                            height="1em"
+                            viewBox="64 64 896 896"
+                            width="1em"
+                          >
+                            <path
+                              d="M832 64H192c-17.7 0-32 14.3-32 32v832c0 17.7 14.3 32 32 32h640c17.7 0 32-14.3 32-32V96c0-17.7-14.3-32-32-32zm-600 72h560v208H232V136zm560 480H232V408h560v208zm0 272H232V680h560v208zM496 208H312c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8h184c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8zM312 544h184c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8H312c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8zm328 244a40 40 0 1080 0 40 40 0 10-80 0z"
+                            />
+                          </svg>
+                        </span>
+                      </div>
+                      <div
+                        class="ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-align-stretch ant-flex-vertical"
+                        style="gap: 2px;"
+                      >
+                        <span
+                          class="ant-typography ant-typography-secondary css-dev-only-do-not-override-mncuj7"
+                          style="font-size: 12px;"
+                        >
+                          Total Storage
+                        </span>
+                        <span
+                          class="ant-typography css-dev-only-do-not-override-mncuj7"
+                          style="font-weight: 700; font-size: 24px;"
+                        >
+                          1.0 MB
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
                 class="ant-card ant-card-bordered css-dev-only-do-not-override-mncuj7"
+                style="margin-bottom: 16px;"
               >
                 <div
                   class="ant-card-body"
                 >
                   <div
-                    class="ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-align-stretch ant-flex-vertical"
-                    style="gap: 16px;"
+                    class="ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-align-center ant-flex-justify-space-between"
+                    style="margin-bottom: 12px;"
                   >
+                    <span
+                      class="ant-typography css-dev-only-do-not-override-mncuj7"
+                      style="font-weight: 600; font-size: 14px;"
+                    >
+                      Request Summary
+                    </span>
                     <div
                       class="ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-align-center"
-                      style="gap: 12px;"
+                      style="gap: 8px;"
                     >
-                      <span
-                        aria-label="info-circle"
-                        class="anticon anticon-info-circle"
-                        role="img"
-                        style="font-size: 24px; color: rgb(24, 144, 255);"
+                      <div
+                        class="ant-flex css-dev-only-do-not-override-mncuj7"
+                        style="gap: 4px;"
                       >
-                        <svg
-                          aria-hidden="true"
-                          data-icon="info-circle"
-                          fill="currentColor"
-                          focusable="false"
-                          height="1em"
-                          viewBox="64 64 896 896"
-                          width="1em"
+                        <button
+                          style="padding: 4px 12px; font-size: 12px; border: 1px solid; border-color: #d9d9d9; border-radius: 4px; background: transparent; cursor: pointer; font-weight: 400;"
                         >
-                          <path
-                            d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm0 820c-205.4 0-372-166.6-372-372s166.6-372 372-372 372 166.6 372 372-166.6 372-372 372z"
-                          />
-                          <path
-                            d="M464 336a48 48 0 1096 0 48 48 0 10-96 0zm72 112h-48c-4.4 0-8 3.6-8 8v272c0 4.4 3.6 8 8 8h48c4.4 0 8-3.6 8-8V456c0-4.4-3.6-8-8-8z"
-                          />
-                        </svg>
-                      </span>
-                      <h1
-                        class="ant-typography css-dev-only-do-not-override-mncuj7"
-                        style="font-weight: 600; font-size: 24px; margin: 0px; text-align: left;"
+                          Last Hour
+                        </button>
+                        <button
+                          style="padding: 4px 12px; font-size: 12px; border: 1px solid; border-color: #22af79; border-radius: 4px; background: rgb(34, 175, 121); color: rgb(255, 255, 255); cursor: pointer; font-weight: 600;"
+                        >
+                          Last Day
+                        </button>
+                        <button
+                          style="padding: 4px 12px; font-size: 12px; border: 1px solid; border-color: #d9d9d9; border-radius: 4px; background: transparent; cursor: pointer; font-weight: 400;"
+                        >
+                          Last Week
+                        </button>
+                        <button
+                          style="padding: 4px 12px; font-size: 12px; border: 1px solid; border-color: #d9d9d9; border-radius: 4px; background: transparent; cursor: pointer; font-weight: 400;"
+                        >
+                          Last Month
+                        </button>
+                      </div>
+                      <button
+                        aria-describedby="test-id"
+                        class="ant-btn css-dev-only-do-not-override-mncuj7 ant-btn-text ant-btn-color-default ant-btn-variant-text ant-btn-sm ant-btn-icon-only"
+                        type="button"
                       >
-                        Welcome to Less3
-                      </h1>
+                        <span
+                          class="ant-btn-icon"
+                        >
+                          <span
+                            aria-label="reload"
+                            class="anticon anticon-reload anticon-spin"
+                            role="img"
+                          >
+                            <svg
+                              aria-hidden="true"
+                              data-icon="reload"
+                              fill="currentColor"
+                              focusable="false"
+                              height="1em"
+                              viewBox="64 64 896 896"
+                              width="1em"
+                            >
+                              <path
+                                d="M909.1 209.3l-56.4 44.1C775.8 155.1 656.2 92 521.9 92 290 92 102.3 279.5 102 511.5 101.7 743.7 289.8 932 521.9 932c181.3 0 335.8-115 394.6-276.1 1.5-4.2-.7-8.9-4.9-10.3l-56.7-19.5a8 8 0 00-10.1 4.8c-1.8 5-3.8 10-5.9 14.9-17.3 41-42.1 77.8-73.7 109.4A344.77 344.77 0 01655.9 829c-42.3 17.9-87.4 27-133.8 27-46.5 0-91.5-9.1-133.8-27A341.5 341.5 0 01279 755.2a342.16 342.16 0 01-73.7-109.4c-17.9-42.4-27-87.4-27-133.9s9.1-91.5 27-133.9c17.3-41 42.1-77.8 73.7-109.4 31.6-31.6 68.4-56.4 109.3-73.8 42.3-17.9 87.4-27 133.8-27 46.5 0 91.5 9.1 133.8 27a341.5 341.5 0 01109.3 73.8c9.9 9.9 19.2 20.4 27.8 31.4l-60.2 47a8 8 0 003 14.1l175.6 43c5 1.2 9.9-2.6 9.9-7.7l.8-180.9c-.1-6.6-7.8-10.3-13-6.2z"
+                              />
+                            </svg>
+                          </span>
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    style="text-align: center; padding: 60px 0px;"
+                  >
+                    <span
+                      class="ant-typography ant-typography-secondary css-dev-only-do-not-override-mncuj7"
+                    >
+                      Loading chart data...
+                    </span>
+                  </div>
+                  <div
+                    class="ant-flex css-dev-only-do-not-override-mncuj7"
+                    style="margin-top: 12px; gap: 16px;"
+                  >
+                    <div
+                      class="ant-card ant-card-bordered ant-card-small css-dev-only-do-not-override-mncuj7"
+                      style="flex: 1; text-align: center;"
+                    >
+                      <div
+                        class="ant-card-body"
+                      >
+                        <span
+                          class="ant-typography ant-typography-secondary css-dev-only-do-not-override-mncuj7"
+                          style="font-size: 12px;"
+                        >
+                          Total
+                        </span>
+                        <div>
+                          <span
+                            class="ant-typography css-dev-only-do-not-override-mncuj7"
+                            style="font-weight: 600; font-size: 20px;"
+                          >
+                            0
+                          </span>
+                        </div>
+                      </div>
                     </div>
                     <div
-                      class="ant-typography css-dev-only-do-not-override-mncuj7"
-                      style="font-size: 16px; margin: 0px; line-height: 1.6;"
+                      class="ant-card ant-card-bordered ant-card-small css-dev-only-do-not-override-mncuj7"
+                      style="flex: 1; text-align: center;"
                     >
-                      Manage your storage buckets and configure your storage infrastructure from this centralized home. Use the navigation menu to access different sections and manage your resources.
+                      <div
+                        class="ant-card-body"
+                      >
+                        <span
+                          class="ant-typography ant-typography-secondary css-dev-only-do-not-override-mncuj7"
+                          style="font-size: 12px;"
+                        >
+                          Success
+                        </span>
+                        <div>
+                          <span
+                            class="ant-typography css-dev-only-do-not-override-mncuj7"
+                            style="font-weight: 600; font-size: 20px; color: rgb(34, 175, 121);"
+                          >
+                            0
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      class="ant-card ant-card-bordered ant-card-small css-dev-only-do-not-override-mncuj7"
+                      style="flex: 1; text-align: center;"
+                    >
+                      <div
+                        class="ant-card-body"
+                      >
+                        <span
+                          class="ant-typography ant-typography-secondary css-dev-only-do-not-override-mncuj7"
+                          style="font-size: 12px;"
+                        >
+                          Failed
+                        </span>
+                        <div>
+                          <span
+                            class="ant-typography css-dev-only-do-not-override-mncuj7"
+                            style="font-weight: 600; font-size: 20px; color: rgb(217, 56, 58);"
+                          >
+                            0
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <span
+                  class="ant-typography css-dev-only-do-not-override-mncuj7"
+                  style="font-weight: 600; font-size: 16px; margin-bottom: 12px; display: block;"
+                >
+                  Quick Actions
+                </span>
+                <div
+                  class="ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-wrap-wrap"
+                  style="gap: 16px;"
+                >
+                  <div
+                    class="ant-card ant-card-bordered ant-card-hoverable css-dev-only-do-not-override-mncuj7"
+                    style="cursor: pointer; flex: 1 1 220px; min-width: 220px;"
+                  >
+                    <div
+                      class="ant-card-body"
+                    >
+                      <div
+                        class="ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-align-center"
+                        style="gap: 16px;"
+                      >
+                        <div
+                          style="width: 48px; height: 48px; border-radius: 12px; background: rgba(34, 175, 121, 0.078); display: flex; align-items: center; justify-content: center; font-size: 22px; color: rgb(34, 175, 121);"
+                        >
+                          <span
+                            aria-label="database"
+                            class="anticon anticon-database"
+                            role="img"
+                          >
+                            <svg
+                              aria-hidden="true"
+                              data-icon="database"
+                              fill="currentColor"
+                              focusable="false"
+                              height="1em"
+                              viewBox="64 64 896 896"
+                              width="1em"
+                            >
+                              <path
+                                d="M832 64H192c-17.7 0-32 14.3-32 32v832c0 17.7 14.3 32 32 32h640c17.7 0 32-14.3 32-32V96c0-17.7-14.3-32-32-32zm-600 72h560v208H232V136zm560 480H232V408h560v208zm0 272H232V680h560v208zM304 240a40 40 0 1080 0 40 40 0 10-80 0zm0 272a40 40 0 1080 0 40 40 0 10-80 0zm0 272a40 40 0 1080 0 40 40 0 10-80 0z"
+                              />
+                            </svg>
+                          </span>
+                        </div>
+                        <div
+                          class="ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-align-stretch ant-flex-vertical"
+                          style="gap: 2px;"
+                        >
+                          <span
+                            class="ant-typography css-dev-only-do-not-override-mncuj7"
+                            style="font-weight: 600; font-size: 15px;"
+                          >
+                            Create a Bucket
+                          </span>
+                          <span
+                            class="ant-typography css-dev-only-do-not-override-mncuj7"
+                            style="font-size: 13px;"
+                          >
+                            Set up a new storage bucket
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    class="ant-card ant-card-bordered ant-card-hoverable css-dev-only-do-not-override-mncuj7"
+                    style="cursor: pointer; flex: 1 1 220px; min-width: 220px;"
+                  >
+                    <div
+                      class="ant-card-body"
+                    >
+                      <div
+                        class="ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-align-center"
+                        style="gap: 16px;"
+                      >
+                        <div
+                          style="width: 48px; height: 48px; border-radius: 12px; background: rgba(24, 144, 255, 0.078); display: flex; align-items: center; justify-content: center; font-size: 22px; color: rgb(24, 144, 255);"
+                        >
+                          <span
+                            aria-label="folder"
+                            class="anticon anticon-folder"
+                            role="img"
+                          >
+                            <svg
+                              aria-hidden="true"
+                              data-icon="folder"
+                              fill="currentColor"
+                              focusable="false"
+                              height="1em"
+                              viewBox="64 64 896 896"
+                              width="1em"
+                            >
+                              <path
+                                d="M880 298.4H521L403.7 186.2a8.15 8.15 0 00-5.5-2.2H144c-17.7 0-32 14.3-32 32v592c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V330.4c0-17.7-14.3-32-32-32zM840 768H184V256h188.5l119.6 114.4H840V768z"
+                              />
+                            </svg>
+                          </span>
+                        </div>
+                        <div
+                          class="ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-align-stretch ant-flex-vertical"
+                          style="gap: 2px;"
+                        >
+                          <span
+                            class="ant-typography css-dev-only-do-not-override-mncuj7"
+                            style="font-weight: 600; font-size: 15px;"
+                          >
+                            Manage Objects
+                          </span>
+                          <span
+                            class="ant-typography css-dev-only-do-not-override-mncuj7"
+                            style="font-size: 13px;"
+                          >
+                            Browse and manage stored objects
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    class="ant-card ant-card-bordered ant-card-hoverable css-dev-only-do-not-override-mncuj7"
+                    style="cursor: pointer; flex: 1 1 220px; min-width: 220px;"
+                  >
+                    <div
+                      class="ant-card-body"
+                    >
+                      <div
+                        class="ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-align-center"
+                        style="gap: 16px;"
+                      >
+                        <div
+                          style="width: 48px; height: 48px; border-radius: 12px; background: rgba(250, 140, 22, 0.078); display: flex; align-items: center; justify-content: center; font-size: 22px; color: rgb(250, 140, 22);"
+                        >
+                          <span
+                            aria-label="user"
+                            class="anticon anticon-user"
+                            role="img"
+                          >
+                            <svg
+                              aria-hidden="true"
+                              data-icon="user"
+                              fill="currentColor"
+                              focusable="false"
+                              height="1em"
+                              viewBox="64 64 896 896"
+                              width="1em"
+                            >
+                              <path
+                                d="M858.5 763.6a374 374 0 00-80.6-119.5 375.63 375.63 0 00-119.5-80.6c-.4-.2-.8-.3-1.2-.5C719.5 518 760 444.7 760 362c0-137-111-248-248-248S264 225 264 362c0 82.7 40.5 156 102.8 201.1-.4.2-.8.3-1.2.5-44.8 18.9-85 46-119.5 80.6a375.63 375.63 0 00-80.6 119.5A371.7 371.7 0 00136 901.8a8 8 0 008 8.2h60c4.4 0 7.9-3.5 8-7.8 2-77.2 33-149.5 87.8-204.3 56.7-56.7 132-87.9 212.2-87.9s155.5 31.2 212.2 87.9C779 752.7 810 825 812 902.2c.1 4.4 3.6 7.8 8 7.8h60a8 8 0 008-8.2c-1-47.8-10.9-94.3-29.5-138.2zM512 534c-45.9 0-89.1-17.9-121.6-50.4S340 407.9 340 362c0-45.9 17.9-89.1 50.4-121.6S466.1 190 512 190s89.1 17.9 121.6 50.4S684 316.1 684 362c0 45.9-17.9 89.1-50.4 121.6S557.9 534 512 534z"
+                              />
+                            </svg>
+                          </span>
+                        </div>
+                        <div
+                          class="ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-align-stretch ant-flex-vertical"
+                          style="gap: 2px;"
+                        >
+                          <span
+                            class="ant-typography css-dev-only-do-not-override-mncuj7"
+                            style="font-weight: 600; font-size: 15px;"
+                          >
+                            Manage Users
+                          </span>
+                          <span
+                            class="ant-typography css-dev-only-do-not-override-mncuj7"
+                            style="font-size: 13px;"
+                          >
+                            View and manage user accounts
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    class="ant-card ant-card-bordered ant-card-hoverable css-dev-only-do-not-override-mncuj7"
+                    style="cursor: pointer; flex: 1 1 220px; min-width: 220px;"
+                  >
+                    <div
+                      class="ant-card-body"
+                    >
+                      <div
+                        class="ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-align-center"
+                        style="gap: 16px;"
+                      >
+                        <div
+                          style="width: 48px; height: 48px; border-radius: 12px; background: rgba(114, 46, 209, 0.078); display: flex; align-items: center; justify-content: center; font-size: 22px; color: rgb(114, 46, 209);"
+                        >
+                          <span
+                            aria-label="key"
+                            class="anticon anticon-key"
+                            role="img"
+                          >
+                            <svg
+                              aria-hidden="true"
+                              data-icon="key"
+                              fill="currentColor"
+                              focusable="false"
+                              height="1em"
+                              viewBox="64 64 896 896"
+                              width="1em"
+                            >
+                              <path
+                                d="M608 112c-167.9 0-304 136.1-304 304 0 70.3 23.9 135 63.9 186.5l-41.1 41.1-62.3-62.3a8.15 8.15 0 00-11.4 0l-39.8 39.8a8.15 8.15 0 000 11.4l62.3 62.3-44.9 44.9-62.3-62.3a8.15 8.15 0 00-11.4 0l-39.8 39.8a8.15 8.15 0 000 11.4l62.3 62.3-65.3 65.3a8.03 8.03 0 000 11.3l42.3 42.3c3.1 3.1 8.2 3.1 11.3 0l253.6-253.6A304.06 304.06 0 00608 720c167.9 0 304-136.1 304-304S775.9 112 608 112zm161.2 465.2C726.2 620.3 668.9 644 608 644c-60.9 0-118.2-23.7-161.2-66.8-43.1-43-66.8-100.3-66.8-161.2 0-60.9 23.7-118.2 66.8-161.2 43-43.1 100.3-66.8 161.2-66.8 60.9 0 118.2 23.7 161.2 66.8 43.1 43 66.8 100.3 66.8 161.2 0 60.9-23.7 118.2-66.8 161.2z"
+                              />
+                            </svg>
+                          </span>
+                        </div>
+                        <div
+                          class="ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-align-stretch ant-flex-vertical"
+                          style="gap: 2px;"
+                        >
+                          <span
+                            class="ant-typography css-dev-only-do-not-override-mncuj7"
+                            style="font-weight: 600; font-size: 15px;"
+                          >
+                            Manage Credentials
+                          </span>
+                          <span
+                            class="ant-typography css-dev-only-do-not-override-mncuj7"
+                            style="font-size: 13px;"
+                          >
+                            Configure access keys and secrets
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

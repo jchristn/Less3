@@ -81,6 +81,11 @@
                 await GetRequestHistory(ctx);
                 return;
             }
+            else if (ctx.Http.Request.Url.Elements[1].Equals("stats"))
+            {
+                await GetDashboardStatistics(ctx);
+                return;
+            }
 
             await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest);
         }
@@ -304,6 +309,38 @@
 
                 bucketStart = bucketEnd;
             }
+
+            ctx.Response.StatusCode = 200;
+            ctx.Response.ContentType = "application/json";
+            await ctx.Response.Send(SerializationHelper.SerializeJson(result, true));
+        }
+
+        private async Task GetDashboardStatistics(S3Context ctx)
+        {
+            DashboardStatistics result = new DashboardStatistics();
+            List<Bucket> buckets = _Config.GetBuckets();
+
+            if (buckets != null)
+            {
+                result.BucketCount = buckets.Count;
+
+                foreach (Bucket bucket in buckets)
+                {
+                    BucketStatistics stats = new BucketStatistics(bucket.Name, bucket.GUID, 0, 0);
+                    BucketClient client = _Buckets.GetClient(bucket.Name);
+
+                    if (client != null)
+                    {
+                        stats = client.GetFullStatistics();
+                    }
+
+                    result.Buckets.Add(stats);
+                    result.TotalObjectCount += stats.Objects;
+                    result.TotalBytes += stats.Bytes;
+                }
+            }
+
+            result.GeneratedUtc = DateTime.UtcNow;
 
             ctx.Response.StatusCode = 200;
             ctx.Response.ContentType = "application/json";

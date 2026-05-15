@@ -24,6 +24,11 @@
             Admin API POST handler.
             </summary>
         </member>
+        <member name="T:Less3.Api.Admin.PutHandler">
+            <summary>
+            Admin API PUT handler.
+            </summary>
+        </member>
         <member name="T:Less3.Api.S3.ApiHandler">
             <summary>
             API handler.
@@ -557,6 +562,36 @@
             <param name="accessKey">Access key.</param>
             <param name="secretKey">Secret key.</param>
             <param name="isBase64">Is base64 encoded.</param>
+        </member>
+        <member name="T:Less3.Classes.DashboardStatistics">
+            <summary>
+            Aggregate dashboard statistics exposed by the admin API.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.DashboardStatistics.BucketCount">
+            <summary>
+            Number of buckets in the system.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.DashboardStatistics.TotalObjectCount">
+            <summary>
+            Number of stored objects across all buckets.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.DashboardStatistics.TotalBytes">
+            <summary>
+            Total number of stored bytes across all buckets.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.DashboardStatistics.Buckets">
+            <summary>
+            Per-bucket statistics used to build the aggregate totals.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.DashboardStatistics.GeneratedUtc">
+            <summary>
+            Generation timestamp in UTC.
+            </summary>
         </member>
         <member name="T:Less3.Classes.DefaultDataSeeder">
             <summary>
@@ -1696,6 +1731,12 @@
             </summary>
             <param name="credential">Credential to insert.</param>
         </member>
+        <member name="M:Less3.Database.Interfaces.ICredentialMethods.Update(Less3.Classes.Credential)">
+            <summary>
+            Update an existing credential.
+            </summary>
+            <param name="credential">Credential to update.</param>
+        </member>
         <member name="M:Less3.Database.Interfaces.ICredentialMethods.DeleteByGuid(System.String)">
             <summary>
             Delete a credential by GUID.
@@ -2011,6 +2052,12 @@
             </summary>
             <param name="user">User to insert.</param>
         </member>
+        <member name="M:Less3.Database.Interfaces.IUserMethods.Update(Less3.Classes.User)">
+            <summary>
+            Update an existing user.
+            </summary>
+            <param name="user">User to update.</param>
+        </member>
         <member name="M:Less3.Database.Interfaces.IUserMethods.DeleteByGuid(System.String)">
             <summary>
             Delete a user by GUID.
@@ -2078,6 +2125,9 @@
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.Insert(Less3.Classes.Credential)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.Update(Less3.Classes.Credential)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.DeleteByGuid(System.String)">
@@ -2198,6 +2248,9 @@
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.UserMethods.Insert(Less3.Classes.User)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UserMethods.Update(Less3.Classes.User)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.UserMethods.DeleteByGuid(System.String)">
@@ -2328,6 +2381,9 @@
         <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.Insert(Less3.Classes.Credential)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.Update(Less3.Classes.Credential)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.DeleteByGuid(System.String)">
             <inheritdoc />
         </member>
@@ -2448,6 +2504,9 @@
         <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.Insert(Less3.Classes.User)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.Update(Less3.Classes.User)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.DeleteByGuid(System.String)">
             <inheritdoc />
         </member>
@@ -2554,6 +2613,9 @@
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.Insert(Less3.Classes.Credential)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.Update(Less3.Classes.Credential)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.DeleteByGuid(System.String)">
@@ -2674,6 +2736,9 @@
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.Insert(Less3.Classes.User)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.Update(Less3.Classes.User)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.DeleteByGuid(System.String)">

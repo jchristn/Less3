@@ -1,7 +1,7 @@
 /* eslint-disable max-lines-per-function */
 'use client';
 import React, { useState, useMemo } from 'react';
-import { Form, message, Descriptions, MenuProps } from 'antd';
+import { Form, Descriptions, MenuProps } from 'antd';
 import { PlusOutlined, SearchOutlined, MoreOutlined, ReloadOutlined } from '@ant-design/icons';
 import DataTable, { DataTableColumn } from '#/components/DataTable';
 import Less3Button from '#/components/base/button/Button';
@@ -19,11 +19,13 @@ import {
   useGetCredentialsQuery,
   useGetCredentialByIdQuery,
   useCreateCredentialMutation,
+  useUpdateCredentialMutation,
   useDeleteCredentialMutation,
   Credential,
 } from '#/store/slice/credentialsSlice';
 import { useGetUsersQuery } from '#/store/slice/usersSlice';
 import { formatDate } from '#/utils/dateUtils';
+import { message } from '#/utils/message';
 
 interface CredentialFormValues {
   UserGUID: string;
@@ -37,6 +39,7 @@ const CredentialsPage: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [isMetadataModalVisible, setIsMetadataModalVisible] = useState(false);
+  const [editingCredential, setEditingCredential] = useState<Credential | null>(null);
   const [viewingCredentialGUID, setViewingCredentialGUID] = useState<string | null>(null);
   const [deletingCredential, setDeletingCredential] = useState<Credential | null>(null);
   const [searchText, setSearchText] = useState('');
@@ -53,6 +56,7 @@ const CredentialsPage: React.FC = () => {
   );
 
   const [createCredential, { isLoading: isCreating }] = useCreateCredentialMutation();
+  const [updateCredential, { isLoading: isUpdating }] = useUpdateCredentialMutation();
   const [deleteCredential, { isLoading: isDeleting }] = useDeleteCredentialMutation();
 
   // Create user options for dropdown (show Name, store GUID)
@@ -71,7 +75,19 @@ const CredentialsPage: React.FC = () => {
   };
 
   const handleCreate = () => {
+    setEditingCredential(null);
     form.resetFields();
+    setIsModalVisible(true);
+  };
+
+  const handleEdit = (record: Credential) => {
+    setEditingCredential(record);
+    form.setFieldsValue({
+      UserGUID: record.UserGUID,
+      Description: record.Description,
+      AccessKey: record.AccessKey,
+      SecretKey: record.SecretKey,
+    });
     setIsModalVisible(true);
   };
 
@@ -94,13 +110,25 @@ const CredentialsPage: React.FC = () => {
         AccessKey: values.AccessKey,
         SecretKey: values.SecretKey,
       };
-      await createCredential(createPayload).unwrap();
-      message.success('Credential created successfully');
+
+      if (editingCredential?.GUID) {
+        await updateCredential({
+          GUID: editingCredential.GUID,
+          IsBase64: editingCredential.IsBase64,
+          ...createPayload,
+        }).unwrap();
+        message.success('Credential updated successfully');
+      } else {
+        await createCredential(createPayload).unwrap();
+        message.success('Credential created successfully');
+      }
+
       setIsModalVisible(false);
+      setEditingCredential(null);
       form.resetFields();
       refetch();
     } catch (error: any) {
-      message.error(error?.data?.message || 'Failed to create credential');
+      message.error(error?.data?.message || `Failed to ${editingCredential ? 'update' : 'create'} credential`);
     }
   };
 
@@ -161,6 +189,11 @@ const CredentialsPage: React.FC = () => {
       render: (item) => {
         const menuItems: MenuProps['items'] = [
           {
+            key: 'edit',
+            label: 'Edit Credential',
+            onClick: () => handleEdit(item),
+          },
+          {
             key: 'metadata',
             label: 'View Metadata',
             onClick: () => handleViewMetadata(item),
@@ -174,7 +207,7 @@ const CredentialsPage: React.FC = () => {
 
         return (
           <Less3Dropdown menu={{ items: menuItems }} trigger={['click']}>
-            <Less3Button type="text" icon={<MoreOutlined />} size="small" />
+            <Less3Button type="text" icon={<MoreOutlined />} size="small" onClick={(event) => event.stopPropagation()} />
           </Less3Dropdown>
         );
       },
@@ -226,17 +259,20 @@ const CredentialsPage: React.FC = () => {
         data={filteredData}
         loading={isLoading}
         rowKey="GUID"
+        onRowClick={handleEdit}
       />
 
       <Less3Modal
-        title="Create Credential"
+        title={editingCredential ? 'Edit Credential' : 'Create Credential'}
         open={isModalVisible}
+        forceRender
         onOk={handleModalOk}
         onCancel={() => {
           setIsModalVisible(false);
+          setEditingCredential(null);
           form.resetFields();
         }}
-        confirmLoading={isCreating}
+        confirmLoading={isCreating || isUpdating}
         width={600}
         centered
       >

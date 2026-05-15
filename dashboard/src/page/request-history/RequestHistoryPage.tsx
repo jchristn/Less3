@@ -1,16 +1,15 @@
 /* eslint-disable max-lines-per-function */
 'use client';
 import React, { useMemo, useState, useCallback } from 'react';
-import { message, MenuProps, Descriptions } from 'antd';
+import { MenuProps } from 'antd';
 import {
   SearchOutlined,
   MoreOutlined,
   DeleteOutlined,
   EyeOutlined,
   ReloadOutlined,
-  CopyOutlined,
-  CheckOutlined,
 } from '@ant-design/icons';
+import CopyToClipboard from '#/components/copy-to-clipboard/CopyToClipboard';
 import DataTable, { DataTableColumn } from '#/components/DataTable';
 import Less3Button from '#/components/base/button/Button';
 import Less3Modal from '#/components/base/modal/Modal';
@@ -26,9 +25,9 @@ import {
   useDeleteRequestHistoryMutation,
   RequestHistoryEntry,
 } from '#/store/slice/requestHistorySlice';
-import GuidDisplay from '#/components/guid-display';
-import { copyToClipboard } from '#/utils/clipboardUtils';
 import { formatDate } from '#/utils/dateUtils';
+import { getPrettyPrintedTextContent } from '#/utils/objectContentUtils';
+import { message } from '#/utils/message';
 import SummaryChart, { getQuickRange } from './SummaryChart';
 
 const METHOD_OPTIONS = [
@@ -56,35 +55,62 @@ const getStatusColor = (code: number): string => {
   return '#8c8c8c';
 };
 
-const CopyIcon: React.FC<{ text: string }> = ({ text }) => {
-  const [copied, setCopied] = useState(false);
-  const handleCopy = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    copyToClipboard(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  };
-  return (
-    <span
-      onClick={handleCopy}
-      style={{
-        cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-        width: 24, height: 24, borderRadius: 4, transition: 'all 0.2s ease',
-        color: copied ? '#22AF79' : 'var(--ant-color-text-quaternary)',
-      }}
-    >
-      {copied ? <CheckOutlined style={{ fontSize: 14 }} /> : <CopyOutlined style={{ fontSize: 14 }} />}
-    </span>
-  );
-};
+const formatDurationMs = (value: number): string => `${value.toFixed(2)}ms`;
 
-const DetailBlock: React.FC<{ title: string; value: string }> = ({ title, value }) => {
+interface DetailBlockProps {
+  title: string;
+  value: string;
+  contentType?: string;
+  allowPrettyPrint?: boolean;
+}
+
+const DetailBlock: React.FC<DetailBlockProps> = ({
+  title,
+  value,
+  contentType,
+  allowPrettyPrint = false,
+}) => {
+  const [isPrettyPrintEnabled, setIsPrettyPrintEnabled] = useState(false);
+
+  const prettyPrintedValue = useMemo(() => {
+    if (!allowPrettyPrint) {
+      return null;
+    }
+
+    return getPrettyPrintedTextContent(value, contentType);
+  }, [allowPrettyPrint, contentType, value]);
+
+  const canPrettyPrint = Boolean(prettyPrintedValue);
+  const displayedValue = value
+    ? (isPrettyPrintEnabled && prettyPrintedValue ? prettyPrintedValue : value)
+    : '(empty)';
+
+  React.useEffect(() => {
+    setIsPrettyPrintEnabled(false);
+  }, [contentType, value]);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       <Less3Flex justify="space-between" align="center">
         <Less3Text weight={600} fontSize={13}>{title}</Less3Text>
-        <CopyIcon text={value} />
+        <Less3Flex gap={8} align="center">
+          {canPrettyPrint && (
+            <Less3Button size="small" onClick={() => setIsPrettyPrintEnabled((current) => !current)}>
+              {isPrettyPrintEnabled ? 'Show Raw' : 'Pretty Print'}
+            </Less3Button>
+          )}
+          <CopyToClipboard
+            text={isPrettyPrintEnabled && prettyPrintedValue ? prettyPrintedValue : value}
+            tooltip={`Copy ${title}`}
+            ariaLabel={`Copy ${title}`}
+          />
+        </Less3Flex>
       </Less3Flex>
+      {allowPrettyPrint && value && (
+        <Less3Text type="secondary" fontSize={12}>
+          {isPrettyPrintEnabled && canPrettyPrint ? 'Pretty-printed content' : 'Raw content'}
+        </Less3Text>
+      )}
       <pre
         style={{
           margin: 0,
@@ -101,7 +127,7 @@ const DetailBlock: React.FC<{ title: string; value: string }> = ({ title, value 
           lineHeight: 1.6,
         }}
       >
-        {value || '(empty)'}
+        {displayedValue}
       </pre>
     </div>
   );
@@ -302,7 +328,7 @@ const RequestHistoryPage: React.FC = () => {
               setOpenDropdownKey(open ? dropdownKey : null);
             }}
           >
-            <Less3Button type="text" icon={<MoreOutlined />} size="small" />
+            <Less3Button type="text" icon={<MoreOutlined />} size="small" onClick={(event) => event.stopPropagation()} />
           </Less3Dropdown>
         );
       },
@@ -359,6 +385,7 @@ const RequestHistoryPage: React.FC = () => {
         data={filteredData}
         loading={isLoading}
         rowKey="GUID"
+        onRowClick={handleViewDetail}
       />
 
       {/* Detail Modal - Verbex-style fullscreen */}
@@ -381,7 +408,6 @@ const RequestHistoryPage: React.FC = () => {
           </Less3Button>,
         ]}
         width="90vw"
-        style={{ top: 20 }}
         keyboard={true}
       >
         {selectedEntry && (
@@ -403,80 +429,94 @@ const RequestHistoryPage: React.FC = () => {
               >
                 {selectedEntry.RequestUrl}
               </span>
-              <CopyIcon text={selectedEntry.RequestUrl} />
+              <CopyToClipboard text={selectedEntry.RequestUrl} tooltip="Copy URL" ariaLabel="Copy URL" />
             </Less3Flex>
 
-            {/* Summary Header - 4 cards in a row */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-              {[
-                { label: 'Entry ID', value: selectedEntry.GUID, mono: true, copyable: true },
-                { label: 'Route', value: selectedEntry.RequestUrl, verb: selectedEntry.HttpMethod },
-                { label: 'Source IP', value: selectedEntry.SourceIp || 'Unknown' },
-                { label: 'Status', value: String(selectedEntry.StatusCode), badge: true },
-              ].map((item: { label: string; value: string; mono?: boolean; badge?: boolean; copyable?: boolean; verb?: string }) => (
-                <div
-                  key={item.label}
-                  style={{
-                    padding: 14,
-                    border: '1px solid var(--color-separator)',
-                    borderRadius: 8,
-                    background: 'var(--ant-color-bg-layout)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 6,
-                  }}
-                >
-                  <Less3Text type="secondary" fontSize={12}>{item.label}</Less3Text>
-                  {item.badge ? (
-                    <span
-                      style={{
-                        display: 'inline-block',
-                        width: 'fit-content',
-                        padding: '2px 10px',
-                        borderRadius: 4,
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: '#fff',
-                        background: getStatusColor(selectedEntry.StatusCode),
-                      }}
-                    >
-                      {item.value}
-                    </span>
-                  ) : (
-                    <Less3Flex align="center" gap={6} style={{ flexWrap: 'wrap' }}>
-                      {item.verb && (
-                        <span
-                          style={{
-                            display: 'inline-block',
-                            padding: '2px 8px',
-                            borderRadius: 4,
-                            fontSize: 11,
-                            fontWeight: 600,
-                            color: '#fff',
-                            background: METHOD_COLORS[item.verb] || '#8c8c8c',
-                            flexShrink: 0,
-                          }}
-                        >
-                          {item.verb}
-                        </span>
-                      )}
-                      <Less3Text
-                        weight={600}
-                        fontSize={13}
+            {/* Summary Header */}
+            <div
+              style={{
+                padding: '4px 0 4px 16px',
+              }}
+            >
+              <table
+                style={{
+                  width: '100%',
+                  borderCollapse: 'collapse',
+                  tableLayout: 'fixed',
+                }}
+              >
+                <tbody>
+                  {[
+                    {
+                      label: 'Entry ID',
+                      value: selectedEntry.GUID,
+                      copyable: true,
+                      mono: true,
+                    },
+                    {
+                      label: 'Route',
+                      value: `${selectedEntry.HttpMethod} ${selectedEntry.RequestUrl}`,
+                    },
+                    {
+                      label: 'Source IP',
+                      value: selectedEntry.SourceIp || 'Unknown',
+                    },
+                    {
+                      label: 'Status',
+                      value: String(selectedEntry.StatusCode),
+                      accentColor: getStatusColor(selectedEntry.StatusCode),
+                    },
+                    {
+                      label: 'Response Time',
+                      value: formatDurationMs(selectedEntry.DurationMs),
+                    },
+                  ].map((item: {
+                    label: string;
+                    value: string;
+                    copyable?: boolean;
+                    mono?: boolean;
+                    accentColor?: string;
+                  }) => (
+                    <tr key={item.label}>
+                      <td
                         style={{
-                          wordBreak: 'break-all',
-                          fontFamily: item.mono
-                            ? "'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Consolas', monospace"
-                            : undefined,
+                          width: 140,
+                          padding: '8px 12px 8px 0',
+                          verticalAlign: 'top',
                         }}
                       >
-                        {item.value}
-                      </Less3Text>
-                      {item.copyable && <CopyIcon text={item.value} />}
-                    </Less3Flex>
-                  )}
-                </div>
-              ))}
+                        <Less3Text type="secondary" fontSize={12}>
+                          {item.label}
+                        </Less3Text>
+                      </td>
+                      <td style={{ padding: '8px 0', verticalAlign: 'top' }}>
+                        <Less3Flex align="center" gap={8} style={{ flexWrap: 'wrap' }}>
+                          <Less3Text
+                            weight={600}
+                            fontSize={13}
+                            style={{
+                              wordBreak: 'break-all',
+                              color: item.accentColor,
+                              fontFamily: item.mono
+                                ? "'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Consolas', monospace"
+                                : undefined,
+                            }}
+                          >
+                            {item.value}
+                          </Less3Text>
+                          {item.copyable && (
+                            <CopyToClipboard
+                              text={item.value}
+                              tooltip={`Copy ${item.label}`}
+                              ariaLabel={`Copy ${item.label}`}
+                            />
+                          )}
+                        </Less3Flex>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
 
             {/* Detail Grid - 4 columns */}
@@ -486,7 +526,7 @@ const RequestHistoryPage: React.FC = () => {
                 RequestType: selectedEntry.RequestType || null,
                 ContentType: selectedEntry.RequestContentType || null,
                 BodyLength: selectedEntry.RequestBodyLength,
-                Duration: `${selectedEntry.DurationMs} ms`,
+                Duration: formatDurationMs(selectedEntry.DurationMs),
               }, null, 2)} />
               <DetailBlock title="Response Info" value={JSON.stringify({
                 StatusCode: selectedEntry.StatusCode,
@@ -508,13 +548,17 @@ const RequestHistoryPage: React.FC = () => {
             {/* Request Body */}
             <DetailBlock
               title="Request Body"
-              value={selectedEntry.RequestBody || '(empty)'}
+              value={selectedEntry.RequestBody || ''}
+              contentType={selectedEntry.RequestContentType}
+              allowPrettyPrint
             />
 
             {/* Response Body */}
             <DetailBlock
               title="Response Body"
-              value={selectedEntry.ResponseBody || '(empty)'}
+              value={selectedEntry.ResponseBody || ''}
+              contentType={selectedEntry.ResponseContentType}
+              allowPrettyPrint
             />
           </Less3Flex>
         )}

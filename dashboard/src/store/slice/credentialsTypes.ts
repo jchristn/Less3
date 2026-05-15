@@ -23,6 +23,16 @@ export interface CreateCredentialRequest {
   [key: string]: any;
 }
 
+export interface UpdateCredentialRequest {
+  GUID: string;
+  UserGUID: string;
+  Description: string;
+  AccessKey: string;
+  SecretKey: string;
+  IsBase64?: boolean;
+  [key: string]: any;
+}
+
 export interface DeleteCredentialParams {
   guid: string;
 }

@@ -1,11 +1,12 @@
 'use client';
 import React from 'react';
-import { Form, Input, message } from 'antd';
+import { Form, Input } from 'antd';
 import Less3Modal from '#/components/base/modal/Modal';
 import Less3FormItem from '#/components/base/form/FormItem';
 import Less3Input from '#/components/base/input/Input';
 import { useWriteBucketObjectMutation } from '#/store/slice/bucketsSlice';
 import type { Bucket } from '#/store/slice/bucketsSlice';
+import { message } from '#/utils/message';
 
 interface WriteObjectFormValues {
   filename: string;
@@ -57,6 +58,7 @@ const WriteObjectModal: React.FC<WriteObjectModalProps> = ({ bucket, open, onCan
     <Less3Modal
       title={`Write Object to Bucket: ${bucket?.Name || ''}`}
       open={open}
+      forceRender
       onOk={handleOk}
       onCancel={handleCancel}
       confirmLoading={isWritingObject}

@@ -6,6 +6,7 @@ import type {
   UserListResponse,
   UserResponse,
   CreateUserRequest,
+  UpdateUserRequest,
   DeleteUserParams,
   DeleteUserResponse,
   GetUsersParams,
@@ -21,6 +22,7 @@ export type {
   UserListResponse,
   UserResponse,
   CreateUserRequest,
+  UpdateUserRequest,
   DeleteUserParams,
   DeleteUserResponse,
   GetUsersParams,
@@ -43,6 +45,7 @@ const getUserTags = (guid: string) => [
 ];
 
 const usersSliceInstance = enhancedSdk.injectEndpoints({
+  overrideExisting: true,
   endpoints: (build: EndpointBuilder<BaseQueryFn<ApiBaseQueryArgs, unknown, unknown>, UsersSliceTags, 'sdk'>) => ({
     getUsers: build.query<UserListResponse, void>({
       query: () => ({
@@ -71,6 +74,20 @@ const usersSliceInstance = enhancedSdk.injectEndpoints({
       invalidatesTags: [{ type: UsersSliceTags.USERS, id: 'LIST' }],
     }),
 
+    updateUser: build.mutation<UserResponse, UpdateUserRequest>({
+      query: ({ GUID, ...body }: UpdateUserRequest) => ({
+        url: buildApiUrl(`admin/users/${GUID}`),
+        method: 'PUT',
+        body: {
+          GUID,
+          ...body,
+        },
+      }),
+      transformResponse: (response: any): User => response,
+      invalidatesTags: (_result: User | undefined, _error: unknown, { GUID }: UpdateUserRequest) =>
+        getUserTags(GUID),
+    }),
+
     deleteUser: build.mutation<DeleteUserResponse, DeleteUserParams>({
       query: ({ guid }: DeleteUserParams) => ({
         url: buildApiUrl(`admin/users/${guid}`),
@@ -83,5 +100,11 @@ const usersSliceInstance = enhancedSdk.injectEndpoints({
   }),
 });
 
-export const { useGetUsersQuery, useGetUserByIdQuery, useCreateUserMutation, useDeleteUserMutation } =
+export const {
+  useGetUsersQuery,
+  useGetUserByIdQuery,
+  useCreateUserMutation,
+  useUpdateUserMutation,
+  useDeleteUserMutation,
+} =
   usersSliceInstance;

@@ -1,8 +1,9 @@
-import { getApiEndpoint, updateSdkEndPoint, buildApiUrl } from "#/services/sdk.service";
+import { getApiEndpoint, getInitialApiEndpoint, updateSdkEndPoint, buildApiUrl } from "#/services/sdk.service";
 import { apiEndpointURL } from "#/constants/config";
 
 describe("sdk.service", () => {
   beforeEach(() => {
+    localStorage.clear();
     // Reset to default endpoint before each test
     updateSdkEndPoint(apiEndpointURL);
   });
@@ -12,6 +13,20 @@ describe("sdk.service", () => {
       const endpoint = getApiEndpoint();
       expect(endpoint).toBeDefined();
       expect(typeof endpoint).toBe("string");
+    });
+
+    it("should prefer saved API endpoint from localStorage in the browser", () => {
+      localStorage.setItem("less3APIUrl", "http://saved-endpoint.com");
+      expect(getApiEndpoint()).toBe("http://saved-endpoint.com/");
+    });
+
+    it("should ignore the legacy dashboard URL saved in localStorage", () => {
+      localStorage.setItem("less3APIUrl", "http://localhost:3000");
+      const normalizedDefaultEndpoint = apiEndpointURL.endsWith("/") ? apiEndpointURL : `${apiEndpointURL}/`;
+
+      expect(getInitialApiEndpoint()).toBe(apiEndpointURL);
+      expect(localStorage.getItem("less3APIUrl")).toBeNull();
+      expect(getApiEndpoint()).toBe(normalizedDefaultEndpoint);
     });
   });
 
@@ -59,4 +74,3 @@ describe("sdk.service", () => {
     });
   });
 });
-

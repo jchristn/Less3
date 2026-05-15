@@ -2,6 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import WriteObjectModal from "#/page/buckets/WriteObjectModal";
 import { renderWithRedux } from "../../store/utils";
+import { message } from "#/utils/message";
 
 const mockWriteBucketObject = jest.fn();
 const mockOnCancel = jest.fn();
@@ -10,17 +11,6 @@ const mockOnSuccess = jest.fn();
 jest.mock("#/store/slice/bucketsSlice", () => ({
   useWriteBucketObjectMutation: () => [mockWriteBucketObject, { isLoading: false }],
 }));
-
-jest.mock("antd", () => {
-  const actual = jest.requireActual("antd");
-  return {
-    ...actual,
-    message: {
-      success: jest.fn(),
-      error: jest.fn(),
-    },
-  };
-});
 
 describe("WriteObjectModal", () => {
   const mockBucket = { Name: "test-bucket", GUID: "test-guid" };
@@ -44,7 +34,7 @@ describe("WriteObjectModal", () => {
       renderWithRedux(
         <WriteObjectModal bucket={mockBucket} open={false} onCancel={mockOnCancel} onSuccess={mockOnSuccess} />
       );
-      expect(screen.queryByText(/Write Object to Bucket/)).not.toBeInTheDocument();
+      expect(screen.queryByRole("dialog", { hidden: true })).not.toBeVisible();
     });
 
     it("should render form fields", () => {
@@ -67,7 +57,6 @@ describe("WriteObjectModal", () => {
     });
 
     it("should show error when bucket is null", async () => {
-      const { message } = require("antd");
       renderWithRedux(
         <WriteObjectModal bucket={null} open={true} onCancel={mockOnCancel} onSuccess={mockOnSuccess} />
       );
@@ -82,7 +71,6 @@ describe("WriteObjectModal", () => {
       mockWriteBucketObject.mockReturnValue({
         unwrap: jest.fn().mockResolvedValue({}),
       });
-      const { message } = require("antd");
 
       renderWithRedux(
         <WriteObjectModal bucket={mockBucket} open={true} onCancel={mockOnCancel} onSuccess={mockOnSuccess} />
@@ -114,7 +102,6 @@ describe("WriteObjectModal", () => {
       mockWriteBucketObject.mockReturnValue({
         unwrap: jest.fn().mockRejectedValue(error),
       });
-      const { message } = require("antd");
 
       renderWithRedux(
         <WriteObjectModal bucket={mockBucket} open={true} onCancel={mockOnCancel} onSuccess={mockOnSuccess} />

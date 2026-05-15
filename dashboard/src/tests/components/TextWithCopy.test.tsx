@@ -1,84 +1,36 @@
-import { render, screen, waitFor, act } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import TextWithCopy from "#/components/text-with-copy/TextWithCopy";
-import { copyToClipboard } from "#/utils/clipboardUtils";
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import TextWithCopy from '#/components/text-with-copy/TextWithCopy';
+import { copyToClipboard } from '#/utils/clipboardUtils';
 
-jest.mock("#/utils/clipboardUtils", () => ({
+jest.mock('#/utils/clipboardUtils', () => ({
   copyToClipboard: jest.fn(),
 }));
 
-describe("TextWithCopy", () => {
+describe('TextWithCopy', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (copyToClipboard as jest.Mock).mockResolvedValue(true);
   });
 
-  describe("Rendering", () => {
-    it("should render text and copy button", () => {
-      render(<TextWithCopy text="Test text" />);
-      expect(screen.getByText("Test text")).toBeInTheDocument();
-      expect(screen.getByRole("button")).toBeInTheDocument();
-    });
+  it('renders the text and the shared copy control', () => {
+    render(<TextWithCopy text="Test text" />);
 
-    it("should render with custom className", () => {
-      const { container } = render(<TextWithCopy text="Test" className="custom-class" />);
-      expect(container.firstChild).toHaveClass("custom-class");
-    });
+    expect(screen.getByText('Test text')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Copy text' })).toBeInTheDocument();
   });
 
-  describe("User Interactions", () => {
-    it("should copy text to clipboard when button is clicked", async () => {
-      render(<TextWithCopy text="Text to copy" />);
+  it('renders with a custom className', () => {
+    const { container } = render(<TextWithCopy text="Test" className="custom-class" />);
 
-      const copyButton = screen.getByRole("button");
-      await userEvent.click(copyButton);
+    expect(container.firstChild).toHaveClass('custom-class');
+  });
 
-      expect(copyToClipboard).toHaveBeenCalledWith("Text to copy");
-    });
+  it('copies the provided text when clicked', async () => {
+    render(<TextWithCopy text="Text to copy" />);
 
-    it("should show 'Copied' tooltip after copying", async () => {
-      render(<TextWithCopy text="Text to copy" />);
+    await userEvent.click(screen.getByRole('button', { name: 'Copy text' }));
 
-      const copyButton = screen.getByRole("button");
-      await userEvent.click(copyButton);
-
-      await waitFor(() => {
-        expect(screen.getByText("Copied")).toBeInTheDocument();
-      });
-    });
-
-    it("should reset tooltip after 2 seconds", () => {
-      jest.useFakeTimers();
-      const setTimeoutSpy = jest.spyOn(global, "setTimeout");
-      
-      render(<TextWithCopy text="Text to copy" />);
-
-      const copyButton = screen.getByRole("button");
-      
-      // Click the button
-      act(() => {
-        copyButton.click();
-      });
-
-      // Verify setTimeout was called with 2000ms delay
-      expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 2000);
-
-      // Get the callback function that was passed to setTimeout
-      const setTimeoutCall = setTimeoutSpy.mock.calls.find(call => call[1] === 2000);
-      expect(setTimeoutCall).toBeDefined();
-
-      // Fast-forward time by 2 seconds to trigger the callback
-      act(() => {
-        jest.advanceTimersByTime(2000);
-      });
-
-      // Verify the callback was executed (setIsCopied(false) should have been called)
-      // The tooltip should now show "Copy" instead of "Copied"
-      // We verify this by checking that setTimeout was called correctly
-      expect(setTimeoutSpy).toHaveBeenCalled();
-
-      setTimeoutSpy.mockRestore();
-      jest.useRealTimers();
-    });
+    expect(copyToClipboard).toHaveBeenCalledWith('Text to copy');
   });
 });
-

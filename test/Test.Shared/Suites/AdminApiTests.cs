@@ -105,6 +105,23 @@ namespace Test.Shared.Suites
                 AssertEqual(HttpStatusCode.Conflict, response.StatusCode);
             });
 
+            await RunTest("AdminApi_UpdateUser", async () =>
+            {
+                string json = JsonSerializer.Serialize(new
+                {
+                    GUID = userGuid,
+                    Name = "UpdatedUser",
+                    Email = "updated@example.com"
+                });
+
+                HttpResponseMessage response = await _Server.AdminPutAsync($"users/{userGuid}", json).ConfigureAwait(false);
+                AssertEqual(HttpStatusCode.OK, response.StatusCode);
+
+                string body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                AssertContains(body, "UpdatedUser");
+                AssertContains(body, "updated@example.com");
+            });
+
             #endregion
 
             #region Credentials
@@ -156,6 +173,26 @@ namespace Test.Shared.Suites
                 AssertEqual(HttpStatusCode.Conflict, response.StatusCode);
             });
 
+            await RunTest("AdminApi_UpdateCredential", async () =>
+            {
+                string json = JsonSerializer.Serialize(new
+                {
+                    GUID = credGuid,
+                    UserGUID = userGuid,
+                    Description = "Updated credential",
+                    AccessKey = "updated-access",
+                    SecretKey = "updated-secret",
+                    IsBase64 = false
+                });
+
+                HttpResponseMessage response = await _Server.AdminPutAsync($"credentials/{credGuid}", json).ConfigureAwait(false);
+                AssertEqual(HttpStatusCode.OK, response.StatusCode);
+
+                string body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                AssertContains(body, "Updated credential");
+                AssertContains(body, "updated-access");
+            });
+
             #endregion
 
             #region Buckets
@@ -188,6 +225,17 @@ namespace Test.Shared.Suites
                 AssertEqual(HttpStatusCode.OK, response.StatusCode);
             });
 
+            await RunTest("AdminApi_GetDashboardStats", async () =>
+            {
+                HttpResponseMessage response = await _Server.AdminGetAsync("stats").ConfigureAwait(false);
+                AssertEqual(HttpStatusCode.OK, response.StatusCode);
+
+                string body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                AssertContains(body, "\"BucketCount\"");
+                AssertContains(body, "\"TotalObjectCount\"");
+                AssertContains(body, "\"TotalBytes\"");
+            });
+
             await RunTest("AdminApi_CreateBucket_Duplicate_ReturnsError", async () =>
             {
                 string json = JsonSerializer.Serialize(new
@@ -210,6 +258,13 @@ namespace Test.Shared.Suites
             {
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"{_Server.BaseUrl}/admin/users");
                 request.Headers.Add("x-api-key", "wrong-key");
+                HttpResponseMessage response = await _Server.HttpClient.SendAsync(request).ConfigureAwait(false);
+                AssertEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+            });
+
+            await RunTest("AdminApi_MissingApiKey_Returns401", async () =>
+            {
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"{_Server.BaseUrl}/admin/stats");
                 HttpResponseMessage response = await _Server.HttpClient.SendAsync(request).ConfigureAwait(false);
                 AssertEqual(HttpStatusCode.Unauthorized, response.StatusCode);
             });

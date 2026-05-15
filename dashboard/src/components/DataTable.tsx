@@ -126,6 +126,18 @@ const DataTable = <T extends Record<string, any>>({
 
   const hasAnyFilter = columns.some((col) => col.filterable !== false && !col.isAction);
 
+  const shouldIgnoreRowClick = (target: EventTarget | null): boolean => {
+    if (!(target instanceof Element)) {
+      return false;
+    }
+
+    return Boolean(
+      target.closest(
+        'button, a, input, textarea, select, label, [role="button"], [data-row-click-ignore="true"], .ant-dropdown-trigger, .ant-select-selector'
+      )
+    );
+  };
+
   if (loading) {
     return (
       <div className="datatable-loading">
@@ -262,7 +274,17 @@ const DataTable = <T extends Record<string, any>>({
               paginatedData.map((item, rowIndex) => (
                 <tr
                   key={item[rowKey] ?? rowIndex}
-                  onClick={onRowClick ? () => onRowClick(item) : undefined}
+                  onClick={
+                    onRowClick
+                      ? (event) => {
+                          if (shouldIgnoreRowClick(event.target)) {
+                            return;
+                          }
+
+                          onRowClick(item);
+                        }
+                      : undefined
+                  }
                   className={onRowClick ? 'clickable' : ''}
                 >
                   {columns.map((col) => (

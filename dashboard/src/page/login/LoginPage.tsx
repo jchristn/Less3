@@ -8,18 +8,34 @@ import Less3Flex from '#/components/base/flex/Flex';
 import Less3Text from '#/components/base/typograpghy/Text';
 import Less3Divider from '#/components/base/divider/Divider';
 import PageLoading from '#/components/base/loading/PageLoading';
-import { Form, Input, message } from 'antd';
+import { Form, Input } from 'antd';
 import { ArrowRightOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
-import { apiEndpointURL } from '#/constants/config';
 import { useValidateConnectivityMutation } from '#/store/slice/sdkSlice';
-import { updateSdkEndPoint } from '#/services/sdk.service';
+import { getInitialApiEndpoint, updateSdkEndPoint } from '#/services/sdk.service';
 import { localStorageKeys, paths } from '#/constants/constant';
+import { message } from '#/utils/message';
+
+const getErrorMessage = (error: any): string => {
+  if (typeof error === 'string' && error.trim()) {
+    return error;
+  }
+
+  return (
+    error?.data?.Message ||
+    error?.data?.Description ||
+    error?.data?.message ||
+    error?.data?.error ||
+    error?.data?.data ||
+    error?.message ||
+    'Something went wrong.'
+  );
+};
 
 //eslint-disable-next-line max-lines-per-function
 const LoginPage = () => {
   const [loading, setLoading] = useState(false);
-  const [less3APIUrl, setLess3APIUrl] = useState(apiEndpointURL);
+  const [less3APIUrl, setLess3APIUrl] = useState(getInitialApiEndpoint());
   const [form] = Form.useForm();
   const router = useRouter();
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
@@ -29,13 +45,13 @@ const LoginPage = () => {
   const [validateConnectivityMutation] = useValidateConnectivityMutation();
 
   useEffect(() => {
-    // Check if there's a saved URL in localStorage
-    const savedUrl = localStorage.getItem(localStorageKeys.less3APIUrl);
-    if (savedUrl) {
-      setLess3APIUrl(savedUrl);
-      form.setFieldsValue({ less3APIUrl: savedUrl });
+    const initialUrl = getInitialApiEndpoint();
+    setLess3APIUrl(initialUrl);
+    form.setFieldsValue({ less3APIUrl: initialUrl });
+
+    if (localStorage.getItem(localStorageKeys.less3APIUrl)) {
       // Optionally validate connectivity on mount
-      validateConnectivity(savedUrl, false);
+      validateConnectivity(initialUrl, false);
     }
   }, [form]);
 
@@ -62,7 +78,7 @@ const LoginPage = () => {
       console.log(err);
       setIsSuccess(false);
       setIsError(true);
-      message.error('Something went wrong.');
+      message.error(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

@@ -1,7 +1,7 @@
 /* eslint-disable max-lines-per-function */
 'use client';
 import React, { useMemo, useState } from 'react';
-import { Form, message, Descriptions, MenuProps } from 'antd';
+import { Form, Descriptions, MenuProps } from 'antd';
 import { PlusOutlined, SearchOutlined, MoreOutlined, ReloadOutlined } from '@ant-design/icons';
 import DataTable, { DataTableColumn } from '#/components/DataTable';
 import Less3Button from '#/components/base/button/Button';
@@ -18,10 +18,12 @@ import {
   useGetUsersQuery,
   useGetUserByIdQuery,
   useCreateUserMutation,
+  useUpdateUserMutation,
   useDeleteUserMutation,
   User,
 } from '#/store/slice/usersSlice';
 import { formatDate } from '#/utils/dateUtils';
+import { message } from '#/utils/message';
 
 interface UserFormValues {
   Name: string;
@@ -33,6 +35,7 @@ const UsersPage: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [isMetadataModalVisible, setIsMetadataModalVisible] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
   const [viewingUserGUID, setViewingUserGUID] = useState<string | null>(null);
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
   const [searchText, setSearchText] = useState('');
@@ -44,10 +47,21 @@ const UsersPage: React.FC = () => {
   });
 
   const [createUser, { isLoading: isCreating }] = useCreateUserMutation();
+  const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
   const [deleteUser, { isLoading: isDeleting }] = useDeleteUserMutation();
 
   const handleCreate = () => {
+    setEditingUser(null);
     form.resetFields();
+    setIsModalVisible(true);
+  };
+
+  const handleEdit = (record: User) => {
+    setEditingUser(record);
+    form.setFieldsValue({
+      Name: record.Name,
+      Email: record.Email,
+    });
     setIsModalVisible(true);
   };
 
@@ -68,13 +82,24 @@ const UsersPage: React.FC = () => {
         Name: values.Name,
         Email: values.Email,
       };
-      await createUser(createPayload).unwrap();
-      message.success('User created successfully');
+
+      if (editingUser?.GUID) {
+        await updateUser({
+          GUID: editingUser.GUID,
+          ...createPayload,
+        }).unwrap();
+        message.success('User updated successfully');
+      } else {
+        await createUser(createPayload).unwrap();
+        message.success('User created successfully');
+      }
+
       setIsModalVisible(false);
+      setEditingUser(null);
       form.resetFields();
       refetch();
     } catch (error: any) {
-      message.error(error?.data?.message || 'Failed to create user');
+      message.error(error?.data?.message || `Failed to ${editingUser ? 'update' : 'create'} user`);
     }
   };
 
@@ -128,6 +153,11 @@ const UsersPage: React.FC = () => {
       render: (item) => {
         const menuItems: MenuProps['items'] = [
           {
+            key: 'edit',
+            label: 'Edit User',
+            onClick: () => handleEdit(item),
+          },
+          {
             key: 'metadata',
             label: 'View Metadata',
             onClick: () => handleViewMetadata(item),
@@ -141,7 +171,7 @@ const UsersPage: React.FC = () => {
 
         return (
           <Less3Dropdown menu={{ items: menuItems }} trigger={['click']}>
-            <Less3Button type="text" icon={<MoreOutlined />} size="small" />
+            <Less3Button type="text" icon={<MoreOutlined />} size="small" onClick={(event) => event.stopPropagation()} />
           </Less3Dropdown>
         );
       },
@@ -192,17 +222,20 @@ const UsersPage: React.FC = () => {
         data={filteredData}
         loading={isLoading}
         rowKey="GUID"
+        onRowClick={handleEdit}
       />
 
       <Less3Modal
-        title="Create User"
+        title={editingUser ? 'Edit User' : 'Create User'}
         open={isModalVisible}
+        forceRender
         onOk={handleModalOk}
         onCancel={() => {
           setIsModalVisible(false);
+          setEditingUser(null);
           form.resetFields();
         }}
-        confirmLoading={isCreating}
+        confirmLoading={isCreating || isUpdating}
         width={600}
         centered
       >
@@ -273,6 +306,7 @@ const UsersPage: React.FC = () => {
           </Less3Button>,
         ]}
         width={700}
+        centered
       >
         {isMetadataLoading ? (
           <div style={{ textAlign: 'center', padding: '20px' }}>Loading metadata...</div>

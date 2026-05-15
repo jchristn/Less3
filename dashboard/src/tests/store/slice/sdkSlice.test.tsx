@@ -23,7 +23,7 @@ global.fetch = jest.fn();
 describe("sdkSlice", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (buildApiUrl as jest.Mock).mockReturnValue("http://test.com/");
+    (buildApiUrl as jest.Mock).mockReturnValue("http://test.com/admin/users");
   });
 
   describe("useValidateConnectivityMutation", () => {
@@ -42,7 +42,10 @@ describe("sdkSlice", () => {
     it("should handle successful connectivity validation", async () => {
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        text: async () => "",
+        headers: {
+          get: (name: string) => (name === "content-type" ? "application/json" : null),
+        },
+        text: async () => "[]",
       });
 
       const store = createTestStore();
@@ -60,6 +63,27 @@ describe("sdkSlice", () => {
 
       expect(global.fetch).toHaveBeenCalled();
     });
+
+    it("should reject HTML responses", async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        headers: {
+          get: (name: string) => (name === "content-type" ? "text/html" : null),
+        },
+        text: async () => "<!DOCTYPE html><html></html>",
+      });
+
+      const store = createTestStore();
+      const wrapper = ({ children }: { children: React.ReactNode }) => (
+        <Provider store={store}>{children}</Provider>
+      );
+
+      const { result } = renderHook(() => useValidateConnectivityMutation(), { wrapper });
+      const [validateConnectivity] = result.current;
+
+      const promise = validateConnectivity();
+
+      await expect(promise.unwrap()).rejects.toBeDefined();
+    });
   });
 });
-

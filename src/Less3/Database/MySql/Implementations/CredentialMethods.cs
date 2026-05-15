@@ -69,6 +69,13 @@ namespace Less3.Database.MySql.Implementations
         }
 
         /// <inheritdoc />
+        public void Update(Credential credential)
+        {
+            if (credential == null) throw new ArgumentNullException(nameof(credential));
+            _Database.ExecuteQuery(CredentialQueries.UpdateQuery(credential), true).Wait();
+        }
+
+        /// <inheritdoc />
         public void DeleteByGuid(string guid)
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));

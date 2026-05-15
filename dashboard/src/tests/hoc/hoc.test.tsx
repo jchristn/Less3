@@ -1,13 +1,21 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { withConnectivityValidation } from "#/hoc/hoc";
 import { useValidateConnectivityMutation } from "#/store/slice/sdkSlice";
-import { updateSdkEndPoint } from "#/services/sdk.service";
+import { getInitialApiEndpoint, updateSdkEndPoint } from "#/services/sdk.service";
 import { localStorageKeys } from "#/constants/constant";
 
 jest.mock("#/store/slice/sdkSlice");
 jest.mock("#/services/sdk.service");
+const mockPush = jest.fn();
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: mockPush,
+    replace: jest.fn(),
+  }),
+}));
 
 const mockValidateConnectivity = jest.fn();
+const mockGetInitialApiEndpoint = getInitialApiEndpoint as jest.Mock;
 const mockUpdateSdkEndPoint = updateSdkEndPoint as jest.Mock;
 
 describe("withConnectivityValidation", () => {
@@ -16,6 +24,7 @@ describe("withConnectivityValidation", () => {
     localStorage.clear();
     // Set a unique URL to avoid cache hits
     localStorage.setItem(localStorageKeys.less3APIUrl, `http://test-${Date.now()}.com`);
+    mockGetInitialApiEndpoint.mockImplementation(() => localStorage.getItem(localStorageKeys.less3APIUrl) || "http://localhost:8000");
     mockValidateConnectivity.mockReturnValue({
       unwrap: jest.fn().mockResolvedValue(true),
     });
@@ -82,6 +91,7 @@ describe("withConnectivityValidation", () => {
       render(<WrappedComponent />);
       expect(screen.getByText("Failed to validate connectivity. Please check your connection.")).toBeInTheDocument();
       expect(screen.getByText(/Connection failed/)).toBeInTheDocument();
+      expect(screen.getByText("Change Server URL")).toBeInTheDocument();
     });
 
     it("should handle retry on error", async () => {
@@ -106,6 +116,25 @@ describe("withConnectivityValidation", () => {
       retryButton.click();
       await waitFor(() => {
         expect(mockValidateConnectivity).toHaveBeenCalled();
+      });
+    });
+
+    it("should clear saved URL and navigate to login when changing server URL", async () => {
+      (useValidateConnectivityMutation as jest.Mock).mockReturnValue([
+        mockValidateConnectivity,
+        { isLoading: false, isSuccess: false, isError: true, error: { message: "Connection failed" } },
+      ]);
+
+      const TestComponent = () => <div>Test Component</div>;
+      const WrappedComponent = withConnectivityValidation(TestComponent);
+
+      render(<WrappedComponent />);
+      const changeServerUrlButton = screen.getByText("Change Server URL");
+      changeServerUrlButton.click();
+
+      await waitFor(() => {
+        expect(localStorage.getItem(localStorageKeys.less3APIUrl)).toBeNull();
+        expect(mockPush).toHaveBeenCalledWith("/");
       });
     });
 
@@ -171,4 +200,3 @@ describe("withConnectivityValidation", () => {
     });
   });
 });
-

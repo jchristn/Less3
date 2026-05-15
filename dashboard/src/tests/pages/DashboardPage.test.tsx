@@ -1,50 +1,67 @@
-import { screen } from "@testing-library/react";
-import DashboardPage from "#/page/dashboard/DashboardPage";
-import { renderWithRedux } from "../store/utils";
+import { screen } from '@testing-library/react';
+import DashboardPage from '#/page/dashboard/DashboardPage';
+import { renderWithRedux } from '../store/utils';
 
-jest.mock("next/navigation", () => ({
+jest.mock('#/store/slice/dashboardStatsSlice', () => ({
+  useGetDashboardStatsQuery: () => ({
+    data: {
+      BucketCount: 12,
+      TotalBytes: 1048576,
+      TotalObjectCount: 25,
+      GeneratedUtc: '2026-05-15T12:00:00.000Z',
+      Buckets: [],
+    },
+    isLoading: false,
+  }),
+}));
+
+jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: jest.fn(),
     replace: jest.fn(),
   }),
-  usePathname: () => "/dashboard",
+  usePathname: () => '/dashboard',
 }));
 
-describe("DashboardPage", () => {
+describe('DashboardPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe("Rendering", () => {
-    it("should render welcome section", () => {
-      const { container } = renderWithRedux(<DashboardPage />);
-      expect(screen.getByText("Welcome to Less3")).toBeInTheDocument();
-      expect(
-        container.textContent?.replace(/\s+/g, " ").trim()
-      ).toMatchInlineSnapshot(
-        `"http://localhost:3000LogoutHomeBucketsObjectsUsersCredentialsHomeWelcome to Less3Manage your storage buckets and configure your storage infrastructure from this centralized home. Use the navigation menu to access different sections and manage your resources."`
-      );
-    });
-
-    it("should render welcome message", () => {
+  describe('Rendering', () => {
+    it('renders the quick actions section', () => {
       renderWithRedux(<DashboardPage />);
-      expect(
-        screen.getByText(/Manage your storage buckets and configure your storage infrastructure/i)
-      ).toBeInTheDocument();
+
+      expect(screen.getByText('Quick Actions')).toBeInTheDocument();
+      expect(screen.getByText('Create a Bucket')).toBeInTheDocument();
+      expect(screen.getByText('Manage Objects')).toBeInTheDocument();
     });
 
-    it("should render info icon", () => {
+    it('renders the request summary controls', () => {
+      renderWithRedux(<DashboardPage />);
+
+      expect(screen.getByText('Total Buckets')).toBeInTheDocument();
+      expect(screen.getByText('12')).toBeInTheDocument();
+      expect(screen.getByText('Total Objects')).toBeInTheDocument();
+      expect(screen.getByText('25')).toBeInTheDocument();
+      expect(screen.getByText('Total Storage')).toBeInTheDocument();
+      expect(screen.getByText('1.0 MB')).toBeInTheDocument();
+      expect(screen.getByText('Request Summary')).toBeInTheDocument();
+      expect(screen.getByText('Last Day')).toBeInTheDocument();
+    });
+
+    it('renders the database quick action icon', () => {
       const { container } = renderWithRedux(<DashboardPage />);
-      const icon = container.querySelector(".anticon-info-circle");
-      expect(icon).toBeInTheDocument();
+
+      expect(container.querySelector('.anticon-database')).toBeInTheDocument();
     });
   });
 
-  describe("Snapshots", () => {
-    it("should match default render", () => {
+  describe('Snapshots', () => {
+    it('matches the default render', () => {
       const { container } = renderWithRedux(<DashboardPage />);
+
       expect(container.firstChild).toMatchSnapshot();
     });
   });
 });
-

@@ -56,6 +56,12 @@ namespace Less3.Database.Interfaces
         void Insert(User user);
 
         /// <summary>
+        /// Update an existing user.
+        /// </summary>
+        /// <param name="user">User to update.</param>
+        void Update(User user);
+
+        /// <summary>
         /// Delete a user by GUID.
         /// </summary>
         /// <param name="guid">User GUID.</param>

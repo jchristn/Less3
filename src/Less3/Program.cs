@@ -569,6 +569,12 @@
                             return true;
                     } 
                 }
+
+                _Logging.Warn(header + "missing admin API key");
+                ctx.Response.StatusCode = 401;
+                ctx.Response.ContentType = "text/plain";
+                await ctx.Response.Send();
+                return true;
             }
 
             #endregion

@@ -2,6 +2,7 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import BucketsPage from "#/page/buckets/BucketsPage";
 import { renderWithRedux } from "../store/utils";
+import { message } from "#/utils/message";
 
 const mockCreateBucket = jest.fn();
 const mockDeleteBucket = jest.fn();
@@ -23,8 +24,8 @@ jest.mock("next/navigation", () => ({
 jest.mock("#/store/slice/bucketsSlice", () => ({
   useGetBucketsQuery: () => ({
     data: [
-      { Name: "test-bucket", GUID: "bucket-guid", CreatedUtc: "2024-01-01" },
-      { Name: "test-bucket-2", GUID: "bucket-guid-2", CreatedUtc: "2024-01-02" },
+      { Name: "test-bucket", GUID: "bucket-guid", CreatedUtc: "2024-01-01", StorageType: "Disk" },
+      { Name: "test-bucket-2", GUID: "bucket-guid-2", CreatedUtc: "2024-01-02", StorageType: "Disk" },
     ],
     isLoading: false,
     error: null,
@@ -56,17 +57,10 @@ jest.mock("#/store/slice/bucketsSlice", () => ({
   }),
 }));
 
-jest.mock("antd", () => {
-  const actual = jest.requireActual("antd");
-  return {
-    ...actual,
-    message: {
-      success: jest.fn(),
-      error: jest.fn(),
-      warning: jest.fn(),
-    },
-  };
-});
+const findDropdownMenuItem = async (label: string) => {
+  const matches = await screen.findAllByText(label, {}, { timeout: 3000 });
+  return matches.find((element) => element.classList.contains("ant-dropdown-menu-title-content")) || matches[0];
+};
 
 describe("BucketsPage", () => {
   beforeEach(() => {
@@ -94,6 +88,21 @@ describe("BucketsPage", () => {
       const bucketsTexts = screen.getAllByText("Buckets");
       expect(bucketsTexts.length).toBeGreaterThan(0);
       expect(screen.getByText("test-bucket")).toBeInTheDocument();
+    });
+
+    it("should open bucket details modal when a row is clicked", async () => {
+      renderWithRedux(<BucketsPage />);
+
+      const row = screen.getByText("test-bucket").closest("tr");
+      expect(row).toBeInTheDocument();
+      if (row) {
+        await userEvent.click(row);
+      }
+
+      await waitFor(() => {
+        expect(screen.getByText(/Bucket Details - test-bucket/i)).toBeInTheDocument();
+        expect(screen.getByText("Storage Type")).toBeInTheDocument();
+      });
     });
 
     it("should render create bucket button", () => {
@@ -162,7 +171,7 @@ describe("BucketsPage", () => {
         const confirmButton = await screen.findByText("Delete", { timeout: 3000 });
         await userEvent.click(confirmButton);
         await waitFor(() => {
-          expect(mockDeleteBucket).toHaveBeenCalled();
+          expect(mockDeleteBucket).toHaveBeenCalledWith({ guid: "bucket-guid", bucketName: "test-bucket" });
         }, { timeout: 3000 });
       }
     }, 10000);
@@ -176,7 +185,7 @@ describe("BucketsPage", () => {
       const moreButton = moreButtons.find((btn) => btn.querySelector(".anticon-more"));
       if (moreButton) {
         await userEvent.click(moreButton);
-        const writeTagsButton = await screen.findByText("Write Tags", { timeout: 3000 });
+        const writeTagsButton = await findDropdownMenuItem("Write Tags");
         await userEvent.click(writeTagsButton);
         // After clicking, the modal opens - check for modal title specifically
         await waitFor(() => {
@@ -199,7 +208,7 @@ describe("BucketsPage", () => {
       if (moreButton) {
         await userEvent.click(moreButton);
         // The menu item is "Read Tags" not "View Tags"
-        const readTagsButton = await screen.findByText("Read Tags", { timeout: 3000 });
+        const readTagsButton = await findDropdownMenuItem("Read Tags");
         await userEvent.click(readTagsButton);
         // After clicking, the modal opens - check for modal
         await waitFor(() => {
@@ -221,7 +230,7 @@ describe("BucketsPage", () => {
       const moreButton = moreButtons.find((btn) => btn.querySelector(".anticon-more"));
       if (moreButton) {
         await userEvent.click(moreButton);
-        const writeACLButton = await screen.findByText("Write ACL", { timeout: 3000 });
+        const writeACLButton = await findDropdownMenuItem("Write ACL");
         await userEvent.click(writeACLButton);
         // After clicking, the modal opens - check for modal title specifically
         await waitFor(() => {
@@ -244,7 +253,7 @@ describe("BucketsPage", () => {
       if (moreButton) {
         await userEvent.click(moreButton);
         // The menu item is "Read ACL" not "View ACL"
-        const readACLButton = await screen.findByText("Read ACL", { timeout: 3000 });
+        const readACLButton = await findDropdownMenuItem("Read ACL");
         await userEvent.click(readACLButton);
         // After clicking, the modal opens - check for modal
         await waitFor(() => {
@@ -273,7 +282,7 @@ describe("BucketsPage", () => {
       const moreButton = moreButtons.find((btn) => btn.querySelector(".anticon-more"));
       if (moreButton) {
         await userEvent.click(moreButton);
-        const writeTagsButton = await screen.findByText("Write Tags", { timeout: 3000 });
+        const writeTagsButton = await findDropdownMenuItem("Write Tags");
         await userEvent.click(writeTagsButton);
         await waitFor(() => {
           const modal = screen.queryByRole("dialog");
@@ -325,7 +334,6 @@ describe("BucketsPage", () => {
       mockCreateBucket.mockReturnValue({
         unwrap: jest.fn().mockRejectedValue(error),
       });
-      const { message } = require("antd");
 
       renderWithRedux(<BucketsPage />);
       const createButtons = screen.getAllByText("Create Bucket");

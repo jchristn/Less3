@@ -7,55 +7,78 @@ const enhancedSdk = sdkSlice.enhanceEndpoints({
   addTagTypes: [],
 });
 
+const INVALID_SERVER_URL_MESSAGE =
+  'The server URL did not return a Less3 admin API response. Check the Less3 Server URL.';
+
 const sdkSliceInstance = enhancedSdk.injectEndpoints({
+  overrideExisting: true,
   endpoints: (build: EndpointBuilder<BaseQueryFn<ApiBaseQueryArgs, unknown, unknown>, never, 'sdk'>) => ({
     validateConnectivity: build.mutation<boolean, void>({
       async queryFn() {
         try {
-          const url = buildApiUrl('');
+          const url = buildApiUrl('admin/users');
           const response = await fetch(url, {
-            method: 'HEAD',
+            method: 'GET',
             headers: {
               'Content-Type': 'application/json',
               'x-api-key': API_KEY,
             },
+            cache: 'no-store',
           });
 
-          // If we got a successful HTTP response (200-299), consider it valid connectivity
-          if (response.ok) {
-            // Try to parse JSON, but don't fail if it's empty or invalid
-            let data: any = null;
-            const text = await response.text();
-            if (text) {
-              try {
-                data = JSON.parse(text);
-              } catch {
-                // If parsing fails, that's okay - we still got a 200 response
-                data = text;
-              }
-            }
-
-            // Check for specific response formats
-            if (data?.status === 'ok' || data === true || data?.success === true) {
-              return { data: true };
-            }
-
-            // Any successful HTTP response (200-299) indicates valid connectivity
-            return { data: true };
+          if (!response.ok) {
+            return {
+              error: {
+                status: response.status,
+                data: `HTTP ${response.status}: ${response.statusText}`,
+              },
+            };
           }
 
-          // If response is not ok, return error
-          return {
-            error: {
-              status: response.status,
-              data: `HTTP ${response.status}: ${response.statusText}`,
-            },
-          };
+          const responseText = await response.text();
+          const trimmedResponseText = responseText.trim();
+          const contentType = response.headers.get('content-type') || '';
+
+          if (
+            contentType.includes('text/html') ||
+            trimmedResponseText.startsWith('<!DOCTYPE') ||
+            trimmedResponseText.startsWith('<html')
+          ) {
+            return {
+              error: {
+                status: 'PARSING_ERROR',
+                data: INVALID_SERVER_URL_MESSAGE,
+              },
+            };
+          }
+
+          let parsedResponse: unknown;
+          try {
+            parsedResponse = trimmedResponseText ? JSON.parse(trimmedResponseText) : null;
+          } catch {
+            return {
+              error: {
+                status: 'PARSING_ERROR',
+                data: INVALID_SERVER_URL_MESSAGE,
+              },
+            };
+          }
+
+          if (!Array.isArray(parsedResponse)) {
+            return {
+              error: {
+                status: 'PARSING_ERROR',
+                data: INVALID_SERVER_URL_MESSAGE,
+              },
+            };
+          }
+
+          return { data: true };
         } catch (error: any) {
           return {
             error: {
               status: 'FETCH_ERROR',
-              error: error?.message || String(error),
+              data: error?.message || String(error),
             },
           };
         }

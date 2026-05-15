@@ -1,15 +1,16 @@
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query/react';
+import { API_KEY } from '#/constants/config';
 import sdkSlice, { ApiBaseQueryArgs } from '#/store/rtk/rtkSdkInstance';
 import { buildApiUrl, getBaseUrl } from '#/services/sdk.service';
 import {
   parseListBucketResult,
-  parseListAllMyBucketsResult,
   parseBucketTagging,
   generateBucketTaggingXml,
   parseBucketACL,
   generateBucketACLXml,
   type ListBucketResult,
 } from '#/utils/xmlUtils';
+import { buildSignedS3Headers, selectS3Credential, type S3CredentialLike } from '#/utils/s3Auth';
 import type {
   Bucket,
   BucketListResponse,
@@ -107,8 +108,49 @@ const buildQueryString = (params: GetBucketsParams): string => {
   return queryParams.toString();
 };
 
-const getBucketTags = (bucketName: string) => [
-  { type: BucketsSliceTags.BUCKETS as const, id: bucketName },
+const getBucketCacheId = (bucket: Pick<Bucket, 'GUID' | 'Name'> | string): string =>
+  typeof bucket === 'string' ? bucket : bucket.GUID || bucket.Name;
+
+const normalizeBucket = (bucket: any): Bucket => ({
+  ...bucket,
+  Name: bucket?.Name || '',
+  GUID: bucket?.GUID,
+  CreatedUtc: bucket?.CreatedUtc || bucket?.CreationDate || '',
+  CreationDate: bucket?.CreationDate || bucket?.CreatedUtc || '',
+});
+
+const readAdminErrorMessage = async (response: Response, fallbackMessage: string): Promise<string> => {
+  const responseText = (await response.text()).trim();
+
+  if (responseText) {
+    return responseText;
+  }
+
+  const statusSuffix = response.statusText ? `${response.status} ${response.statusText}` : String(response.status);
+  return `${fallbackMessage}: ${statusSuffix}`;
+};
+
+const readS3ErrorMessage = async (response: Response, fallbackMessage: string): Promise<string> => {
+  const responseText = (await response.text()).trim();
+
+  if (responseText) {
+    const codeMatch = responseText.match(/<Code>([^<]+)<\/Code>/i);
+    const messageMatch = responseText.match(/<Message>([^<]+)<\/Message>/i);
+    const code = codeMatch?.[1];
+    const message = messageMatch?.[1];
+
+    if (code || message) {
+      return `${fallbackMessage}: ${[code, message].filter(Boolean).join(' - ')}`;
+    }
+
+    return responseText;
+  }
+
+  return `${fallbackMessage}: ${response.statusText || response.status}`;
+};
+
+const getBucketTags = (bucket: Pick<Bucket, 'GUID' | 'Name'> | string) => [
+  { type: BucketsSliceTags.BUCKETS as const, id: getBucketCacheId(bucket) },
   { type: BucketsSliceTags.BUCKETS, id: 'LIST' },
 ];
 
@@ -117,8 +159,113 @@ const getBucketTagsCacheTag = (bucketName: string) => ({
   id: bucketName,
 });
 
-const AWS_AUTH_HEADER =
-  'AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024';
+const normalizeS3Headers = (headers?: Record<string, string | undefined>): Record<string, string> =>
+  Object.entries(headers || {}).reduce<Record<string, string>>((accumulator, [key, value]) => {
+    if (typeof value === 'string' && value.length > 0) {
+      accumulator[key] = value;
+    }
+
+    return accumulator;
+  }, {});
+
+const fetchAdminCredentials = async (): Promise<S3CredentialLike[]> => {
+  const response = await fetch(buildApiUrl('admin/credentials'), {
+    method: 'GET',
+    headers: {
+      'x-api-key': API_KEY,
+    },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    return [];
+  }
+
+  const responseData = await response.json();
+  return Array.isArray(responseData) ? responseData : [];
+};
+
+const fetchCredentialByGuid = async (guid: string): Promise<S3CredentialLike | null> => {
+  const response = await fetch(buildApiUrl(`admin/credentials/${guid}`), {
+    method: 'GET',
+    headers: {
+      'x-api-key': API_KEY,
+    },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  return (await response.json()) as S3CredentialLike;
+};
+
+const resolveS3Credential = async (): Promise<S3CredentialLike | null> => {
+  const credentials = await fetchAdminCredentials();
+  const selectedCredential = selectS3Credential(credentials);
+
+  if (!selectedCredential) {
+    return null;
+  }
+
+  if (selectedCredential.SecretKey?.trim()) {
+    return selectedCredential;
+  }
+
+  if (!selectedCredential.GUID) {
+    return null;
+  }
+
+  return fetchCredentialByGuid(selectedCredential.GUID);
+};
+
+const buildS3RequestHeaders = async (
+  method: string,
+  url: string,
+  options?: {
+    headers?: Record<string, string | undefined>;
+    body?: BodyInit | null;
+  }
+): Promise<Record<string, string>> => {
+  const normalizedHeaders = normalizeS3Headers(options?.headers);
+  const credential = await resolveS3Credential();
+
+  if (!credential?.AccessKey || !credential.SecretKey) {
+    return normalizedHeaders;
+  }
+
+  return buildSignedS3Headers({
+    method,
+    url,
+    accessKey: credential.AccessKey,
+    secretKey: credential.SecretKey,
+    headers: normalizedHeaders,
+    body: options?.body,
+  });
+};
+
+const fetchS3 = async (
+  url: string,
+  options: {
+    method: string;
+    headers?: Record<string, string | undefined>;
+    body?: BodyInit | null;
+    cache?: RequestCache;
+  }
+): Promise<Response> => {
+  const headers = await buildS3RequestHeaders(options.method, url, {
+    headers: options.headers,
+    body: options.body,
+  });
+
+  return fetch(url, {
+    method: options.method,
+    headers,
+    body: options.body,
+    cache: options.cache,
+  });
+};
 
 const bucketsSliceInstance = enhancedSdk.injectEndpoints({
   overrideExisting: true,
@@ -126,11 +273,10 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     getBuckets: build.query<BucketListResponse, void>({
       async queryFn() {
         try {
-          const baseUrl = getBaseUrl();
-          const response = await fetch(`${baseUrl}/`, {
+          const response = await fetch(buildApiUrl('admin/buckets'), {
             method: 'GET',
             headers: {
-              Authorization: AWS_AUTH_HEADER,
+              'x-api-key': API_KEY,
             },
             cache: 'no-store',
           });
@@ -139,19 +285,13 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
             return {
               error: {
                 status: response.status,
-                data: `Failed to fetch buckets: ${response.statusText}`,
+                data: await readAdminErrorMessage(response, 'Failed to fetch buckets'),
               },
             };
           }
 
-          const xmlText = await response.text();
-          const listAllMyBucketsResult = parseListAllMyBucketsResult(xmlText);
-
-          // Transform to Bucket[] format
-          const buckets: Bucket[] = listAllMyBucketsResult.Buckets.map((bucket) => ({
-            Name: bucket.Name,
-            CreationDate: bucket.CreationDate,
-          }));
+          const responseData = await response.json();
+          const buckets: Bucket[] = Array.isArray(responseData) ? responseData.map(normalizeBucket) : [];
 
           return { data: buckets };
         } catch (error: any) {
@@ -166,45 +306,48 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
       providesTags: (result: Bucket[] | undefined) =>
         result
           ? [
-              ...result.map(({ Name }: Bucket) => ({ type: BucketsSliceTags.BUCKETS as const, id: Name })),
+              ...result.map((bucket: Bucket) => ({
+                type: BucketsSliceTags.BUCKETS as const,
+                id: getBucketCacheId(bucket),
+              })),
               { type: BucketsSliceTags.BUCKETS, id: 'LIST' },
             ]
           : [{ type: BucketsSliceTags.BUCKETS, id: 'LIST' }],
     }),
 
     getBucketById: build.query<BucketResponse, string>({
-      query: (bucketName: string) => ({ url: buildApiUrl(`admin/buckets/${bucketName}`), method: 'GET' }),
-      transformResponse: (response: any): Bucket => response,
-      providesTags: (_result: Bucket | undefined, _error: unknown, bucketName: string) => getBucketTags(bucketName),
+      query: (guid: string) => ({ url: buildApiUrl(`admin/buckets/${guid}`), method: 'GET' }),
+      transformResponse: (response: any): Bucket => normalizeBucket(response),
+      providesTags: (_result: Bucket | undefined, _error: unknown, guid: string) => getBucketTags(guid),
     }),
 
     createBucket: build.mutation<BucketResponse, CreateBucketRequest>({
       async queryFn({ Name: bucketName }) {
         try {
-          const baseUrl = getBaseUrl();
-          const response = await fetch(`${baseUrl}/${bucketName}`, {
-            method: 'PUT',
+          const response = await fetch(buildApiUrl('admin/buckets'), {
+            method: 'POST',
             headers: {
-              Authorization: AWS_AUTH_HEADER,
+              'Content-Type': 'application/json',
+              'x-api-key': API_KEY,
             },
+            body: JSON.stringify({ Name: bucketName }),
           });
 
           if (!response.ok) {
             return {
               error: {
                 status: response.status,
-                data: `Failed to create bucket: ${response.statusText}`,
+                data: await readAdminErrorMessage(response, 'Failed to create bucket'),
               },
             };
           }
 
-          // Create bucket response - typically empty or minimal
-          const bucket: Bucket = {
-            Name: bucketName,
-            CreationDate: new Date().toISOString(),
+          return {
+            data: normalizeBucket({
+              Name: bucketName,
+              CreatedUtc: new Date().toISOString(),
+            }),
           };
-
-          return { data: bucket };
         } catch (error: any) {
           return {
             error: {
@@ -218,13 +361,12 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     }),
 
     deleteBucket: build.mutation<DeleteBucketResponse, DeleteBucketParams>({
-      async queryFn({ bucketName }) {
+      async queryFn({ guid }) {
         try {
-          const baseUrl = getBaseUrl();
-          const response = await fetch(`${baseUrl}/${bucketName}`, {
+          const response = await fetch(buildApiUrl(`admin/buckets/${guid}?destroy=true`), {
             method: 'DELETE',
             headers: {
-              Authorization: AWS_AUTH_HEADER,
+              'x-api-key': API_KEY,
             },
           });
 
@@ -232,7 +374,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
             return {
               error: {
                 status: response.status,
-                data: `Failed to delete bucket: ${response.statusText}`,
+                data: await readAdminErrorMessage(response, 'Failed to delete bucket'),
               },
             };
           }
@@ -254,19 +396,17 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
       invalidatesTags: (
         _result: DeleteBucketResponse | undefined,
         _error: unknown,
-        { bucketName }: DeleteBucketParams
-      ) => getBucketTags(bucketName),
+        { guid }: DeleteBucketParams
+      ) => getBucketTags(guid),
     }),
 
     listBucketObjects: build.query<ListBucketResult, ListBucketObjectsParams>({
       async queryFn({ bucketGUID }) {
         try {
           const baseUrl = getBaseUrl();
-          const response = await fetch(`${baseUrl}/${bucketGUID}/`, {
+          const url = `${baseUrl}/${bucketGUID}/`;
+          const response = await fetchS3(url, {
             method: 'GET',
-            headers: {
-              Authorization: AWS_AUTH_HEADER,
-            },
             cache: 'no-store',
           });
 
@@ -274,7 +414,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
             return {
               error: {
                 status: response.status,
-                data: `Failed to fetch objects: ${response.statusText}`,
+                data: await readS3ErrorMessage(response, 'Failed to fetch objects'),
               },
             };
           }
@@ -298,11 +438,9 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
       async queryFn({ bucketGUID, objectKey }) {
         try {
           const baseUrl = getBaseUrl();
-          const response = await fetch(`${baseUrl}/${bucketGUID}/${objectKey}`, {
+          const url = `${baseUrl}/${bucketGUID}/${objectKey}`;
+          const response = await fetchS3(url, {
             method: 'GET',
-            headers: {
-              Authorization: AWS_AUTH_HEADER,
-            },
             cache: 'no-store',
           });
 
@@ -310,7 +448,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
             return {
               error: {
                 status: response.status,
-                data: `Failed to download object: ${response.statusText}`,
+                data: await readS3ErrorMessage(response, 'Failed to download object'),
               },
             };
           }
@@ -336,14 +474,14 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     }),
 
     writeBucketObject: build.mutation<WriteBucketObjectResponse, WriteBucketObjectParams>({
-      async queryFn({ bucketGUID, objectKey, content }) {
+      async queryFn({ bucketGUID, objectKey, content, contentType }) {
         try {
           const baseUrl = getBaseUrl();
-          const response = await fetch(`${baseUrl}/${bucketGUID}/${objectKey}`, {
+          const url = `${baseUrl}/${bucketGUID}/${objectKey}`;
+          const response = await fetchS3(url, {
             method: 'PUT',
             headers: {
-              Authorization: AWS_AUTH_HEADER,
-              'Content-Type': 'text/plain',
+              'Content-Type': contentType || 'text/plain',
             },
             body: content,
           });
@@ -352,7 +490,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
             return {
               error: {
                 status: response.status,
-                data: `Failed to write object: ${response.statusText}`,
+                data: await readS3ErrorMessage(response, 'Failed to write object'),
               },
             };
           }
@@ -377,10 +515,10 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
       async queryFn({ bucketGUID, objectKey, file }) {
         try {
           const baseUrl = getBaseUrl();
-          const response = await fetch(`${baseUrl}/${bucketGUID}/${objectKey}`, {
+          const url = `${baseUrl}/${bucketGUID}/${objectKey}`;
+          const response = await fetchS3(url, {
             method: 'PUT',
             headers: {
-              Authorization: AWS_AUTH_HEADER,
               'Content-Type': file.type || 'application/octet-stream',
             },
             body: file,
@@ -390,7 +528,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
             return {
               error: {
                 status: response.status,
-                data: `Failed to upload object: ${response.statusText}`,
+                data: await readS3ErrorMessage(response, 'Failed to upload object'),
               },
             };
           }
@@ -415,18 +553,16 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
       async queryFn({ bucketGUID, objectKey }) {
         try {
           const baseUrl = getBaseUrl();
-          const response = await fetch(`${baseUrl}/${bucketGUID}/${objectKey}`, {
+          const url = `${baseUrl}/${bucketGUID}/${objectKey}`;
+          const response = await fetchS3(url, {
             method: 'DELETE',
-            headers: {
-              Authorization: AWS_AUTH_HEADER,
-            },
           });
 
           if (!response.ok) {
             return {
               error: {
                 status: response.status,
-                data: `Failed to delete object: ${response.statusText}`,
+                data: await readS3ErrorMessage(response, 'Failed to delete object'),
               },
             };
           }
@@ -459,10 +595,10 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
           const objectsXml = objectKeys.map((key) => `<Object><Key>${key}</Key></Object>`).join('');
           const xmlBody = `<?xml version="1.0" encoding="UTF-8"?><Delete><Quiet>false</Quiet>${objectsXml}</Delete>`;
 
-          const response = await fetch(`${baseUrl}/${bucketGUID}?delete`, {
+          const url = `${baseUrl}/${bucketGUID}?delete`;
+          const response = await fetchS3(url, {
             method: 'POST',
             headers: {
-              Authorization: AWS_AUTH_HEADER,
               'Content-Type': 'application/xml',
             },
             body: xmlBody,
@@ -472,7 +608,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
             return {
               error: {
                 status: response.status,
-                data: `Failed to delete objects: ${response.statusText}`,
+                data: await readS3ErrorMessage(response, 'Failed to delete objects'),
               },
             };
           }
@@ -518,10 +654,10 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
         try {
           const baseUrl = getBaseUrl();
           const xmlBody = generateBucketTaggingXml(tags);
-          const response = await fetch(`${baseUrl}/${bucketName}?tagging`, {
+          const url = `${baseUrl}/${bucketName}?tagging`;
+          const response = await fetchS3(url, {
             method: 'PUT',
             headers: {
-              Authorization: AWS_AUTH_HEADER,
               'Content-Type': 'application/xml',
             },
             body: xmlBody,
@@ -531,7 +667,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
             return {
               error: {
                 status: response.status,
-                data: `Failed to write bucket tags: ${response.statusText}`,
+                data: await readS3ErrorMessage(response, 'Failed to write bucket tags'),
               },
             };
           }
@@ -561,11 +697,9 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
       async queryFn({ bucketName }) {
         try {
           const baseUrl = getBaseUrl();
-          const response = await fetch(`${baseUrl}/${bucketName}?tagging`, {
+          const url = `${baseUrl}/${bucketName}?tagging`;
+          const response = await fetchS3(url, {
             method: 'GET',
-            headers: {
-              Authorization: AWS_AUTH_HEADER,
-            },
             cache: 'no-store',
           });
 
@@ -581,7 +715,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
             return {
               error: {
                 status: response.status,
-                data: `Failed to get bucket tags: ${response.statusText}`,
+                data: await readS3ErrorMessage(response, 'Failed to get bucket tags'),
               },
             };
           }
@@ -614,18 +748,16 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
       async queryFn({ bucketName }) {
         try {
           const baseUrl = getBaseUrl();
-          const response = await fetch(`${baseUrl}/${bucketName}?tagging`, {
+          const url = `${baseUrl}/${bucketName}?tagging`;
+          const response = await fetchS3(url, {
             method: 'DELETE',
-            headers: {
-              Authorization: AWS_AUTH_HEADER,
-            },
           });
 
           if (!response.ok) {
             return {
               error: {
                 status: response.status,
-                data: `Failed to delete bucket tags: ${response.statusText}`,
+                data: await readS3ErrorMessage(response, 'Failed to delete bucket tags'),
               },
             };
           }
@@ -656,10 +788,10 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
         try {
           const baseUrl = getBaseUrl();
           const xmlBody = generateBucketTaggingXml(tags);
-          const response = await fetch(`${baseUrl}/${bucketGUID}/${objectKey}?tagging`, {
+          const url = `${baseUrl}/${bucketGUID}/${objectKey}?tagging`;
+          const response = await fetchS3(url, {
             method: 'PUT',
             headers: {
-              Authorization: AWS_AUTH_HEADER,
               'Content-Type': 'application/xml',
             },
             body: xmlBody,
@@ -669,7 +801,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
             return {
               error: {
                 status: response.status,
-                data: `Failed to write object tags: ${response.statusText}`,
+                data: await readS3ErrorMessage(response, 'Failed to write object tags'),
               },
             };
           }
@@ -694,11 +826,9 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
       async queryFn({ bucketGUID, objectKey }) {
         try {
           const baseUrl = getBaseUrl();
-          const response = await fetch(`${baseUrl}/${bucketGUID}/${objectKey}?tagging`, {
+          const url = `${baseUrl}/${bucketGUID}/${objectKey}?tagging`;
+          const response = await fetchS3(url, {
             method: 'GET',
-            headers: {
-              Authorization: AWS_AUTH_HEADER,
-            },
             cache: 'no-store',
           });
 
@@ -714,7 +844,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
             return {
               error: {
                 status: response.status,
-                data: `Failed to get object tags: ${response.statusText}`,
+                data: await readS3ErrorMessage(response, 'Failed to get object tags'),
               },
             };
           }
@@ -742,18 +872,16 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
       async queryFn({ bucketGUID, objectKey }) {
         try {
           const baseUrl = getBaseUrl();
-          const response = await fetch(`${baseUrl}/${bucketGUID}/${objectKey}?tagging`, {
+          const url = `${baseUrl}/${bucketGUID}/${objectKey}?tagging`;
+          const response = await fetchS3(url, {
             method: 'DELETE',
-            headers: {
-              Authorization: AWS_AUTH_HEADER,
-            },
           });
 
           if (!response.ok) {
             return {
               error: {
                 status: response.status,
-                data: `Failed to delete object tags: ${response.statusText}`,
+                data: await readS3ErrorMessage(response, 'Failed to delete object tags'),
               },
             };
           }
@@ -779,10 +907,10 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
         try {
           const baseUrl = getBaseUrl();
           const xmlBody = generateBucketACLXml(owner, grants);
-          const response = await fetch(`${baseUrl}/${bucketName}?acl`, {
+          const url = `${baseUrl}/${bucketName}?acl`;
+          const response = await fetchS3(url, {
             method: 'PUT',
             headers: {
-              Authorization: AWS_AUTH_HEADER,
               'Content-Type': 'application/xml',
             },
             body: xmlBody,
@@ -792,7 +920,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
             return {
               error: {
                 status: response.status,
-                data: `Failed to write bucket ACL: ${response.statusText}`,
+                data: await readS3ErrorMessage(response, 'Failed to write bucket ACL'),
               },
             };
           }
@@ -817,11 +945,9 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
       async queryFn({ bucketName }) {
         try {
           const baseUrl = getBaseUrl();
-          const response = await fetch(`${baseUrl}/${bucketName}?acl`, {
+          const url = `${baseUrl}/${bucketName}?acl`;
+          const response = await fetchS3(url, {
             method: 'GET',
-            headers: {
-              Authorization: AWS_AUTH_HEADER,
-            },
             cache: 'no-store',
           });
 
@@ -829,7 +955,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
             return {
               error: {
                 status: response.status,
-                data: `Failed to get bucket ACL: ${response.statusText}`,
+                data: await readS3ErrorMessage(response, 'Failed to get bucket ACL'),
               },
             };
           }
@@ -858,10 +984,10 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
         try {
           const baseUrl = getBaseUrl();
           const xmlBody = generateBucketACLXml(owner, grants);
-          const response = await fetch(`${baseUrl}/${bucketGUID}/${objectKey}?acl`, {
+          const url = `${baseUrl}/${bucketGUID}/${objectKey}?acl`;
+          const response = await fetchS3(url, {
             method: 'PUT',
             headers: {
-              Authorization: AWS_AUTH_HEADER,
               'Content-Type': 'application/xml',
             },
             body: xmlBody,
@@ -871,7 +997,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
             return {
               error: {
                 status: response.status,
-                data: `Failed to write object ACL: ${response.statusText}`,
+                data: await readS3ErrorMessage(response, 'Failed to write object ACL'),
               },
             };
           }
@@ -896,11 +1022,9 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
       async queryFn({ bucketGUID, objectKey }) {
         try {
           const baseUrl = getBaseUrl();
-          const response = await fetch(`${baseUrl}/${bucketGUID}/${objectKey}?acl`, {
+          const url = `${baseUrl}/${bucketGUID}/${objectKey}?acl`;
+          const response = await fetchS3(url, {
             method: 'GET',
-            headers: {
-              Authorization: AWS_AUTH_HEADER,
-            },
             cache: 'no-store',
           });
 
@@ -908,7 +1032,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
             return {
               error: {
                 status: response.status,
-                data: `Failed to get object ACL: ${response.statusText}`,
+                data: await readS3ErrorMessage(response, 'Failed to get object ACL'),
               },
             };
           }

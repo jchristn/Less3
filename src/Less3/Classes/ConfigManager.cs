@@ -135,6 +135,29 @@ namespace Less3.Classes
             _Database.Users.DeleteByGuid(guid);
         }
 
+        internal bool UpdateUser(User user)
+        {
+            if (user == null) throw new ArgumentNullException(nameof(user));
+
+            User existing = GetUserByGuid(user.GUID);
+            if (existing == null)
+            {
+                _Logging.Warn("ConfigManager UpdateUser user GUID " + user.GUID + " not found");
+                return false;
+            }
+
+            User userByEmail = GetUserByEmail(user.Email);
+            if (userByEmail != null && !userByEmail.GUID.Equals(user.GUID))
+            {
+                _Logging.Warn("ConfigManager UpdateUser user email " + user.Email + " already exists");
+                return false;
+            }
+
+            user.CreatedUtc = existing.CreatedUtc;
+            _Database.Users.Update(user);
+            return true;
+        }
+
         #endregion
 
         #region Internal-Credential-Methods
@@ -204,6 +227,29 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
             _Database.Credentials.DeleteByGuid(guid);
+        }
+
+        internal bool UpdateCredential(Credential cred)
+        {
+            if (cred == null) throw new ArgumentNullException(nameof(cred));
+
+            Credential existing = GetCredentialByGuid(cred.GUID);
+            if (existing == null)
+            {
+                _Logging.Warn("ConfigManager UpdateCredential credential GUID " + cred.GUID + " not found");
+                return false;
+            }
+
+            Credential credentialByKey = GetCredentialByAccessKey(cred.AccessKey);
+            if (credentialByKey != null && !credentialByKey.GUID.Equals(cred.GUID))
+            {
+                _Logging.Warn("ConfigManager UpdateCredential access key " + cred.AccessKey + " already exists");
+                return false;
+            }
+
+            cred.CreatedUtc = existing.CreatedUtc;
+            _Database.Credentials.Update(cred);
+            return true;
         }
 
         #endregion

@@ -6,6 +6,7 @@ import type {
   CredentialListResponse,
   CredentialResponse,
   CreateCredentialRequest,
+  UpdateCredentialRequest,
   DeleteCredentialParams,
   DeleteCredentialResponse,
   GetCredentialsParams,
@@ -21,6 +22,7 @@ export type {
   CredentialListResponse,
   CredentialResponse,
   CreateCredentialRequest,
+  UpdateCredentialRequest,
   DeleteCredentialParams,
   DeleteCredentialResponse,
   GetCredentialsParams,
@@ -43,6 +45,7 @@ const getCredentialTags = (guid: string) => [
 ];
 
 const credentialsSliceInstance = enhancedSdk.injectEndpoints({
+  overrideExisting: true,
   endpoints: (
     build: EndpointBuilder<BaseQueryFn<ApiBaseQueryArgs, unknown, unknown>, CredentialsSliceTags, 'sdk'>
   ) => ({
@@ -73,6 +76,20 @@ const credentialsSliceInstance = enhancedSdk.injectEndpoints({
       invalidatesTags: [{ type: CredentialsSliceTags.CREDENTIALS, id: 'LIST' }],
     }),
 
+    updateCredential: build.mutation<CredentialResponse, UpdateCredentialRequest>({
+      query: ({ GUID, ...body }: UpdateCredentialRequest) => ({
+        url: buildApiUrl(`admin/credentials/${GUID}`),
+        method: 'PUT',
+        body: {
+          GUID,
+          ...body,
+        },
+      }),
+      transformResponse: (response: any): Credential => response,
+      invalidatesTags: (_result: Credential | undefined, _error: unknown, { GUID }: UpdateCredentialRequest) =>
+        getCredentialTags(GUID),
+    }),
+
     deleteCredential: build.mutation<DeleteCredentialResponse, DeleteCredentialParams>({
       query: ({ guid }: DeleteCredentialParams) => ({
         url: buildApiUrl(`admin/credentials/${guid}`),
@@ -92,5 +109,6 @@ export const {
   useGetCredentialsQuery,
   useGetCredentialByIdQuery,
   useCreateCredentialMutation,
+  useUpdateCredentialMutation,
   useDeleteCredentialMutation,
 } = credentialsSliceInstance;

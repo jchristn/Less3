@@ -1,13 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { rtkQueryErrorLogger, errorHandler } from "#/store/rtk/rtkApiMiddleware";
-import { message } from "antd";
-import { isRejectedWithValue } from "@reduxjs/toolkit";
-
-jest.mock("antd", () => ({
-  message: {
-    error: jest.fn(),
-  },
-}));
+import { message } from "#/utils/message";
 
 describe("rtkApiMiddleware", () => {
   beforeEach(() => {
@@ -41,6 +34,20 @@ describe("rtkApiMiddleware", () => {
       const dispatch = jest.fn();
       errorHandler({ payload: error }, dispatch);
       expect(message.error).toHaveBeenCalledWith("Network Error");
+    });
+
+    it("should handle nested data message", () => {
+      const error = { status: 403, data: { message: "Forbidden" } };
+      const dispatch = jest.fn();
+      errorHandler({ payload: error }, dispatch);
+      expect(message.error).toHaveBeenCalledWith("Forbidden");
+    });
+
+    it("should handle string data messages", () => {
+      const error = { status: 403, data: "Failed to fetch buckets: Forbidden" };
+      const dispatch = jest.fn();
+      errorHandler({ payload: error }, dispatch);
+      expect(message.error).toHaveBeenCalledWith("Failed to fetch buckets: Forbidden");
     });
 
     it("should handle NotAuthorized error", () => {
@@ -89,4 +96,3 @@ describe("rtkApiMiddleware", () => {
     });
   });
 });
-

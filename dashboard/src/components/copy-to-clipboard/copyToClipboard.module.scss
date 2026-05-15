@@ -1,0 +1,37 @@
+.copyButton {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  color: var(--ant-color-text-quaternary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  height: var(--copy-button-size, 22px);
+  width: var(--copy-button-size, 22px);
+  padding: 0;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--ant-color-primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ant-color-primary);
+    outline-offset: 2px;
+  }
+
+  svg {
+    display: block;
+  }
+}
+
+.copied {
+  color: #52c41a;
+}
+
+.copied:hover {
+  color: #52c41a;
+}

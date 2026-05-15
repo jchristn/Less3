@@ -36,6 +36,7 @@ const getRequestHistoryTags = (guid: string) => [
 ];
 
 const requestHistorySliceInstance = enhancedSdk.injectEndpoints({
+  overrideExisting: true,
   endpoints: (
     build: EndpointBuilder<BaseQueryFn<ApiBaseQueryArgs, unknown, unknown>, RequestHistorySliceTags, 'sdk'>
   ) => ({

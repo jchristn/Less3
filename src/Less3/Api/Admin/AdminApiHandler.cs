@@ -34,6 +34,7 @@
 
         private GetHandler _GetHandler; 
         private PostHandler _PostHandler;
+        private PutHandler _PutHandler;
         private DeleteHandler _DeleteHandler;
 
         #endregion
@@ -61,6 +62,7 @@
 
             _GetHandler = new GetHandler(_Settings, _Logging, _Config, _Buckets, _Auth); 
             _PostHandler = new PostHandler(_Settings, _Logging, _Config, _Buckets, _Auth);
+            _PutHandler = new PutHandler(_Settings, _Logging, _Config, _Buckets, _Auth);
             _DeleteHandler = new DeleteHandler(_Settings, _Logging, _Config, _Buckets, _Auth); 
         }
 
@@ -77,6 +79,9 @@
                     return;
                 case WatsonWebserver.Core.HttpMethod.POST:
                     await _PostHandler.Process(ctx);
+                    return;
+                case WatsonWebserver.Core.HttpMethod.PUT:
+                    await _PutHandler.Process(ctx);
                     return;
                 case WatsonWebserver.Core.HttpMethod.DELETE:
                     await _DeleteHandler.Process(ctx);

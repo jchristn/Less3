@@ -35,6 +35,16 @@ const bytesToHex = (bytes: Uint8Array): string =>
     .map((byte) => byte.toString(16).padStart(2, '0'))
     .join('');
 
+const toCryptoArrayBuffer = (bytes: Uint8Array): ArrayBuffer => {
+  if (bytes.buffer instanceof ArrayBuffer) {
+    return bytes.byteOffset === 0 && bytes.byteLength === bytes.buffer.byteLength
+      ? bytes.buffer
+      : bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+  }
+
+  return Uint8Array.from(bytes).buffer;
+};
+
 const normalizeHeaderValue = (value: string): string => value.replace(/\s+/g, ' ').trim();
 
 const dateToAmzDate = (date: Date): string =>
@@ -112,7 +122,7 @@ const importHmacKey = async (key: string | Uint8Array): Promise<CryptoKey> => {
 
   return globalThis.crypto.subtle.importKey(
     'raw',
-    rawKey,
+    toCryptoArrayBuffer(rawKey),
     {
       name: 'HMAC',
       hash: 'SHA-256',

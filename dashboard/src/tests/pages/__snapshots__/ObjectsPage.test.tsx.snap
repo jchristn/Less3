@@ -994,7 +994,12 @@ exports[`ObjectsPage Snapshots should match default render 1`] = `
                             <div
                               class="datatable-th-content"
                             >
-                              <span />
+                              <span>
+                                <input
+                                  aria-label="Select all visible objects"
+                                  type="checkbox"
+                                />
+                              </span>
                             </div>
                           </th>
                           <th
@@ -1141,7 +1146,9 @@ exports[`ObjectsPage Snapshots should match default render 1`] = `
                         <tr
                           class="clickable"
                         >
-                          <td>
+                          <td
+                            data-row-click-ignore="true"
+                          >
                             <input
                               type="checkbox"
                             />
@@ -1216,7 +1223,9 @@ exports[`ObjectsPage Snapshots should match default render 1`] = `
                           </td>
                           <td />
                           <td />
-                          <td>
+                          <td
+                            data-row-click-ignore="true"
+                          >
                             <button
                               class="ant-btn css-dev-only-do-not-override-mncuj7 ant-btn-text ant-btn-color-default ant-btn-variant-text ant-btn-sm ant-btn-icon-only ant-dropdown-trigger"
                               type="button"

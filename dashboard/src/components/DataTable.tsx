@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react';
 
 export interface DataTableColumn<T = any> {
   key: string;
-  label: string;
+  label: React.ReactNode;
   width?: string;
   tooltip?: string;
   sortable?: boolean;
@@ -288,7 +288,7 @@ const DataTable = <T extends Record<string, any>>({
                   className={onRowClick ? 'clickable' : ''}
                 >
                   {columns.map((col) => (
-                    <td key={col.key}>
+                    <td key={col.key} data-row-click-ignore={col.isAction ? 'true' : undefined}>
                       {col.render ? col.render(item) : (item[col.key] ?? '')}
                     </td>
                   ))}

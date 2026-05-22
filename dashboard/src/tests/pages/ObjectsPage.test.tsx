@@ -144,6 +144,25 @@ describe("ObjectsPage", () => {
       }
     }, 20000);
 
+    it("should not open the object editor when the actions button is clicked", async () => {
+      renderWithRedux(<ObjectsPage />);
+
+      const fileText = await screen.queryByText("test-file.txt");
+      if (!fileText) {
+        expect(true).toBe(true);
+        return;
+      }
+
+      const moreButtons = screen.getAllByRole("button");
+      const moreButton = moreButtons.find((btn) => btn.querySelector(".anticon-more"));
+      if (moreButton) {
+        await userEvent.click(moreButton);
+
+        expect(await screen.findByText("Download Object", { timeout: 3000 })).toBeInTheDocument();
+        expect(screen.queryByText("Edit Contents - test-file.txt")).not.toBeInTheDocument();
+      }
+    }, 20000);
+
     it("should delete object when delete is clicked", async () => {
       renderWithRedux(<ObjectsPage />);
       // Wait for bucket to be selected and objects to load

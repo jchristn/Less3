@@ -287,6 +287,27 @@ const ObjectsPage: React.FC = () => {
     });
   }, [objectsAtCurrentLevel, currentPrefix, searchText]);
 
+  const selectableObjectKeys = useMemo(() => {
+    return filteredObjects
+      .filter((item) => item.Key !== '..' && !item.Key.endsWith('/'))
+      .map((item) => item.Key);
+  }, [filteredObjects]);
+
+  const selectedVisibleObjectCount = useMemo(() => {
+    return selectableObjectKeys.filter((key) => selectedRowKeys.includes(key)).length;
+  }, [selectableObjectKeys, selectedRowKeys]);
+
+  const hasSelectableObjects = selectableObjectKeys.length > 0;
+  const isAllSelectableObjectsSelected = hasSelectableObjects && selectedVisibleObjectCount === selectableObjectKeys.length;
+  const isSelectAllIndeterminate = selectedVisibleObjectCount > 0 && !isAllSelectableObjectsSelected;
+  const selectAllCheckboxRef = React.useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (selectAllCheckboxRef.current) {
+      selectAllCheckboxRef.current.indeterminate = isSelectAllIndeterminate;
+    }
+  }, [isSelectAllIndeterminate]);
+
   // Breadcrumb path parts
   const breadcrumbParts = useMemo(() => {
     if (!currentPrefix) return [];
@@ -335,6 +356,20 @@ const ObjectsPage: React.FC = () => {
     }
     folderForm.resetFields();
     setIsCreateFolderModalVisible(true);
+  };
+
+  const handleToggleSelectAllObjects = (checked: boolean) => {
+    setSelectedRowKeys((prev) => {
+      const nextSelection = new Set(prev);
+
+      if (checked) {
+        selectableObjectKeys.forEach((key) => nextSelection.add(key));
+      } else {
+        selectableObjectKeys.forEach((key) => nextSelection.delete(key));
+      }
+
+      return Array.from(nextSelection);
+    });
   };
 
   const handleCreateFolderOk = async () => {
@@ -982,7 +1017,17 @@ const ObjectsPage: React.FC = () => {
   const columns: DataTableColumn<BucketObject>[] = [
     {
       key: 'select',
-      label: '',
+      label: (
+        <input
+          ref={selectAllCheckboxRef}
+          type="checkbox"
+          aria-label="Select all visible objects"
+          checked={isAllSelectableObjectsSelected}
+          disabled={!hasSelectableObjects}
+          onChange={(e) => handleToggleSelectAllObjects(e.target.checked)}
+          onClick={(e) => e.stopPropagation()}
+        />
+      ),
       width: '40px',
       isAction: true,
       sortable: false,
@@ -995,7 +1040,7 @@ const ObjectsPage: React.FC = () => {
             checked={selectedRowKeys.includes(item.Key)}
             onChange={(e) => {
               if (e.target.checked) {
-                setSelectedRowKeys((prev) => [...prev, item.Key]);
+                setSelectedRowKeys((prev) => (prev.includes(item.Key) ? prev : [...prev, item.Key]));
               } else {
                 setSelectedRowKeys((prev) => prev.filter((k) => k !== item.Key));
               }

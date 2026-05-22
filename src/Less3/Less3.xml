@@ -2000,6 +2000,13 @@
             </summary>
             <param name="uploadGuid">Upload GUID.</param>
         </member>
+        <member name="M:Less3.Database.Interfaces.IUploadPartMethods.DeleteByUploadGuidAndPartNumber(System.String,System.Int32)">
+            <summary>
+            Delete all stored rows for a specific part number within a multipart upload.
+            </summary>
+            <param name="uploadGuid">Upload GUID.</param>
+            <param name="partNumber">Part number.</param>
+        </member>
         <member name="T:Less3.Database.Interfaces.IUserMethods">
             <summary>
             Interface for user database methods.
@@ -2227,6 +2234,9 @@
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.UploadPartMethods.DeleteByUploadGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UploadPartMethods.DeleteByUploadGuidAndPartNumber(System.String,System.Int32)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.UserMethods.GetAll">
@@ -2483,6 +2493,9 @@
         <member name="M:Less3.Database.Sqlite.Implementations.UploadPartMethods.DeleteByUploadGuid(System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UploadPartMethods.DeleteByUploadGuidAndPartNumber(System.String,System.Int32)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.GetAll">
             <inheritdoc />
         </member>
@@ -2715,6 +2728,9 @@
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.UploadPartMethods.DeleteByUploadGuid(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UploadPartMethods.DeleteByUploadGuidAndPartNumber(System.String,System.Int32)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.GetAll">

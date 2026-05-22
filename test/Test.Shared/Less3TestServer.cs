@@ -419,14 +419,33 @@ namespace Test.Shared
 
         private string FindLess3Dll()
         {
+            bool preferRelease = AppContext.BaseDirectory.IndexOf(Path.DirectorySeparatorChar + "Release" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) >= 0;
+
             // Look for the built Less3.dll relative to the test project
-            string[] searchPaths = new string[]
+            List<string> searchPaths = new List<string>();
+
+            string[] debugPaths = new string[]
             {
-                Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "Less3", "bin", "Release", "net10.0", "Less3.dll")),
                 Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "Less3", "bin", "Debug", "net10.0", "Less3.dll")),
-                Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "src", "Less3", "bin", "Release", "net10.0", "Less3.dll")),
                 Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "src", "Less3", "bin", "Debug", "net10.0", "Less3.dll")),
             };
+
+            string[] releasePaths = new string[]
+            {
+                Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "Less3", "bin", "Release", "net10.0", "Less3.dll")),
+                Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "src", "Less3", "bin", "Release", "net10.0", "Less3.dll")),
+            };
+
+            if (preferRelease)
+            {
+                searchPaths.AddRange(releasePaths);
+                searchPaths.AddRange(debugPaths);
+            }
+            else
+            {
+                searchPaths.AddRange(debugPaths);
+                searchPaths.AddRange(releasePaths);
+            }
 
             foreach (string path in searchPaths)
             {

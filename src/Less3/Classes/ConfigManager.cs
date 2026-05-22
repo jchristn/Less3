@@ -371,6 +371,13 @@ namespace Less3.Classes
             _Database.UploadParts.DeleteByUploadGuid(uploadGuid);
         }
 
+        internal void DeleteUploadPart(string uploadGuid, int partNumber)
+        {
+            if (String.IsNullOrEmpty(uploadGuid)) return;
+            if (partNumber < 1) return;
+            _Database.UploadParts.DeleteByUploadGuidAndPartNumber(uploadGuid, partNumber);
+        }
+
         #endregion
 
         #region Internal-RequestHistory-Methods

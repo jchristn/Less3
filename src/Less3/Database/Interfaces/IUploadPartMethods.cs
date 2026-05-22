@@ -26,5 +26,12 @@ namespace Less3.Database.Interfaces
         /// </summary>
         /// <param name="uploadGuid">Upload GUID.</param>
         void DeleteByUploadGuid(string uploadGuid);
+
+        /// <summary>
+        /// Delete all stored rows for a specific part number within a multipart upload.
+        /// </summary>
+        /// <param name="uploadGuid">Upload GUID.</param>
+        /// <param name="partNumber">Part number.</param>
+        void DeleteByUploadGuidAndPartNumber(string uploadGuid, int partNumber);
     }
 }

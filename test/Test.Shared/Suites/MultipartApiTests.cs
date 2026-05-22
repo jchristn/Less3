@@ -209,6 +209,165 @@ namespace Test.Shared.Suites
                     AssertEqual("replacement", body);
                 });
 
+                await RunTest("S3_Multipart_ReuploadSamePartNumberReplacesPreviousPart", async () =>
+                {
+                    InitiateMultipartUploadResponse initiateResponse = await _Server.S3Client.InitiateMultipartUploadAsync(new InitiateMultipartUploadRequest
+                    {
+                        BucketName = _BucketName,
+                        Key = "multipart-retry.txt",
+                        ContentType = "text/plain"
+                    }).ConfigureAwait(false);
+
+                    using MemoryStream firstAttempt = new MemoryStream(Encoding.UTF8.GetBytes("stale-"));
+                    await _Server.S3Client.UploadPartAsync(new UploadPartRequest
+                    {
+                        BucketName = _BucketName,
+                        Key = "multipart-retry.txt",
+                        UploadId = initiateResponse.UploadId,
+                        PartNumber = 1,
+                        InputStream = firstAttempt
+                    }).ConfigureAwait(false);
+
+                    using MemoryStream retryAttempt = new MemoryStream(Encoding.UTF8.GetBytes("fresh-"));
+                    UploadPartResponse retryResponse = await _Server.S3Client.UploadPartAsync(new UploadPartRequest
+                    {
+                        BucketName = _BucketName,
+                        Key = "multipart-retry.txt",
+                        UploadId = initiateResponse.UploadId,
+                        PartNumber = 1,
+                        InputStream = retryAttempt
+                    }).ConfigureAwait(false);
+
+                    using MemoryStream secondPart = new MemoryStream(Encoding.UTF8.GetBytes("tail"));
+                    UploadPartResponse secondPartResponse = await _Server.S3Client.UploadPartAsync(new UploadPartRequest
+                    {
+                        BucketName = _BucketName,
+                        Key = "multipart-retry.txt",
+                        UploadId = initiateResponse.UploadId,
+                        PartNumber = 2,
+                        InputStream = secondPart
+                    }).ConfigureAwait(false);
+
+                    ListPartsResponse partsResponse = await _Server.S3Client.ListPartsAsync(new ListPartsRequest
+                    {
+                        BucketName = _BucketName,
+                        Key = "multipart-retry.txt",
+                        UploadId = initiateResponse.UploadId
+                    }).ConfigureAwait(false);
+
+                    AssertEqual(2, partsResponse.Parts.Count);
+                    AssertEqual(retryResponse.ETag, partsResponse.Parts[0].ETag);
+
+                    CompleteMultipartUploadResponse response = await _Server.S3Client.CompleteMultipartUploadAsync(new CompleteMultipartUploadRequest
+                    {
+                        BucketName = _BucketName,
+                        Key = "multipart-retry.txt",
+                        UploadId = initiateResponse.UploadId,
+                        PartETags = new List<PartETag>
+                        {
+                            new PartETag(1, retryResponse.ETag),
+                            new PartETag(2, secondPartResponse.ETag)
+                        }
+                    }).ConfigureAwait(false);
+
+                    AssertEqual(HttpStatusCode.OK, response.HttpStatusCode);
+
+                    using GetObjectResponse readResponse = await _Server.S3Client.GetObjectAsync(new GetObjectRequest
+                    {
+                        BucketName = _BucketName,
+                        Key = "multipart-retry.txt"
+                    }).ConfigureAwait(false);
+
+                    string body = await ReadResponseStringAsync(readResponse).ConfigureAwait(false);
+                    AssertEqual("fresh-tail", body);
+                });
+
+                await RunTest("S3_Multipart_CompleteAllowsNonContiguousPartNumbers", async () =>
+                {
+                    InitiateMultipartUploadResponse initiateResponse = await _Server.S3Client.InitiateMultipartUploadAsync(new InitiateMultipartUploadRequest
+                    {
+                        BucketName = _BucketName,
+                        Key = "multipart-noncontiguous.txt",
+                        ContentType = "text/plain"
+                    }).ConfigureAwait(false);
+
+                    using MemoryStream partOne = new MemoryStream(Encoding.UTF8.GetBytes("first-"));
+                    UploadPartResponse firstResponse = await _Server.S3Client.UploadPartAsync(new UploadPartRequest
+                    {
+                        BucketName = _BucketName,
+                        Key = "multipart-noncontiguous.txt",
+                        UploadId = initiateResponse.UploadId,
+                        PartNumber = 1,
+                        InputStream = partOne
+                    }).ConfigureAwait(false);
+
+                    using MemoryStream partThree = new MemoryStream(Encoding.UTF8.GetBytes("third"));
+                    UploadPartResponse thirdResponse = await _Server.S3Client.UploadPartAsync(new UploadPartRequest
+                    {
+                        BucketName = _BucketName,
+                        Key = "multipart-noncontiguous.txt",
+                        UploadId = initiateResponse.UploadId,
+                        PartNumber = 3,
+                        InputStream = partThree
+                    }).ConfigureAwait(false);
+
+                    CompleteMultipartUploadResponse response = await _Server.S3Client.CompleteMultipartUploadAsync(new CompleteMultipartUploadRequest
+                    {
+                        BucketName = _BucketName,
+                        Key = "multipart-noncontiguous.txt",
+                        UploadId = initiateResponse.UploadId,
+                        PartETags = new List<PartETag>
+                        {
+                            new PartETag(1, firstResponse.ETag),
+                            new PartETag(3, thirdResponse.ETag)
+                        }
+                    }).ConfigureAwait(false);
+
+                    AssertEqual(HttpStatusCode.OK, response.HttpStatusCode);
+
+                    using GetObjectResponse readResponse = await _Server.S3Client.GetObjectAsync(new GetObjectRequest
+                    {
+                        BucketName = _BucketName,
+                        Key = "multipart-noncontiguous.txt"
+                    }).ConfigureAwait(false);
+
+                    string body = await ReadResponseStringAsync(readResponse).ConfigureAwait(false);
+                    AssertEqual("first-third", body);
+                });
+
+                await RunTest("S3_Multipart_CompleteRejectsMismatchedEtag", async () =>
+                {
+                    InitiateMultipartUploadResponse initiateResponse = await _Server.S3Client.InitiateMultipartUploadAsync(new InitiateMultipartUploadRequest
+                    {
+                        BucketName = _BucketName,
+                        Key = "multipart-invalid-etag.txt",
+                        ContentType = "text/plain"
+                    }).ConfigureAwait(false);
+
+                    using MemoryStream partOne = new MemoryStream(Encoding.UTF8.GetBytes("only-part"));
+                    await _Server.S3Client.UploadPartAsync(new UploadPartRequest
+                    {
+                        BucketName = _BucketName,
+                        Key = "multipart-invalid-etag.txt",
+                        UploadId = initiateResponse.UploadId,
+                        PartNumber = 1,
+                        InputStream = partOne
+                    }).ConfigureAwait(false);
+
+                    AmazonS3Exception exception = await AssertThrowsAsync<AmazonS3Exception>(async () =>
+                    {
+                        await _Server.S3Client.CompleteMultipartUploadAsync(new CompleteMultipartUploadRequest
+                        {
+                            BucketName = _BucketName,
+                            Key = "multipart-invalid-etag.txt",
+                            UploadId = initiateResponse.UploadId,
+                            PartETags = new List<PartETag> { new PartETag(1, "\"definitely-wrong\"") }
+                        }).ConfigureAwait(false);
+                    }).ConfigureAwait(false);
+
+                    AssertTrue((int)exception.StatusCode >= 400, $"Expected error status but got {(int)exception.StatusCode}");
+                });
+
                 await RunTest("S3_Multipart_AbortUpload", async () =>
                 {
                     InitiateMultipartUploadResponse initiateResponse = await _Server.S3Client.InitiateMultipartUploadAsync(new InitiateMultipartUploadRequest

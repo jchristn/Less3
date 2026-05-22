@@ -35,6 +35,13 @@ namespace Less3.Database.PostgreSql.Implementations
             _Driver.ExecuteQuery(UploadPartQueries.DeleteByUploadGuid(uploadGuid), true).Wait();
         }
 
+        public void DeleteByUploadGuidAndPartNumber(string uploadGuid, int partNumber)
+        {
+            if (String.IsNullOrEmpty(uploadGuid)) throw new ArgumentNullException(nameof(uploadGuid));
+            if (partNumber < 1) throw new ArgumentOutOfRangeException(nameof(partNumber));
+            _Driver.ExecuteQuery(UploadPartQueries.DeleteByUploadGuidAndPartNumber(uploadGuid, partNumber), true).Wait();
+        }
+
         private List<UploadPart> MapUploadParts(DataTable dt)
         {
             List<UploadPart> parts = new List<UploadPart>();

@@ -16,7 +16,7 @@
 		<RepositoryUrl>https://github.com/jchristn/less3</RepositoryUrl>
 		<RepositoryType>Github</RepositoryType>
 		<PackageTags>S3 storage blob object storage rest restful</PackageTags>
-		<PackageReleaseNotes>S3Server 7.0.4 integration, expanded AWSSDK-based S3 compatibility validation, and object/versioning/multipart fixes.</PackageReleaseNotes>
+		<PackageReleaseNotes>S3Server 7.1.0 integration, expanded AWSSDK-based S3 compatibility validation, and object/versioning/multipart fixes.</PackageReleaseNotes>
 		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
 		<PackageIcon>favicon.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
@@ -33,7 +33,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Inputty" Version="1.0.13" />
-		<PackageReference Include="S3Server" Version="7.0.4" />
+		<PackageReference Include="S3Server" Version="7.1.0" />
 		<PackageReference Include="SyslogLogging" Version="2.0.13" />
 		<PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.3" />
 		<PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.1" />
@@ -49,7 +49,7 @@
 		<None Include="Assets\favicon.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-		<None Include="..\..\README.md">
+		<None Include="..\..\README.md" Condition="Exists('..\..\README.md')">
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
@@ -57,7 +57,7 @@
 			<Pack>True</Pack>
 			<PackagePath></PackagePath>
 		</None>
-		<None Include="LICENSE.md">
+		<None Include="LICENSE.md" Condition="Exists('LICENSE.md')">
 			<Pack>True</Pack>
 			<PackagePath></PackagePath>
 		</None>

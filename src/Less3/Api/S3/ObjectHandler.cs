@@ -12,6 +12,7 @@
     using System.Collections.Specialized;
     using System.IO;
     using System.Linq;
+    using System.Security.Cryptography;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -527,7 +528,7 @@
             {
                 _Logging.Warn(header + "failure while writing " + ctx.Request.Bucket + "/" + ctx.Request.Key + " using tempfile " + tempFilename);
                 _Logging.Exception(e, "ObjectHandler", "Write");
-                throw new S3Exception(new Error(ErrorCode.InternalError));
+                throw new S3Exception(new Error(ErrorCode.InternalError), e);
             }
             finally
             {
@@ -759,22 +760,52 @@
             Less3.Classes.Upload uploadRecord = _Config.GetUploadByGuid(ctx.Request.UploadId);
             RequestValidator.ValidateUpload(uploadRecord, ctx.Request.UploadId, _Logging, header);
 
-            List<UploadPart> parts = _Config.GetUploadPartsByUploadGuid(ctx.Request.UploadId);
-            if (parts == null || parts.Count == 0)
+            if (upload == null || upload.Parts == null || upload.Parts.Count < 1)
+            {
+                _Logging.Warn(header + "complete multipart upload request did not include any parts");
+                throw new S3Exception(new Error(ErrorCode.InvalidRequest));
+            }
+
+            List<UploadPart> storedParts = _Config.GetUploadPartsByUploadGuid(ctx.Request.UploadId);
+            if (storedParts == null || storedParts.Count == 0)
             {
                 _Logging.Warn(header + "no parts found for upload " + ctx.Request.UploadId);
                 throw new S3Exception(new Error(ErrorCode.InvalidPart));
             }
 
-            parts = parts.OrderBy(p => p.PartNumber).ToList();
+            List<UploadPart> availableParts = GetLatestUploadPartsByNumber(storedParts);
+            Dictionary<int, UploadPart> availablePartsByNumber = availableParts.ToDictionary(p => p.PartNumber);
+            List<UploadPart> selectedParts = new List<UploadPart>();
+            int previousPartNumber = 0;
 
-            for (int i = 0; i < parts.Count; i++)
+            foreach (Part requestedPart in upload.Parts)
             {
-                if (parts[i].PartNumber != (i + 1))
+                if (requestedPart == null)
                 {
-                    _Logging.Warn(header + "missing part number " + (i + 1) + " for upload " + ctx.Request.UploadId);
+                    _Logging.Warn(header + "complete multipart upload request contained a null part element");
                     throw new S3Exception(new Error(ErrorCode.InvalidPart));
                 }
+
+                if (requestedPart.PartNumber <= previousPartNumber)
+                {
+                    _Logging.Warn(header + "parts were not supplied in ascending order for upload " + ctx.Request.UploadId);
+                    throw new S3Exception(new Error(ErrorCode.InvalidPartOrder));
+                }
+
+                if (!availablePartsByNumber.TryGetValue(requestedPart.PartNumber, out UploadPart storedPart))
+                {
+                    _Logging.Warn(header + "requested part number " + requestedPart.PartNumber + " not found for upload " + ctx.Request.UploadId);
+                    throw new S3Exception(new Error(ErrorCode.InvalidPart));
+                }
+
+                if (!String.Equals(NormalizeEtag(requestedPart.ETag), NormalizeEtag(storedPart.MD5Hash), StringComparison.OrdinalIgnoreCase))
+                {
+                    _Logging.Warn(header + "etag mismatch for requested part number " + requestedPart.PartNumber + " in upload " + ctx.Request.UploadId);
+                    throw new S3Exception(new Error(ErrorCode.InvalidPart));
+                }
+
+                selectedParts.Add(storedPart);
+                previousPartNumber = requestedPart.PartNumber;
             }
 
             Obj existingObj = md.BucketClient.GetObjectLatestMetadata(ctx.Request.Key);
@@ -797,6 +828,7 @@
             obj.BlobFilename = obj.GUID;
             obj.Key = ctx.Request.Key;
             obj.ContentType = uploadRecord.ContentType;
+            obj.Metadata = uploadRecord.Metadata;
             obj.CreatedUtc = ts;
             obj.DeleteMarker = false;
             obj.ExpirationUtc = null;
@@ -815,14 +847,14 @@
             string tempFilename = _Settings.Storage.TempDirectory + Guid.NewGuid().ToString();
             long totalLength = 0;
 
-            string multipartEtag = ComputeMultipartEtag(parts);
+            string multipartEtag = ComputeMultipartEtag(selectedParts);
             obj.Etag = multipartEtag;
 
             try
             {
                 using (FileStream outStream = new FileStream(tempFilename, FileMode.Create, FileAccess.Write))
                 {
-                    foreach (UploadPart part in parts)
+                    foreach (UploadPart part in selectedParts)
                     {
                         string partFile = GetPartFilePath(md.Bucket.GUID, ctx.Request.UploadId, part.PartNumber);
                         if (!File.Exists(partFile))
@@ -865,7 +897,7 @@
             {
                 _Logging.Warn(header + "failure while completing multipart upload " + ctx.Request.UploadId);
                 _Logging.Exception(e, "ObjectHandler", "CompleteMultipartUpload");
-                throw new S3Exception(new Error(ErrorCode.InternalError));
+                throw new S3Exception(new Error(ErrorCode.InternalError), e);
             }
             finally
             {
@@ -875,7 +907,7 @@
                 }
             }
 
-            foreach (UploadPart part in parts)
+            foreach (UploadPart part in availableParts)
             {
                 string partFile = GetPartFilePath(md.Bucket.GUID, ctx.Request.UploadId, part.PartNumber);
                 if (File.Exists(partFile))
@@ -917,11 +949,16 @@
             RequestValidator.ValidateUpload(uploadRecord, ctx.Request.UploadId, _Logging, header);
 
             string partFile = GetPartFilePath(md.Bucket.GUID, ctx.Request.UploadId, ctx.Request.PartNumber);
+            string tempPartFile = partFile + ".tmp-" + Guid.NewGuid().ToString("N");
             long partLength = 0;
+            HashResult hashes = new HashResult();
 
             try
             {
-                using (FileStream fs = new FileStream(partFile, FileMode.Create, FileAccess.Write))
+                using (IncrementalHash md5 = IncrementalHash.CreateHash(HashAlgorithmName.MD5))
+                using (IncrementalHash sha1 = IncrementalHash.CreateHash(HashAlgorithmName.SHA1))
+                using (IncrementalHash sha256 = IncrementalHash.CreateHash(HashAlgorithmName.SHA256))
+                using (FileStream fs = new FileStream(tempPartFile, FileMode.Create, FileAccess.Write))
                 {
                     if (ctx.Request.Chunked)
                     {
@@ -933,6 +970,9 @@
                             if (chunk.Data != null && chunk.Data.Length > 0)
                             {
                                 await fs.WriteAsync(chunk.Data, 0, chunk.Data.Length);
+                                md5.AppendData(chunk.Data, 0, chunk.Data.Length);
+                                sha1.AppendData(chunk.Data, 0, chunk.Data.Length);
+                                sha256.AppendData(chunk.Data, 0, chunk.Data.Length);
                                 partLength += chunk.Data.Length;
                             }
 
@@ -945,13 +985,31 @@
                         if (bodyBytes != null && bodyBytes.Length > 0)
                         {
                             await fs.WriteAsync(bodyBytes, 0, bodyBytes.Length);
+                            md5.AppendData(bodyBytes, 0, bodyBytes.Length);
+                            sha1.AppendData(bodyBytes, 0, bodyBytes.Length);
+                            sha256.AppendData(bodyBytes, 0, bodyBytes.Length);
                             partLength += bodyBytes.Length;
                         }
                     }
+
+                    hashes.MD5 = ToHexString(md5.GetHashAndReset());
+                    hashes.SHA1 = ToHexString(sha1.GetHashAndReset());
+                    hashes.SHA256 = ToHexString(sha256.GetHashAndReset());
                 }
 
-                byte[] partData = File.ReadAllBytes(partFile);
-                HashResult hashes = HashHelper.ComputeHashes(partData);
+                if (partLength > Int32.MaxValue)
+                {
+                    _Logging.Warn(header + "part " + ctx.Request.PartNumber + " exceeded the supported persisted size");
+                    throw new S3Exception(new Error(ErrorCode.EntityTooLarge));
+                }
+
+                if (File.Exists(partFile))
+                {
+                    File.Delete(partFile);
+                }
+
+                File.Move(tempPartFile, partFile);
+                _Config.DeleteUploadPart(ctx.Request.UploadId, ctx.Request.PartNumber);
 
                 UploadPart part = new UploadPart();
                 part.GUID = Guid.NewGuid().ToString();
@@ -980,17 +1038,26 @@
 
                 _Logging.Info(header + "uploaded part " + ctx.Request.PartNumber + " for upload " + ctx.Request.UploadId);
             }
+            catch (S3Exception)
+            {
+                if (File.Exists(tempPartFile))
+                {
+                    File.Delete(tempPartFile);
+                }
+
+                throw;
+            }
             catch (Exception e)
             {
                 _Logging.Warn(header + "failure while uploading part " + ctx.Request.PartNumber + " for upload " + ctx.Request.UploadId);
                 _Logging.Exception(e, "ObjectHandler", "UploadPart");
 
-                if (File.Exists(partFile))
+                if (File.Exists(tempPartFile))
                 {
-                    File.Delete(partFile);
+                    File.Delete(tempPartFile);
                 }
 
-                throw new S3Exception(new Error(ErrorCode.InternalError));
+                throw new S3Exception(new Error(ErrorCode.InternalError), e);
             }
         }
 
@@ -1006,7 +1073,7 @@
             Less3.Classes.Upload uploadRecord = _Config.GetUploadByGuid(ctx.Request.UploadId);
             RequestValidator.ValidateUpload(uploadRecord, ctx.Request.UploadId, _Logging, header);
 
-            List<UploadPart> parts = _Config.GetUploadPartsByUploadGuid(ctx.Request.UploadId);
+            List<UploadPart> parts = GetLatestUploadPartsByNumber(_Config.GetUploadPartsByUploadGuid(ctx.Request.UploadId));
             if (parts != null && parts.Count > 0)
             {
                 foreach (UploadPart part in parts)
@@ -1037,7 +1104,7 @@
             Less3.Classes.Upload uploadRecord = _Config.GetUploadByGuid(ctx.Request.UploadId);
             RequestValidator.ValidateUpload(uploadRecord, ctx.Request.UploadId, _Logging, header);
 
-            List<UploadPart> parts = _Config.GetUploadPartsByUploadGuid(ctx.Request.UploadId);
+            List<UploadPart> parts = GetLatestUploadPartsByNumber(_Config.GetUploadPartsByUploadGuid(ctx.Request.UploadId));
 
             ListPartsResult result = new ListPartsResult();
             result.Bucket = ctx.Request.Bucket;
@@ -1060,8 +1127,6 @@
 
             if (parts != null && parts.Count > 0)
             {
-                parts = parts.OrderBy(p => p.PartNumber).ToList();
-
                 foreach (UploadPart uploadPart in parts)
                 {
                     Part part = new Part();
@@ -1163,6 +1228,27 @@
             return bucket.DiskDirectory + obj.BlobFilename;
         }
 
+        private List<UploadPart> GetLatestUploadPartsByNumber(List<UploadPart> parts)
+        {
+            if (parts == null || parts.Count < 1) return new List<UploadPart>();
+
+            List<UploadPart> latestParts = parts
+                .GroupBy(p => p.PartNumber)
+                .Select(g => g
+                    .OrderByDescending(p => p.CreatedUtc)
+                    .ThenByDescending(p => p.Id)
+                    .First())
+                .OrderBy(p => p.PartNumber)
+                .ToList();
+
+            if (latestParts.Count != parts.Count)
+            {
+                _Logging.Warn("ObjectHandler detected duplicate stored multipart rows and selected the newest row per part number");
+            }
+
+            return latestParts;
+        }
+
         private string ComputeMultipartEtag(List<UploadPart> parts)
         {
             using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
@@ -1190,6 +1276,18 @@
                 bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
             }
             return bytes;
+        }
+
+        private static string NormalizeEtag(string etag)
+        {
+            if (String.IsNullOrWhiteSpace(etag)) return null;
+            return etag.Trim().Trim('"');
+        }
+
+        private static string ToHexString(byte[] data)
+        {
+            if (data == null || data.Length < 1) return String.Empty;
+            return BitConverter.ToString(data).Replace("-", "").ToLowerInvariant();
         }
          
         private List<Grant> GrantsFromHeaders(User user, NameValueCollection headers)

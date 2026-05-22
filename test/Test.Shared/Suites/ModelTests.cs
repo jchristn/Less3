@@ -328,11 +328,12 @@ namespace Test.Shared.Suites
 
             await RunTest("BucketStatistics_ParameterizedConstructor", () =>
             {
-                // Note: the parameterized constructor does not assign its parameters to properties.
                 BucketStatistics stats = new BucketStatistics("mybucket", "guid-123", 100, 2048);
                 AssertNotNull(stats);
-                AssertEqual(0L, stats.Objects);
-                AssertEqual(0L, stats.Bytes);
+                AssertEqual("mybucket", stats.Name);
+                AssertEqual("guid-123", stats.GUID);
+                AssertEqual(100L, stats.Objects);
+                AssertEqual(2048L, stats.Bytes);
             });
 
             #endregion

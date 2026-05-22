@@ -38,6 +38,14 @@ namespace Less3.Database.SqlServer.Implementations
             _Database.ExecuteQuery(UploadPartQueries.DeleteByUploadGuid(uploadGuid), true).Wait();
         }
 
+        /// <inheritdoc />
+        public void DeleteByUploadGuidAndPartNumber(string uploadGuid, int partNumber)
+        {
+            if (String.IsNullOrEmpty(uploadGuid)) throw new ArgumentNullException(nameof(uploadGuid));
+            if (partNumber < 1) throw new ArgumentOutOfRangeException(nameof(partNumber));
+            _Database.ExecuteQuery(UploadPartQueries.DeleteByUploadGuidAndPartNumber(uploadGuid, partNumber), true).Wait();
+        }
+
         private UploadPart MapFromRow(DataRow row)
         {
             UploadPart part = new UploadPart();

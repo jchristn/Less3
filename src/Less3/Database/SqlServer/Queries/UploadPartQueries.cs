@@ -31,5 +31,10 @@ namespace Less3.Database.SqlServer.Queries
         {
             return "DELETE FROM uploadparts WHERE uploadguid = '" + Sanitizer.SanitizeString(uploadGuid) + "';";
         }
+
+        internal static string DeleteByUploadGuidAndPartNumber(string uploadGuid, int partNumber)
+        {
+            return "DELETE FROM uploadparts WHERE uploadguid = '" + Sanitizer.SanitizeString(uploadGuid) + "' AND partnumber = " + partNumber + ";";
+        }
     }
 }

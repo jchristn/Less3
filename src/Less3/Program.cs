@@ -296,46 +296,46 @@
                 Console.WriteLine("  | Requests must use path-style hosted URLs, i.e. [hostname]/[bucket]/[key]");
             }
 
-            _S3Server.Settings.PreRequestHandler = PreRequestHandler;
-            _S3Server.Settings.PostRequestHandler = PostRequestHandler;
-            _S3Server.Settings.DefaultRequestHandler = DefaultRequestHandler;
+            _S3Server.Settings.PreRequestHandler = ctx => ExecuteWithExceptionLogging(ctx, () => PreRequestHandler(ctx));
+            _S3Server.Settings.PostRequestHandler = ctx => ExecuteWithExceptionLogging(ctx, () => PostRequestHandler(ctx));
+            _S3Server.Settings.DefaultRequestHandler = ctx => ExecuteWithExceptionLogging(ctx, () => DefaultRequestHandler(ctx));
 
-            _S3Server.Service.ListBuckets = _ApiHandler.ServiceListBuckets;
-            _S3Server.Service.ServiceExists = _ApiHandler.ServiceExists;
-            _S3Server.Service.GetSecretKey = _ApiHandler.GetSecretKey;
-            _S3Server.Service.FindMatchingBaseDomain = _ApiHandler.FindMatchingBaseDomain;
+            _S3Server.Service.ListBuckets = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ServiceListBuckets(ctx));
+            _S3Server.Service.ServiceExists = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ServiceExists(ctx));
+            _S3Server.Service.GetSecretKey = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.GetSecretKey(ctx));
+            _S3Server.Service.FindMatchingBaseDomain = hostname => ExecuteWithExceptionLogging(() => _ApiHandler.FindMatchingBaseDomain(hostname));
 
-            _S3Server.Bucket.Delete = _ApiHandler.BucketDelete;
-            _S3Server.Bucket.DeleteTagging = _ApiHandler.BucketDeleteTagging;
-            _S3Server.Bucket.Exists = _ApiHandler.BucketExists;
-            _S3Server.Bucket.Read = _ApiHandler.BucketRead;
-            _S3Server.Bucket.ReadAcl = _ApiHandler.BucketReadAcl;
-            _S3Server.Bucket.ReadLocation = _ApiHandler.BucketReadLocation;
-            _S3Server.Bucket.ReadTagging = _ApiHandler.BucketReadTagging;
-            _S3Server.Bucket.ReadVersions = _ApiHandler.BucketReadVersions;
-            _S3Server.Bucket.ReadVersioning = _ApiHandler.BucketReadVersioning;
-            _S3Server.Bucket.Write = _ApiHandler.BucketWrite;
-            _S3Server.Bucket.WriteAcl = _ApiHandler.BucketWriteAcl;
-            _S3Server.Bucket.WriteTagging = _ApiHandler.BucketWriteTagging;
-            _S3Server.Bucket.WriteVersioning = _ApiHandler.BucketWriteVersioning;
-            _S3Server.Bucket.ReadMultipartUploads = _ApiHandler.ReadMultipartUploads;
+            _S3Server.Bucket.Delete = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketDelete(ctx));
+            _S3Server.Bucket.DeleteTagging = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketDeleteTagging(ctx));
+            _S3Server.Bucket.Exists = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketExists(ctx));
+            _S3Server.Bucket.Read = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketRead(ctx));
+            _S3Server.Bucket.ReadAcl = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketReadAcl(ctx));
+            _S3Server.Bucket.ReadLocation = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketReadLocation(ctx));
+            _S3Server.Bucket.ReadTagging = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketReadTagging(ctx));
+            _S3Server.Bucket.ReadVersions = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketReadVersions(ctx));
+            _S3Server.Bucket.ReadVersioning = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketReadVersioning(ctx));
+            _S3Server.Bucket.Write = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketWrite(ctx));
+            _S3Server.Bucket.WriteAcl = (ctx, acp) => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketWriteAcl(ctx, acp));
+            _S3Server.Bucket.WriteTagging = (ctx, tagging) => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketWriteTagging(ctx, tagging));
+            _S3Server.Bucket.WriteVersioning = (ctx, versioning) => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketWriteVersioning(ctx, versioning));
+            _S3Server.Bucket.ReadMultipartUploads = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ReadMultipartUploads(ctx));
 
-            _S3Server.Object.Delete = _ApiHandler.ObjectDelete;
-            _S3Server.Object.DeleteMultiple = _ApiHandler.ObjectDeleteMultiple;
-            _S3Server.Object.DeleteTagging = _ApiHandler.ObjectDeleteTagging;
-            _S3Server.Object.Exists = _ApiHandler.ObjectExists;
-            _S3Server.Object.Read = _ApiHandler.ObjectRead;
-            _S3Server.Object.ReadAcl = _ApiHandler.ObjectReadAcl;
-            _S3Server.Object.ReadRange = _ApiHandler.ObjectReadRange;
-            _S3Server.Object.ReadTagging = _ApiHandler.ObjectReadTagging;
-            _S3Server.Object.Write = _ApiHandler.ObjectWrite;
-            _S3Server.Object.WriteAcl = _ApiHandler.ObjectWriteAcl;
-            _S3Server.Object.WriteTagging = _ApiHandler.ObjectWriteTagging;
-            _S3Server.Object.UploadPart = _ApiHandler.UploadPart;
-            _S3Server.Object.AbortMultipartUpload = _ApiHandler.AbortMultipartUpload;
-            _S3Server.Object.CompleteMultipartUpload = _ApiHandler.CompleteMultipartUpload;
-            _S3Server.Object.CreateMultipartUpload = _ApiHandler.CreateMultipartUpload;
-            _S3Server.Object.ReadParts = _ApiHandler.ReadParts;
+            _S3Server.Object.Delete = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ObjectDelete(ctx));
+            _S3Server.Object.DeleteMultiple = (ctx, dm) => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ObjectDeleteMultiple(ctx, dm));
+            _S3Server.Object.DeleteTagging = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ObjectDeleteTagging(ctx));
+            _S3Server.Object.Exists = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ObjectExists(ctx));
+            _S3Server.Object.Read = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ObjectRead(ctx));
+            _S3Server.Object.ReadAcl = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ObjectReadAcl(ctx));
+            _S3Server.Object.ReadRange = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ObjectReadRange(ctx));
+            _S3Server.Object.ReadTagging = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ObjectReadTagging(ctx));
+            _S3Server.Object.Write = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ObjectWrite(ctx));
+            _S3Server.Object.WriteAcl = (ctx, acp) => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ObjectWriteAcl(ctx, acp));
+            _S3Server.Object.WriteTagging = (ctx, tagging) => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ObjectWriteTagging(ctx, tagging));
+            _S3Server.Object.UploadPart = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.UploadPart(ctx));
+            _S3Server.Object.AbortMultipartUpload = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.AbortMultipartUpload(ctx));
+            _S3Server.Object.CompleteMultipartUpload = (ctx, upload) => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.CompleteMultipartUpload(ctx, upload));
+            _S3Server.Object.CreateMultipartUpload = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.CreateMultipartUpload(ctx));
+            _S3Server.Object.ReadParts = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ReadParts(ctx));
 
             _S3Server.Start();
 
@@ -757,6 +757,97 @@
             {
                 _Logging.Debug("PostRequestHandler failed to persist request history: " + e.Message);
             }
+        }
+
+        private static async Task ExecuteWithExceptionLogging(S3Context ctx, Func<Task> callback)
+        {
+            try
+            {
+                await callback().ConfigureAwait(false);
+            }
+            catch (S3Exception ex)
+            {
+                if (ShouldLogException(ex)) LogException(ex);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                throw;
+            }
+        }
+
+        private static async Task<T> ExecuteWithExceptionLogging<T>(S3Context ctx, Func<Task<T>> callback)
+        {
+            try
+            {
+                return await callback().ConfigureAwait(false);
+            }
+            catch (S3Exception ex)
+            {
+                if (ShouldLogException(ex)) LogException(ex);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                throw;
+            }
+        }
+
+        private static T ExecuteWithExceptionLogging<T>(S3Context ctx, Func<T> callback)
+        {
+            try
+            {
+                return callback();
+            }
+            catch (S3Exception ex)
+            {
+                if (ShouldLogException(ex)) LogException(ex);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                throw;
+            }
+        }
+
+        private static T ExecuteWithExceptionLogging<T>(Func<T> callback)
+        {
+            try
+            {
+                return callback();
+            }
+            catch (S3Exception ex)
+            {
+                if (ShouldLogException(ex)) LogException(ex);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                throw;
+            }
+        }
+
+        private static void LogException(Exception ex)
+        {
+            if (_Logging == null || ex == null) return;
+            _Logging.Warn(_Header + $"exception:{Environment.NewLine}{ex.ToString()}");
+        }
+
+        private static bool ShouldLogException(Exception ex)
+        {
+            if (ex == null) return false;
+
+            if (ex is S3Exception s3Ex)
+            {
+                return s3Ex.Error != null
+                    && s3Ex.Error.Code == S3ServerLibrary.S3Objects.ErrorCode.InternalError;
+            }
+
+            return true;
         }
 
         private static bool IsTextContentType(string contentType)

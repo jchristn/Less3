@@ -20,7 +20,8 @@ import Less3Card from '#/components/base/card/Card';
 import Less3Flex from '#/components/base/flex/Flex';
 import Less3Text from '#/components/base/typograpghy/Text';
 import SummaryChart, { getQuickRange } from '#/page/request-history/SummaryChart';
-import { useGetAdminHealthQuery, useGetDashboardStatsQuery } from '#/store/slice/dashboardStatsSlice';
+import { useGetAdminHealthQuery, useGetDashboardStatsQuery, useGetRequestReportQuery } from '#/store/slice/dashboardStatsSlice';
+import { useGetCredentialsQuery } from '#/store/slice/credentialsSlice';
 import { useGetRequestHistorySummaryQuery } from '#/store/slice/requestHistorySlice';
 
 interface QuickActionCardProps {
@@ -160,8 +161,15 @@ const DashboardPage: React.FC = () => {
   const { data: health, isLoading: healthLoading } = useGetAdminHealthQuery(undefined, {
     pollingInterval: 10000,
   });
+  const { data: credentials, isLoading: credentialsLoading } = useGetCredentialsQuery(undefined, {
+    pollingInterval: 10000,
+  });
+  const { data: report, isLoading: reportLoading } = useGetRequestReportQuery(summaryParams, {
+    pollingInterval: 10000,
+  });
   const requestCount = (summary?.TotalSuccess ?? 0) + (summary?.TotalFailure ?? 0);
   const failureRate = requestCount === 0 ? '0%' : `${(((summary?.TotalFailure ?? 0) / requestCount) * 100).toFixed(1)}%`;
+  const activeCredentialCount = credentials?.filter((credential) => credential.Active !== false).length ?? 0;
 
   return (
     <PageContainer pageTitle="Home">
@@ -186,10 +194,15 @@ const DashboardPage: React.FC = () => {
             icon={<HddOutlined />}
             color="#1890ff"
           />
-          <KpiCard label="Active Credentials" value="1" icon={<KeyOutlined />} color="#722ed1" />
           <KpiCard
-            label="Requests"
-            value={summaryLoading ? '...' : String(requestCount)}
+            label="Active Credentials"
+            value={credentialsLoading ? '...' : String(activeCredentialCount)}
+            icon={<KeyOutlined />}
+            color="#722ed1"
+          />
+          <KpiCard
+            label="Requests / min"
+            value={reportLoading ? '...' : (report?.RequestsPerMinute ?? 0).toFixed(1)}
             icon={<ThunderboltOutlined />}
             color="#eb2f96"
           />
@@ -198,6 +211,12 @@ const DashboardPage: React.FC = () => {
             value={summaryLoading ? '...' : failureRate}
             icon={<WarningOutlined />}
             color="#f5222d"
+          />
+          <KpiCard
+            label="p95 Latency"
+            value={reportLoading ? '...' : `${Math.round(report?.P95LatencyMs ?? 0)}ms`}
+            icon={<ThunderboltOutlined />}
+            color="#2f54eb"
           />
         </Less3Flex>
 

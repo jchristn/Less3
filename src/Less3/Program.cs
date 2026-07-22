@@ -266,20 +266,20 @@ namespace Less3
             Console.WriteLine("| Initializing authentication manager");
             _Auth = new AuthManager(_Settings, _Logging, _Config, _Buckets);
 
+            Console.WriteLine("| Initializing cleanup manager");
+            _Cleanup = new CleanupManager(_Settings, _Logging, _Config);
+
             Console.WriteLine("| Initializing API handler");
             _ApiHandler = new ApiHandler(_Settings, _Logging, _Config, _Buckets, _Auth);
 
             Console.WriteLine("| Initializing admin API handler");
-            _AdminApiHandler = new AdminApiHandler(_Settings, _Logging, _Config, _Buckets, _Auth);
+            _AdminApiHandler = new AdminApiHandler(_Settings, _Logging, _Config, _Buckets, _Auth, _Cleanup);
 
             Console.WriteLine("| Initializing REST API handler");
             _RestApiHandler = new RestApiHandler(_Settings, _Logging, _Config, _Buckets, _Auth);
 
             Console.WriteLine("| Initializing console manager");
             _Console = new ConsoleManager(_Settings, _Logging);
-
-            Console.WriteLine("| Initializing cleanup manager");
-            _Cleanup = new CleanupManager(_Settings, _Logging, _Config);
 
             Console.WriteLine("| Initializing S3 server interface");
             _S3Settings = new S3ServerSettings();
@@ -676,6 +676,44 @@ namespace Less3
                     } 
                 }
 
+                if (ctx.Http.Request.Headers.AllKeys.Contains("x-less3-session-token"))
+                {
+                    if (!_Auth.TryAuthenticateBearerToken(
+                        ctx.Http.Request.Headers["x-less3-session-token"],
+                        ctx.Http.Request.Source.IpAddress,
+                        out RequestContext requestContext,
+                        out string authenticationReason))
+                    {
+                        _Logging.Warn(header + "invalid admin session token: " + authenticationReason);
+                        ctx.Response.StatusCode = 401;
+                        ctx.Response.ContentType = "text/plain";
+                        await ctx.Response.Send(authenticationReason);
+                        return true;
+                    }
+
+                    if (!AuthorizeAdminRequest(ctx, requestContext, out string authorizationReason))
+                    {
+                        _Logging.Warn(header + "admin RBAC denied: " + authorizationReason);
+                        ctx.Metadata = requestContext;
+                        ctx.Response.StatusCode = 403;
+                        ctx.Response.ContentType = "text/plain";
+                        await ctx.Response.Send(authorizationReason);
+                        return true;
+                    }
+
+                    ctx.Metadata = requestContext;
+
+                    switch (ctx.Http.Request.Method)
+                    {
+                        case WatsonWebserver.Core.HttpMethod.GET:
+                        case WatsonWebserver.Core.HttpMethod.PUT:
+                        case WatsonWebserver.Core.HttpMethod.POST:
+                        case WatsonWebserver.Core.HttpMethod.DELETE:
+                            await _AdminApiHandler.Process(ctx);
+                            return true;
+                    }
+                }
+
                 _Logging.Warn(header + "missing admin API key");
                 ctx.Response.StatusCode = 401;
                 ctx.Response.ContentType = "text/plain";
@@ -797,6 +835,7 @@ namespace Less3
             if (ctx.Http.Request.Url.Elements == null || ctx.Http.Request.Url.Elements.Length != 4) return false;
             if (!ctx.Http.Request.Url.Elements[2].Equals("authsessions", StringComparison.OrdinalIgnoreCase)) return false;
             if (ctx.Http.Request.Url.Elements[3].Equals("login", StringComparison.OrdinalIgnoreCase)) return true;
+            if (ctx.Http.Request.Url.Elements[3].Equals("credential-login", StringComparison.OrdinalIgnoreCase)) return true;
             if (ctx.Http.Request.Url.Elements[3].Equals("validate", StringComparison.OrdinalIgnoreCase)) return true;
             if (ctx.Http.Request.Url.Elements[3].Equals("revoke", StringComparison.OrdinalIgnoreCase)) return true;
             return false;
@@ -825,6 +864,97 @@ namespace Less3
             string resourceId = RestResourceId(ctx);
 
             return _Auth.Authorize(requestContext, resourceType, operation, resourceId, out reason);
+        }
+
+        private static bool AuthorizeAdminRequest(
+            S3Context ctx,
+            RequestContext requestContext,
+            out string reason)
+        {
+            reason = null;
+            if (ctx == null)
+            {
+                reason = "Request context is missing.";
+                return false;
+            }
+
+            if (ctx.Http.Request.Url.Elements == null || ctx.Http.Request.Url.Elements.Length < 2)
+            {
+                reason = "Admin resource could not be resolved.";
+                return false;
+            }
+
+            string resourceType = AdminResourceType(ctx.Http.Request.Url.Elements[1]);
+            string operation = AdminOperation(ctx);
+            string resourceId = AdminResourceId(ctx);
+
+            return _Auth.Authorize(requestContext, resourceType, operation, resourceId, out reason);
+        }
+
+        private static string AdminResourceType(string resourceType)
+        {
+            if (String.IsNullOrEmpty(resourceType)) return String.Empty;
+
+            string normalized = resourceType.ToLowerInvariant().Replace("-", String.Empty);
+            if (normalized.Equals("stats") || normalized.Equals("health")) return "Tenant";
+            if (normalized.Equals("reports")) return "RequestHistory";
+            if (normalized.Equals("maintenance")) return "Admin";
+            if (normalized.Equals("effectivepermissions")) return "Permission";
+            return RestResourceType(resourceType);
+        }
+
+        private static string AdminOperation(S3Context ctx)
+        {
+            if (ctx.Http.Request.Method == WatsonWebserver.Core.HttpMethod.GET)
+            {
+                if (ctx.Http.Request.Url.Elements.Length <= 2) return "Enumerate";
+                return "Read";
+            }
+
+            if (ctx.Http.Request.Method == WatsonWebserver.Core.HttpMethod.POST)
+            {
+                if (ctx.Http.Request.Url.Elements.Length >= 4
+                    && ctx.Http.Request.Url.Elements[3].Equals("rotate", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Update";
+                }
+
+                if (ctx.Http.Request.Url.Elements.Length >= 4
+                    && ctx.Http.Request.Url.Elements[3].Equals("disable", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Update";
+                }
+
+                if (ctx.Http.Request.Url.Elements.Length >= 3
+                    && ctx.Http.Request.Url.Elements[1].Equals("maintenance", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Admin";
+                }
+
+                return "Create";
+            }
+
+            if (ctx.Http.Request.Method == WatsonWebserver.Core.HttpMethod.PUT) return "Update";
+            if (ctx.Http.Request.Method == WatsonWebserver.Core.HttpMethod.DELETE) return "Delete";
+
+            return "Read";
+        }
+
+        private static string AdminResourceId(S3Context ctx)
+        {
+            if (ctx.Http.Request.Url.Elements.Length < 3) return null;
+
+            string resource = ctx.Http.Request.Url.Elements[1];
+            string candidate = ctx.Http.Request.Url.Elements[2];
+            if (resource.Equals("reports", StringComparison.OrdinalIgnoreCase)
+                || resource.Equals("maintenance", StringComparison.OrdinalIgnoreCase)
+                || resource.Equals("effectivepermissions", StringComparison.OrdinalIgnoreCase)
+                || resource.Equals("effective-permissions", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            return candidate;
         }
 
         private static string RestResourceType(string resourceType)
@@ -1008,6 +1138,15 @@ namespace Less3
                 { "/admin/authorizationaudit", pathItem },
                 { "/admin/requesthistory", pathItem },
                 { "/admin/requesthistory/summary", pathItem },
+                { "/admin/reports/requests", pathItem },
+                { "/admin/maintenance/status", pathItem },
+                { "/admin/maintenance/settings", postPathItem },
+                { "/admin/maintenance/purge-request-history", postPathItem },
+                { "/admin/maintenance/cleanup-temp-uploads", postPathItem },
+                { "/admin/maintenance/run-cleanup", postPathItem },
+                { "/admin/maintenance/verify-objects", postPathItem },
+                { "/admin/maintenance/migration-status", pathItem },
+                { "/admin/effectivepermissions", pathItem },
                 { "/api/v1/{type}", postPathItem },
                 { "/api/v1/{type}/{id}", mutablePathItem },
                 { "/api/v1/{type}/enumerate", postPathItem },
@@ -1045,6 +1184,7 @@ namespace Less3
             }
 
             paths["/api/v1/authsessions/login"] = postPathItem;
+            paths["/api/v1/authsessions/credential-login"] = postPathItem;
             paths["/api/v1/authsessions/validate"] = postPathItem;
             paths["/api/v1/authsessions/revoke"] = postPathItem;
 
@@ -1109,6 +1249,10 @@ namespace Less3
                 { "AuthSession", tenantScopedSchema },
                 { "AuthorizationAudit", tenantScopedSchema },
                 { "RequestHistory", tenantScopedSchema },
+                { "RequestReportingResult", tenantScopedSchema },
+                { "MaintenanceStatus", tenantScopedSchema },
+                { "MaintenanceActionResult", tenantScopedSchema },
+                { "EffectivePermissionResult", tenantScopedSchema },
                 {
                     "EnumerationQuery",
                     new Dictionary<string, object>

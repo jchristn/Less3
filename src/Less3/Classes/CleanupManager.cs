@@ -3,6 +3,7 @@ namespace Less3.Classes
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Threading;
 
     using Less3.Settings;
@@ -26,6 +27,7 @@ namespace Less3.Classes
         private bool _Disposed = false;
 
         private int _CleanupIntervalMs = 3600000;
+        private DateTime? _LastCleanupRunUtc = null;
 
         #endregion
 
@@ -47,6 +49,7 @@ namespace Less3.Classes
             _Logging = logging ?? throw new ArgumentNullException(nameof(logging));
             _Config = config ?? throw new ArgumentNullException(nameof(config));
 
+            _CleanupIntervalMs = _Settings.CleanupIntervalMs;
             _CleanupTimer = new Timer(CleanupCallback, null, _CleanupIntervalMs, _CleanupIntervalMs);
 
             _Logging.Info("CleanupManager initialized with cleanup interval " + _CleanupIntervalMs + "ms");
@@ -70,6 +73,7 @@ namespace Less3.Classes
                     throw new ArgumentOutOfRangeException(nameof(value), "Cleanup interval must be at least 60000ms (1 minute).");
 
                 _CleanupIntervalMs = value;
+                _Settings.CleanupIntervalMs = value;
 
                 if (_CleanupTimer != null)
                 {
@@ -77,6 +81,57 @@ namespace Less3.Classes
                     _Logging.Info("CleanupManager interval updated to " + _CleanupIntervalMs + "ms");
                 }
             }
+        }
+
+        /// <summary>
+        /// Last cleanup run timestamp in UTC.
+        /// </summary>
+        public DateTime? LastCleanupRunUtc
+        {
+            get { return _LastCleanupRunUtc; }
+        }
+
+        /// <summary>
+        /// Run all cleanup tasks immediately.
+        /// </summary>
+        /// <returns>Maintenance action result.</returns>
+        public MaintenanceActionResult RunCleanupCycle()
+        {
+            MaintenanceActionResult result = new MaintenanceActionResult();
+            result.Action = "run-cleanup";
+            result.ExpiredUploadCount = CleanupExpiredUploads();
+            result.PurgedRequestHistoryCount = CleanupOldRequestHistory();
+            result.GeneratedUtc = DateTime.UtcNow;
+            _LastCleanupRunUtc = result.GeneratedUtc;
+            return result;
+        }
+
+        /// <summary>
+        /// Purge request history older than the supplied cutoff.
+        /// </summary>
+        /// <param name="cutoffUtc">UTC cutoff.</param>
+        /// <returns>Maintenance action result.</returns>
+        public MaintenanceActionResult PurgeRequestHistory(DateTime cutoffUtc)
+        {
+            MaintenanceActionResult result = new MaintenanceActionResult();
+            result.Action = "purge-request-history";
+            result.CutoffUtc = cutoffUtc;
+            result.PurgedRequestHistoryCount = DeleteRequestHistoryOlderThan(cutoffUtc);
+            result.GeneratedUtc = DateTime.UtcNow;
+            return result;
+        }
+
+        /// <summary>
+        /// Delete orphaned temporary upload files that are not associated with active upload rows.
+        /// </summary>
+        /// <returns>Maintenance action result.</returns>
+        public MaintenanceActionResult CleanupTempUploads()
+        {
+            MaintenanceActionResult result = new MaintenanceActionResult();
+            result.Action = "cleanup-temp-uploads";
+            result.DeletedTempFileCount = DeleteOrphanTempFiles();
+            result.GeneratedUtc = DateTime.UtcNow;
+            return result;
         }
 
         /// <summary>
@@ -118,8 +173,8 @@ namespace Less3.Classes
             {
                 _Logging.Debug("CleanupManager starting cleanup cycle");
 
-                CleanupExpiredUploads();
-                CleanupOldRequestHistory();
+                RunCleanupCycle();
+                _LastCleanupRunUtc = DateTime.UtcNow;
 
                 _Logging.Debug("CleanupManager completed cleanup cycle");
             }
@@ -129,7 +184,7 @@ namespace Less3.Classes
             }
         }
 
-        private void CleanupExpiredUploads()
+        internal int CleanupExpiredUploads()
         {
             try
             {
@@ -137,7 +192,7 @@ namespace Less3.Classes
                 if (allUploads == null || allUploads.Count == 0)
                 {
                     _Logging.Debug("CleanupManager found no uploads to evaluate");
-                    return;
+                    return 0;
                 }
 
                 DateTime now = DateTime.UtcNow;
@@ -186,25 +241,84 @@ namespace Less3.Classes
                 {
                     _Logging.Debug("CleanupManager found no expired uploads to clean");
                 }
+
+                return cleanedCount;
             }
             catch (Exception e)
             {
                 _Logging.Exception(e, "CleanupManager", "CleanupExpiredUploads");
+                return 0;
             }
         }
 
-        private void CleanupOldRequestHistory()
+        internal int CleanupOldRequestHistory()
         {
             try
             {
-                DateTime cutoff = DateTime.UtcNow.AddDays(-30);
-                _Config.DeleteRequestHistoriesOlderThan(cutoff);
-                _Logging.Debug("CleanupManager purged request history entries older than 30 days");
+                DateTime cutoff = DateTime.UtcNow.AddDays(-_Settings.RequestHistoryRetentionDays);
+                int deleted = DeleteRequestHistoryOlderThan(cutoff);
+                _Logging.Debug("CleanupManager purged request history entries older than " + _Settings.RequestHistoryRetentionDays + " days");
+                return deleted;
             }
             catch (Exception e)
             {
                 _Logging.Exception(e, "CleanupManager", "CleanupOldRequestHistory");
+                return 0;
             }
+        }
+
+        private int DeleteRequestHistoryOlderThan(DateTime cutoffUtc)
+        {
+            List<RequestHistory> entries = _Config.GetRequestHistories();
+            int count = 0;
+            if (entries != null)
+            {
+                count = entries.Count(e => e.CreatedUtc < cutoffUtc);
+            }
+
+            _Config.DeleteRequestHistoriesOlderThan(cutoffUtc);
+            return count;
+        }
+
+        private int DeleteOrphanTempFiles()
+        {
+            string tempDir = _Settings.Storage.TempDirectory;
+            if (String.IsNullOrEmpty(tempDir) || !Directory.Exists(tempDir)) return 0;
+
+            HashSet<string> activeFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            List<Upload> uploads = _Config.GetUploads();
+            if (uploads != null)
+            {
+                foreach (Upload upload in uploads)
+                {
+                    List<UploadPart> parts = _Config.GetUploadPartsByUploadId(upload.TenantId, upload.Id);
+                    if (parts == null) continue;
+
+                    foreach (UploadPart part in parts)
+                    {
+                        activeFiles.Add(Path.GetFullPath(GetPartFilePath(upload.BucketId, upload.Id, part.PartNumber)));
+                    }
+                }
+            }
+
+            int deleted = 0;
+            foreach (string file in Directory.GetFiles(tempDir, "*", SearchOption.AllDirectories))
+            {
+                string fullPath = Path.GetFullPath(file);
+                if (activeFiles.Contains(fullPath)) continue;
+
+                try
+                {
+                    File.Delete(fullPath);
+                    deleted++;
+                }
+                catch (Exception e)
+                {
+                    _Logging.Warn("CleanupManager failed to delete temporary file " + fullPath + ": " + e.Message);
+                }
+            }
+
+            return deleted;
         }
 
         private string GetPartFilePath(string bucketId, string uploadId, int partNumber)

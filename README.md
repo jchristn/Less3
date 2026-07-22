@@ -22,8 +22,10 @@ v3.0.0
 - Added the v3 tenant and RBAC foundation with tenant, role, permission, assignment, session, and authorization audit models
 - Switched new identifier generation to PrettyID K-sortable string IDs with stable prefixes and a 32-character maximum
 - Added tenant-aware schema initialization hooks and indexes for SQLite, MySQL, PostgreSQL, and SQL Server
+- Added credential secret-once create/rotate flows, direct credential session login, and RBAC-authorized admin session tokens
+- Added admin reporting, maintenance, and effective-permission inspection APIs
 - Added v3 migration guidance, S3 API notes, Less3 REST API notes, and a shared Touchstone test descriptor baseline
-- Added dashboard navigation and management pages for tenants, roles, and permissions
+- Added dashboard navigation and management pages for tenants, credentials, roles, permissions, reporting KPIs, and maintenance
 - See `CHANGELOG.md` for release details
 
 ## Help and Feedback
@@ -65,7 +67,7 @@ dotnet run setup
 
 ### Starting the Dashboard
 
-Less3 includes a web-based dashboard for managing buckets, objects, users, and credentials. After starting the Less3 server, you can start the dashboard:
+Less3 includes a web-based dashboard for managing buckets, objects, tenants, users, credentials, RBAC, request history, and maintenance. After starting the Less3 server, you can start the dashboard:
 
 ```bash
 cd dashboard
@@ -118,6 +120,8 @@ dotnet Less3.dll
   },
   "AdminApiKey": "less3admin",
   "ValidateSignatures": true,
+  "RequestHistoryRetentionDays": 30,
+  "CleanupIntervalMs": 3600000,
   "UseTcpServer": false
 }
 ```
@@ -228,7 +232,7 @@ Less3 supports both S3 URL styles for accessing buckets and objects:
 Less3 provides REST APIs for administrative operations such as managing users, credentials, and buckets.
 
 ### Authentication
-Admin APIs require the `x-api-key` header with a value matching `AdminApiKey` in system.json (default: `less3admin`).
+Admin APIs accept either the `x-api-key` header with a value matching `AdminApiKey` in system.json (default: `less3admin`) or an RBAC-authorized `x-less3-session-token` header.
 
 ### Endpoint Format
 ```
@@ -240,6 +244,9 @@ http://hostname:port/admin/{resource}/{operation}
 - **credentials** - Manage access keys and secret keys
 - **buckets** - Manage buckets and bucket configuration
 - **stats** - Retrieve aggregate bucket, object, and storage metrics for dashboard and admin views
+- **reports** - Retrieve request reporting summaries including request rate, failure rate, latency, and top usage fields
+- **maintenance** - Inspect cleanup status, update runtime maintenance settings, purge request history, clean temp uploads, verify objects, and inspect migration status
+- **effectivepermissions** - Inspect how RBAC would decide a principal/resource/operation request
 
 ### Example
 ```bash

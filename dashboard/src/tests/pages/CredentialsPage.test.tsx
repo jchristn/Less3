@@ -6,6 +6,8 @@ import { message } from "#/utils/message";
 
 const mockCreateCredential = jest.fn();
 const mockUpdateCredential = jest.fn();
+const mockRotateCredential = jest.fn();
+const mockDisableCredential = jest.fn();
 const mockDeleteCredential = jest.fn();
 const mockRefetch = jest.fn();
 
@@ -25,7 +27,8 @@ jest.mock("#/store/slice/credentialsSlice", () => ({
         UserId: "user1",
         Description: "Test Credential",
         AccessKey: "AK123",
-        SecretKey: "SK123",
+        SecretKey: null,
+        Active: true,
         CreatedUtc: "2024-01-01",
       },
     ],
@@ -39,11 +42,15 @@ jest.mock("#/store/slice/credentialsSlice", () => ({
       UserId: "user1",
       Description: "Test Credential",
       AccessKey: "AK123",
+      SecretKey: null,
+      Active: true,
     },
     isLoading: false,
   }),
   useCreateCredentialMutation: () => [mockCreateCredential, { isLoading: false }],
   useUpdateCredentialMutation: () => [mockUpdateCredential, { isLoading: false }],
+  useRotateCredentialMutation: () => [mockRotateCredential, { isLoading: false }],
+  useDisableCredentialMutation: () => [mockDisableCredential, { isLoading: false }],
   useDeleteCredentialMutation: () => [mockDeleteCredential, { isLoading: false }],
 }));
 
@@ -61,6 +68,12 @@ describe("CredentialsPage", () => {
       unwrap: jest.fn().mockResolvedValue({}),
     });
     mockUpdateCredential.mockReturnValue({
+      unwrap: jest.fn().mockResolvedValue({}),
+    });
+    mockRotateCredential.mockReturnValue({
+      unwrap: jest.fn().mockResolvedValue({ AccessKey: "AK123", SecretKey: "new-secret" }),
+    });
+    mockDisableCredential.mockReturnValue({
       unwrap: jest.fn().mockResolvedValue({}),
     });
     mockDeleteCredential.mockReturnValue({
@@ -156,8 +169,8 @@ describe("CredentialsPage", () => {
           UserId: "user1",
           Description: "Updated Credential",
           AccessKey: "AK123",
-          SecretKey: "SK123",
           IsBase64: undefined,
+          Active: true,
         });
       });
     });

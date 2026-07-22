@@ -124,12 +124,12 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
 - [x] Add user login that creates revocable tenant-bound sessions.
 - [x] Add session token validation and revocation.
   - [x] Add live temporary-instance inactive-tenant login rejection coverage.
-- [ ] Add direct credential authentication only where required for dashboard/admin workflows.
+- [x] Add direct credential authentication only where required for dashboard/admin workflows.
 - [ ] Implement RBAC checks with explicit deny semantics where modeled.
   - [x] Enforce explicit deny precedence for bearer-authenticated Less3 REST sessions.
   - [x] Enforce RBAC for S3 credential storage operations.
   - [x] Add live temporary-instance permit, deny, and authorization-audit coverage.
-  - [ ] Complete admin API bypass rules, sensitive admin operation auditing, and effective-permission inspection endpoints.
+  - [x] Complete admin API bypass rules, sensitive admin operation auditing, and effective-permission inspection endpoints.
 - [x] Seed immutable built-in roles:
   - [x] `TenantAdmin`
   - [x] `SecurityAdmin`
@@ -137,13 +137,13 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
   - [x] `Operator`
   - [x] `TenantMember`
   - [x] `Custom`
-- [ ] Add resource and operation permission mapping for S3, Less3 REST, and admin APIs.
+- [x] Add resource and operation permission mapping for S3, Less3 REST, and admin APIs.
   - [x] Map S3 storage operations to RBAC storage permissions.
   - [x] Map Less3 REST session operations to RBAC resource/operation permissions.
-  - [ ] Complete admin API permission mapping.
-- [ ] Add authorization audit capture for failures and sensitive admin operations.
+  - [x] Complete admin API permission mapping.
+- [x] Add authorization audit capture for failures and sensitive admin operations.
   - [x] Capture RBAC authorization failures in authorization audit.
-  - [ ] Capture every sensitive admin mutation.
+  - [x] Capture every sensitive admin mutation.
 - [ ] Redact secrets in logs and request history.
   - [x] Redact session tokens and passwords in request history.
   - [ ] Complete log redaction guarantees.
@@ -212,9 +212,9 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
   - [x] last cleanup run
 - [x] Add server-side dashboard enumeration APIs for request history and other large lists.
 - [x] Add request-history filters: `limit`, `offset` or cursor, `startUtc`, `endUtc`, `method`, `status`, `success`, `sourceIp`, `requestType`, `userId`, and `accessKey`.
-- [ ] Add summary/reporting APIs for requests per minute, failure rate, p50/p95 latency, top buckets by bytes, top buckets by request count, top failed request types, and top access keys.
-- [ ] Add maintenance APIs for request-history retention, purge history, cleanup temp uploads, object database vs blob verification, config summary export, migration status, and runtime settings updates.
-- [ ] Mark settings that require restart before taking effect.
+- [x] Add summary/reporting APIs for requests per minute, failure rate, p50/p95 latency, top buckets by bytes, top buckets by request count, top failed request types, and top access keys.
+- [x] Add maintenance APIs for request-history retention, purge history, cleanup temp uploads, object database vs blob verification, config summary export, migration status, and runtime settings updates.
+- [x] Mark settings that require restart before taking effect.
 
 ## Phase 9: Dashboard Navigation and Shell
 
@@ -222,7 +222,7 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
   - [x] HOME
   - [x] MANAGE: Buckets, Objects
   - [x] CONFIGURE: Tenants, Users, Credentials, Roles, Role Assignments, Permissions
-  - [x] OPERATE: Request History, API Explorer
+  - [x] OPERATE: Request History, Maintenance, API Explorer
 - [x] Use compact grouped navigation with visible section labels.
 - [ ] Show tenant, user, role, endpoint, and version context in the shell.
 - [x] Change the upper-right logout control to icon only with accessible label and tooltip.
@@ -236,21 +236,21 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
 - [x] Add API-backed tenant management page with exists and JSON detail flows.
 - [x] Add API-backed RBAC pages for roles, role assignments, and permissions.
 - [ ] Update users page for tenant-scoped identities, tenant admin flags, sessions, and role assignment links.
-- [ ] Update credentials page:
-  - [ ] generate access and secret keys server-side
-  - [ ] show secret once on create
-  - [ ] support rotate, disable, delete
+- [x] Update credentials page:
+  - [x] generate access and secret keys server-side
+  - [x] show secret once on create
+  - [x] support rotate, disable, delete
   - [x] hide secrets from normal metadata views
-  - [ ] show last-used and last-failed data from request history
+  - [x] show last-used and last-failed data from request history
   - [x] support session-only dashboard storage for admin key/session data
 - [x] Update Home with 4 to 8 KPI cards. Suggested cards:
   - [x] Tenants
   - [x] Buckets
   - [x] Objects
   - [x] Storage used
-  - [ ] Requests per minute
+  - [x] Requests per minute
   - [x] Failure rate
-  - [ ] p95 latency
+  - [x] p95 latency
   - [x] Active credentials
 - [x] Add the node status band backed by `/admin/health`.
 - [x] Add request activity chart and recent failure links.
@@ -265,8 +265,8 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
 - [ ] Add object explorer prefix-aware pagination.
 - [ ] Add object version browsing, delete-marker visibility, and restore/copy version workflows.
 - [ ] Upgrade Request History to include saved filters, failed-only toggle, status family filters, slow request filter, copy as cURL, CSV export, and grouped views.
-- [ ] Add dashboard report cards for the reporting API.
-- [ ] Add Settings/Maintenance page with well-designed forms, not raw JSON editing.
+- [x] Add dashboard report cards for the reporting API.
+- [x] Add Settings/Maintenance page with well-designed forms, not raw JSON editing.
 - [ ] Add API Explorer polish:
   - [ ] bucket/user/credential dropdown injection
   - [ ] saved request collections
@@ -299,7 +299,7 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
 - [x] Add `test/Test.Nunit` Touchstone NUnit adapter.
 - [x] Ensure every runner consumes the same descriptors from `Test.Shared`.
 - [x] Add exhaustive backend Touchstone descriptor inventory covering identifiers, tenants, schema/migrations, auth/session, RBAC, S3, Less3 REST, admin APIs, health, reporting, provider matrix, security, concurrency/reliability, Docker, and bootstrap behavior.
-  - [x] Current automated Touchstone run: 405 descriptors, 227 active passing live/static assertions, 178 planned/skipped descriptors, 0 failures.
+  - [x] Current automated Touchstone run: 407 descriptors, 267 active passing live/static assertions, 140 planned/skipped descriptors, 0 failures.
 - [x] Add reusable temporary Less3 server fixture that:
   - [x] creates isolated temp database and storage paths
   - [x] starts Less3 on a temporary port
@@ -327,13 +327,15 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
 - [ ] Add RBAC coverage for built-in roles, custom roles, assignments, denial paths, and admin bypass rules.
   - [x] Add live temporary-instance built-in role/permission seed coverage.
   - [x] Add live temporary-instance custom role, permission, assignment, explicit deny, and denial-audit coverage.
-  - [ ] Add admin bypass, built-in immutability, scoped bucket/object-prefix assignment, and read-only/operator role behavior coverage.
+  - [x] Add live temporary-instance admin bypass, built-in immutability, sensitive admin audit, and effective-permission inspection coverage.
+  - [ ] Add scoped bucket/object-prefix assignment and read-only/operator role behavior coverage.
 - [ ] Add database provider matrix coverage for migrations, first boot, tenant CRUD, user CRUD, credential CRUD, tenant-scoped enumeration, authorization-sensitive reads, and concurrent write paths.
 - [x] Add request history and health endpoint coverage.
   - [x] Add live temporary-instance `/admin/health` smoke coverage.
   - [x] Add live temporary-instance `/admin/health` version, uptime, database, storage, temp, retention, and cleanup field coverage.
   - [x] Add live temporary-instance S3 request-history capture, pagination, tenant-scope, delete, and filter coverage.
-  - [ ] Convert planned request-history, reporting, health degradation, and maintenance descriptors into active assertions.
+  - [x] Convert planned request-history reporting and maintenance descriptors into active assertions.
+  - [ ] Convert planned health degradation descriptors into active assertions.
 - [ ] Add Docker/bootstrap smoke tests.
   - [x] Add live container-bootstrap default seed smoke coverage without a checked-in `system.json`.
   - [ ] Add active Docker image, compose, dashboard, volume persistence, and secret-redaction smoke coverage.
@@ -354,7 +356,7 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
   - [x] roles
   - [x] role assignments
   - [x] permissions
-  - [ ] settings/maintenance
+  - [x] settings/maintenance
 - [ ] Add smoke tests for empty, loading, and error states.
 - [ ] Add tests for table pagination, filtering, sorting, row actions, and destructive confirmations.
 - [x] Verify dashboard responsiveness at 1280px, 768px, and 390px.
@@ -375,7 +377,7 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
   - [ ] missing XML docs on public surface
 - [x] Run all backend builds.
 - [x] Run Touchstone automated tests.
-  - [x] Latest run: 405 total, 227 passed, 0 failed, 178 skipped/planned.
+  - [x] Latest run: 407 total, 267 passed, 0 failed, 140 skipped/planned.
 - [x] Run xUnit adapter tests.
 - [x] Run NUnit adapter tests.
 - [x] Run dashboard production build.

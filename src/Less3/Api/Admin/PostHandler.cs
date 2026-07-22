@@ -2,6 +2,7 @@ namespace Less3.Api.Admin
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Text;
     using System.Threading;
@@ -11,6 +12,8 @@ namespace Less3.Api.Admin
     using SyslogLogging;
 
     using Less3.Classes;
+    using Less3.Helpers;
+    using Less3.Requests;
     using Less3.Settings;
 
     /// <summary>
@@ -29,6 +32,7 @@ namespace Less3.Api.Admin
         private ConfigManager _Config;
         private BucketManager _Buckets;
         private AuthManager _Auth;
+        private CleanupManager _Cleanup;
 
         #endregion
 
@@ -39,19 +43,22 @@ namespace Less3.Api.Admin
             LoggingModule logging,
             ConfigManager config,
             BucketManager buckets,
-            AuthManager auth)
+            AuthManager auth,
+            CleanupManager cleanup)
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
             if (logging == null) throw new ArgumentNullException(nameof(logging));
             if (config == null) throw new ArgumentNullException(nameof(config));
             if (buckets == null) throw new ArgumentNullException(nameof(buckets));
             if (auth == null) throw new ArgumentNullException(nameof(auth));
+            if (cleanup == null) throw new ArgumentNullException(nameof(cleanup));
 
             _Settings = settings;
             _Logging = logging;
             _Config = config;
             _Buckets = buckets;
             _Auth = auth;
+            _Cleanup = cleanup;
         }
 
         #endregion
@@ -105,6 +112,11 @@ namespace Less3.Api.Admin
                 await PostAuthorizationAudit(ctx);
                 return;
             }
+            else if (ctx.Http.Request.Url.Elements[1].Equals("maintenance"))
+            {
+                await PostMaintenance(ctx);
+                return;
+            }
 
             await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest);
         }
@@ -146,6 +158,7 @@ namespace Less3.Api.Admin
                 return;
             }
 
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, bucket.TenantId, "Bucket", bucket.Id, "Create");
             ctx.Response.StatusCode = 201;
             ctx.Response.ContentType = "text/plain";
             await ctx.Response.Send();
@@ -191,6 +204,7 @@ namespace Less3.Api.Admin
 
             _Config.AddUser(user);
 
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, user.TenantId, "User", user.Id, "Create");
             ctx.Response.StatusCode = 201;
             ctx.Response.ContentType = "text/plain";
             await ctx.Response.Send();
@@ -198,6 +212,20 @@ namespace Less3.Api.Admin
 
         private async Task PostCredentials(S3Context ctx)
         {
+            if (ctx.Http.Request.Url.Elements.Length == 4
+                && ctx.Http.Request.Url.Elements[3].Equals("rotate", StringComparison.OrdinalIgnoreCase))
+            {
+                await RotateCredential(ctx, ctx.Http.Request.Url.Elements[2]).ConfigureAwait(false);
+                return;
+            }
+
+            if (ctx.Http.Request.Url.Elements.Length == 4
+                && ctx.Http.Request.Url.Elements[3].Equals("disable", StringComparison.OrdinalIgnoreCase))
+            {
+                await SetCredentialActive(ctx, ctx.Http.Request.Url.Elements[2], false).ConfigureAwait(false);
+                return;
+            }
+
             if (ctx.Http.Request.Url.Elements.Length != 2)
             {
                 await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest);
@@ -215,6 +243,10 @@ namespace Less3.Api.Admin
                 await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest);
                 return;
             }
+
+            if (String.IsNullOrEmpty(cred.TenantId)) cred.TenantId = "default";
+            if (String.IsNullOrEmpty(cred.AccessKey)) cred.AccessKey = GenerateUniqueAccessKey();
+            if (String.IsNullOrEmpty(cred.SecretKey)) cred.SecretKey = CredentialMaterialGenerator.GenerateSecretKey();
 
             Credential tempCred = _Config.GetCredentialByAccessKey(cred.AccessKey);
             if (tempCred != null)
@@ -236,9 +268,10 @@ namespace Less3.Api.Admin
 
             _Config.AddCredential(cred);
 
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, cred.TenantId, "Credential", cred.Id, "Create");
             ctx.Response.StatusCode = 201;
-            ctx.Response.ContentType = "text/plain";
-            await ctx.Response.Send();
+            ctx.Response.ContentType = "application/json";
+            await ctx.Response.Send(SerializationHelper.SerializeJson(CredentialResponseSanitizer.ForResponse(cred, true), true));
         }
 
         private async Task PostTenants(S3Context ctx)
@@ -262,6 +295,7 @@ namespace Less3.Api.Admin
                 return;
             }
 
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, tenant.Id, "Tenant", tenant.Id, "Create");
             await SendCreated(ctx, tenant).ConfigureAwait(false);
         }
 
@@ -289,6 +323,7 @@ namespace Less3.Api.Admin
                 return;
             }
 
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, role.TenantId, "Role", role.Id, "Create");
             await SendCreated(ctx, role).ConfigureAwait(false);
         }
 
@@ -315,6 +350,7 @@ namespace Less3.Api.Admin
                 return;
             }
 
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, permission.TenantId, "Permission", permission.Id, "Create");
             await SendCreated(ctx, permission).ConfigureAwait(false);
         }
 
@@ -341,6 +377,7 @@ namespace Less3.Api.Admin
                 return;
             }
 
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, assignment.TenantId, "RoleAssignment", assignment.Id, "Create");
             await SendCreated(ctx, assignment).ConfigureAwait(false);
         }
 
@@ -367,6 +404,7 @@ namespace Less3.Api.Admin
                 return;
             }
 
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, session.TenantId, "AuthSession", session.Id, "Create");
             await SendCreated(ctx, session).ConfigureAwait(false);
         }
 
@@ -394,6 +432,182 @@ namespace Less3.Api.Admin
             await SendCreated(ctx, audit).ConfigureAwait(false);
         }
 
+        private async Task RotateCredential(S3Context ctx, string id)
+        {
+            if (String.IsNullOrEmpty(id))
+            {
+                await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest).ConfigureAwait(false);
+                return;
+            }
+
+            Credential existing = _Config.GetCredentialById(id);
+            if (existing == null)
+            {
+                await SendNotFound(ctx).ConfigureAwait(false);
+                return;
+            }
+
+            existing.SecretKey = CredentialMaterialGenerator.GenerateSecretKey();
+            existing.IsBase64 = false;
+
+            if (!_Config.UpdateCredential(existing))
+            {
+                await SendConflict(ctx).ConfigureAwait(false);
+                return;
+            }
+
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, existing.TenantId, "Credential", existing.Id, "Rotate");
+            await SendJson(ctx, CredentialResponseSanitizer.ForResponse(existing, true)).ConfigureAwait(false);
+        }
+
+        private async Task SetCredentialActive(S3Context ctx, string id, bool active)
+        {
+            if (String.IsNullOrEmpty(id))
+            {
+                await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest).ConfigureAwait(false);
+                return;
+            }
+
+            Credential existing = _Config.GetCredentialById(id);
+            if (existing == null)
+            {
+                await SendNotFound(ctx).ConfigureAwait(false);
+                return;
+            }
+
+            existing.Active = active;
+
+            if (!_Config.UpdateCredential(existing))
+            {
+                await SendConflict(ctx).ConfigureAwait(false);
+                return;
+            }
+
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, existing.TenantId, "Credential", existing.Id, active ? "Enable" : "Disable");
+            await SendJson(ctx, CredentialResponseSanitizer.ForResponse(existing, false)).ConfigureAwait(false);
+        }
+
+        private string GenerateUniqueAccessKey()
+        {
+            for (int i = 0; i < 16; i++)
+            {
+                string accessKey = CredentialMaterialGenerator.GenerateAccessKey();
+                if (_Config.GetCredentialByAccessKey(accessKey) == null) return accessKey;
+            }
+
+            throw new InvalidOperationException("Unable to generate a unique access key.");
+        }
+
+        private async Task PostMaintenance(S3Context ctx)
+        {
+            if (ctx.Http.Request.Url.Elements.Length < 3)
+            {
+                await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest).ConfigureAwait(false);
+                return;
+            }
+
+            string operation = ctx.Http.Request.Url.Elements[2].ToLowerInvariant();
+
+            if (operation.Equals("purge-request-history"))
+            {
+                MaintenanceSettingsUpdateRequest request = Deserialize<MaintenanceSettingsUpdateRequest>(ctx);
+                DateTime cutoff = request?.OlderThanUtc ?? DateTime.UtcNow.AddDays(-_Settings.RequestHistoryRetentionDays);
+                MaintenanceActionResult result = _Cleanup.PurgeRequestHistory(cutoff);
+                AdminMutationAuditor.Record(_Config, _Logging, ctx, GetTenantId(ctx), "RequestHistory", null, "Purge");
+                await SendJson(ctx, result).ConfigureAwait(false);
+                return;
+            }
+
+            if (operation.Equals("cleanup-temp-uploads"))
+            {
+                MaintenanceActionResult result = _Cleanup.CleanupTempUploads();
+                AdminMutationAuditor.Record(_Config, _Logging, ctx, GetTenantId(ctx), "Maintenance", null, "CleanupTempUploads");
+                await SendJson(ctx, result).ConfigureAwait(false);
+                return;
+            }
+
+            if (operation.Equals("run-cleanup"))
+            {
+                MaintenanceActionResult result = _Cleanup.RunCleanupCycle();
+                AdminMutationAuditor.Record(_Config, _Logging, ctx, GetTenantId(ctx), "Maintenance", null, "RunCleanup");
+                await SendJson(ctx, result).ConfigureAwait(false);
+                return;
+            }
+
+            if (operation.Equals("verify-objects"))
+            {
+                string tenantId = GetTenantId(ctx);
+                MaintenanceActionResult result = VerifyObjectRows(tenantId);
+                AdminMutationAuditor.Record(_Config, _Logging, ctx, tenantId, "Maintenance", null, "VerifyObjects");
+                await SendJson(ctx, result).ConfigureAwait(false);
+                return;
+            }
+
+            if (operation.Equals("settings") || operation.Equals("update-runtime-settings"))
+            {
+                MaintenanceSettingsUpdateRequest request = Deserialize<MaintenanceSettingsUpdateRequest>(ctx);
+                if (request == null)
+                {
+                    await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest).ConfigureAwait(false);
+                    return;
+                }
+
+                if (request.RequestHistoryRetentionDays.HasValue)
+                {
+                    _Settings.RequestHistoryRetentionDays = request.RequestHistoryRetentionDays.Value;
+                }
+
+                if (request.CleanupIntervalMs.HasValue)
+                {
+                    _Cleanup.CleanupIntervalMs = request.CleanupIntervalMs.Value;
+                }
+
+                MaintenanceActionResult result = new MaintenanceActionResult();
+                result.Action = "update-runtime-settings";
+                AdminMutationAuditor.Record(_Config, _Logging, ctx, GetTenantId(ctx), "Maintenance", null, "UpdateSettings");
+                await SendJson(ctx, result).ConfigureAwait(false);
+                return;
+            }
+
+            await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest).ConfigureAwait(false);
+        }
+
+        private MaintenanceActionResult VerifyObjectRows(string tenantId)
+        {
+            MaintenanceActionResult result = new MaintenanceActionResult();
+            result.Action = "verify-objects";
+
+            foreach (Bucket bucket in _Config.GetBuckets(tenantId))
+            {
+                List<Obj> objects = _Config.GetObjects(tenantId, bucket.Id, new EnumerationQuery { Limit = 1000 });
+                if (objects == null) continue;
+
+                foreach (Obj obj in objects)
+                {
+                    if (obj.DeleteMarker) continue;
+
+                    result.ObjectRowCount++;
+                    if (String.IsNullOrEmpty(obj.BlobFilename))
+                    {
+                        result.MissingBlobFileCount++;
+                        result.MissingBlobFiles.Add(bucket.Name + "/" + obj.Key);
+                        continue;
+                    }
+
+                    string filePath = Path.GetFullPath(Path.Combine(bucket.DiskDirectory, obj.BlobFilename));
+                    if (!File.Exists(filePath))
+                    {
+                        result.MissingBlobFileCount++;
+                        result.MissingBlobFiles.Add(bucket.Name + "/" + obj.Key);
+                    }
+                }
+            }
+
+            result.Success = result.MissingBlobFileCount == 0;
+            result.GeneratedUtc = DateTime.UtcNow;
+            return result;
+        }
+
         private static T Deserialize<T>(S3Context ctx)
         {
             try
@@ -404,6 +618,32 @@ namespace Less3.Api.Admin
             {
                 return default(T);
             }
+        }
+
+        private static string GetTenantId(S3Context ctx)
+        {
+            if (ctx.Http.Request.Query.Elements != null
+                && ctx.Http.Request.Query.Elements.AllKeys.Contains("tenantId")
+                && !String.IsNullOrEmpty(ctx.Http.Request.Query.Elements["tenantId"]))
+            {
+                return ctx.Http.Request.Query.Elements["tenantId"];
+            }
+
+            return "default";
+        }
+
+        private static async Task SendJson(S3Context ctx, object obj)
+        {
+            ctx.Response.StatusCode = 200;
+            ctx.Response.ContentType = "application/json";
+            await ctx.Response.Send(SerializationHelper.SerializeJson(obj, true)).ConfigureAwait(false);
+        }
+
+        private static async Task SendNotFound(S3Context ctx)
+        {
+            ctx.Response.StatusCode = 404;
+            ctx.Response.ContentType = "text/plain";
+            await ctx.Response.Send().ConfigureAwait(false);
         }
 
         private static async Task SendCreated(S3Context ctx, object obj)

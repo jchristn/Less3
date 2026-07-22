@@ -136,9 +136,10 @@ namespace Less3.Api.Admin
             }
 
             bool destroy = false;
-            if (ctx.Http.Request.Query.Elements.AllKeys.Contains("destroy")) destroy = true; 
-            _Buckets.Remove(bucket, destroy); 
+            if (ctx.Http.Request.Query.Elements.AllKeys.Contains("destroy")) destroy = true;
+            _Buckets.Remove(bucket, destroy);
 
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, bucket.TenantId, "Bucket", bucket.Id, "Delete");
             ctx.Response.StatusCode = 204;
             ctx.Response.ContentType = "text/plain";
             await ctx.Response.Send();
@@ -164,6 +165,7 @@ namespace Less3.Api.Admin
 
             _Config.DeleteUser(user.Id);
 
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, user.TenantId, "User", user.Id, "Delete");
             ctx.Response.StatusCode = 204;
             ctx.Response.ContentType = "text/plain";
             await ctx.Response.Send();
@@ -189,6 +191,7 @@ namespace Less3.Api.Admin
 
             _Config.DeleteCredential(cred.Id);
 
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, cred.TenantId, "Credential", cred.Id, "Delete");
             ctx.Response.StatusCode = 204;
             ctx.Response.ContentType = "text/plain";
             await ctx.Response.Send();
@@ -210,6 +213,7 @@ namespace Less3.Api.Admin
                 return;
             }
 
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, ctx.Http.Request.Url.Elements[2], "Tenant", ctx.Http.Request.Url.Elements[2], "Delete");
             await SendNoContent(ctx).ConfigureAwait(false);
         }
 
@@ -240,6 +244,7 @@ namespace Less3.Api.Admin
                 return;
             }
 
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, tenantId, "Role", ctx.Http.Request.Url.Elements[2], "Delete");
             await SendNoContent(ctx).ConfigureAwait(false);
         }
 
@@ -259,6 +264,7 @@ namespace Less3.Api.Admin
                 return;
             }
 
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, tenantId, "Permission", ctx.Http.Request.Url.Elements[2], "Delete");
             await SendNoContent(ctx).ConfigureAwait(false);
         }
 
@@ -278,6 +284,7 @@ namespace Less3.Api.Admin
                 return;
             }
 
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, tenantId, "RoleAssignment", ctx.Http.Request.Url.Elements[2], "Delete");
             await SendNoContent(ctx).ConfigureAwait(false);
         }
 
@@ -297,6 +304,7 @@ namespace Less3.Api.Admin
                 return;
             }
 
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, tenantId, "AuthSession", ctx.Http.Request.Url.Elements[2], "Revoke");
             await SendNoContent(ctx).ConfigureAwait(false);
         }
 
@@ -338,6 +346,7 @@ namespace Less3.Api.Admin
 
             _Config.DeleteRequestHistory(entry.Id);
 
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, entry.TenantId, "RequestHistory", entry.Id, "Delete");
             ctx.Response.StatusCode = 204;
             ctx.Response.ContentType = "text/plain";
             await ctx.Response.Send();

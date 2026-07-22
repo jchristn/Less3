@@ -27,18 +27,18 @@ The v3 REST API covers these resource families:
 - tenants
 - buckets
 - objects
-- bucket-tags
-- object-tags
-- bucket-acls
-- object-acls
+- buckettags
+- objecttags
+- bucketacls
+- objectacls
 - users
 - credentials
 - roles
 - permissions
-- role-assignments
-- auth-sessions
-- authorization-audit
-- request-history
+- roleassignments
+- authsessions
+- authorizationaudit
+- requesthistory
 
 ## Standard CRUD Shape
 
@@ -53,7 +53,7 @@ DELETE /api/v1/{type}/{id}
 GET    /api/v1/{type}/{id}/exists
 ```
 
-Route handlers use typed request and response models, set HTTP status codes explicitly, and pass cancellation tokens through service and database layers.
+Implemented handlers set HTTP status codes explicitly. Cancellation-token propagation is partial in the current v3 branch and is tracked separately from the public route contract.
 
 ## EnumerationQuery
 
@@ -104,6 +104,68 @@ Authenticated requests resolve to a typed request context containing tenant ID, 
 - roles and permissions authorize ordinary users and credentials
 - explicit deny rules win over permit rules
 - authorization failures and sensitive admin operations are audited
+
+REST requests accept either the configured `x-api-key` header or an `x-less3-session-token` header for routes that require an authenticated session. Direct credential login derives the tenant from the globally unique access key.
+
+## Auth Session Operations
+
+```text
+POST /api/v1/authsessions/login
+POST /api/v1/authsessions/credential-login
+POST /api/v1/authsessions/validate
+POST /api/v1/authsessions/revoke
+```
+
+`credential-login` accepts an access key and secret key. The tenant is resolved from the credential record, not from a caller-supplied tenant ID.
+
+## Credential Operations
+
+Credential create requests may omit access and secret key material. The server generates PrettyId-compatible string credential IDs where needed, globally unique `ak_` access keys with a 32-character maximum, and random secret keys. Secret keys are returned only on create and rotate responses; normal read, list, update, and disable responses hide the secret.
+
+```text
+POST /api/v1/credentials/{id}/rotate
+POST /api/v1/credentials/{id}/disable
+```
+
+## Admin APIs
+
+Admin APIs live outside the versioned REST prefix:
+
+```text
+/admin
+```
+
+They accept either the configured `x-api-key` header or an RBAC-authorized `x-less3-session-token` header. Admin API key calls retain platform-level administrative access. Session-token calls are authorized through RBAC.
+
+### Reporting
+
+```text
+GET /admin/reports/requests
+```
+
+The request report supports tenant-scoped filtering and returns request count, success/failure count, failure rate, requests per minute, p50/p95 latency, top buckets by bytes, top buckets by request count, top failed request types, and top access keys.
+
+### Maintenance
+
+```text
+GET  /admin/maintenance/status
+POST /admin/maintenance/settings
+POST /admin/maintenance/purge-request-history
+POST /admin/maintenance/cleanup-temp-uploads
+POST /admin/maintenance/run-cleanup
+POST /admin/maintenance/verify-objects
+GET  /admin/maintenance/migration-status
+```
+
+Maintenance status marks runtime-editable settings separately from settings that require restart. Runtime settings currently include request-history retention and cleanup interval.
+
+### Effective Permissions
+
+```text
+GET /admin/effectivepermissions
+```
+
+The effective-permissions endpoint evaluates principal, resource, and operation inputs against role assignments, permissions, and admin bypass rules, then returns the matching assignments and permissions used to reach the decision.
 
 ## OpenAPI
 

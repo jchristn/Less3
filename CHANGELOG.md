@@ -8,9 +8,11 @@ v3.0.0
 - Switched new identifier generation to PrettyID K-sortable string IDs with stable prefixes and a 32-character maximum
 - Added tenant-aware schema setup and index definitions for SQLite, MySQL, PostgreSQL, and SQL Server
 - Added default v3 bootstrap values: tenant `default`, user `admin@less3`, password `password`, access key `default`, and secret key `default`
-- Added dashboard navigation and management pages for tenants, roles, and permissions
+- Added credential secret-once create/rotate flows, direct credential session login, credential disable, and hidden-secret metadata responses
+- Added admin reporting, maintenance, effective-permission inspection, RBAC-authorized admin session tokens, and sensitive admin mutation audit coverage
+- Added dashboard navigation and management pages for tenants, credentials, roles, permissions, reporting KPIs, and maintenance
 - Added `S3_API.md`, `REST_API.md`, and `MIGRATING_V2_TO_V3.md`
-- Added shared Touchstone descriptors and CLI, xUnit, and NUnit runners for v3 coverage expansion
+- Added shared Touchstone descriptors and CLI, xUnit, and NUnit runners for v3 coverage expansion, with 407 descriptors and 267 active assertions passing in the latest automated run
 
 ## Previous Versions
 

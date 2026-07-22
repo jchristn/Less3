@@ -343,7 +343,7 @@ namespace Test.Shared
                     Planned("AuthenticationAndSessions", "Session_RevokeAllForUser", "Revoke-all sessions endpoint needs product behavior."),
                     Active("AuthenticationAndSessions", "Session_TokenHashNeverReturnsRawToken", "Session APIs do not expose token hashes", AuthSessionLoginValidateAndRevokeAsync),
                     Active("AuthenticationAndSessions", "Session_TenantBoundCannotCrossTenant", "Session tokens cannot cross tenant authorization boundaries", SessionTenantBoundCannotCrossTenantAsync),
-                    Planned("AuthenticationAndSessions", "DirectCredentialAuth_AllowedOnlyForConfiguredAdminFlows", "Direct credential auth policy needs product behavior."),
+                    Active("AuthenticationAndSessions", "DirectCredentialAuth_AllowedOnlyForConfiguredAdminFlows", "Direct credential auth creates a bounded dashboard/admin session", CredentialSecretHiddenCreateRotateAndDirectLoginAsync),
                     Planned("AuthenticationAndSessions", "AuthContext_ContainsTenantUserCredentialSessionPrincipalScopesAndAdminFlags", "Full auth context shape needs exact active assertion across session and credential flows."),
                     Planned("AuthenticationAndSessions", "AuthContext_UnauthenticatedRequestsRemainExplicit", "Unauthenticated context assertion needs exact active coverage.")
                 });
@@ -361,7 +361,7 @@ namespace Test.Shared
                     Active("Rbac", "Rbac_SeedsAuditorRole", "RBAC seeds Auditor role surface", FirstBootSeedsDefaultTenantAndRbacRestSurfaceAsync),
                     Active("Rbac", "Rbac_SeedsOperatorRole", "RBAC seeds Operator role surface", FirstBootSeedsDefaultTenantAndRbacRestSurfaceAsync),
                     Active("Rbac", "Rbac_SeedsTenantMemberRole", "RBAC seeds TenantMember role surface", FirstBootSeedsDefaultTenantAndRbacRestSurfaceAsync),
-                    Planned("Rbac", "Rbac_BuiltInRolesAreImmutable", "Built-in role immutability needs exact mutation assertion."),
+                    Active("Rbac", "Rbac_BuiltInRolesAreImmutable", "Built-in role immutability is enforced through admin mutation routes", RbacAdminBypassAuditAndEffectivePermissionsAsync),
                     Active("Rbac", "Rbac_CreateCustomRole", "RBAC REST creates custom roles", Less3RestRbacCrudEnumerateAndExistsAsync),
                     Active("Rbac", "Rbac_UpdateCustomRole", "RBAC REST updates custom roles", Less3RestRbacCrudEnumerateAndExistsAsync),
                     Active("Rbac", "Rbac_DeleteUnusedCustomRole", "RBAC REST deletes unused custom roles", Less3RestRbacCrudEnumerateAndExistsAsync),
@@ -376,14 +376,14 @@ namespace Test.Shared
                     Planned("Rbac", "Rbac_AssignmentCanBeScopedToBucket", "Bucket-scoped RBAC assignment needs exact active assertion."),
                     Planned("Rbac", "Rbac_AssignmentCanBeScopedToObjectPrefix", "Object-prefix scoped RBAC assignment needs exact active assertion."),
                     Active("Rbac", "Rbac_ExplicitDenyOverridesPermit", "RBAC explicit deny overrides permit", RestBearerSessionEnforcesRbacPermitAndDenyAsync),
-                    Planned("Rbac", "Rbac_SystemAdminBypassWorksOnlyForSystemAdmin", "System-admin bypass semantics need exact active assertion."),
+                    Active("Rbac", "Rbac_SystemAdminBypassWorksOnlyForSystemAdmin", "Admin session bypass permits only administrator principals", RbacAdminBypassAuditAndEffectivePermissionsAsync),
                     Planned("Rbac", "Rbac_TenantAdminLimitedToTenant", "Tenant-admin boundary needs exact active assertion."),
                     Planned("Rbac", "Rbac_AuditorReadOnly", "Auditor read-only role behavior needs exact active assertion."),
                     Planned("Rbac", "Rbac_OperatorCanOperateButCannotManageSecurity", "Operator role boundary needs exact active assertion."),
                     Active("Rbac", "Rbac_CustomRolePermissionSetControlsAccess", "Custom role permissions control REST access", RestBearerSessionEnforcesRbacPermitAndDenyAsync),
                     Active("Rbac", "Rbac_AuthorizationFailureAudited", "RBAC authorization failures are audited", RestBearerSessionEnforcesRbacPermitAndDenyAsync),
-                    Planned("Rbac", "Rbac_SensitiveAdminOperationAudited", "Sensitive admin operation audit coverage needs admin RBAC behavior."),
-                    Planned("Rbac", "Rbac_NoAuditSecretLeakage", "Authorization audit secret-leakage checks need exact active assertion.")
+                    Active("Rbac", "Rbac_SensitiveAdminOperationAudited", "Sensitive admin mutations are written to authorization audit", RbacAdminBypassAuditAndEffectivePermissionsAsync),
+                    Active("Rbac", "Rbac_NoAuditSecretLeakage", "Authorization audit records do not leak credential secrets", RbacAdminBypassAuditAndEffectivePermissionsAsync)
                 });
         }
 
@@ -616,8 +616,8 @@ namespace Test.Shared
                     Active("AdminApi", "Admin_Users_DuplicateEmailDifferentTenantSucceeds", "Admin users allow duplicate email across tenants", AdminUserDuplicateEmailBehaviorAsync),
                     Active("AdminApi", "Admin_Credentials_CreateReadListUpdateDelete", "Admin credentials create, read, list, update, and delete", AdminUserCredentialAndBucketCrudAsync),
                     Active("AdminApi", "Admin_Credentials_AccessKeyGloballyUnique", "Admin credentials enforce globally unique access keys", AdminCredentialAccessKeyGloballyUniqueAsync),
-                    Planned("AdminApi", "Admin_Credentials_SecretHiddenExceptCreate", "Credential secret one-time return behavior needs product coverage."),
-                    Planned("AdminApi", "Admin_Credentials_Rotate", "Credential rotation needs product behavior."),
+                    Active("AdminApi", "Admin_Credentials_SecretHiddenExceptCreate", "Admin credentials return secret only on create and rotate", CredentialSecretHiddenCreateRotateAndDirectLoginAsync),
+                    Active("AdminApi", "Admin_Credentials_Rotate", "Admin credential rotation invalidates the old secret", CredentialSecretHiddenCreateRotateAndDirectLoginAsync),
                     Active("AdminApi", "Admin_Credentials_Disable", "Admin credentials can be disabled", AdminUserCredentialAndBucketCrudAsync),
                     Active("AdminApi", "Admin_Credentials_LastUsedLastFailed", "Credential last-used/last-failed fields update through S3 auth", S3CredentialLastUsedAndLastFailedTimestampsAsync),
                     Active("AdminApi", "Admin_Buckets_CreateReadListDelete", "Admin buckets create, read, list, and delete", AdminUserCredentialAndBucketCrudAsync),
@@ -625,6 +625,8 @@ namespace Test.Shared
                     Active("AdminApi", "Admin_Buckets_DuplicateNameSameTenantFails", "Admin buckets reject duplicate same-tenant names", AdminBucketDuplicateNameSameTenantFailsAsync),
                     Active("AdminApi", "Admin_Buckets_DuplicateNameDifferentTenantSucceeds", "Same bucket name can exist in different tenants", S3SameBucketNameDifferentTenantsAsync),
                     Active("AdminApi", "Admin_RequestHistory_ServerSideEnumeration", "Admin request history enumeration is available through REST", RequestHistoryCapturesS3TenantCredentialAndFiltersAsync),
+                    Active("AdminApi", "Admin_SessionTokenAuthorization", "Admin endpoints accept RBAC-authorized session tokens", RbacAdminBypassAuditAndEffectivePermissionsAsync),
+                    Active("AdminApi", "Admin_EffectivePermissionsInspection", "Admin effective permission endpoint explains RBAC decisions", RbacAdminBypassAuditAndEffectivePermissionsAsync),
                     Active("AdminApi", "Admin_OpenApi_CombinedDocumentAvailable", "Combined OpenAPI document is available", StartsRootHealthOpenApiAndAdminAuthAsync),
                     Active("AdminApi", "Admin_InvalidApiKeyReturns401", "Admin endpoints reject missing or invalid API keys", StartsRootHealthOpenApiAndAdminAuthAsync),
                     Active("AdminApi", "Admin_MissingApiKeyReturns401", "Admin endpoints reject missing API keys", StartsRootHealthOpenApiAndAdminAuthAsync)
@@ -653,40 +655,42 @@ namespace Test.Shared
                     Active("RequestHistoryAndReporting", "RequestHistory_Enumerate_AccessKey", "Request history filters by access key", RequestHistoryCapturesS3TenantCredentialAndFiltersAsync),
                     Active("RequestHistoryAndReporting", "RequestHistory_Enumerate_TenantScope", "Request history enumeration is tenant scoped", RequestHistoryCapturesS3TenantCredentialAndFiltersAsync),
                     Active("RequestHistoryAndReporting", "RequestHistory_DeleteSingle", "Request history delete removes a single entry", RequestHistoryRestReadEnumerateDeleteExistsAsync),
-                    Planned("RequestHistoryAndReporting", "RequestHistory_PurgeOlderThanRetention", "Request history purge/retention APIs are not implemented."),
-                    Planned("RequestHistoryAndReporting", "Reporting_RequestsPerMinute", "Reporting APIs are not implemented."),
-                    Planned("RequestHistoryAndReporting", "Reporting_FailureRate", "Reporting APIs are not implemented."),
-                    Planned("RequestHistoryAndReporting", "Reporting_P50P95Latency", "Reporting APIs are not implemented."),
-                    Planned("RequestHistoryAndReporting", "Reporting_TopBucketsByBytes", "Reporting APIs are not implemented."),
-                    Planned("RequestHistoryAndReporting", "Reporting_TopBucketsByRequestCount", "Reporting APIs are not implemented."),
-                    Planned("RequestHistoryAndReporting", "Reporting_TopFailedRequestTypes", "Reporting APIs are not implemented."),
-                    Planned("RequestHistoryAndReporting", "Reporting_TopAccessKeys", "Reporting APIs are not implemented."),
-                    Planned("RequestHistoryAndReporting", "Reporting_TenantScopeEnforced", "Reporting APIs are not implemented.")
+                    Active("RequestHistoryAndReporting", "RequestHistory_PurgeOlderThanRetention", "Request history purge removes entries older than a supplied cutoff", RequestHistoryPurgeOlderThanRetentionAsync),
+                    Active("RequestHistoryAndReporting", "Reporting_RequestsPerMinute", "Reporting returns requests-per-minute", ReportingRequestsSummaryAsync),
+                    Active("RequestHistoryAndReporting", "Reporting_FailureRate", "Reporting returns failure rate", ReportingRequestsSummaryAsync),
+                    Active("RequestHistoryAndReporting", "Reporting_P50P95Latency", "Reporting returns p50 and p95 latency", ReportingRequestsSummaryAsync),
+                    Active("RequestHistoryAndReporting", "Reporting_TopBucketsByBytes", "Reporting returns top buckets by bytes", ReportingRequestsSummaryAsync),
+                    Active("RequestHistoryAndReporting", "Reporting_TopBucketsByRequestCount", "Reporting returns top buckets by request count", ReportingRequestsSummaryAsync),
+                    Active("RequestHistoryAndReporting", "Reporting_TopFailedRequestTypes", "Reporting returns top failed request types", ReportingRequestsSummaryAsync),
+                    Active("RequestHistoryAndReporting", "Reporting_TopAccessKeys", "Reporting returns top access keys", ReportingRequestsSummaryAsync),
+                    Active("RequestHistoryAndReporting", "Reporting_TenantScopeEnforced", "Reporting applies tenant scope", ReportingTenantScopeEnforcedAsync)
                 });
         }
 
         private static TestSuiteDescriptor HealthAndMaintenanceSuite()
         {
-            return PlannedSuite(
-                "HealthAndMaintenance",
-                "Health and Maintenance Coverage",
-                "Maintenance endpoints pending implementation.",
-                "Health_Returns200WhenDatabaseAndStorageHealthy",
-                "Health_Returns503WhenDatabaseUnreachable",
-                "Health_Returns503WhenStorageNotWritable",
-                "Health_ReportsFreeDisk",
-                "Health_ReportsTempUploadCount",
-                "Health_ReportsRequestHistoryRetention",
-                "Health_ReportsLastCleanupRun",
-                "Maintenance_UpdateRequestHistoryRetention",
-                "Maintenance_PurgeRequestHistory",
-                "Maintenance_CleanupTempUploads",
-                "Maintenance_VerifyObjectRowsVsBlobFiles",
-                "Maintenance_ExportConfigSummaryRedactsSecrets",
-                "Maintenance_ShowMigrationStatus",
-                "Maintenance_UpdateRuntimeSettingThatDoesNotRequireRestart",
-                "Maintenance_UpdateSettingThatRequiresRestartIsMarked",
-                "Maintenance_RejectUnauthorizedTenantAdmin");
+            return new TestSuiteDescriptor(
+                suiteId: "HealthAndMaintenance",
+                displayName: "Health and Maintenance Coverage",
+                cases: new List<TestCaseDescriptor>
+                {
+                    Active("HealthAndMaintenance", "Health_Returns200WhenDatabaseAndStorageHealthy", "Health returns 200 when database and storage are healthy", StartsRootHealthOpenApiAndAdminAuthAsync),
+                    Planned("HealthAndMaintenance", "Health_Returns503WhenDatabaseUnreachable", "Database degradation requires fault-injection coverage."),
+                    Planned("HealthAndMaintenance", "Health_Returns503WhenStorageNotWritable", "Storage writability degradation requires reliable cross-platform fault injection."),
+                    Active("HealthAndMaintenance", "Health_ReportsFreeDisk", "Health reports free disk space", StartsRootHealthOpenApiAndAdminAuthAsync),
+                    Active("HealthAndMaintenance", "Health_ReportsTempUploadCount", "Health reports temporary upload count", StartsRootHealthOpenApiAndAdminAuthAsync),
+                    Active("HealthAndMaintenance", "Health_ReportsRequestHistoryRetention", "Health reports request-history retention", MaintenanceEndpointsAsync),
+                    Active("HealthAndMaintenance", "Health_ReportsLastCleanupRun", "Health reports last cleanup run after maintenance executes", MaintenanceEndpointsAsync),
+                    Active("HealthAndMaintenance", "Maintenance_UpdateRequestHistoryRetention", "Maintenance updates request-history retention", MaintenanceEndpointsAsync),
+                    Active("HealthAndMaintenance", "Maintenance_PurgeRequestHistory", "Maintenance purges request history", RequestHistoryPurgeOlderThanRetentionAsync),
+                    Active("HealthAndMaintenance", "Maintenance_CleanupTempUploads", "Maintenance cleans orphan temporary upload files", MaintenanceEndpointsAsync),
+                    Active("HealthAndMaintenance", "Maintenance_VerifyObjectRowsVsBlobFiles", "Maintenance verifies object rows against blob files", MaintenanceEndpointsAsync),
+                    Active("HealthAndMaintenance", "Maintenance_ExportConfigSummaryRedactsSecrets", "Maintenance exports a redacted config summary", MaintenanceEndpointsAsync),
+                    Active("HealthAndMaintenance", "Maintenance_ShowMigrationStatus", "Maintenance shows migration status", MaintenanceEndpointsAsync),
+                    Active("HealthAndMaintenance", "Maintenance_UpdateRuntimeSettingThatDoesNotRequireRestart", "Maintenance applies runtime settings", MaintenanceEndpointsAsync),
+                    Active("HealthAndMaintenance", "Maintenance_UpdateSettingThatRequiresRestartIsMarked", "Maintenance marks restart-required settings", MaintenanceEndpointsAsync),
+                    Active("HealthAndMaintenance", "Maintenance_RejectUnauthorizedTenantAdmin", "Maintenance endpoints require admin API authentication", MaintenanceEndpointsAsync)
+                });
         }
 
         private static TestSuiteDescriptor ProviderMatrixSuite()
@@ -720,26 +724,28 @@ namespace Test.Shared
 
         private static TestSuiteDescriptor SecurityAndAuditSuite()
         {
-            return PlannedSuite(
-                "SecurityAndAudit",
-                "Security and Audit Coverage",
-                "Full security audit implementation pending.",
-                "Security_AdminApiKeyNeverLogged",
-                "Security_AccessKeyLoggedOnlyWhereAllowed",
-                "Security_SecretKeyNeverReturnedFromMetadata",
-                "Security_SecretKeyShownOnceOnCreateOnly",
-                "Security_CredentialDisableBlocksS3Immediately",
-                "Security_CredentialRotateInvalidatesOldSecret",
-                "Security_SessionTokenStoredHashed",
-                "Security_CorsPreflightDoesNotBypassAuth",
-                "Security_OpenApiDoesNotExposeSecrets",
-                "Security_PathTraversalObjectKeyCannotEscapeStorageRoot",
-                "Security_PathTraversalMultipartTempCannotEscapeTempRoot",
-                "Security_InvalidTenantIdCannotInjectSql",
-                "Security_InvalidSortFieldCannotInjectSql",
-                "Security_AuditRecordsSensitiveAdminMutations",
-                "Security_AuditRecordsDeniedRequests",
-                "Security_AuditTenantScopeEnforced");
+            return new TestSuiteDescriptor(
+                suiteId: "SecurityAndAudit",
+                displayName: "Security and Audit Coverage",
+                cases: new List<TestCaseDescriptor>
+                {
+                    Planned("SecurityAndAudit", "Security_AdminApiKeyNeverLogged", "Log capture security gate needs process-output and log-file assertion coverage."),
+                    Planned("SecurityAndAudit", "Security_AccessKeyLoggedOnlyWhereAllowed", "Log capture security gate needs process-output and log-file assertion coverage."),
+                    Active("SecurityAndAudit", "Security_SecretKeyNeverReturnedFromMetadata", "Secret keys are hidden from normal metadata responses", CredentialSecretHiddenCreateRotateAndDirectLoginAsync),
+                    Active("SecurityAndAudit", "Security_SecretKeyShownOnceOnCreateOnly", "Secret keys are shown only on create and rotate", CredentialSecretHiddenCreateRotateAndDirectLoginAsync),
+                    Active("SecurityAndAudit", "Security_CredentialDisableBlocksS3Immediately", "Disabled credentials cannot create sessions", CredentialSecretHiddenCreateRotateAndDirectLoginAsync),
+                    Active("SecurityAndAudit", "Security_CredentialRotateInvalidatesOldSecret", "Credential rotation invalidates old secrets", CredentialSecretHiddenCreateRotateAndDirectLoginAsync),
+                    Active("SecurityAndAudit", "Security_SessionTokenStoredHashed", "Session APIs never return token hashes", AuthSessionLoginValidateAndRevokeAsync),
+                    Planned("SecurityAndAudit", "Security_CorsPreflightDoesNotBypassAuth", "CORS preflight bypass coverage pending exact route assertions."),
+                    Planned("SecurityAndAudit", "Security_OpenApiDoesNotExposeSecrets", "OpenAPI secret schema audit pending full typed schemas."),
+                    Planned("SecurityAndAudit", "Security_PathTraversalObjectKeyCannotEscapeStorageRoot", "Path traversal storage-root security test pending."),
+                    Planned("SecurityAndAudit", "Security_PathTraversalMultipartTempCannotEscapeTempRoot", "Path traversal multipart temp security test pending."),
+                    Planned("SecurityAndAudit", "Security_InvalidTenantIdCannotInjectSql", "SQL injection guard coverage pending provider-level assertions."),
+                    Planned("SecurityAndAudit", "Security_InvalidSortFieldCannotInjectSql", "SQL injection guard coverage pending provider-level assertions."),
+                    Active("SecurityAndAudit", "Security_AuditRecordsSensitiveAdminMutations", "Sensitive admin mutations are audited", RbacAdminBypassAuditAndEffectivePermissionsAsync),
+                    Active("SecurityAndAudit", "Security_AuditRecordsDeniedRequests", "Denied RBAC requests are audited", RestBearerSessionEnforcesRbacPermitAndDenyAsync),
+                    Active("SecurityAndAudit", "Security_AuditTenantScopeEnforced", "Authorization audit is tenant scoped", AuthorizationAuditRestReadEnumerateDeleteExistsAsync)
+                });
         }
 
         private static TestSuiteDescriptor ConcurrencyAndReliabilitySuite()
@@ -866,6 +872,10 @@ namespace Test.Shared
             EnsureContains(openApiBody, "/api/v1/objects", "openapi body");
             EnsureContains(openApiBody, "/api/v1/roleassignments", "openapi body");
             EnsureContains(openApiBody, "/api/v1/authsessions/login", "openapi body");
+            EnsureContains(openApiBody, "/api/v1/authsessions/credential-login", "openapi body");
+            EnsureContains(openApiBody, "/admin/reports/requests", "openapi body");
+            EnsureContains(openApiBody, "/admin/maintenance/status", "openapi body");
+            EnsureContains(openApiBody, "/admin/effectivepermissions", "openapi body");
         }
 
         private static async Task AdminBootstrapCredentialAndS3ListBucketsAsync(CancellationToken cancellationToken)
@@ -1671,6 +1681,116 @@ namespace Test.Shared
             EnsureContains(auditBody, userId, "authorization audit user id");
             EnsureContains(auditBody, "\"Permitted\": false", "authorization audit deny");
             EnsureContains(auditBody, "\"Permitted\": true", "authorization audit permit");
+        }
+
+        private static async Task RbacAdminBypassAuditAndEffectivePermissionsAsync(CancellationToken cancellationToken)
+        {
+            using Less3TestServer server = new Less3TestServer();
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
+
+            string adminToken = await LoginAndExtractTokenAsync(server, "default", "admin@less3", "password", cancellationToken).ConfigureAwait(false);
+            HttpResponseMessage adminHealth = await SendBearerAdminAsync(server, HttpMethod.Get, "health", adminToken, null, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, adminHealth.StatusCode, "admin bearer health");
+
+            string userId = TestIds.User();
+            string userEmail = userId + "@example.com";
+            HttpResponseMessage userCreate = await server.AdminPostAsync("users", JsonSerializer.Serialize(new
+            {
+                Id = userId,
+                TenantId = "default",
+                Name = "RBAC admin non-admin user",
+                Email = userEmail,
+                PasswordHash = "password",
+                IsAdmin = false,
+                IsTenantAdmin = false,
+                Active = true
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, userCreate.StatusCode, "admin create non-admin user");
+
+            string userToken = await LoginAndExtractTokenAsync(server, "default", userEmail, "password", cancellationToken).ConfigureAwait(false);
+            HttpResponseMessage nonAdminHealth = await SendBearerAdminAsync(server, HttpMethod.Get, "health", userToken, null, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Forbidden, nonAdminHealth.StatusCode, "non-admin bearer health denied");
+
+            HttpResponseMessage builtinUpdate = await server.AdminPutAsync("roles/rol_builtin_tenantadmin?tenantId=default", JsonSerializer.Serialize(new
+            {
+                Id = "rol_builtin_tenantadmin",
+                TenantId = "default",
+                Name = "Changed TenantAdmin",
+                Description = "Should be rejected",
+                Active = true,
+                IsBuiltIn = false
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Forbidden, builtinUpdate.StatusCode, "built-in role update denied");
+
+            HttpResponseMessage builtinDelete = await server.AdminDeleteAsync("roles/rol_builtin_tenantadmin?tenantId=default", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Forbidden, builtinDelete.StatusCode, "built-in role delete denied");
+
+            HttpResponseMessage effectiveAdmin = await server.AdminGetAsync(
+                "effectivepermissions?tenantId=default&principalType=User&principalId=usr_default_admin&resourceType=User&resourceId=" + userId + "&operation=Update",
+                cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, effectiveAdmin.StatusCode, "effective permissions admin");
+            string effectiveAdminBody = await effectiveAdmin.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureContains(effectiveAdminBody, "\"HasDecision\": true", "effective permissions admin decision");
+            EnsureContains(effectiveAdminBody, "\"Permitted\": true", "effective permissions admin permitted");
+
+            string assignmentId = TestIds.Assignment();
+            HttpResponseMessage assignmentResponse = await server.AdminPostAsync("roleassignments", JsonSerializer.Serialize(new
+            {
+                Id = assignmentId,
+                TenantId = "default",
+                RoleId = "rol_builtin_tenantmember",
+                PrincipalType = "User",
+                PrincipalId = userId,
+                ResourceType = "Tenant",
+                ResourceId = "default",
+                Active = true
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, assignmentResponse.StatusCode, "admin create user tenant member assignment");
+
+            HttpResponseMessage effectiveUser = await server.AdminGetAsync(
+                "effectivepermissions?tenantId=default&principalType=User&principalId=" + userId + "&resourceType=Tenant&resourceId=default&operation=Read",
+                cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, effectiveUser.StatusCode, "effective permissions user");
+            string effectiveUserBody = await effectiveUser.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureContains(effectiveUserBody, "\"HasDecision\": true", "effective permissions user decision");
+            EnsureContains(effectiveUserBody, "\"Permitted\": true", "effective permissions user permitted");
+            EnsureContains(effectiveUserBody, "\"MatchingPermissions\"", "effective permissions matching permissions");
+            EnsureContains(effectiveUserBody, "per_builtin_tenantmember_read", "effective permissions tenant member permission");
+
+            string credentialId = TestIds.Credential();
+            string secret = "audit-secret-" + TestIds.Suffix();
+            HttpResponseMessage credentialCreate = await server.AdminPostAsync("credentials", JsonSerializer.Serialize(new
+            {
+                Id = credentialId,
+                TenantId = "default",
+                UserId = userId,
+                Description = "Audited credential",
+                AccessKey = "audit-" + TestIds.Suffix(),
+                SecretKey = secret,
+                Active = true
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, credentialCreate.StatusCode, "admin create audited credential");
+
+            string roleId = TestIds.Role();
+            HttpResponseMessage bearerRoleCreate = await SendBearerAdminAsync(server, HttpMethod.Post, "roles", adminToken, JsonSerializer.Serialize(new
+            {
+                Id = roleId,
+                TenantId = "default",
+                Name = "Admin bearer audited role",
+                Description = "Created by admin session",
+                Active = true
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, bearerRoleCreate.StatusCode, "admin bearer create role");
+
+            HttpResponseMessage auditResponse = await server.AdminGetAsync("authorizationaudit?tenantId=default", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, auditResponse.StatusCode, "admin mutation authorization audit");
+            string auditBody = await auditResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureContains(auditBody, credentialId, "admin audit credential id");
+            EnsureContains(auditBody, "\"ResourceType\": \"Credential\"", "admin audit credential resource");
+            EnsureContains(auditBody, "\"Operation\": \"Create\"", "admin audit create operation");
+            EnsureContains(auditBody, roleId, "admin bearer audit role id");
+            EnsureContains(auditBody, "\"UserId\": \"usr_default_admin\"", "admin bearer audit actor");
+            EnsureNotContains(auditBody, secret, "admin audit secret redaction");
         }
 
         private static async Task InactiveTenantBlocksLoginAndS3CredentialAuthAsync(CancellationToken cancellationToken)
@@ -2756,6 +2876,101 @@ namespace Test.Shared
             EnsureNotContains(inactiveCredentialBody, "\"LastFailedUtc\": null", "inactive credential last failed");
         }
 
+        private static async Task CredentialSecretHiddenCreateRotateAndDirectLoginAsync(CancellationToken cancellationToken)
+        {
+            using Less3TestServer server = new Less3TestServer();
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
+
+            string credentialId = TestIds.Credential();
+            HttpResponseMessage createResponse = await server.AdminPostAsync("credentials", JsonSerializer.Serialize(new
+            {
+                Id = credentialId,
+                TenantId = "default",
+                UserId = "usr_default_admin",
+                Description = "Generated credential",
+                Active = true
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, createResponse.StatusCode, "credential generated create");
+            string createBody = await createResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            string accessKey = ExtractString(createBody, "AccessKey", "credential generated create access key");
+            string secretKey = ExtractString(createBody, "SecretKey", "credential generated create secret key");
+            EnsureTrue(!String.IsNullOrEmpty(accessKey), "credential generated access key");
+            EnsureTrue(accessKey.StartsWith("ak_", StringComparison.Ordinal), "credential generated access key prefix");
+            EnsureTrue(accessKey.Length <= IdGenerator.MaximumLength, "credential generated access key max length");
+            EnsureTrue(!String.IsNullOrEmpty(secretKey), "credential generated secret key");
+
+            HttpResponseMessage adminGetResponse = await server.AdminGetAsync("credentials/" + credentialId, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, adminGetResponse.StatusCode, "credential admin metadata");
+            string adminGetBody = await adminGetResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureContains(adminGetBody, accessKey, "credential admin metadata access key");
+            EnsureNotContains(adminGetBody, secretKey, "credential admin metadata secret hidden");
+
+            HttpResponseMessage adminListResponse = await server.AdminGetAsync("credentials", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, adminListResponse.StatusCode, "credential admin list");
+            string adminListBody = await adminListResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureContains(adminListBody, accessKey, "credential admin list access key");
+            EnsureNotContains(adminListBody, secretKey, "credential admin list secret hidden");
+
+            HttpResponseMessage restGetResponse = await server.RestGetAsync("credentials/" + credentialId + "?tenantId=default", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, restGetResponse.StatusCode, "credential REST metadata");
+            string restGetBody = await restGetResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureContains(restGetBody, accessKey, "credential REST metadata access key");
+            EnsureNotContains(restGetBody, secretKey, "credential REST metadata secret hidden");
+
+            string directLoginJson = JsonSerializer.Serialize(new
+            {
+                AccessKey = accessKey,
+                SecretKey = secretKey,
+                ExpirationMinutes = 30
+            });
+            HttpResponseMessage directLogin = await server.RestPostUnauthenticatedAsync("authsessions/credential-login", directLoginJson, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, directLogin.StatusCode, "credential direct login");
+            string directLoginBody = await directLogin.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureContains(directLoginBody, "\"PrincipalType\": \"Credential\"", "credential direct login principal type");
+            EnsureNotContains(directLoginBody, "TokenHash", "credential direct login token hash");
+            string token = ExtractString(directLoginBody, "Token", "credential direct login token");
+
+            HttpResponseMessage bearerRead = await SendBearerRestAsync(server, HttpMethod.Get, "tenants/default", token, null, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, bearerRead.StatusCode, "credential bearer tenant read");
+
+            HttpResponseMessage rotateResponse = await server.AdminPostAsync("credentials/" + credentialId + "/rotate", "{}", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, rotateResponse.StatusCode, "credential rotate");
+            string rotateBody = await rotateResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            string rotatedSecret = ExtractString(rotateBody, "SecretKey", "credential rotated secret");
+            EnsureNotEqual(secretKey, rotatedSecret, "credential rotated secret differs");
+            EnsureContains(rotateBody, accessKey, "credential rotate keeps access key");
+
+            HttpResponseMessage oldSecretLogin = await server.RestPostUnauthenticatedAsync("authsessions/credential-login", directLoginJson, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Unauthorized, oldSecretLogin.StatusCode, "credential old secret rejected");
+
+            HttpResponseMessage rotatedAdminGetResponse = await server.AdminGetAsync("credentials/" + credentialId, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, rotatedAdminGetResponse.StatusCode, "credential rotated admin metadata");
+            string rotatedAdminBody = await rotatedAdminGetResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureNotContains(rotatedAdminBody, rotatedSecret, "credential rotated metadata secret hidden");
+
+            HttpResponseMessage newSecretLogin = await server.RestPostUnauthenticatedAsync("authsessions/credential-login", JsonSerializer.Serialize(new
+            {
+                AccessKey = accessKey,
+                SecretKey = rotatedSecret,
+                ExpirationMinutes = 30
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, newSecretLogin.StatusCode, "credential new secret login");
+
+            HttpResponseMessage disableResponse = await server.AdminPostAsync("credentials/" + credentialId + "/disable", "{}", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, disableResponse.StatusCode, "credential disable");
+            string disableBody = await disableResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureContains(disableBody, "\"Active\": false", "credential disable active flag");
+            EnsureNotContains(disableBody, rotatedSecret, "credential disable secret hidden");
+
+            HttpResponseMessage disabledLogin = await server.RestPostUnauthenticatedAsync("authsessions/credential-login", JsonSerializer.Serialize(new
+            {
+                AccessKey = accessKey,
+                SecretKey = rotatedSecret,
+                ExpirationMinutes = 30
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Unauthorized, disabledLogin.StatusCode, "credential disabled login");
+        }
+
         private static async Task RequestHistoryCapturesS3TenantCredentialAndFiltersAsync(CancellationToken cancellationToken)
         {
             using Less3TestServer server = new Less3TestServer();
@@ -2869,6 +3084,169 @@ namespace Test.Shared
             EnsureContains(tenantScopeBody, "\"TenantId\": \"default\"", "REST request history tenant scope");
             EnsureNotContains(tenantScopeBody, secondTenantId, "REST request history tenant scope");
             EnsureNotContains(tenantScopeBody, secondAccessKey, "REST request history tenant scope");
+        }
+
+        private static async Task RequestHistoryPurgeOlderThanRetentionAsync(CancellationToken cancellationToken)
+        {
+            using Less3TestServer server = new Less3TestServer();
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
+
+            using IAmazonS3 defaultClient = server.CreateS3Client("default", "default");
+            ListBucketsResponse buckets = await defaultClient.ListBucketsAsync(cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, buckets.HttpStatusCode, "request history purge seed request");
+
+            HttpResponseMessage purgeResponse = await server.AdminPostAsync("maintenance/purge-request-history", JsonSerializer.Serialize(new
+            {
+                OlderThanUtc = DateTime.UtcNow.AddMinutes(1)
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, purgeResponse.StatusCode, "request history purge");
+            string purgeBody = await purgeResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureContains(purgeBody, "\"Action\": \"purge-request-history\"", "request history purge action");
+            EnsureGreaterOrEqual(1, ExtractRootInt64(purgeBody, "PurgedRequestHistoryCount", "request history purge count"), "request history purge count");
+        }
+
+        private static async Task ReportingRequestsSummaryAsync(CancellationToken cancellationToken)
+        {
+            using Less3TestServer server = new Less3TestServer();
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
+
+            string bucketName = "report-" + TestIds.Suffix().Substring(0, 8);
+            using IAmazonS3 defaultClient = server.CreateS3Client("default", "default");
+
+            PutBucketResponse create = await defaultClient.PutBucketAsync(new PutBucketRequest
+            {
+                BucketName = bucketName
+            }, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, create.HttpStatusCode, "reporting create bucket");
+
+            await PutTextObjectAsync(defaultClient, bucketName, "report.txt", "report-body", cancellationToken).ConfigureAwait(false);
+
+            using IAmazonS3 invalidClient = server.CreateS3Client("report-invalid-" + TestIds.Suffix(), "wrong-secret");
+            await EnsureS3FailureAsync(
+                () => invalidClient.ListBucketsAsync(cancellationToken),
+                "reporting failed request").ConfigureAwait(false);
+
+            string path = "reports/requests?tenantId=default&startUtc="
+                + Uri.EscapeDataString(DateTime.UtcNow.AddMinutes(-10).ToString("O"))
+                + "&endUtc="
+                + Uri.EscapeDataString(DateTime.UtcNow.AddMinutes(10).ToString("O"));
+            HttpResponseMessage reportResponse = await server.AdminGetAsync(path, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, reportResponse.StatusCode, "request reporting");
+            string reportBody = await reportResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+
+            EnsureContains(reportBody, "\"TenantId\": \"default\"", "request reporting tenant");
+            EnsureContains(reportBody, "\"RequestCount\":", "request reporting request count");
+            EnsureContains(reportBody, "\"RequestsPerMinute\":", "request reporting rpm");
+            EnsureContains(reportBody, "\"FailureRate\":", "request reporting failure rate");
+            EnsureContains(reportBody, "\"P50LatencyMs\":", "request reporting p50");
+            EnsureContains(reportBody, "\"P95LatencyMs\":", "request reporting p95");
+            EnsureContains(reportBody, "\"TopBucketsByBytes\"", "request reporting top buckets bytes");
+            EnsureContains(reportBody, "\"TopBucketsByRequestCount\"", "request reporting top buckets request count");
+            EnsureContains(reportBody, "\"TopFailedRequestTypes\"", "request reporting top failed request types");
+            EnsureContains(reportBody, "\"TopAccessKeys\"", "request reporting top access keys");
+            EnsureContains(reportBody, bucketName, "request reporting bucket");
+            EnsureContains(reportBody, "\"Name\": \"default\"", "request reporting default access key");
+            EnsureGreaterOrEqual(2, ExtractRootInt64(reportBody, "RequestCount", "request reporting count"), "request reporting count");
+        }
+
+        private static async Task ReportingTenantScopeEnforcedAsync(CancellationToken cancellationToken)
+        {
+            using Less3TestServer server = new Less3TestServer();
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
+
+            string tenantId = TestIds.Tenant();
+            string userId = TestIds.User();
+            string credentialId = TestIds.Credential();
+            string accessKey = "report-tenant-" + TestIds.Suffix();
+            string secretKey = "secret-" + TestIds.Suffix();
+            string bucketName = "report-scope-" + TestIds.Suffix().Substring(0, 8);
+
+            await CreateTenantUserAndCredentialAsync(server, tenantId, userId, credentialId, accessKey, secretKey, cancellationToken).ConfigureAwait(false);
+
+            using IAmazonS3 secondTenantClient = server.CreateS3Client(accessKey, secretKey);
+            PutBucketResponse create = await secondTenantClient.PutBucketAsync(new PutBucketRequest
+            {
+                BucketName = bucketName
+            }, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, create.HttpStatusCode, "reporting tenant scope create bucket");
+
+            HttpResponseMessage defaultReport = await server.AdminGetAsync("reports/requests?tenantId=default", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, defaultReport.StatusCode, "default tenant report");
+            string defaultBody = await defaultReport.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureNotContains(defaultBody, accessKey, "default tenant report access key");
+            EnsureNotContains(defaultBody, bucketName, "default tenant report bucket");
+
+            HttpResponseMessage secondReport = await server.AdminGetAsync("reports/requests?tenantId=" + tenantId, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, secondReport.StatusCode, "second tenant report");
+            string secondBody = await secondReport.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureContains(secondBody, "\"TenantId\": \"" + tenantId + "\"", "second tenant report scope");
+            EnsureContains(secondBody, accessKey, "second tenant report access key");
+            EnsureContains(secondBody, bucketName, "second tenant report bucket");
+        }
+
+        private static async Task MaintenanceEndpointsAsync(CancellationToken cancellationToken)
+        {
+            using Less3TestServer server = new Less3TestServer();
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
+
+            HttpResponseMessage statusResponse = await server.AdminGetAsync("maintenance/status", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, statusResponse.StatusCode, "maintenance status");
+            string statusBody = await statusResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureContains(statusBody, "\"RequestHistoryRetentionDays\": 30", "maintenance status retention");
+            EnsureContains(statusBody, "\"RuntimeEditableSettings\"", "maintenance status runtime settings");
+            EnsureContains(statusBody, "\"RestartRequiredSettings\"", "maintenance status restart settings");
+            EnsureContains(statusBody, "\"AdminApiKey\": \"[redacted]\"", "maintenance status redacted admin key");
+            EnsureNotContains(statusBody, server.AdminApiKey, "maintenance status redacts actual admin key");
+
+            HttpResponseMessage settingsUpdate = await server.AdminPostAsync("maintenance/settings", JsonSerializer.Serialize(new
+            {
+                RequestHistoryRetentionDays = 7,
+                CleanupIntervalMs = 60000
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, settingsUpdate.StatusCode, "maintenance update settings");
+
+            HttpResponseMessage healthResponse = await server.AdminGetAsync("health", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, healthResponse.StatusCode, "maintenance health after settings update");
+            string healthBody = await healthResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureContains(healthBody, "\"RequestHistoryRetentionDays\": 7", "maintenance health retention update");
+
+            string tempDirectory = Path.Combine(server.TempDirectory, "temp");
+            Directory.CreateDirectory(tempDirectory);
+            string orphanFile = Path.Combine(tempDirectory, "orphan.tmp");
+            File.WriteAllText(orphanFile, "orphan");
+
+            HttpResponseMessage cleanupTempResponse = await server.AdminPostAsync("maintenance/cleanup-temp-uploads", "{}", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, cleanupTempResponse.StatusCode, "maintenance cleanup temp uploads");
+            string cleanupTempBody = await cleanupTempResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureGreaterOrEqual(1, ExtractRootInt64(cleanupTempBody, "DeletedTempFileCount", "maintenance cleanup temp file count"), "maintenance cleanup temp file count");
+            EnsureFalse(File.Exists(orphanFile), "maintenance orphan temp file deleted");
+
+            HttpResponseMessage verifyResponse = await server.AdminPostAsync("maintenance/verify-objects?tenantId=default", "{}", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, verifyResponse.StatusCode, "maintenance verify objects");
+            string verifyBody = await verifyResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureContains(verifyBody, "\"Action\": \"verify-objects\"", "maintenance verify objects action");
+            EnsureContains(verifyBody, "\"Success\": true", "maintenance verify objects success");
+
+            HttpResponseMessage migrationResponse = await server.AdminGetAsync("maintenance/migration-status", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, migrationResponse.StatusCode, "maintenance migration status");
+            string migrationBody = await migrationResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureContains(migrationBody, "\"DatabaseType\": \"Sqlite\"", "maintenance migration database type");
+            EnsureContains(migrationBody, "\"IdempotentStartupMigrations\": true", "maintenance migration idempotent");
+            EnsureContains(migrationBody, "\"DefaultTenantSeeded\": true", "maintenance migration default tenant");
+
+            HttpResponseMessage runCleanupResponse = await server.AdminPostAsync("maintenance/run-cleanup", "{}", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, runCleanupResponse.StatusCode, "maintenance run cleanup");
+
+            HttpResponseMessage updatedStatusResponse = await server.AdminGetAsync("maintenance/status", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, updatedStatusResponse.StatusCode, "maintenance updated status");
+            string updatedStatusBody = await updatedStatusResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureContains(updatedStatusBody, "\"LastCleanupRunUtc\":", "maintenance last cleanup field");
+            EnsureNotContains(updatedStatusBody, "\"LastCleanupRunUtc\": null", "maintenance last cleanup value");
+
+            using HttpRequestMessage unauthorized = new HttpRequestMessage(HttpMethod.Post, server.BaseUrl + "/admin/maintenance/run-cleanup");
+            unauthorized.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+            HttpResponseMessage unauthorizedResponse = await server.HttpClient.SendAsync(unauthorized, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Unauthorized, unauthorizedResponse.StatusCode, "maintenance unauthorized");
         }
 
         private static async Task S3SameBucketNameDifferentTenantsAsync(CancellationToken cancellationToken)
@@ -5150,6 +5528,22 @@ namespace Test.Shared
             return element.GetString() ?? String.Empty;
         }
 
+        private static long ExtractRootInt64(string json, string propertyName, string operation)
+        {
+            using JsonDocument document = JsonDocument.Parse(json);
+            if (!document.RootElement.TryGetProperty(propertyName, out JsonElement element))
+            {
+                throw new InvalidOperationException(operation + " did not include property " + propertyName);
+            }
+
+            if (element.ValueKind == JsonValueKind.Number && element.TryGetInt64(out long value))
+            {
+                return value;
+            }
+
+            throw new InvalidOperationException(operation + " property " + propertyName + " was not an integer");
+        }
+
         private static string ExtractNestedString(string json, string objectName, string propertyName, string operation)
         {
             using JsonDocument document = JsonDocument.Parse(json);
@@ -5263,6 +5657,24 @@ namespace Test.Shared
             CancellationToken cancellationToken)
         {
             HttpRequestMessage request = new HttpRequestMessage(method, server.BaseUrl + "/api/v1/" + path);
+            request.Headers.TryAddWithoutValidation("x-less3-session-token", token);
+            if (body != null)
+            {
+                request.Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json");
+            }
+
+            return await server.HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        private static async Task<HttpResponseMessage> SendBearerAdminAsync(
+            Less3TestServer server,
+            HttpMethod method,
+            string path,
+            string token,
+            string body,
+            CancellationToken cancellationToken)
+        {
+            HttpRequestMessage request = new HttpRequestMessage(method, server.BaseUrl + "/admin/" + path);
             request.Headers.TryAddWithoutValidation("x-less3-session-token", token);
             if (body != null)
             {

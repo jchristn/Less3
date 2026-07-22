@@ -1,4 +1,4 @@
-﻿namespace Less3.Api.Admin
+namespace Less3.Api.Admin
 {
     using System;
     using System.Collections.Generic;
@@ -31,8 +31,9 @@
         private ConfigManager _Config;
         private BucketManager _Buckets;
         private AuthManager _Auth;
+        private CleanupManager _Cleanup;
 
-        private GetHandler _GetHandler; 
+        private GetHandler _GetHandler;
         private PostHandler _PostHandler;
         private PutHandler _PutHandler;
         private DeleteHandler _DeleteHandler;
@@ -42,28 +43,31 @@
         #region Constructors-and-Factories
 
         internal AdminApiHandler(
-            SettingsBase settings, 
-            LoggingModule logging,  
+            SettingsBase settings,
+            LoggingModule logging,
             ConfigManager config,
             BucketManager buckets,
-            AuthManager auth)
+            AuthManager auth,
+            CleanupManager cleanup)
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
             if (logging == null) throw new ArgumentNullException(nameof(logging));
             if (config == null) throw new ArgumentNullException(nameof(config));
             if (buckets == null) throw new ArgumentNullException(nameof(buckets));
-            if (auth == null) throw new ArgumentNullException(nameof(auth)); 
+            if (auth == null) throw new ArgumentNullException(nameof(auth));
+            if (cleanup == null) throw new ArgumentNullException(nameof(cleanup));
 
             _Settings = settings;
             _Logging = logging;
             _Config = config;
             _Buckets = buckets;
             _Auth = auth;
+            _Cleanup = cleanup;
 
-            _GetHandler = new GetHandler(_Settings, _Logging, _Config, _Buckets, _Auth); 
-            _PostHandler = new PostHandler(_Settings, _Logging, _Config, _Buckets, _Auth);
+            _GetHandler = new GetHandler(_Settings, _Logging, _Config, _Buckets, _Auth, _Cleanup);
+            _PostHandler = new PostHandler(_Settings, _Logging, _Config, _Buckets, _Auth, _Cleanup);
             _PutHandler = new PutHandler(_Settings, _Logging, _Config, _Buckets, _Auth);
-            _DeleteHandler = new DeleteHandler(_Settings, _Logging, _Config, _Buckets, _Auth); 
+            _DeleteHandler = new DeleteHandler(_Settings, _Logging, _Config, _Buckets, _Auth);
         }
 
         #endregion

@@ -11,6 +11,7 @@ namespace Less3.Api.Rest
     using SyslogLogging;
 
     using Less3.Classes;
+    using Less3.Helpers;
     using Less3.Requests;
     using Less3.Responses;
     using Less3.Settings;
@@ -133,6 +134,12 @@ namespace Less3.Api.Rest
                     return;
                 }
 
+                if (ctx.Http.Request.Url.Elements[3].Equals("credential-login", StringComparison.OrdinalIgnoreCase))
+                {
+                    await CredentialLogin(ctx).ConfigureAwait(false);
+                    return;
+                }
+
                 if (ctx.Http.Request.Url.Elements[3].Equals("validate", StringComparison.OrdinalIgnoreCase))
                 {
                     await ValidateSession(ctx).ConfigureAwait(false);
@@ -142,6 +149,22 @@ namespace Less3.Api.Rest
                 if (ctx.Http.Request.Url.Elements[3].Equals("revoke", StringComparison.OrdinalIgnoreCase))
                 {
                     await RevokeSessionByToken(ctx).ConfigureAwait(false);
+                    return;
+                }
+            }
+
+            if (resourceType.Equals("credentials", StringComparison.OrdinalIgnoreCase)
+                && ctx.Http.Request.Url.Elements.Length == 4)
+            {
+                if (ctx.Http.Request.Url.Elements[3].Equals("rotate", StringComparison.OrdinalIgnoreCase))
+                {
+                    await RotateCredential(ctx).ConfigureAwait(false);
+                    return;
+                }
+
+                if (ctx.Http.Request.Url.Elements[3].Equals("disable", StringComparison.OrdinalIgnoreCase))
+                {
+                    await SetCredentialActive(ctx, false).ConfigureAwait(false);
                     return;
                 }
             }
@@ -260,7 +283,7 @@ namespace Less3.Api.Rest
                     await SendJson(ctx, BuildResult(_Config.GetUsers(query.TenantId), query), 200).ConfigureAwait(false);
                     return;
                 case "credentials":
-                    await SendJson(ctx, BuildResult(_Config.GetCredentials(query.TenantId), query), 200).ConfigureAwait(false);
+                    await SendJson(ctx, BuildResult(CredentialResponseSanitizer.ForResponse(_Config.GetCredentials(query.TenantId), false), query), 200).ConfigureAwait(false);
                     return;
                 case "buckets":
                     await SendJson(ctx, BuildResult(_Config.GetBuckets(query.TenantId), query), 200).ConfigureAwait(false);
@@ -309,7 +332,7 @@ namespace Less3.Api.Rest
                 case "users":
                     return _Config.GetUserById(tenantId, id);
                 case "credentials":
-                    return _Config.GetCredentialById(tenantId, id);
+                    return CredentialResponseSanitizer.ForResponse(_Config.GetCredentialById(tenantId, id), false);
                 case "buckets":
                     return _Config.GetBucketById(tenantId, id);
                 case "objects":
@@ -561,6 +584,8 @@ namespace Less3.Api.Rest
             Credential credential = Deserialize<Credential>(ctx);
             if (credential == null) return null;
             if (String.IsNullOrEmpty(credential.TenantId)) credential.TenantId = GetTenantId(ctx);
+            if (String.IsNullOrEmpty(credential.AccessKey)) credential.AccessKey = GenerateUniqueAccessKey();
+            if (String.IsNullOrEmpty(credential.SecretKey)) credential.SecretKey = CredentialMaterialGenerator.GenerateSecretKey();
             if (_Config.GetUserById(credential.TenantId, credential.UserId) == null) return null;
             if (!_Config.AddCredential(credential)) return null;
             return credential;
@@ -612,6 +637,130 @@ namespace Less3.Api.Rest
             response.Session = session;
             response.Token = rawToken;
             await SendJson(ctx, response, 201).ConfigureAwait(false);
+        }
+
+        private async Task CredentialLogin(S3Context ctx)
+        {
+            AuthSessionCredentialLoginRequest request = Deserialize<AuthSessionCredentialLoginRequest>(ctx);
+            if (request == null
+                || String.IsNullOrEmpty(request.AccessKey)
+                || String.IsNullOrEmpty(request.SecretKey))
+            {
+                await SendInvalidRequest(ctx).ConfigureAwait(false);
+                return;
+            }
+
+            Credential credential = _Config.GetCredentialByAccessKey(request.AccessKey);
+            if (credential == null || !credential.Active || !SecretMatches(credential, request.SecretKey))
+            {
+                if (credential != null)
+                {
+                    credential.LastFailedUtc = DateTime.UtcNow;
+                    _Config.UpdateCredential(credential);
+                }
+
+                await SendUnauthorized(ctx, "Invalid access key or secret key.").ConfigureAwait(false);
+                return;
+            }
+
+            Tenant tenant = _Config.GetTenantById(credential.TenantId);
+            if (tenant == null || !tenant.Active)
+            {
+                credential.LastFailedUtc = DateTime.UtcNow;
+                _Config.UpdateCredential(credential);
+                await SendUnauthorized(ctx, "Tenant is not active.").ConfigureAwait(false);
+                return;
+            }
+
+            User user = _Config.GetUserById(credential.TenantId, credential.UserId);
+            if (user == null || !user.Active)
+            {
+                credential.LastFailedUtc = DateTime.UtcNow;
+                _Config.UpdateCredential(credential);
+                await SendUnauthorized(ctx, "User is not active.").ConfigureAwait(false);
+                return;
+            }
+
+            string rawToken = CreateSessionToken();
+            AuthSession session = new AuthSession();
+            session.TenantId = credential.TenantId;
+            session.PrincipalType = "Credential";
+            session.PrincipalId = credential.Id;
+            session.TokenHash = HashToken(rawToken);
+            session.CreatedUtc = DateTime.UtcNow;
+            session.ExpirationUtc = DateTime.UtcNow.AddMinutes(NormalizeExpirationMinutes(request.ExpirationMinutes));
+            session.SourceIp = ctx.Http.Request.Source.IpAddress;
+
+            if (!_Config.AddAuthSession(session))
+            {
+                await SendInvalidRequest(ctx).ConfigureAwait(false);
+                return;
+            }
+
+            credential.LastUsedUtc = DateTime.UtcNow;
+            _Config.UpdateCredential(credential);
+
+            AuthSessionLoginResponse response = new AuthSessionLoginResponse();
+            response.Session = session;
+            response.Token = rawToken;
+            await SendJson(ctx, response, 201).ConfigureAwait(false);
+        }
+
+        private async Task RotateCredential(S3Context ctx)
+        {
+            string id = GetQueryValue(ctx, "id");
+            if (String.IsNullOrEmpty(id))
+            {
+                await SendInvalidRequest(ctx).ConfigureAwait(false);
+                return;
+            }
+
+            string tenantId = GetTenantId(ctx);
+            Credential existing = _Config.GetCredentialById(tenantId, id);
+            if (existing == null)
+            {
+                await SendNotFound(ctx).ConfigureAwait(false);
+                return;
+            }
+
+            existing.SecretKey = CredentialMaterialGenerator.GenerateSecretKey();
+            existing.IsBase64 = false;
+
+            if (!_Config.UpdateCredential(existing))
+            {
+                await SendConflict(ctx).ConfigureAwait(false);
+                return;
+            }
+
+            await SendJson(ctx, CredentialResponseSanitizer.ForResponse(existing, true), 200).ConfigureAwait(false);
+        }
+
+        private async Task SetCredentialActive(S3Context ctx, bool active)
+        {
+            string id = GetQueryValue(ctx, "id");
+            if (String.IsNullOrEmpty(id))
+            {
+                await SendInvalidRequest(ctx).ConfigureAwait(false);
+                return;
+            }
+
+            string tenantId = GetTenantId(ctx);
+            Credential existing = _Config.GetCredentialById(tenantId, id);
+            if (existing == null)
+            {
+                await SendNotFound(ctx).ConfigureAwait(false);
+                return;
+            }
+
+            existing.Active = active;
+
+            if (!_Config.UpdateCredential(existing))
+            {
+                await SendConflict(ctx).ConfigureAwait(false);
+                return;
+            }
+
+            await SendJson(ctx, CredentialResponseSanitizer.ForResponse(existing, false), 200).ConfigureAwait(false);
         }
 
         private async Task ValidateSession(S3Context ctx)
@@ -689,6 +838,13 @@ namespace Less3.Api.Rest
             return user.PasswordHash.Equals(password, StringComparison.Ordinal);
         }
 
+        private static bool SecretMatches(Credential credential, string secretKey)
+        {
+            if (credential == null || String.IsNullOrEmpty(secretKey)) return false;
+            if (String.IsNullOrEmpty(credential.SecretKey)) return false;
+            return credential.SecretKey.Equals(secretKey, StringComparison.Ordinal);
+        }
+
         private static int NormalizeExpirationMinutes(int minutes)
         {
             if (minutes < 1) return minutes;
@@ -706,6 +862,17 @@ namespace Less3.Api.Rest
         {
             byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(token));
             return Convert.ToHexString(hash).ToLowerInvariant();
+        }
+
+        private string GenerateUniqueAccessKey()
+        {
+            for (int i = 0; i < 16; i++)
+            {
+                string accessKey = CredentialMaterialGenerator.GenerateAccessKey();
+                if (_Config.GetCredentialByAccessKey(accessKey) == null) return accessKey;
+            }
+
+            throw new InvalidOperationException("Unable to generate a unique access key.");
         }
 
         private Bucket CreateBucket(S3Context ctx)
@@ -899,9 +1066,10 @@ namespace Less3.Api.Rest
             if (credential == null) return null;
             credential.Id = existing.Id;
             credential.TenantId = String.IsNullOrEmpty(credential.TenantId) ? tenantId : credential.TenantId;
+            if (String.IsNullOrEmpty(credential.SecretKey)) credential.SecretKey = existing.SecretKey;
             credential.CreatedUtc = existing.CreatedUtc;
             if (!_Config.UpdateCredential(credential)) return null;
-            return credential;
+            return CredentialResponseSanitizer.ForResponse(credential, false);
         }
 
         private Bucket UpdateBucket(S3Context ctx, string id)

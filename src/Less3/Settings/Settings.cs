@@ -54,6 +54,24 @@ namespace Less3.Settings
         }
 
         /// <summary>
+        /// Number of days to keep request history before maintenance purges it.
+        /// </summary>
+        public int RequestHistoryRetentionDays
+        {
+            get => _RequestHistoryRetentionDays;
+            set => _RequestHistoryRetentionDays = value < 1 ? throw new ArgumentOutOfRangeException(nameof(RequestHistoryRetentionDays)) : value;
+        }
+
+        /// <summary>
+        /// Cleanup timer interval in milliseconds.
+        /// </summary>
+        public int CleanupIntervalMs
+        {
+            get => _CleanupIntervalMs;
+            set => _CleanupIntervalMs = value < 60000 ? throw new ArgumentOutOfRangeException(nameof(CleanupIntervalMs)) : value;
+        }
+
+        /// <summary>
         /// Database settings.
         /// </summary>
         public DatabaseSettings Database
@@ -101,6 +119,8 @@ namespace Less3.Settings
         private string _HeaderApiKey = "x-api-key";
         private string _AdminApiKey = "less3admin";
         private string _RegionString = "us-west-1";
+        private int _RequestHistoryRetentionDays = 30;
+        private int _CleanupIntervalMs = 3600000;
         private DatabaseSettings _Database = new DatabaseSettings("./less3.db");
         private WebserverSettings _Webserver = new WebserverSettings();
         private StorageSettings _Storage = new StorageSettings();

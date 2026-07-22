@@ -8,6 +8,7 @@ namespace Less3.Api.Admin
     using SyslogLogging;
 
     using Less3.Classes;
+    using Less3.Helpers;
     using Less3.Settings;
 
     /// <summary>
@@ -130,6 +131,7 @@ namespace Less3.Api.Admin
                 return;
             }
 
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, user.TenantId, "User", user.Id, "Update");
             ctx.Response.StatusCode = 200;
             ctx.Response.ContentType = "application/json";
             await ctx.Response.Send(SerializationHelper.SerializeJson(user, true));
@@ -166,8 +168,7 @@ namespace Less3.Api.Admin
 
             if (cred == null
                 || String.IsNullOrEmpty(cred.UserId)
-                || String.IsNullOrEmpty(cred.AccessKey)
-                || String.IsNullOrEmpty(cred.SecretKey))
+                || String.IsNullOrEmpty(cred.AccessKey))
             {
                 await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest);
                 return;
@@ -175,6 +176,7 @@ namespace Less3.Api.Admin
 
             cred.Id = existing.Id;
             if (String.IsNullOrEmpty(cred.TenantId)) cred.TenantId = existing.TenantId;
+            if (String.IsNullOrEmpty(cred.SecretKey)) cred.SecretKey = existing.SecretKey;
             cred.CreatedUtc = existing.CreatedUtc;
 
             bool updated = _Config.UpdateCredential(cred);
@@ -186,9 +188,10 @@ namespace Less3.Api.Admin
                 return;
             }
 
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, cred.TenantId, "Credential", cred.Id, "Update");
             ctx.Response.StatusCode = 200;
             ctx.Response.ContentType = "application/json";
-            await ctx.Response.Send(SerializationHelper.SerializeJson(cred, true));
+            await ctx.Response.Send(SerializationHelper.SerializeJson(CredentialResponseSanitizer.ForResponse(cred, false), true));
         }
 
         private async Task PutTenants(S3Context ctx)
@@ -222,6 +225,7 @@ namespace Less3.Api.Admin
                 return;
             }
 
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, tenant.Id, "Tenant", tenant.Id, "Update");
             await SendJson(ctx, tenant).ConfigureAwait(false);
         }
 
@@ -268,6 +272,7 @@ namespace Less3.Api.Admin
                 return;
             }
 
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, role.TenantId, "Role", role.Id, "Update");
             await SendJson(ctx, role).ConfigureAwait(false);
         }
 
@@ -304,6 +309,7 @@ namespace Less3.Api.Admin
                 return;
             }
 
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, permission.TenantId, "Permission", permission.Id, "Update");
             await SendJson(ctx, permission).ConfigureAwait(false);
         }
 
@@ -340,6 +346,7 @@ namespace Less3.Api.Admin
                 return;
             }
 
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, assignment.TenantId, "RoleAssignment", assignment.Id, "Update");
             await SendJson(ctx, assignment).ConfigureAwait(false);
         }
 
@@ -376,6 +383,7 @@ namespace Less3.Api.Admin
                 return;
             }
 
+            AdminMutationAuditor.Record(_Config, _Logging, ctx, session.TenantId, "AuthSession", session.Id, "Update");
             await SendJson(ctx, session).ConfigureAwait(false);
         }
 

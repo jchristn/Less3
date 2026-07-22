@@ -27,3 +27,55 @@ export interface AdminHealthStatusResponse {
   LastCleanupRunUtc: string | null;
   GeneratedUtc: string;
 }
+
+export interface RequestReportTopItem {
+  Id?: string | null;
+  Name: string;
+  Count: number;
+  Bytes?: number;
+}
+
+export interface RequestReportResponse {
+  TenantId: string;
+  StartUtc: string;
+  EndUtc: string;
+  RequestCount: number;
+  SuccessCount: number;
+  FailureCount: number;
+  RequestsPerMinute: number;
+  FailureRate: number;
+  P50LatencyMs: number;
+  P95LatencyMs: number;
+  TopBucketsByBytes: RequestReportTopItem[];
+  TopBucketsByRequestCount: RequestReportTopItem[];
+  TopFailedRequestTypes: RequestReportTopItem[];
+  TopAccessKeys: RequestReportTopItem[];
+  GeneratedUtc: string;
+}
+
+export interface MaintenanceStatusResponse {
+  RequestHistoryRetentionDays: number;
+  CleanupIntervalMs: number;
+  LastCleanupRunUtc: string | null;
+  RuntimeEditableSettings: string[];
+  RestartRequiredSettings: string[];
+  Configuration: Record<string, any>;
+  GeneratedUtc: string;
+}
+
+export interface MaintenanceSettingsRequest {
+  RequestHistoryRetentionDays?: number;
+  CleanupIntervalMs?: number;
+  OlderThanUtc?: string;
+}
+
+export interface MaintenanceActionResult {
+  Action: string;
+  Success: boolean;
+  DeletedRequestHistoryCount: number;
+  DeletedTempFileCount: number;
+  ObjectRowCount: number;
+  MissingBlobFileCount: number;
+  MissingBlobFiles: string[];
+  GeneratedUtc: string;
+}

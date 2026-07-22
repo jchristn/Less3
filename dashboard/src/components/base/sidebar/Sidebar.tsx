@@ -11,6 +11,7 @@ import {
   KeyOutlined,
   HistoryOutlined,
   ApiOutlined,
+  ToolOutlined,
   BankOutlined,
   SafetyCertificateOutlined,
   TeamOutlined,
@@ -45,6 +46,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onCollapse, showLo
     if (pathname.startsWith('/admin/role-assignments')) return ['role-assignments'];
     if (pathname.startsWith('/admin/permissions')) return ['permissions'];
     if (pathname.startsWith('/admin/request-history')) return ['request-history'];
+    if (pathname.startsWith('/admin/maintenance')) return ['maintenance'];
     if (pathname.startsWith('/admin/api-explorer')) return ['api-explorer'];
     return [];
   };
@@ -121,6 +123,11 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onCollapse, showLo
           key: 'request-history',
           icon: <HistoryOutlined />,
           label: <Link href="/admin/request-history">Request History</Link>,
+        },
+        {
+          key: 'maintenance',
+          icon: <ToolOutlined />,
+          label: <Link href="/admin/maintenance">Maintenance</Link>,
         },
         {
           key: 'api-explorer',

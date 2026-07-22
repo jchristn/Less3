@@ -20,5 +20,6 @@ export const paths = {
   roleAssignments: `/admin/role-assignments`,
   permissions: `/admin/permissions`,
   requestHistory: `/admin/request-history`,
+  maintenance: `/admin/maintenance`,
   apiExplorer: `/admin/api-explorer`,
 };

@@ -49,6 +49,7 @@
             internal static string Session = "ses_";
             internal static string AuthorizationAudit = "aud_";
             internal static string RequestHistory = "req_";
+            internal static string AccessKey = "ak_";
         }
     }
 }

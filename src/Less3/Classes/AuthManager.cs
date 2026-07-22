@@ -264,7 +264,7 @@ namespace Less3.Classes
             return !String.Equals(resourceId, requestContext.TenantId, StringComparison.Ordinal);
         }
 
-        private static bool CanTenantAdminBypass(RequestContext requestContext, string resourceType, string resourceId)
+        internal static bool CanTenantAdminBypass(RequestContext requestContext, string resourceType, string resourceId)
         {
             if (requestContext == null) return false;
             if (!String.Equals(resourceType, "Tenant", StringComparison.OrdinalIgnoreCase)) return true;
@@ -1359,7 +1359,7 @@ namespace Less3.Classes
             return false;
         }
 
-        private static bool AssignmentScopeMatches(
+        internal static bool AssignmentScopeMatches(
             string tenantId,
             RoleAssignment assignment,
             string resourceType,
@@ -1380,7 +1380,7 @@ namespace Less3.Classes
             return String.Equals(assignment.ResourceId, resourceId, StringComparison.Ordinal);
         }
 
-        private static bool PermissionResourceMatches(string permissionResourceType, string requestedResourceType)
+        internal static bool PermissionResourceMatches(string permissionResourceType, string requestedResourceType)
         {
             if (String.IsNullOrEmpty(permissionResourceType)) return false;
             if (String.Equals(permissionResourceType, "All", StringComparison.OrdinalIgnoreCase)) return true;
@@ -1411,7 +1411,7 @@ namespace Less3.Classes
             return false;
         }
 
-        private static bool PermissionOperationMatches(string permissionOperation, string requestedOperation)
+        internal static bool PermissionOperationMatches(string permissionOperation, string requestedOperation)
         {
             if (String.IsNullOrEmpty(permissionOperation)) return false;
             if (String.Equals(permissionOperation, "All", StringComparison.OrdinalIgnoreCase)) return true;

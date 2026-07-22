@@ -9,6 +9,11 @@
             Admin API handler.
             </summary>
         </member>
+        <member name="T:Less3.Api.Admin.AdminMutationAuditor">
+            <summary>
+            Persists audit records for sensitive administrative mutations.
+            </summary>
+        </member>
         <member name="T:Less3.Api.Admin.DeleteHandler">
             <summary>
             Admin API DELETE handler.
@@ -693,6 +698,30 @@
             Minimum value is 60000 (1 minute).
             </summary>
         </member>
+        <member name="P:Less3.Classes.CleanupManager.LastCleanupRunUtc">
+            <summary>
+            Last cleanup run timestamp in UTC.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.CleanupManager.RunCleanupCycle">
+            <summary>
+            Run all cleanup tasks immediately.
+            </summary>
+            <returns>Maintenance action result.</returns>
+        </member>
+        <member name="M:Less3.Classes.CleanupManager.PurgeRequestHistory(System.DateTime)">
+            <summary>
+            Purge request history older than the supplied cutoff.
+            </summary>
+            <param name="cutoffUtc">UTC cutoff.</param>
+            <returns>Maintenance action result.</returns>
+        </member>
+        <member name="M:Less3.Classes.CleanupManager.CleanupTempUploads">
+            <summary>
+            Delete orphaned temporary upload files that are not associated with active upload rows.
+            </summary>
+            <returns>Maintenance action result.</returns>
+        </member>
         <member name="M:Less3.Classes.CleanupManager.Dispose">
             <summary>
             Dispose of the cleanup manager.
@@ -840,6 +869,81 @@
             Seeds the default user, credential, bucket, and sample content used by setup and Docker bootstrap.
             </summary>
         </member>
+        <member name="T:Less3.Classes.EffectivePermissionResult">
+            <summary>
+            Effective RBAC decision for a principal and resource operation.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.EffectivePermissionResult.TenantId">
+            <summary>
+            Tenant identifier.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.EffectivePermissionResult.PrincipalType">
+            <summary>
+            Principal type, such as User or Credential.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.EffectivePermissionResult.PrincipalId">
+            <summary>
+            Principal identifier.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.EffectivePermissionResult.ResourceType">
+            <summary>
+            Resource type.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.EffectivePermissionResult.ResourceId">
+            <summary>
+            Resource identifier.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.EffectivePermissionResult.Operation">
+            <summary>
+            Operation being evaluated.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.EffectivePermissionResult.HasDecision">
+            <summary>
+            Whether RBAC, admin bypass, or tenant-admin bypass produced a decision.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.EffectivePermissionResult.Permitted">
+            <summary>
+            Whether the effective decision permits the operation.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.EffectivePermissionResult.IsAdminBypass">
+            <summary>
+            Whether the decision came from global administrator bypass.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.EffectivePermissionResult.IsTenantAdminBypass">
+            <summary>
+            Whether the decision came from tenant administrator bypass.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.EffectivePermissionResult.Reason">
+            <summary>
+            Human-readable decision reason.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.EffectivePermissionResult.MatchingAssignments">
+            <summary>
+            Matching active role assignments considered for the request.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.EffectivePermissionResult.MatchingPermissions">
+            <summary>
+            Matching active permission rules considered for the request.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.EffectivePermissionResult.GeneratedUtc">
+            <summary>
+            Generation timestamp.
+            </summary>
+        </member>
         <member name="T:Less3.Classes.HashResult">
             <summary>
             Hash computation result.
@@ -863,6 +967,101 @@
         <member name="M:Less3.Classes.HashResult.#ctor">
             <summary>
             Instantiate.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.MaintenanceActionResult">
+            <summary>
+            Result returned from maintenance actions.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.MaintenanceActionResult.Success">
+            <summary>
+            Whether the maintenance action completed.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.MaintenanceActionResult.Action">
+            <summary>
+            Human-readable action name.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.MaintenanceActionResult.PurgedRequestHistoryCount">
+            <summary>
+            Number of request history entries purged.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.MaintenanceActionResult.ExpiredUploadCount">
+            <summary>
+            Number of expired multipart uploads cleaned.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.MaintenanceActionResult.DeletedTempFileCount">
+            <summary>
+            Number of temporary files deleted.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.MaintenanceActionResult.ObjectRowCount">
+            <summary>
+            Number of object metadata rows inspected.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.MaintenanceActionResult.MissingBlobFileCount">
+            <summary>
+            Number of object blob files missing on disk.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.MaintenanceActionResult.MissingBlobFiles">
+            <summary>
+            Missing blob file identifiers.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.MaintenanceActionResult.CutoffUtc">
+            <summary>
+            UTC cutoff used by purge operations.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.MaintenanceActionResult.GeneratedUtc">
+            <summary>
+            UTC timestamp when the action completed.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.MaintenanceStatus">
+            <summary>
+            Operational maintenance status and editable runtime settings.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.MaintenanceStatus.RequestHistoryRetentionDays">
+            <summary>
+            Current request history retention in days.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.MaintenanceStatus.CleanupIntervalMs">
+            <summary>
+            Current cleanup interval in milliseconds.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.MaintenanceStatus.LastCleanupRunUtc">
+            <summary>
+            Last cleanup run timestamp.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.MaintenanceStatus.RuntimeEditableSettings">
+            <summary>
+            Settings that can be changed at runtime.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.MaintenanceStatus.RestartRequiredSettings">
+            <summary>
+            Settings that require restart before taking effect.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.MaintenanceStatus.Configuration">
+            <summary>
+            Redacted configuration summary.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.MaintenanceStatus.GeneratedUtc">
+            <summary>
+            UTC timestamp when the status was generated.
             </summary>
         </member>
         <member name="T:Less3.Classes.Obj">
@@ -1486,6 +1685,111 @@
         <member name="M:Less3.Classes.RequestMetadata.#ctor">
             <summary>
             Instantiate.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.RequestReportingResult">
+            <summary>
+            Lightweight request reporting summary for dashboard and admin diagnostics.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestReportingResult.TenantId">
+            <summary>
+            Tenant scope used for the report.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestReportingResult.StartUtc">
+            <summary>
+            UTC start timestamp used for the report.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestReportingResult.EndUtc">
+            <summary>
+            UTC end timestamp used for the report.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestReportingResult.RequestCount">
+            <summary>
+            Total request count in the report range.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestReportingResult.SuccessCount">
+            <summary>
+            Successful request count in the report range.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestReportingResult.FailureCount">
+            <summary>
+            Failed request count in the report range.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestReportingResult.RequestsPerMinute">
+            <summary>
+            Average requests per minute in the report range.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestReportingResult.FailureRate">
+            <summary>
+            Fraction of failed requests.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestReportingResult.P50LatencyMs">
+            <summary>
+            P50 latency in milliseconds.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestReportingResult.P95LatencyMs">
+            <summary>
+            P95 latency in milliseconds.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestReportingResult.TopBucketsByBytes">
+            <summary>
+            Buckets with the most stored bytes.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestReportingResult.TopBucketsByRequestCount">
+            <summary>
+            Buckets with the most requests.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestReportingResult.TopFailedRequestTypes">
+            <summary>
+            Failed request types ordered by frequency.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestReportingResult.TopAccessKeys">
+            <summary>
+            Access keys ordered by request count.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestReportingResult.GeneratedUtc">
+            <summary>
+            UTC timestamp when the report was generated.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.RequestReportingTopItem">
+            <summary>
+            Ranked item in a request reporting summary.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestReportingTopItem.Name">
+            <summary>
+            Display name or identifier for the ranked item.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestReportingTopItem.Id">
+            <summary>
+            Optional object identifier for the ranked item.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestReportingTopItem.Count">
+            <summary>
+            Count represented by the ranked item.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestReportingTopItem.Bytes">
+            <summary>
+            Byte total represented by the ranked item.
             </summary>
         </member>
         <member name="T:Less3.Classes.RetentionType">
@@ -4487,6 +4791,44 @@
             <returns>List of Grant objects parsed from headers. Empty list if no grants found.</returns>
             <exception cref="T:System.ArgumentNullException">Thrown when user or config is null.</exception>
         </member>
+        <member name="T:Less3.Helpers.CredentialMaterialGenerator">
+            <summary>
+            Generates access-key and secret-key material for credentials.
+            </summary>
+        </member>
+        <member name="M:Less3.Helpers.CredentialMaterialGenerator.GenerateAccessKey">
+            <summary>
+            Generate an access key.
+            </summary>
+            <returns>Access key.</returns>
+        </member>
+        <member name="M:Less3.Helpers.CredentialMaterialGenerator.GenerateSecretKey">
+            <summary>
+            Generate a secret key.
+            </summary>
+            <returns>Secret key.</returns>
+        </member>
+        <member name="T:Less3.Helpers.CredentialResponseSanitizer">
+            <summary>
+            Builds credential response objects without leaking secret keys except when explicitly allowed.
+            </summary>
+        </member>
+        <member name="M:Less3.Helpers.CredentialResponseSanitizer.ForResponse(Less3.Classes.Credential,System.Boolean)">
+            <summary>
+            Create a response-safe credential object.
+            </summary>
+            <param name="credential">Credential.</param>
+            <param name="includeSecret">Whether to include the secret key.</param>
+            <returns>Response-safe credential.</returns>
+        </member>
+        <member name="M:Less3.Helpers.CredentialResponseSanitizer.ForResponse(System.Collections.Generic.List{Less3.Classes.Credential},System.Boolean)">
+            <summary>
+            Create response-safe credential objects.
+            </summary>
+            <param name="credentials">Credentials.</param>
+            <param name="includeSecret">Whether to include secret keys.</param>
+            <returns>Response-safe credentials.</returns>
+        </member>
         <member name="T:Less3.Helpers.HashHelper">
             <summary>
             Hash computation helper.
@@ -4612,6 +4954,12 @@
             </summary>
             <returns>Request history identifier.</returns>
         </member>
+        <member name="M:Less3.Helpers.IdGenerator.GenerateAccessKey">
+            <summary>
+            Generate an access key value.
+            </summary>
+            <returns>Access key.</returns>
+        </member>
         <member name="T:Less3.Helpers.RequestValidator">
             <summary>
             Request validation helper methods.
@@ -4731,6 +5079,26 @@
             Less3 is an S3-compatible object storage server.
             </summary>
         </member>
+        <member name="T:Less3.Requests.AuthSessionCredentialLoginRequest">
+            <summary>
+            Credential-based session login request.
+            </summary>
+        </member>
+        <member name="P:Less3.Requests.AuthSessionCredentialLoginRequest.AccessKey">
+            <summary>
+            Credential access key.
+            </summary>
+        </member>
+        <member name="P:Less3.Requests.AuthSessionCredentialLoginRequest.SecretKey">
+            <summary>
+            Credential secret key.
+            </summary>
+        </member>
+        <member name="P:Less3.Requests.AuthSessionCredentialLoginRequest.ExpirationMinutes">
+            <summary>
+            Session expiration in minutes.
+            </summary>
+        </member>
         <member name="T:Less3.Requests.AuthSessionLoginRequest">
             <summary>
             Request to create a user auth session.
@@ -4814,6 +5182,26 @@
         <member name="P:Less3.Requests.EnumerationQuery.Filters">
             <summary>
             Field filters keyed by API field name.
+            </summary>
+        </member>
+        <member name="T:Less3.Requests.MaintenanceSettingsUpdateRequest">
+            <summary>
+            Runtime maintenance settings update request.
+            </summary>
+        </member>
+        <member name="P:Less3.Requests.MaintenanceSettingsUpdateRequest.RequestHistoryRetentionDays">
+            <summary>
+            Request history retention in days.
+            </summary>
+        </member>
+        <member name="P:Less3.Requests.MaintenanceSettingsUpdateRequest.CleanupIntervalMs">
+            <summary>
+            Cleanup interval in milliseconds.
+            </summary>
+        </member>
+        <member name="P:Less3.Requests.MaintenanceSettingsUpdateRequest.OlderThanUtc">
+            <summary>
+            Optional explicit cutoff for purge operations.
             </summary>
         </member>
         <member name="T:Less3.Responses.AuthSessionLoginResponse">
@@ -5026,6 +5414,16 @@
         <member name="P:Less3.Settings.SettingsBase.RegionString">
             <summary>
             Region string.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.SettingsBase.RequestHistoryRetentionDays">
+            <summary>
+            Number of days to keep request history before maintenance purges it.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.SettingsBase.CleanupIntervalMs">
+            <summary>
+            Cleanup timer interval in milliseconds.
             </summary>
         </member>
         <member name="P:Less3.Settings.SettingsBase.Database">

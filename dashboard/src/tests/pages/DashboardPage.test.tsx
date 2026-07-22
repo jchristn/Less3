@@ -26,6 +26,23 @@ jest.mock('#/store/slice/dashboardStatsSlice', () => ({
     },
     isLoading: false,
   }),
+  useGetRequestReportQuery: () => ({
+    data: {
+      RequestsPerMinute: 1.25,
+      P95LatencyMs: 42,
+    },
+    isLoading: false,
+  }),
+}));
+
+jest.mock('#/store/slice/credentialsSlice', () => ({
+  useGetCredentialsQuery: () => ({
+    data: [
+      { Id: 'crd_active', Active: true },
+      { Id: 'crd_disabled', Active: false },
+    ],
+    isLoading: false,
+  }),
 }));
 
 jest.mock('#/store/slice/requestHistorySlice', () => ({

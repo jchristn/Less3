@@ -56,6 +56,44 @@ async function mockLess3(page: Page): Promise<void> {
     });
   });
 
+  await page.route('**/admin/reports/requests**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      headers: jsonHeaders,
+      body: JSON.stringify({
+        TenantId: 'default',
+        RequestCount: 0,
+        SuccessCount: 0,
+        FailureCount: 0,
+        RequestsPerMinute: 0,
+        FailureRate: 0,
+        P50LatencyMs: 0,
+        P95LatencyMs: 0,
+        TopBucketsByBytes: [],
+        TopBucketsByRequestCount: [],
+        TopFailedRequestTypes: [],
+        TopAccessKeys: [],
+        GeneratedUtc: '2026-07-22T00:00:00.000Z',
+      }),
+    });
+  });
+
+  await page.route('**/admin/maintenance**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      headers: jsonHeaders,
+      body: JSON.stringify({
+        RequestHistoryRetentionDays: 30,
+        CleanupIntervalMs: 3600000,
+        LastCleanupRunUtc: null,
+        RuntimeEditableSettings: ['RequestHistoryRetentionDays', 'CleanupIntervalMs'],
+        RestartRequiredSettings: ['Database', 'Storage.DiskDirectory'],
+        Configuration: {},
+        GeneratedUtc: '2026-07-22T00:00:00.000Z',
+      }),
+    });
+  });
+
   await page.route('**/admin/users**', async (route) => {
     await route.fulfill({ status: 200, headers: jsonHeaders, body: emptyArray });
   });
@@ -165,6 +203,7 @@ test.describe('Less3 dashboard smoke', () => {
     { path: '/admin/buckets', heading: 'Buckets' },
     { path: '/admin/objects', heading: 'Objects' },
     { path: '/admin/request-history', heading: 'Request History' },
+    { path: '/admin/maintenance', heading: 'Maintenance' },
     { path: '/admin/api-explorer', heading: 'API Explorer' },
     { path: '/admin/users', heading: 'Users' },
     { path: '/admin/credentials', heading: 'Credentials' },

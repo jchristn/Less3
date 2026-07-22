@@ -35,6 +35,7 @@ namespace Less3.Api.Admin
         private ConfigManager _Config;
         private BucketManager _Buckets;
         private AuthManager _Auth;
+        private CleanupManager _Cleanup;
 
         #endregion
 
@@ -45,27 +46,30 @@ namespace Less3.Api.Admin
             LoggingModule logging,
             ConfigManager config,
             BucketManager buckets,
-            AuthManager auth)
+            AuthManager auth,
+            CleanupManager cleanup)
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
             if (logging == null) throw new ArgumentNullException(nameof(logging));
             if (config == null) throw new ArgumentNullException(nameof(config));
             if (buckets == null) throw new ArgumentNullException(nameof(buckets));
             if (auth == null) throw new ArgumentNullException(nameof(auth));
+            if (cleanup == null) throw new ArgumentNullException(nameof(cleanup));
 
             _Settings = settings;
             _Logging = logging;
             _Config = config;
             _Buckets = buckets;
             _Auth = auth;
+            _Cleanup = cleanup;
         }
 
         #endregion
 
         #region Internal-Methods
-         
+
         internal async Task Process(S3Context ctx)
-        { 
+        {
             if (ctx.Http.Request.Url.Elements[1].Equals("buckets"))
             {
                 await GetBuckets(ctx);
@@ -124,6 +128,22 @@ namespace Less3.Api.Admin
             else if (ctx.Http.Request.Url.Elements[1].Equals("health"))
             {
                 await GetHealth(ctx);
+                return;
+            }
+            else if (ctx.Http.Request.Url.Elements[1].Equals("reports"))
+            {
+                await GetReports(ctx);
+                return;
+            }
+            else if (ctx.Http.Request.Url.Elements[1].Equals("maintenance"))
+            {
+                await GetMaintenance(ctx);
+                return;
+            }
+            else if (ctx.Http.Request.Url.Elements[1].Equals("effectivepermissions")
+                || ctx.Http.Request.Url.Elements[1].Equals("effective-permissions"))
+            {
+                await GetEffectivePermissions(ctx);
                 return;
             }
 
@@ -186,7 +206,7 @@ namespace Less3.Api.Admin
             }
             else
             {
-                List<User> users = _Config.GetUsers(); 
+                List<User> users = _Config.GetUsers();
                 ctx.Response.StatusCode = 200;
                 ctx.Response.ContentType = "application/json";
                 await ctx.Response.Send(SerializationHelper.SerializeJson(users, true));
@@ -210,16 +230,16 @@ namespace Less3.Api.Admin
                 {
                     ctx.Response.StatusCode = 200;
                     ctx.Response.ContentType = "application/json";
-                    await ctx.Response.Send(SerializationHelper.SerializeJson(cred, true));
+                    await ctx.Response.Send(SerializationHelper.SerializeJson(CredentialResponseSanitizer.ForResponse(cred, false), true));
                     return;
                 }
             }
             else
             {
-                List<Credential> creds = _Config.GetCredentials(); 
+                List<Credential> creds = _Config.GetCredentials();
                 ctx.Response.StatusCode = 200;
                 ctx.Response.ContentType = "application/json";
-                await ctx.Response.Send(SerializationHelper.SerializeJson(creds, true));
+                await ctx.Response.Send(SerializationHelper.SerializeJson(CredentialResponseSanitizer.ForResponse(creds, false), true));
                 return;
             }
         }
@@ -543,6 +563,8 @@ namespace Less3.Api.Admin
             result.StoragePathWritable = IsWritableDirectory(result.StoragePath);
             result.FreeDiskBytes = GetFreeDiskBytes(result.StoragePath);
             result.TempUploadCount = GetFileCount(result.TempPath);
+            result.RequestHistoryRetentionDays = _Settings.RequestHistoryRetentionDays;
+            result.LastCleanupRunUtc = _Cleanup.LastCleanupRunUtc;
             result.GeneratedUtc = DateTime.UtcNow;
 
             try
@@ -558,6 +580,386 @@ namespace Less3.Api.Admin
             ctx.Response.StatusCode = result.DatabaseReachable && result.StoragePathWritable ? 200 : 503;
             ctx.Response.ContentType = "application/json";
             await ctx.Response.Send(SerializationHelper.SerializeJson(result, true));
+        }
+
+        private async Task GetReports(S3Context ctx)
+        {
+            if (ctx.Http.Request.Url.Elements.Length < 3
+                || ctx.Http.Request.Url.Elements[2].Equals("requests", StringComparison.OrdinalIgnoreCase))
+            {
+                await SendJson(ctx, BuildRequestReport(ctx)).ConfigureAwait(false);
+                return;
+            }
+
+            await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest).ConfigureAwait(false);
+        }
+
+        private async Task GetMaintenance(S3Context ctx)
+        {
+            if (ctx.Http.Request.Url.Elements.Length == 2
+                || ctx.Http.Request.Url.Elements[2].Equals("status", StringComparison.OrdinalIgnoreCase)
+                || ctx.Http.Request.Url.Elements[2].Equals("settings", StringComparison.OrdinalIgnoreCase)
+                || ctx.Http.Request.Url.Elements[2].Equals("config", StringComparison.OrdinalIgnoreCase))
+            {
+                await SendJson(ctx, BuildMaintenanceStatus()).ConfigureAwait(false);
+                return;
+            }
+
+            if (ctx.Http.Request.Url.Elements[2].Equals("migrationstatus", StringComparison.OrdinalIgnoreCase)
+                || ctx.Http.Request.Url.Elements[2].Equals("migration-status", StringComparison.OrdinalIgnoreCase))
+            {
+                await SendJson(ctx, BuildMigrationStatus()).ConfigureAwait(false);
+                return;
+            }
+
+            await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest).ConfigureAwait(false);
+        }
+
+        private async Task GetEffectivePermissions(S3Context ctx)
+        {
+            string principalType = GetQueryValue(ctx, "principalType");
+            string principalId = GetQueryValue(ctx, "principalId");
+            string resourceType = GetQueryValue(ctx, "resourceType");
+            string resourceId = GetQueryValue(ctx, "resourceId");
+            string operation = GetQueryValue(ctx, "operation");
+
+            if (String.IsNullOrEmpty(principalType)
+                || String.IsNullOrEmpty(principalId)
+                || String.IsNullOrEmpty(resourceType)
+                || String.IsNullOrEmpty(operation))
+            {
+                await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest).ConfigureAwait(false);
+                return;
+            }
+
+            await SendJson(
+                ctx,
+                BuildEffectivePermission(GetTenantId(ctx), principalType, principalId, resourceType, resourceId, operation))
+                .ConfigureAwait(false);
+        }
+
+        private RequestReportingResult BuildRequestReport(S3Context ctx)
+        {
+            DateTime startUtc = ParseUtc(GetQueryValue(ctx, "startUtc"), DateTime.UtcNow.AddHours(-1));
+            DateTime endUtc = ParseUtc(GetQueryValue(ctx, "endUtc"), DateTime.UtcNow);
+            if (endUtc < startUtc)
+            {
+                DateTime swap = startUtc;
+                startUtc = endUtc;
+                endUtc = swap;
+            }
+
+            string tenantId = GetTenantId(ctx);
+            List<RequestHistory> entries = _Config.GetRequestHistoriesInRange(startUtc, endUtc)
+                .Where(e => e.TenantId != null && e.TenantId.Equals(tenantId, StringComparison.Ordinal))
+                .ToList();
+
+            RequestReportingResult result = new RequestReportingResult();
+            result.TenantId = tenantId;
+            result.StartUtc = startUtc;
+            result.EndUtc = endUtc;
+            result.RequestCount = entries.Count;
+            result.SuccessCount = entries.Count(e => e.Success);
+            result.FailureCount = entries.Count(e => !e.Success);
+            result.FailureRate = result.RequestCount == 0 ? 0 : (double)result.FailureCount / result.RequestCount;
+
+            double minutes = Math.Max(1, (endUtc - startUtc).TotalMinutes);
+            result.RequestsPerMinute = result.RequestCount / minutes;
+
+            List<long> latencies = entries
+                .Select(e => e.DurationMs)
+                .Where(d => d >= 0)
+                .OrderBy(d => d)
+                .ToList();
+            result.P50LatencyMs = Percentile(latencies, 0.50);
+            result.P95LatencyMs = Percentile(latencies, 0.95);
+
+            result.TopFailedRequestTypes = entries
+                .Where(e => !e.Success && !String.IsNullOrEmpty(e.RequestType))
+                .GroupBy(e => e.RequestType)
+                .OrderByDescending(g => g.Count())
+                .ThenBy(g => g.Key)
+                .Take(10)
+                .Select(g => new RequestReportingTopItem { Name = g.Key, Count = g.Count() })
+                .ToList();
+
+            result.TopAccessKeys = entries
+                .Where(e => !String.IsNullOrEmpty(e.AccessKey))
+                .GroupBy(e => e.AccessKey)
+                .OrderByDescending(g => g.Count())
+                .ThenBy(g => g.Key)
+                .Take(10)
+                .Select(g => new RequestReportingTopItem { Name = g.Key, Count = g.Count() })
+                .ToList();
+
+            result.TopBucketsByRequestCount = entries
+                .Select(e => ExtractBucketName(e.RequestUrl))
+                .Where(name => !String.IsNullOrEmpty(name))
+                .GroupBy(name => name)
+                .OrderByDescending(g => g.Count())
+                .ThenBy(g => g.Key)
+                .Take(10)
+                .Select(g => new RequestReportingTopItem { Name = g.Key, Count = g.Count() })
+                .ToList();
+
+            foreach (Bucket bucket in _Config.GetBuckets(tenantId))
+            {
+                BucketStatistics stats = new BucketStatistics(bucket.Name, bucket.Id, 0, 0);
+                BucketClient client = _Buckets.GetClient(tenantId, bucket.Name);
+                if (client != null)
+                {
+                    stats = client.GetFullStatistics();
+                }
+
+                result.TopBucketsByBytes.Add(new RequestReportingTopItem
+                {
+                    Id = bucket.Id,
+                    Name = bucket.Name,
+                    Count = stats.Objects,
+                    Bytes = stats.Bytes
+                });
+            }
+
+            result.TopBucketsByBytes = result.TopBucketsByBytes
+                .OrderByDescending(b => b.Bytes)
+                .ThenBy(b => b.Name)
+                .Take(10)
+                .ToList();
+
+            result.GeneratedUtc = DateTime.UtcNow;
+            return result;
+        }
+
+        private MaintenanceStatus BuildMaintenanceStatus()
+        {
+            MaintenanceStatus status = new MaintenanceStatus();
+            status.RequestHistoryRetentionDays = _Settings.RequestHistoryRetentionDays;
+            status.CleanupIntervalMs = _Cleanup.CleanupIntervalMs;
+            status.LastCleanupRunUtc = _Cleanup.LastCleanupRunUtc;
+            status.RuntimeEditableSettings.Add("RequestHistoryRetentionDays");
+            status.RuntimeEditableSettings.Add("CleanupIntervalMs");
+            status.RestartRequiredSettings.Add("Webserver.Hostname");
+            status.RestartRequiredSettings.Add("Webserver.Port");
+            status.RestartRequiredSettings.Add("Database");
+            status.RestartRequiredSettings.Add("Storage.DiskDirectory");
+            status.RestartRequiredSettings.Add("Storage.TempDirectory");
+            status.RestartRequiredSettings.Add("BaseDomain");
+            status.Configuration = RedactedConfigurationSummary();
+            status.GeneratedUtc = DateTime.UtcNow;
+            return status;
+        }
+
+        private Dictionary<string, object> BuildMigrationStatus()
+        {
+            return new Dictionary<string, object>
+            {
+                { "DatabaseType", _Settings.Database.Type.ToString() },
+                { "MigrationsAppliedOnStartup", true },
+                { "IdempotentStartupMigrations", true },
+                { "DefaultTenantSeeded", _Config.TenantExists("default") },
+                { "DefaultAdminUserSeeded", _Config.GetUserById("default", "usr_default_admin") != null },
+                { "DefaultCredentialSeeded", _Config.GetCredentialByAccessKey("default") != null },
+                { "GeneratedUtc", DateTime.UtcNow }
+            };
+        }
+
+        private Dictionary<string, object> RedactedConfigurationSummary()
+        {
+            Dictionary<string, object> database = new Dictionary<string, object>
+            {
+                { "Type", _Settings.Database.Type.ToString() },
+                { "Filename", _Settings.Database.Filename },
+                { "Hostname", _Settings.Database.Hostname },
+                { "Port", _Settings.Database.Port },
+                { "Username", _Settings.Database.Username },
+                { "Password", "[redacted]" },
+                { "Instance", _Settings.Database.Instance },
+                { "DatabaseName", _Settings.Database.DatabaseName },
+                { "RequireEncryption", _Settings.Database.RequireEncryption },
+                { "LogQueries", _Settings.Database.LogQueries },
+                { "RequiresRestart", true }
+            };
+
+            Dictionary<string, object> webserver = new Dictionary<string, object>
+            {
+                { "Hostname", _Settings.Webserver.Hostname },
+                { "Port", _Settings.Webserver.Port },
+                { "RequiresRestart", true }
+            };
+
+            Dictionary<string, object> storage = new Dictionary<string, object>
+            {
+                { "TempDirectory", _Settings.Storage.TempDirectory },
+                { "StorageType", _Settings.Storage.StorageType.ToString() },
+                { "DiskDirectory", _Settings.Storage.DiskDirectory },
+                { "RequiresRestart", true }
+            };
+
+            Dictionary<string, object> logging = new Dictionary<string, object>
+            {
+                { "SyslogServerIp", _Settings.Logging.SyslogServerIp },
+                { "SyslogServerPort", _Settings.Logging.SyslogServerPort },
+                { "MinimumLevel", _Settings.Logging.MinimumLevel.ToString() },
+                { "LogHttpRequests", _Settings.Logging.LogHttpRequests },
+                { "LogS3Requests", _Settings.Logging.LogS3Requests },
+                { "LogExceptions", _Settings.Logging.LogExceptions },
+                { "LogSignatureValidation", _Settings.Logging.LogSignatureValidation },
+                { "ConsoleLogging", _Settings.Logging.ConsoleLogging },
+                { "DiskLogging", _Settings.Logging.DiskLogging },
+                { "DiskDirectory", _Settings.Logging.DiskDirectory }
+            };
+
+            return new Dictionary<string, object>
+            {
+                { "EnableConsole", _Settings.EnableConsole },
+                { "ValidateSignatures", _Settings.ValidateSignatures },
+                { "BaseDomain", _Settings.BaseDomain },
+                { "HeaderApiKey", _Settings.HeaderApiKey },
+                { "AdminApiKey", "[redacted]" },
+                { "RegionString", _Settings.RegionString },
+                { "RequestHistoryRetentionDays", _Settings.RequestHistoryRetentionDays },
+                { "CleanupIntervalMs", _Settings.CleanupIntervalMs },
+                { "Database", database },
+                { "Webserver", webserver },
+                { "Storage", storage },
+                { "Logging", logging }
+            };
+        }
+
+        private EffectivePermissionResult BuildEffectivePermission(
+            string tenantId,
+            string principalType,
+            string principalId,
+            string resourceType,
+            string resourceId,
+            string operation)
+        {
+            EffectivePermissionResult result = new EffectivePermissionResult();
+            result.TenantId = tenantId;
+            result.PrincipalType = principalType;
+            result.PrincipalId = principalId;
+            result.ResourceType = resourceType;
+            result.ResourceId = resourceId;
+            result.Operation = operation;
+
+            User user = null;
+            Credential credential = null;
+
+            if (principalType.Equals("User", StringComparison.OrdinalIgnoreCase))
+            {
+                user = _Config.GetUserById(tenantId, principalId);
+                if (user == null)
+                {
+                    result.Reason = "User was not found.";
+                    return result;
+                }
+            }
+            else if (principalType.Equals("Credential", StringComparison.OrdinalIgnoreCase))
+            {
+                credential = _Config.GetCredentialById(tenantId, principalId);
+                if (credential == null)
+                {
+                    result.Reason = "Credential was not found.";
+                    return result;
+                }
+
+                user = _Config.GetUserById(tenantId, credential.UserId);
+            }
+            else
+            {
+                result.Reason = "Unsupported principal type.";
+                return result;
+            }
+
+            List<RoleAssignment> assignments = _Config.EnumerateRoleAssignments(new EnumerationQuery
+            {
+                TenantId = tenantId,
+                Limit = 1000,
+                Filters = new Dictionary<string, string>
+                {
+                    { "principalType", principalType },
+                    { "principalId", principalId }
+                }
+            }).Items;
+
+            List<Permission> permissions = _Config.EnumeratePermissions(new EnumerationQuery
+            {
+                TenantId = tenantId,
+                Limit = 1000
+            }).Items;
+
+            if (assignments != null)
+            {
+                foreach (RoleAssignment assignment in assignments.Where(a => a.Active))
+                {
+                    if (!AuthManager.AssignmentScopeMatches(tenantId, assignment, resourceType, resourceId)) continue;
+
+                    Role role = _Config.GetRoleById(tenantId, assignment.RoleId);
+                    if (role == null || !role.Active) continue;
+
+                    result.MatchingAssignments.Add(assignment);
+
+                    foreach (Permission permission in permissions.Where(p => p.Active && p.RoleId.Equals(role.Id, StringComparison.Ordinal)))
+                    {
+                        if (!AuthManager.PermissionResourceMatches(permission.ResourceType, resourceType)) continue;
+                        if (!AuthManager.PermissionOperationMatches(permission.Operation, operation)) continue;
+
+                        result.MatchingPermissions.Add(permission);
+                        result.HasDecision = true;
+
+                        if (!permission.Permit)
+                        {
+                            result.Permitted = false;
+                            result.Reason = "RBAC deny from role " + role.Id + " permission " + permission.Id + ".";
+                            result.GeneratedUtc = DateTime.UtcNow;
+                            return result;
+                        }
+
+                        if (!result.Permitted)
+                        {
+                            result.Permitted = true;
+                            result.Reason = "RBAC permit from role " + role.Id + " permission " + permission.Id + ".";
+                        }
+                    }
+                }
+            }
+
+            if (result.HasDecision)
+            {
+                result.GeneratedUtc = DateTime.UtcNow;
+                return result;
+            }
+
+            RequestContext requestContext = new RequestContext();
+            requestContext.IsAuthenticated = true;
+            requestContext.TenantId = tenantId;
+            requestContext.UserId = user?.Id;
+            requestContext.CredentialId = credential?.Id;
+            requestContext.IsAdmin = user?.IsAdmin == true;
+            requestContext.IsTenantAdmin = user?.IsTenantAdmin == true;
+
+            if (requestContext.IsAdmin)
+            {
+                result.HasDecision = true;
+                result.Permitted = true;
+                result.IsAdminBypass = true;
+                result.Reason = "Principal is a global administrator.";
+            }
+            else if (requestContext.IsTenantAdmin
+                && AuthManager.CanTenantAdminBypass(requestContext, resourceType, resourceId))
+            {
+                result.HasDecision = true;
+                result.Permitted = true;
+                result.IsTenantAdminBypass = true;
+                result.Reason = "Principal is a tenant administrator.";
+            }
+            else
+            {
+                result.Reason = "No matching RBAC permission.";
+            }
+
+            result.GeneratedUtc = DateTime.UtcNow;
+            return result;
         }
 
         private static long GetUptimeSeconds()
@@ -620,6 +1022,68 @@ namespace Less3.Api.Admin
             }
         }
 
+        private static DateTime ParseUtc(string value, DateTime fallback)
+        {
+            if (String.IsNullOrEmpty(value)) return fallback;
+
+            if (DateTime.TryParse(
+                value,
+                null,
+                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+                out DateTime parsed))
+            {
+                return parsed;
+            }
+
+            return fallback;
+        }
+
+        private static double Percentile(List<long> sortedValues, double percentile)
+        {
+            if (sortedValues == null || sortedValues.Count == 0) return 0;
+            if (sortedValues.Count == 1) return sortedValues[0];
+
+            double index = (sortedValues.Count - 1) * percentile;
+            int lower = (int)Math.Floor(index);
+            int upper = (int)Math.Ceiling(index);
+            if (lower == upper) return sortedValues[lower];
+
+            double weight = index - lower;
+            return sortedValues[lower] + ((sortedValues[upper] - sortedValues[lower]) * weight);
+        }
+
+        private static string ExtractBucketName(string requestUrl)
+        {
+            if (String.IsNullOrEmpty(requestUrl)) return null;
+
+            string path = requestUrl;
+            int queryIndex = path.IndexOf("?", StringComparison.Ordinal);
+            if (queryIndex >= 0) path = path.Substring(0, queryIndex);
+
+            if (Uri.TryCreate(path, UriKind.Absolute, out Uri uri))
+            {
+                path = uri.AbsolutePath;
+            }
+
+            path = path.Trim('/');
+            if (String.IsNullOrEmpty(path)) return null;
+
+            string firstSegment = path.Split('/')[0];
+            if (String.IsNullOrEmpty(firstSegment)) return null;
+
+            string normalized = firstSegment.ToLowerInvariant();
+            if (normalized.Equals("api")
+                || normalized.Equals("admin")
+                || normalized.Equals("openapi.json")
+                || normalized.Equals("favicon.ico")
+                || normalized.Equals("robots.txt"))
+            {
+                return null;
+            }
+
+            return firstSegment;
+        }
+
         private static string GetTenantId(S3Context ctx)
         {
             string tenantId = GetQueryValue(ctx, "tenantId");
@@ -649,6 +1113,26 @@ namespace Less3.Api.Admin
 
             string sortDirection = GetQueryValue(ctx, "sortDirection");
             if (!String.IsNullOrEmpty(sortDirection)) query.SortDirection = sortDirection;
+
+            string startUtc = GetQueryValue(ctx, "startUtc");
+            if (!String.IsNullOrEmpty(startUtc) && DateTime.TryParse(
+                startUtc,
+                null,
+                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+                out DateTime parsedStart))
+            {
+                query.StartUtc = parsedStart;
+            }
+
+            string endUtc = GetQueryValue(ctx, "endUtc");
+            if (!String.IsNullOrEmpty(endUtc) && DateTime.TryParse(
+                endUtc,
+                null,
+                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+                out DateTime parsedEnd))
+            {
+                query.EndUtc = parsedEnd;
+            }
 
             return query;
         }

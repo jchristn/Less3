@@ -471,6 +471,8 @@ namespace Test.Shared
                 HeaderApiKey = "x-api-key",
                 AdminApiKey = _AdminApiKey,
                 RegionString = "us-west-1",
+                RequestHistoryRetentionDays = 30,
+                CleanupIntervalMs = 3600000,
                 Database = new
                 {
                     Type = "Sqlite",

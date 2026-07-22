@@ -7,6 +7,7 @@ import type {
   CredentialResponse,
   CreateCredentialRequest,
   UpdateCredentialRequest,
+  CredentialActionParams,
   DeleteCredentialParams,
   DeleteCredentialResponse,
   GetCredentialsParams,
@@ -23,6 +24,7 @@ export type {
   CredentialResponse,
   CreateCredentialRequest,
   UpdateCredentialRequest,
+  CredentialActionParams,
   DeleteCredentialParams,
   DeleteCredentialResponse,
   GetCredentialsParams,
@@ -90,6 +92,28 @@ const credentialsSliceInstance = enhancedSdk.injectEndpoints({
         getCredentialTags(Id),
     }),
 
+    rotateCredential: build.mutation<CredentialResponse, CredentialActionParams>({
+      query: ({ id }: CredentialActionParams) => ({
+        url: buildApiUrl(`admin/credentials/${id}/rotate`),
+        method: 'POST',
+        body: {},
+      }),
+      transformResponse: (response: any): Credential => response,
+      invalidatesTags: (_result: Credential | undefined, _error: unknown, { id }: CredentialActionParams) =>
+        getCredentialTags(id),
+    }),
+
+    disableCredential: build.mutation<CredentialResponse, CredentialActionParams>({
+      query: ({ id }: CredentialActionParams) => ({
+        url: buildApiUrl(`admin/credentials/${id}/disable`),
+        method: 'POST',
+        body: {},
+      }),
+      transformResponse: (response: any): Credential => response,
+      invalidatesTags: (_result: Credential | undefined, _error: unknown, { id }: CredentialActionParams) =>
+        getCredentialTags(id),
+    }),
+
     deleteCredential: build.mutation<DeleteCredentialResponse, DeleteCredentialParams>({
       query: ({ id }: DeleteCredentialParams) => ({
         url: buildApiUrl(`admin/credentials/${id}`),
@@ -110,5 +134,7 @@ export const {
   useGetCredentialByIdQuery,
   useCreateCredentialMutation,
   useUpdateCredentialMutation,
+  useRotateCredentialMutation,
+  useDisableCredentialMutation,
   useDeleteCredentialMutation,
 } = credentialsSliceInstance;

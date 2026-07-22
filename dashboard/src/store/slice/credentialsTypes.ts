@@ -5,8 +5,11 @@ export interface Credential {
   UserId: string;
   Description: string;
   AccessKey: string;
-  SecretKey: string;
+  SecretKey?: string | null;
   IsBase64: boolean;
+  Active?: boolean;
+  LastUsedUtc?: string | null;
+  LastFailedUtc?: string | null;
   CreatedUtc: string;
   [key: string]: any;
 }
@@ -18,8 +21,8 @@ export interface CreateCredentialRequest {
   Id?: string;
   UserId: string;
   Description: string;
-  AccessKey: string;
-  SecretKey: string;
+  AccessKey?: string;
+  SecretKey?: string;
   [key: string]: any;
 }
 
@@ -28,9 +31,14 @@ export interface UpdateCredentialRequest {
   UserId: string;
   Description: string;
   AccessKey: string;
-  SecretKey: string;
+  SecretKey?: string;
+  Active?: boolean;
   IsBase64?: boolean;
   [key: string]: any;
+}
+
+export interface CredentialActionParams {
+  id: string;
 }
 
 export interface DeleteCredentialParams {

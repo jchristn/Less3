@@ -176,6 +176,15 @@ namespace Less3.Helpers
             return Generate(Constants.IdPrefixes.RequestHistory);
         }
 
+        /// <summary>
+        /// Generate an access key value.
+        /// </summary>
+        /// <returns>Access key.</returns>
+        public static string GenerateAccessKey()
+        {
+            return Generate(Constants.IdPrefixes.AccessKey);
+        }
+
         private static string Generate(string prefix)
         {
             return _Generator.GenerateKSortable(prefix, MaximumLength);

@@ -277,16 +277,11 @@ namespace Less3.Api.S3
             RequestValidator.ValidateAuthorization(md, _Logging, header);
             RequestValidator.ValidateBucketExists(md, _Logging, header);
              
-            if (md.BucketTags == null || md.BucketTags.Count == 0)
-            {
-                throw new S3Exception(new Error(ErrorCode.NoSuchTagSetError));
-            }
-
             Tagging tags = new Tagging();
             tags.Tags = new TagSet();
             tags.Tags.Tags = new List<Tag>();
 
-            foreach (BucketTag curr in md.BucketTags)
+            foreach (BucketTag curr in md.BucketTags ?? new List<BucketTag>())
             {
                 Tag currTag = new Tag();
                 currTag.Key = curr.Key;
@@ -438,13 +433,6 @@ namespace Less3.Api.S3
 
             if (md.Bucket != null || md.BucketClient != null)
             {
-                if (md.Bucket != null && md.Bucket.OwnerId == md.User.Id)
-                {
-                    _Logging.Info(header + "bucket already exists and owned by same user, returning success");
-                    ctx.Response.Headers.Add("Location", "/" + ctx.Request.Bucket);
-                    return;
-                }
-
                 _Logging.Warn(header + "bucket already exists");
                 throw new S3Exception(new Error(ErrorCode.BucketAlreadyExists));
             }
@@ -585,6 +573,12 @@ namespace Less3.Api.S3
             RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
             RequestValidator.ValidateAuthorization(md, _Logging, header);
             RequestValidator.ValidateBucketExists(md, _Logging, header);
+
+            if (S3TagValidator.IsInvalid(tagging))
+            {
+                _Logging.Warn(header + "invalid bucket tag set");
+                throw new S3Exception(new Error(ErrorCode.InvalidRequest));
+            }
 
             md.BucketClient.DeleteBucketTags();
 

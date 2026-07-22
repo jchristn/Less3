@@ -68,6 +68,12 @@ namespace Less3.Api.S3
             RequestValidator.ValidateBucketExists(md, _Logging, header);
 
             long versionId = RequestValidator.ParseVersionId(ctx);
+            if (md.Obj == null)
+            {
+                _Logging.Info(header + "object " + ctx.Request.Key + " does not exist, returning idempotent delete success");
+                return;
+            }
+
             RequestValidator.ValidateObjectExists(md.Obj, versionId, _Logging, header);
             RequestValidator.CheckDeleteMarker(md.Obj, ctx);
 
@@ -671,6 +677,12 @@ namespace Less3.Api.S3
             RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
             RequestValidator.ValidateAuthorization(md, _Logging, header);
             RequestValidator.ValidateBucketExists(md, _Logging, header);
+
+            if (S3TagValidator.IsInvalid(tagging))
+            {
+                _Logging.Warn(header + "invalid object tag set");
+                throw new S3Exception(new Error(ErrorCode.InvalidRequest));
+            }
 
             long versionId = RequestValidator.ParseVersionId(ctx);
             RequestValidator.ValidateObjectExists(md.Obj, versionId, _Logging, header);

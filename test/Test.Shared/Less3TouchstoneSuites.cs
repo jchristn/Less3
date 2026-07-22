@@ -258,13 +258,13 @@ namespace Test.Shared
                 cases: new List<TestCaseDescriptor>
                 {
                     Active("Tenants", "Tenant_Create_DefaultsActive", "Tenant REST create defaults and active flag round-trip", Less3RestTenantCrudEnumerateAndExistsAsync),
-                    Planned("Tenants", "Tenant_Create_DuplicateIdReturnsConflict", "Duplicate tenant id conflict behavior needs exact active assertion."),
+                    Active("Tenants", "Tenant_Create_DuplicateIdReturnsConflict", "Duplicate tenant id returns conflict", TenantNegativeBehaviorAsync),
                     Planned("Tenants", "Tenant_Create_DuplicateNameAllowedAcrossDifferentTenantScopesWhereApplicable", "Tenant name scoping behavior needs exact active assertion."),
                     Active("Tenants", "Tenant_Read_ById", "Tenant REST read by id works", Less3RestTenantCrudEnumerateAndExistsAsync),
-                    Planned("Tenants", "Tenant_Read_NotFound", "Tenant not-found behavior needs exact active assertion."),
+                    Active("Tenants", "Tenant_Read_NotFound", "Tenant read returns not found for missing ids", TenantNegativeBehaviorAsync),
                     Active("Tenants", "Tenant_Enumerate_PaginatesAndSorts", "Tenant REST enumerate supports limit/offset/sort inputs", Less3RestTenantCrudEnumerateAndExistsAsync),
                     Active("Tenants", "Tenant_Update_NameStatusAndMetadata", "Tenant REST update round-trips status", Less3RestTenantCrudEnumerateAndExistsAsync),
-                    Planned("Tenants", "Tenant_Update_NotFound", "Tenant update-not-found behavior needs exact active assertion."),
+                    Active("Tenants", "Tenant_Update_NotFound", "Tenant update returns not found for missing ids", TenantNegativeBehaviorAsync),
                     Active("Tenants", "Tenant_Delete_EmptyTenant", "Tenant REST delete removes an empty tenant", Less3RestTenantCrudEnumerateAndExistsAsync),
                     Planned("Tenants", "Tenant_Delete_WithOwnedResourcesRequiresExplicitDestroy", "Tenant delete-with-owned-resources guard needs product-level behavior."),
                     Active("Tenants", "Tenant_Exists_ReturnsTrueForExistingTenant", "Tenant REST exists returns true", Less3RestTenantCrudEnumerateAndExistsAsync),
@@ -325,24 +325,24 @@ namespace Test.Shared
                 {
                     Active("AuthenticationAndSessions", "S3Auth_LoadsCredentialByGloballyUniqueAccessKey", "S3 auth loads credentials by globally unique access key", ContainerBootstrapDefaultCredentialAndS3ListBucketsAsync),
                     Active("AuthenticationAndSessions", "S3Auth_DerivesTenantFromCredential", "S3 auth derives tenant from credential access key", S3SameBucketNameDifferentTenantsAsync),
-                    Planned("AuthenticationAndSessions", "S3Auth_RejectsUnknownAccessKey", "Unknown access key rejection needs exact signature-path active assertion."),
+                    Active("AuthenticationAndSessions", "S3Auth_RejectsUnknownAccessKey", "S3 auth rejects unknown access keys", S3RejectsUnknownAccessKeyAsync),
                     Active("AuthenticationAndSessions", "S3Auth_RejectsInactiveCredential", "S3 auth rejects inactive credentials", S3CredentialLastUsedAndLastFailedTimestampsAsync),
-                    Planned("AuthenticationAndSessions", "S3Auth_RejectsInactiveUser", "Inactive user rejection needs exact active assertion."),
+                    Active("AuthenticationAndSessions", "S3Auth_RejectsInactiveUser", "S3 auth rejects inactive users", InactiveUserBlocksLoginAndS3CredentialAuthAsync),
                     Active("AuthenticationAndSessions", "S3Auth_RejectsInactiveTenant", "S3 auth rejects inactive tenants", InactiveTenantBlocksLoginAndS3CredentialAuthAsync),
                     Planned("AuthenticationAndSessions", "S3Auth_RejectsCredentialUserTenantMismatch", "Credential/user tenant mismatch rejection needs exact active assertion."),
                     Active("AuthenticationAndSessions", "S3Auth_UpdatesLastUsedUtcOnSuccess", "S3 auth updates last-used timestamp", S3CredentialLastUsedAndLastFailedTimestampsAsync),
                     Active("AuthenticationAndSessions", "S3Auth_UpdatesLastFailedUtcOnFailure", "S3 auth updates last-failed timestamp", S3CredentialLastUsedAndLastFailedTimestampsAsync),
                     Active("AuthenticationAndSessions", "DashboardLogin_ValidAdminCreatesSession", "Dashboard session login creates a session", AuthSessionLoginValidateAndRevokeAsync),
                     Active("AuthenticationAndSessions", "DashboardLogin_InvalidPasswordFails", "Dashboard session login rejects an invalid password", AuthSessionLoginValidateAndRevokeAsync),
-                    Planned("AuthenticationAndSessions", "DashboardLogin_InactiveUserFails", "Inactive user login rejection needs exact active assertion."),
+                    Active("AuthenticationAndSessions", "DashboardLogin_InactiveUserFails", "Dashboard login rejects inactive users", InactiveUserBlocksLoginAndS3CredentialAuthAsync),
                     Active("AuthenticationAndSessions", "DashboardLogin_InactiveTenantFails", "Dashboard session login rejects inactive tenants", InactiveTenantBlocksLoginAndS3CredentialAuthAsync),
                     Active("AuthenticationAndSessions", "Session_ValidateActiveToken", "Session validate accepts active tokens", AuthSessionLoginValidateAndRevokeAsync),
-                    Planned("AuthenticationAndSessions", "Session_RejectExpiredToken", "Expired session behavior needs controllable expiration fixture."),
+                    Active("AuthenticationAndSessions", "Session_RejectExpiredToken", "Session validate rejects expired tokens", ExpiredSessionRejectedAsync),
                     Active("AuthenticationAndSessions", "Session_RejectRevokedToken", "Session validate rejects revoked tokens", AuthSessionLoginValidateAndRevokeAsync),
                     Active("AuthenticationAndSessions", "Session_RevokeSingleSession", "Session revoke invalidates a single token", AuthSessionLoginValidateAndRevokeAsync),
                     Planned("AuthenticationAndSessions", "Session_RevokeAllForUser", "Revoke-all sessions endpoint needs product behavior."),
                     Active("AuthenticationAndSessions", "Session_TokenHashNeverReturnsRawToken", "Session APIs do not expose token hashes", AuthSessionLoginValidateAndRevokeAsync),
-                    Planned("AuthenticationAndSessions", "Session_TenantBoundCannotCrossTenant", "Cross-tenant session reads need exact active assertion."),
+                    Active("AuthenticationAndSessions", "Session_TenantBoundCannotCrossTenant", "Session tokens cannot cross tenant authorization boundaries", SessionTenantBoundCannotCrossTenantAsync),
                     Planned("AuthenticationAndSessions", "DirectCredentialAuth_AllowedOnlyForConfiguredAdminFlows", "Direct credential auth policy needs product behavior."),
                     Planned("AuthenticationAndSessions", "AuthContext_ContainsTenantUserCredentialSessionPrincipalScopesAndAdminFlags", "Full auth context shape needs exact active assertion across session and credential flows."),
                     Planned("AuthenticationAndSessions", "AuthContext_UnauthenticatedRequestsRemainExplicit", "Unauthenticated context assertion needs exact active coverage.")
@@ -397,7 +397,7 @@ namespace Test.Shared
                     Active("S3ServiceAndBuckets", "S3_ListBuckets_ReturnsOnlyCredentialTenantBuckets", "S3 ListBuckets returns only buckets in the authenticated credential tenant", S3ListBucketsReturnsOnlyCredentialTenantBucketsAsync),
                     Active("S3ServiceAndBuckets", "S3_ListBuckets_EmptyTenantReturnsEmptyList", "S3 ListBuckets returns an empty set for a tenant without buckets", S3ListBucketsEmptyTenantReturnsEmptyListAsync),
                     Active("S3ServiceAndBuckets", "S3_CreateBucket_SucceedsForAuthorizedTenant", "S3 CreateBucket succeeds for an authorized tenant credential", S3CreateBucketSucceedsForAuthorizedTenantAsync),
-                    Planned("S3ServiceAndBuckets", "S3_CreateBucket_DuplicateNameSameTenantFails", "Current S3 create-bucket behavior is idempotent for the same owner and must be reconciled with the v3 contract."),
+                    Active("S3ServiceAndBuckets", "S3_CreateBucket_DuplicateNameSameTenantFails", "S3 CreateBucket rejects duplicate bucket names in the same tenant", S3CreateBucketDuplicateNameSameTenantFailsAsync),
                     Active("S3ServiceAndBuckets", "S3_CreateBucket_SameNameDifferentTenantSucceeds", "S3 CreateBucket allows the same bucket name in different tenants", S3SameBucketNameDifferentTenantsAsync),
                     Active("S3ServiceAndBuckets", "S3_CreateBucket_InvalidNameFails", "S3 CreateBucket rejects invalid bucket names", S3CreateBucketInvalidNameFailsAsync),
                     Active("S3ServiceAndBuckets", "S3_CreateBucket_ReservedRouteNameFails", "S3 CreateBucket rejects reserved route names", BucketReservedRouteNamesRejectedAcrossApisAsync),
@@ -450,7 +450,7 @@ namespace Test.Shared
                     Planned("S3Objects", "S3_CopyObject_CrossBucketSameTenant", "CopyObject implementation pending active coverage."),
                     Planned("S3Objects", "S3_CopyObject_CrossTenantFails", "CopyObject implementation pending active coverage."),
                     Active("S3Objects", "S3_DeleteObject_Existing", "S3 DeleteObject removes an existing object", S3DeleteObjectExistingAsync),
-                    Planned("S3Objects", "S3_DeleteObject_MissingIsIdempotent", "Current DeleteObject validates object existence and must be reconciled with the v3 contract."),
+                    Active("S3Objects", "S3_DeleteObject_MissingIsIdempotent", "S3 DeleteObject succeeds for missing keys", S3DeleteObjectMissingIsIdempotentAsync),
                     Active("S3Objects", "S3_DeleteObjects_Multiple", "S3 DeleteObjects removes multiple objects", S3DeleteObjectsMultipleAsync),
                     Active("S3Objects", "S3_DeleteObjects_MixedExistingAndMissing", "S3 DeleteObjects reports mixed existing and missing keys", S3DeleteObjectsMixedExistingAndMissingAsync),
                     Planned("S3Objects", "S3_ObjectKeys_WithSpacesUnicodeAndReservedCharacters", "Object-key edge coverage needs raw URL encoding assertions."),
@@ -495,17 +495,17 @@ namespace Test.Shared
                     Active("S3AclAndTagging", "S3_BucketAcl_ReadDefaultOwner", "S3 bucket ACL reads default owner grants", S3BucketAclReadDefaultOwnerAsync),
                     Active("S3AclAndTagging", "S3_BucketAcl_WriteCannedPrivate", "S3 bucket ACL writes canned private ACLs", S3BucketAclWriteCannedPrivateAsync),
                     Active("S3AclAndTagging", "S3_BucketAcl_WriteCannedPublicRead", "S3 bucket ACL writes canned public-read ACLs", S3BucketAclWriteCannedPublicReadAsync),
-                    Planned("S3AclAndTagging", "S3_BucketAcl_WriteGrantByCanonicalUser", "Canonical-user grant coverage needs tenant user grant fixtures."),
-                    Planned("S3AclAndTagging", "S3_BucketAcl_DeleteOrOverwriteExistingGrants", "ACL overwrite semantics need explicit grant diff assertions."),
-                    Planned("S3AclAndTagging", "S3_BucketAcl_OtherTenantUserGrantFails", "Cross-tenant canonical-user grant rejection needs product-level validation."),
+                    Active("S3AclAndTagging", "S3_BucketAcl_WriteGrantByCanonicalUser", "S3 bucket ACL writes canonical-user grants", S3BucketAclCanonicalUserAndOverwriteAsync),
+                    Active("S3AclAndTagging", "S3_BucketAcl_DeleteOrOverwriteExistingGrants", "S3 bucket ACL overwrites existing grants", S3BucketAclCanonicalUserAndOverwriteAsync),
+                    Active("S3AclAndTagging", "S3_BucketAcl_OtherTenantUserGrantFails", "S3 bucket ACL rejects cross-tenant canonical-user grants", S3AclOtherTenantUserGrantFailsAsync),
                     Active("S3AclAndTagging", "S3_ObjectAcl_ReadDefaultOwner", "S3 object ACL reads default owner grants", S3ObjectAclReadDefaultOwnerAsync),
                     Active("S3AclAndTagging", "S3_ObjectAcl_WriteCannedPrivate", "S3 object ACL writes canned private ACLs", S3ObjectAclWriteCannedPrivateAsync),
-                    Planned("S3AclAndTagging", "S3_ObjectAcl_WriteGrantByCanonicalUser", "Canonical-user object grant coverage needs tenant user grant fixtures."),
-                    Planned("S3AclAndTagging", "S3_ObjectAcl_OtherTenantUserGrantFails", "Cross-tenant object grant rejection needs product-level validation."),
-                    Planned("S3AclAndTagging", "S3_BucketTags_ReadMissingReturnsEmpty", "Current bucket tag read returns NoSuchTagSet and must be reconciled with the v3 contract."),
+                    Active("S3AclAndTagging", "S3_ObjectAcl_WriteGrantByCanonicalUser", "S3 object ACL writes canonical-user grants", S3ObjectAclCanonicalUserAsync),
+                    Active("S3AclAndTagging", "S3_ObjectAcl_OtherTenantUserGrantFails", "S3 object ACL rejects cross-tenant canonical-user grants", S3AclOtherTenantUserGrantFailsAsync),
+                    Active("S3AclAndTagging", "S3_BucketTags_ReadMissingReturnsEmpty", "S3 bucket tags read empty when no tags exist", S3BucketTagsReadMissingReturnsEmptyAsync),
                     Active("S3AclAndTagging", "S3_BucketTags_PutGetDeleteRoundTrip", "S3 bucket tags put/get/delete round-trips", S3BucketTagsPutGetDeleteRoundTripAsync),
-                    Planned("S3AclAndTagging", "S3_BucketTags_MaxTagCountEnforced", "Bucket tag validation limits need product-level enforcement."),
-                    Planned("S3AclAndTagging", "S3_BucketTags_InvalidKeyFails", "Bucket tag key validation needs product-level enforcement."),
+                    Active("S3AclAndTagging", "S3_BucketTags_MaxTagCountEnforced", "S3 bucket tags enforce maximum tag count", S3BucketTagValidationFailsAsync),
+                    Active("S3AclAndTagging", "S3_BucketTags_InvalidKeyFails", "S3 bucket tags reject invalid keys", S3BucketTagValidationFailsAsync),
                     Active("S3AclAndTagging", "S3_ObjectTags_ReadMissingReturnsEmpty", "S3 object tags read empty when no tags exist", S3ObjectTagsReadMissingReturnsEmptyAsync),
                     Active("S3AclAndTagging", "S3_ObjectTags_PutGetDeleteRoundTrip", "S3 object tags put/get/delete round-trips", S3ObjectTagsPutGetDeleteRoundTripAsync),
                     Active("S3AclAndTagging", "S3_ObjectTags_VersionSpecificRoundTrip", "S3 object tags round-trip for a specific version", S3ObjectTagsVersionSpecificRoundTripAsync),
@@ -592,9 +592,9 @@ namespace Test.Shared
                     Active("Less3RestApi", "Rest_Enumeration_FilterEcho", "Less3 REST request-history enumeration applies filters", RequestHistoryCapturesS3TenantCredentialAndFiltersAsync),
                     Active("Less3RestApi", "Rest_Enumeration_TenantScopeEnforced", "Less3 REST tenant scoping is enforced by session RBAC", RestBearerSessionEnforcesRbacPermitAndDenyAsync),
                     Planned("Less3RestApi", "Rest_CancellationToken_PropagatesToDatabase", "Cancellation token propagation needs instrumented database coverage."),
-                    Planned("Less3RestApi", "Rest_InvalidJsonReturns400", "Invalid JSON response shape needs exact active assertion."),
-                    Planned("Less3RestApi", "Rest_InvalidIdReturns404", "Invalid/missing id response shape needs exact active assertion."),
-                    Planned("Less3RestApi", "Rest_UnauthorizedReturns401", "REST unauthenticated response shape needs exact active assertion."),
+                    Active("Less3RestApi", "Rest_InvalidJsonReturns400", "Less3 REST rejects invalid JSON", Less3RestErrorShapesAsync),
+                    Active("Less3RestApi", "Rest_InvalidIdReturns404", "Less3 REST returns 404 for missing ids", Less3RestErrorShapesAsync),
+                    Active("Less3RestApi", "Rest_UnauthorizedReturns401", "Less3 REST rejects unauthenticated requests", Less3RestErrorShapesAsync),
                     Active("Less3RestApi", "Rest_ForbiddenReturns403", "REST session RBAC returns forbidden for denied requests", RestBearerSessionEnforcesRbacPermitAndDenyAsync)
                 });
         }
@@ -608,21 +608,21 @@ namespace Test.Shared
                 {
                     Active("AdminApi", "Admin_Health_RequiresAdminKey", "Admin health requires the admin API key", StartsRootHealthOpenApiAndAdminAuthAsync),
                     Active("AdminApi", "Admin_Health_ReturnsVersionUptimeDatabaseStorageDiskTempRetentionCleanup", "Admin health returns live status fields", StartsRootHealthOpenApiAndAdminAuthAsync),
-                    Planned("AdminApi", "Admin_Stats_ReturnsBucketObjectStorageTotals", "Admin stats endpoint needs exact active assertion."),
+                    Active("AdminApi", "Admin_Stats_ReturnsBucketObjectStorageTotals", "Admin stats returns bucket, object, and byte totals", AdminStatsReturnsBucketObjectStorageTotalsAsync),
                     Planned("AdminApi", "Admin_Stats_TenantScopedForTenantAdmin", "Admin stats tenant scoping needs tenant admin auth behavior."),
-                    Planned("AdminApi", "Admin_Users_CreateReadListUpdateDelete", "Admin users CRUD needs exact active assertion."),
-                    Planned("AdminApi", "Admin_Users_TenantScoped", "Admin users tenant scoping needs exact active assertion."),
-                    Planned("AdminApi", "Admin_Users_DuplicateEmailSameTenantFails", "Duplicate same-tenant user email needs exact active assertion."),
-                    Planned("AdminApi", "Admin_Users_DuplicateEmailDifferentTenantSucceeds", "Duplicate cross-tenant user email needs exact active assertion."),
-                    Planned("AdminApi", "Admin_Credentials_CreateReadListUpdateDelete", "Admin credential CRUD needs exact active assertion."),
-                    Planned("AdminApi", "Admin_Credentials_AccessKeyGloballyUnique", "Credential access-key uniqueness needs exact active assertion."),
+                    Active("AdminApi", "Admin_Users_CreateReadListUpdateDelete", "Admin users create, read, list, update, and delete", AdminUserCredentialAndBucketCrudAsync),
+                    Active("AdminApi", "Admin_Users_TenantScoped", "Admin users are tenant-scoped", AdminUserCredentialAndBucketCrudAsync),
+                    Active("AdminApi", "Admin_Users_DuplicateEmailSameTenantFails", "Admin users reject duplicate same-tenant email", AdminUserDuplicateEmailBehaviorAsync),
+                    Active("AdminApi", "Admin_Users_DuplicateEmailDifferentTenantSucceeds", "Admin users allow duplicate email across tenants", AdminUserDuplicateEmailBehaviorAsync),
+                    Active("AdminApi", "Admin_Credentials_CreateReadListUpdateDelete", "Admin credentials create, read, list, update, and delete", AdminUserCredentialAndBucketCrudAsync),
+                    Active("AdminApi", "Admin_Credentials_AccessKeyGloballyUnique", "Admin credentials enforce globally unique access keys", AdminCredentialAccessKeyGloballyUniqueAsync),
                     Planned("AdminApi", "Admin_Credentials_SecretHiddenExceptCreate", "Credential secret one-time return behavior needs product coverage."),
                     Planned("AdminApi", "Admin_Credentials_Rotate", "Credential rotation needs product behavior."),
-                    Planned("AdminApi", "Admin_Credentials_Disable", "Credential disable needs exact active assertion."),
+                    Active("AdminApi", "Admin_Credentials_Disable", "Admin credentials can be disabled", AdminUserCredentialAndBucketCrudAsync),
                     Active("AdminApi", "Admin_Credentials_LastUsedLastFailed", "Credential last-used/last-failed fields update through S3 auth", S3CredentialLastUsedAndLastFailedTimestampsAsync),
-                    Planned("AdminApi", "Admin_Buckets_CreateReadListDelete", "Admin bucket CRUD needs exact active assertion."),
+                    Active("AdminApi", "Admin_Buckets_CreateReadListDelete", "Admin buckets create, read, list, and delete", AdminUserCredentialAndBucketCrudAsync),
                     Active("AdminApi", "Admin_Buckets_ReservedRouteNameFails", "Admin bucket create rejects reserved route names", BucketReservedRouteNamesRejectedAcrossApisAsync),
-                    Planned("AdminApi", "Admin_Buckets_DuplicateNameSameTenantFails", "Same-tenant duplicate bucket behavior currently differs from the v3 contract."),
+                    Active("AdminApi", "Admin_Buckets_DuplicateNameSameTenantFails", "Admin buckets reject duplicate same-tenant names", AdminBucketDuplicateNameSameTenantFailsAsync),
                     Active("AdminApi", "Admin_Buckets_DuplicateNameDifferentTenantSucceeds", "Same bucket name can exist in different tenants", S3SameBucketNameDifferentTenantsAsync),
                     Active("AdminApi", "Admin_RequestHistory_ServerSideEnumeration", "Admin request history enumeration is available through REST", RequestHistoryCapturesS3TenantCredentialAndFiltersAsync),
                     Active("AdminApi", "Admin_OpenApi_CombinedDocumentAvailable", "Combined OpenAPI document is available", StartsRootHealthOpenApiAndAdminAuthAsync),
@@ -1317,6 +1317,106 @@ namespace Test.Shared
             EnsureNotContains(historyBody, "\"Password\": \"wrong-password\"", "REST request history invalid password redaction");
         }
 
+        private static async Task S3RejectsUnknownAccessKeyAsync(CancellationToken cancellationToken)
+        {
+            using Less3TestServer server = new Less3TestServer();
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
+
+            using IAmazonS3 client = server.CreateS3Client("unknown-" + TestIds.Suffix(), "wrong-secret");
+            await EnsureS3FailureAsync(
+                () => client.ListBucketsAsync(cancellationToken),
+                "unknown access-key ListBuckets").ConfigureAwait(false);
+        }
+
+        private static async Task InactiveUserBlocksLoginAndS3CredentialAuthAsync(CancellationToken cancellationToken)
+        {
+            using Less3TestServer server = new Less3TestServer();
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
+
+            string tenantId = TestIds.Tenant();
+            string userId = TestIds.User();
+            string credentialId = TestIds.Credential();
+            string accessKey = "inactive-user-" + TestIds.Suffix();
+            string secretKey = "secret-" + TestIds.Suffix();
+            string email = userId + "@example.com";
+
+            await CreateTenantUserAndCredentialAsync(server, tenantId, userId, credentialId, accessKey, secretKey, cancellationToken).ConfigureAwait(false);
+
+            HttpResponseMessage updateUserResponse = await server.RestPutAsync("users/" + userId + "?tenantId=" + tenantId, JsonSerializer.Serialize(new
+            {
+                Id = userId,
+                TenantId = tenantId,
+                Name = "Inactive User",
+                Email = email,
+                PasswordHash = "password",
+                Active = false
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, updateUserResponse.StatusCode, "deactivate user");
+
+            HttpResponseMessage loginResponse = await server.RestPostUnauthenticatedAsync("authsessions/login", JsonSerializer.Serialize(new
+            {
+                TenantId = tenantId,
+                Email = email,
+                Password = "password"
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Unauthorized, loginResponse.StatusCode, "inactive user login");
+
+            using IAmazonS3 client = server.CreateS3Client(accessKey, secretKey);
+            await EnsureS3FailureAsync(
+                () => client.ListBucketsAsync(cancellationToken),
+                "inactive user S3 ListBuckets").ConfigureAwait(false);
+        }
+
+        private static async Task ExpiredSessionRejectedAsync(CancellationToken cancellationToken)
+        {
+            using Less3TestServer server = new Less3TestServer();
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
+
+            HttpResponseMessage loginResponse = await server.RestPostUnauthenticatedAsync("authsessions/login", JsonSerializer.Serialize(new
+            {
+                TenantId = "default",
+                Email = "admin@less3",
+                Password = "password",
+                ExpirationMinutes = -5
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, loginResponse.StatusCode, "create expired session");
+            string rawToken = ExtractString(await loginResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false), "Token", "expired session token");
+
+            HttpResponseMessage validateResponse = await server.RestPostUnauthenticatedAsync("authsessions/validate", JsonSerializer.Serialize(new
+            {
+                Token = rawToken
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Unauthorized, validateResponse.StatusCode, "validate expired session");
+            string validateBody = await validateResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureContains(validateBody, "\"Valid\": false", "expired session valid flag");
+            EnsureContains(validateBody, "expired", "expired session reason");
+        }
+
+        private static async Task SessionTenantBoundCannotCrossTenantAsync(CancellationToken cancellationToken)
+        {
+            using Less3TestServer server = new Less3TestServer();
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
+
+            string tenantId = TestIds.Tenant();
+            string userId = TestIds.User();
+            string credentialId = TestIds.Credential();
+            string accessKey = "session-tenant-" + TestIds.Suffix();
+            string secretKey = "secret-" + TestIds.Suffix();
+            string email = userId + "@example.com";
+
+            await CreateTenantUserAndCredentialAsync(server, tenantId, userId, credentialId, accessKey, secretKey, cancellationToken).ConfigureAwait(false);
+            string token = await LoginAndExtractTokenAsync(server, tenantId, email, "password", cancellationToken).ConfigureAwait(false);
+
+            HttpResponseMessage crossTenantResponse = await SendBearerRestAsync(
+                server,
+                HttpMethod.Get,
+                "tenants/default",
+                token,
+                null,
+                cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Forbidden, crossTenantResponse.StatusCode, "cross-tenant session read");
+        }
+
         private static async Task AuthSessionRestReadEnumerateRevokeExistsAsync(CancellationToken cancellationToken)
         {
             using Less3TestServer server = new Less3TestServer();
@@ -1666,6 +1766,37 @@ namespace Test.Shared
             EnsureContains(await missingResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false), "\"Exists\": false", "REST tenant missing exists");
         }
 
+        private static async Task TenantNegativeBehaviorAsync(CancellationToken cancellationToken)
+        {
+            using Less3TestServer server = new Less3TestServer();
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
+
+            string tenantId = TestIds.Tenant();
+            string tenantJson = JsonSerializer.Serialize(new
+            {
+                Id = tenantId,
+                Name = "Negative tenant",
+                Active = true
+            });
+
+            HttpResponseMessage createResponse = await server.RestPostAsync("tenants", tenantJson, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, createResponse.StatusCode, "REST create negative tenant");
+
+            HttpResponseMessage duplicateResponse = await server.RestPostAsync("tenants", tenantJson, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Conflict, duplicateResponse.StatusCode, "REST duplicate tenant");
+
+            HttpResponseMessage readMissingResponse = await server.RestGetAsync("tenants/" + TestIds.Tenant(), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.NotFound, readMissingResponse.StatusCode, "REST read missing tenant");
+
+            HttpResponseMessage updateMissingResponse = await server.RestPutAsync("tenants/" + TestIds.Tenant(), JsonSerializer.Serialize(new
+            {
+                Id = TestIds.Tenant(),
+                Name = "Missing tenant",
+                Active = true
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.NotFound, updateMissingResponse.StatusCode, "REST update missing tenant");
+        }
+
         private static async Task Less3RestBucketCrudEnumerateAndExistsAsync(CancellationToken cancellationToken)
         {
             using Less3TestServer server = new Less3TestServer();
@@ -1815,6 +1946,279 @@ namespace Test.Shared
 
             HttpResponseMessage userDeleteResponse = await server.RestDeleteAsync("users/" + userId + "?tenantId=default", cancellationToken).ConfigureAwait(false);
             EnsureStatus(HttpStatusCode.NoContent, userDeleteResponse.StatusCode, "REST delete user after credential");
+        }
+
+        private static async Task Less3RestErrorShapesAsync(CancellationToken cancellationToken)
+        {
+            using Less3TestServer server = new Less3TestServer();
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
+
+            HttpResponseMessage invalidJsonResponse = await server.RestPostAsync("tenants", "{", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.BadRequest, invalidJsonResponse.StatusCode, "REST invalid JSON");
+
+            HttpResponseMessage missingResponse = await server.RestGetAsync("tenants/" + TestIds.Tenant(), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.NotFound, missingResponse.StatusCode, "REST missing id");
+
+            HttpResponseMessage unauthorizedResponse = await server.HttpClient.GetAsync(server.BaseUrl + "/api/v1/tenants/default", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Unauthorized, unauthorizedResponse.StatusCode, "REST unauthenticated");
+        }
+
+        private static async Task AdminStatsReturnsBucketObjectStorageTotalsAsync(CancellationToken cancellationToken)
+        {
+            await WithDefaultBucketAsync("admin-stats", async (server, client, bucketName) =>
+            {
+                await PutTextObjectAsync(client, bucketName, "stats.txt", "statistics", cancellationToken).ConfigureAwait(false);
+
+                HttpResponseMessage statsResponse = await server.AdminGetAsync("stats", cancellationToken).ConfigureAwait(false);
+                EnsureStatus(HttpStatusCode.OK, statsResponse.StatusCode, "admin stats");
+                string body = await statsResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                EnsureContains(body, "\"BucketCount\":", "admin stats bucket count");
+                EnsureContains(body, "\"TotalObjectCount\":", "admin stats object count");
+                EnsureContains(body, "\"TotalBytes\":", "admin stats bytes");
+                EnsureContains(body, bucketName, "admin stats bucket name");
+            }, cancellationToken).ConfigureAwait(false);
+        }
+
+        private static async Task AdminUserCredentialAndBucketCrudAsync(CancellationToken cancellationToken)
+        {
+            using Less3TestServer server = new Less3TestServer();
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
+
+            string tenantId = TestIds.Tenant();
+            string userId = TestIds.User();
+            string credentialId = TestIds.Credential();
+            string bucketId = TestIds.Bucket();
+            string accessKey = "admin-crud-" + TestIds.Suffix();
+            string bucketName = "admin-crud-" + TestIds.Suffix().Substring(0, 8);
+
+            HttpResponseMessage tenantResponse = await server.AdminPostAsync("tenants", JsonSerializer.Serialize(new
+            {
+                Id = tenantId,
+                Name = "Admin CRUD tenant",
+                Active = true
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, tenantResponse.StatusCode, "admin create tenant for CRUD");
+
+            HttpResponseMessage userCreate = await server.AdminPostAsync("users", JsonSerializer.Serialize(new
+            {
+                Id = userId,
+                TenantId = tenantId,
+                Name = "Admin CRUD User",
+                Email = userId + "@example.com",
+                PasswordHash = "password",
+                Active = true
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, userCreate.StatusCode, "admin create user");
+
+            HttpResponseMessage userRead = await server.AdminGetAsync("users/" + userId, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, userRead.StatusCode, "admin read user");
+            EnsureContains(await userRead.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false), "\"TenantId\": \"" + tenantId + "\"", "admin read user tenant");
+
+            HttpResponseMessage userList = await server.AdminGetAsync("users", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, userList.StatusCode, "admin list users");
+            EnsureContains(await userList.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false), userId, "admin list users");
+
+            HttpResponseMessage userUpdate = await server.AdminPutAsync("users/" + userId, JsonSerializer.Serialize(new
+            {
+                Id = userId,
+                TenantId = tenantId,
+                Name = "Admin CRUD User Updated",
+                Email = userId + "@example.com",
+                PasswordHash = "password",
+                Active = true
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, userUpdate.StatusCode, "admin update user");
+            EnsureContains(await userUpdate.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false), "Admin CRUD User Updated", "admin update user");
+
+            HttpResponseMessage credentialCreate = await server.AdminPostAsync("credentials", JsonSerializer.Serialize(new
+            {
+                Id = credentialId,
+                TenantId = tenantId,
+                UserId = userId,
+                Description = "Admin CRUD credential",
+                AccessKey = accessKey,
+                SecretKey = "secret-" + TestIds.Suffix(),
+                IsBase64 = false,
+                Active = true
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, credentialCreate.StatusCode, "admin create credential");
+
+            HttpResponseMessage credentialRead = await server.AdminGetAsync("credentials/" + credentialId, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, credentialRead.StatusCode, "admin read credential");
+            EnsureContains(await credentialRead.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false), accessKey, "admin read credential access key");
+
+            HttpResponseMessage credentialList = await server.AdminGetAsync("credentials", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, credentialList.StatusCode, "admin list credentials");
+            EnsureContains(await credentialList.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false), credentialId, "admin list credentials");
+
+            HttpResponseMessage credentialUpdate = await server.AdminPutAsync("credentials/" + credentialId, JsonSerializer.Serialize(new
+            {
+                Id = credentialId,
+                TenantId = tenantId,
+                UserId = userId,
+                Description = "Admin CRUD credential disabled",
+                AccessKey = accessKey,
+                SecretKey = "secret-updated-" + TestIds.Suffix(),
+                IsBase64 = false,
+                Active = false
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, credentialUpdate.StatusCode, "admin update credential");
+            EnsureContains(await credentialUpdate.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false), "\"Active\": false", "admin disable credential");
+
+            HttpResponseMessage bucketCreate = await server.AdminPostAsync("buckets", JsonSerializer.Serialize(new
+            {
+                Id = bucketId,
+                TenantId = tenantId,
+                OwnerId = userId,
+                Name = bucketName,
+                RegionString = "us-west-1",
+                EnableVersioning = false,
+                EnablePublicWrite = false,
+                EnablePublicRead = false
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, bucketCreate.StatusCode, "admin create bucket");
+
+            HttpResponseMessage bucketRead = await server.AdminGetAsync("buckets/" + bucketId, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, bucketRead.StatusCode, "admin read bucket");
+            EnsureContains(await bucketRead.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false), bucketName, "admin read bucket");
+
+            HttpResponseMessage bucketList = await server.AdminGetAsync("buckets", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, bucketList.StatusCode, "admin list buckets");
+            EnsureContains(await bucketList.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false), bucketName, "admin list buckets");
+
+            HttpResponseMessage bucketDelete = await server.AdminDeleteAsync("buckets/" + bucketId + "?destroy", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.NoContent, bucketDelete.StatusCode, "admin delete bucket");
+
+            HttpResponseMessage credentialDelete = await server.AdminDeleteAsync("credentials/" + credentialId, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.NoContent, credentialDelete.StatusCode, "admin delete credential");
+
+            HttpResponseMessage userDelete = await server.AdminDeleteAsync("users/" + userId, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.NoContent, userDelete.StatusCode, "admin delete user");
+        }
+
+        private static async Task AdminUserDuplicateEmailBehaviorAsync(CancellationToken cancellationToken)
+        {
+            using Less3TestServer server = new Less3TestServer();
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
+
+            string firstTenantId = TestIds.Tenant();
+            string secondTenantId = TestIds.Tenant();
+            string email = "admin-duplicate-" + TestIds.Suffix() + "@example.com";
+
+            foreach (string tenantId in new string[] { firstTenantId, secondTenantId })
+            {
+                HttpResponseMessage tenantResponse = await server.AdminPostAsync("tenants", JsonSerializer.Serialize(new
+                {
+                    Id = tenantId,
+                    Name = "Duplicate email tenant",
+                    Active = true
+                }), cancellationToken).ConfigureAwait(false);
+                EnsureStatus(HttpStatusCode.Created, tenantResponse.StatusCode, "admin create duplicate-email tenant");
+            }
+
+            HttpResponseMessage firstUser = await server.AdminPostAsync("users", JsonSerializer.Serialize(new
+            {
+                Id = TestIds.User(),
+                TenantId = firstTenantId,
+                Name = "Duplicate Email User",
+                Email = email,
+                PasswordHash = "password",
+                Active = true
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, firstUser.StatusCode, "admin create first duplicate-email user");
+
+            HttpResponseMessage duplicateSameTenant = await server.AdminPostAsync("users", JsonSerializer.Serialize(new
+            {
+                Id = TestIds.User(),
+                TenantId = firstTenantId,
+                Name = "Duplicate Email User 2",
+                Email = email,
+                PasswordHash = "password",
+                Active = true
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Conflict, duplicateSameTenant.StatusCode, "admin duplicate same-tenant email");
+
+            HttpResponseMessage duplicateOtherTenant = await server.AdminPostAsync("users", JsonSerializer.Serialize(new
+            {
+                Id = TestIds.User(),
+                TenantId = secondTenantId,
+                Name = "Duplicate Email Other Tenant",
+                Email = email,
+                PasswordHash = "password",
+                Active = true
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, duplicateOtherTenant.StatusCode, "admin duplicate email other tenant");
+        }
+
+        private static async Task AdminCredentialAccessKeyGloballyUniqueAsync(CancellationToken cancellationToken)
+        {
+            using Less3TestServer server = new Less3TestServer();
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
+
+            string firstTenantId = TestIds.Tenant();
+            string secondTenantId = TestIds.Tenant();
+            string accessKey = "global-key-" + TestIds.Suffix();
+            string firstUserId = TestIds.User();
+            string secondUserId = TestIds.User();
+
+            await CreateAdminTenantAndUserAsync(server, firstTenantId, firstUserId, cancellationToken).ConfigureAwait(false);
+            await CreateAdminTenantAndUserAsync(server, secondTenantId, secondUserId, cancellationToken).ConfigureAwait(false);
+
+            HttpResponseMessage firstCredential = await server.AdminPostAsync("credentials", JsonSerializer.Serialize(new
+            {
+                Id = TestIds.Credential(),
+                TenantId = firstTenantId,
+                UserId = firstUserId,
+                Description = "First global key",
+                AccessKey = accessKey,
+                SecretKey = "secret-" + TestIds.Suffix(),
+                IsBase64 = false,
+                Active = true
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, firstCredential.StatusCode, "admin create first global key credential");
+
+            HttpResponseMessage duplicateCredential = await server.AdminPostAsync("credentials", JsonSerializer.Serialize(new
+            {
+                Id = TestIds.Credential(),
+                TenantId = secondTenantId,
+                UserId = secondUserId,
+                Description = "Duplicate global key",
+                AccessKey = accessKey,
+                SecretKey = "secret-" + TestIds.Suffix(),
+                IsBase64 = false,
+                Active = true
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Conflict, duplicateCredential.StatusCode, "admin duplicate global access key");
+        }
+
+        private static async Task AdminBucketDuplicateNameSameTenantFailsAsync(CancellationToken cancellationToken)
+        {
+            using Less3TestServer server = new Less3TestServer();
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
+
+            string bucketName = "admin-dup-" + TestIds.Suffix().Substring(0, 8);
+
+            string bucketJson = JsonSerializer.Serialize(new
+            {
+                Id = TestIds.Bucket(),
+                TenantId = "default",
+                OwnerId = "usr_default_admin",
+                Name = bucketName,
+                RegionString = "us-west-1"
+            });
+
+            HttpResponseMessage firstBucket = await server.AdminPostAsync("buckets", bucketJson, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, firstBucket.StatusCode, "admin create duplicate test bucket");
+
+            HttpResponseMessage duplicateBucket = await server.AdminPostAsync("buckets", JsonSerializer.Serialize(new
+            {
+                Id = TestIds.Bucket(),
+                TenantId = "default",
+                OwnerId = "usr_default_admin",
+                Name = bucketName,
+                RegionString = "us-west-1"
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Conflict, duplicateBucket.StatusCode, "admin duplicate bucket");
         }
 
         private static async Task Less3RestRbacCrudEnumerateAndExistsAsync(CancellationToken cancellationToken)
@@ -2539,6 +2943,19 @@ namespace Test.Shared
             }, cancellationToken).ConfigureAwait(false);
         }
 
+        private static async Task S3CreateBucketDuplicateNameSameTenantFailsAsync(CancellationToken cancellationToken)
+        {
+            await WithDefaultBucketAsync("s3-dup", async (server, client, bucketName) =>
+            {
+                await EnsureS3FailureAsync(
+                    () => client.PutBucketAsync(new PutBucketRequest
+                    {
+                        BucketName = bucketName
+                    }, cancellationToken),
+                    "duplicate same-tenant bucket create").ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(false);
+        }
+
         private static async Task S3CreateBucketInvalidNameFailsAsync(CancellationToken cancellationToken)
         {
             using Less3TestServer server = new Less3TestServer();
@@ -3198,6 +3615,19 @@ namespace Test.Shared
             }, cancellationToken).ConfigureAwait(false);
         }
 
+        private static async Task S3DeleteObjectMissingIsIdempotentAsync(CancellationToken cancellationToken)
+        {
+            await WithDefaultBucketAsync("s3-delete-missing", async (server, client, bucketName) =>
+            {
+                DeleteObjectResponse delete = await client.DeleteObjectAsync(new DeleteObjectRequest
+                {
+                    BucketName = bucketName,
+                    Key = "missing.txt"
+                }, cancellationToken).ConfigureAwait(false);
+                EnsureTrue(delete.HttpStatusCode == HttpStatusCode.OK || delete.HttpStatusCode == HttpStatusCode.NoContent, "delete missing object status");
+            }, cancellationToken).ConfigureAwait(false);
+        }
+
         private static async Task S3DeleteObjectsMultipleAsync(CancellationToken cancellationToken)
         {
             await WithDefaultBucketAsync("s3-delete-objects", async (server, client, bucketName) =>
@@ -3568,6 +3998,48 @@ namespace Test.Shared
             }, cancellationToken).ConfigureAwait(false);
         }
 
+        private static async Task S3BucketAclCanonicalUserAndOverwriteAsync(CancellationToken cancellationToken)
+        {
+            await WithDefaultBucketAsync("s3-bucket-acl-user", async (server, client, bucketName) =>
+            {
+                string userId = TestIds.User();
+                HttpResponseMessage userResponse = await server.RestPostAsync("users?tenantId=default", JsonSerializer.Serialize(new
+                {
+                    Id = userId,
+                    TenantId = "default",
+                    Name = "Bucket ACL User",
+                    Email = userId + "@example.com",
+                    PasswordHash = "password",
+                    Active = true
+                }), cancellationToken).ConfigureAwait(false);
+                EnsureStatus(HttpStatusCode.Created, userResponse.StatusCode, "create bucket ACL target user");
+
+                using HttpRequestMessage putAcl = server.CreateS3Request(HttpMethod.Put, "/" + bucketName + "?acl", "default");
+                putAcl.Headers.TryAddWithoutValidation("x-amz-grant-read", "id=\"" + userId + "\"");
+                HttpResponseMessage put = await server.HttpClient.SendAsync(putAcl, cancellationToken).ConfigureAwait(false);
+                EnsureStatus(HttpStatusCode.OK, put.StatusCode, "put bucket canonical user acl");
+
+                GetACLResponse get = await client.GetACLAsync(new GetACLRequest
+                {
+                    BucketName = bucketName
+                }, cancellationToken).ConfigureAwait(false);
+                EnsureTrue(ContainsGrant(get.AccessControlList, userId, S3Permission.READ), "bucket canonical user grant");
+
+                PutACLResponse overwrite = await client.PutACLAsync(new PutACLRequest
+                {
+                    BucketName = bucketName,
+                    CannedACL = S3CannedACL.Private
+                }, cancellationToken).ConfigureAwait(false);
+                EnsureStatus(HttpStatusCode.OK, overwrite.HttpStatusCode, "overwrite bucket acl private");
+
+                GetACLResponse overwritten = await client.GetACLAsync(new GetACLRequest
+                {
+                    BucketName = bucketName
+                }, cancellationToken).ConfigureAwait(false);
+                EnsureFalse(ContainsGrant(overwritten.AccessControlList, userId, S3Permission.READ), "bucket canonical user grant removed");
+            }, cancellationToken).ConfigureAwait(false);
+        }
+
         private static async Task S3ObjectAclReadDefaultOwnerAsync(CancellationToken cancellationToken)
         {
             await WithDefaultBucketAsync("s3-object-acl-read", async (server, client, bucketName) =>
@@ -3602,6 +4074,84 @@ namespace Test.Shared
             }, cancellationToken).ConfigureAwait(false);
         }
 
+        private static async Task S3ObjectAclCanonicalUserAsync(CancellationToken cancellationToken)
+        {
+            await WithDefaultBucketAsync("s3-object-acl-user", async (server, client, bucketName) =>
+            {
+                string userId = TestIds.User();
+                HttpResponseMessage userResponse = await server.RestPostAsync("users?tenantId=default", JsonSerializer.Serialize(new
+                {
+                    Id = userId,
+                    TenantId = "default",
+                    Name = "Object ACL User",
+                    Email = userId + "@example.com",
+                    PasswordHash = "password",
+                    Active = true
+                }), cancellationToken).ConfigureAwait(false);
+                EnsureStatus(HttpStatusCode.Created, userResponse.StatusCode, "create object ACL target user");
+
+                await PutTextObjectAsync(client, bucketName, "acl.txt", "acl", cancellationToken).ConfigureAwait(false);
+
+                using HttpRequestMessage putAcl = server.CreateS3Request(HttpMethod.Put, "/" + bucketName + "/acl.txt?acl", "default");
+                putAcl.Headers.TryAddWithoutValidation("x-amz-grant-read", "id=\"" + userId + "\"");
+                HttpResponseMessage put = await server.HttpClient.SendAsync(putAcl, cancellationToken).ConfigureAwait(false);
+                EnsureStatus(HttpStatusCode.OK, put.StatusCode, "put object canonical user acl");
+
+                GetACLResponse get = await client.GetACLAsync(new GetACLRequest
+                {
+                    BucketName = bucketName,
+                    Key = "acl.txt"
+                }, cancellationToken).ConfigureAwait(false);
+                EnsureTrue(ContainsGrant(get.AccessControlList, userId, S3Permission.READ), "object canonical user grant");
+            }, cancellationToken).ConfigureAwait(false);
+        }
+
+        private static async Task S3AclOtherTenantUserGrantFailsAsync(CancellationToken cancellationToken)
+        {
+            using Less3TestServer server = new Less3TestServer();
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
+
+            string tenantId = TestIds.Tenant();
+            string userId = TestIds.User();
+            string credentialId = TestIds.Credential();
+            string accessKey = "acl-other-" + TestIds.Suffix();
+            string secretKey = "secret-" + TestIds.Suffix();
+            string bucketName = "acl-other-" + TestIds.Suffix().Substring(0, 8);
+
+            await CreateTenantUserAndCredentialAsync(server, tenantId, userId, credentialId, accessKey, secretKey, cancellationToken).ConfigureAwait(false);
+
+            using IAmazonS3 defaultClient = server.CreateS3Client("default", "default");
+            PutBucketResponse create = await defaultClient.PutBucketAsync(new PutBucketRequest
+            {
+                BucketName = bucketName
+            }, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, create.HttpStatusCode, "create cross-tenant ACL bucket");
+            await PutTextObjectAsync(defaultClient, bucketName, "acl.txt", "acl", cancellationToken).ConfigureAwait(false);
+
+            using HttpRequestMessage bucketAcl = server.CreateS3Request(HttpMethod.Put, "/" + bucketName + "?acl", "default");
+            bucketAcl.Headers.TryAddWithoutValidation("x-amz-grant-read", "id=\"" + userId + "\"");
+            HttpResponseMessage bucketAclResponse = await server.HttpClient.SendAsync(bucketAcl, cancellationToken).ConfigureAwait(false);
+            EnsureTrue((int)bucketAclResponse.StatusCode >= 400, "bucket ACL cross-tenant canonical user");
+
+            using HttpRequestMessage objectAcl = server.CreateS3Request(HttpMethod.Put, "/" + bucketName + "/acl.txt?acl", "default");
+            objectAcl.Headers.TryAddWithoutValidation("x-amz-grant-read", "id=\"" + userId + "\"");
+            HttpResponseMessage objectAclResponse = await server.HttpClient.SendAsync(objectAcl, cancellationToken).ConfigureAwait(false);
+            EnsureTrue((int)objectAclResponse.StatusCode >= 400, "object ACL cross-tenant canonical user");
+        }
+
+        private static async Task S3BucketTagsReadMissingReturnsEmptyAsync(CancellationToken cancellationToken)
+        {
+            await WithDefaultBucketAsync("s3-bucket-tags-empty", async (server, client, bucketName) =>
+            {
+                GetBucketTaggingResponse get = await client.GetBucketTaggingAsync(new GetBucketTaggingRequest
+                {
+                    BucketName = bucketName
+                }, cancellationToken).ConfigureAwait(false);
+                EnsureStatus(HttpStatusCode.OK, get.HttpStatusCode, "get missing bucket tags");
+                EnsureEqual(0, CountTags(get.TagSet), "missing bucket tag count");
+            }, cancellationToken).ConfigureAwait(false);
+        }
+
         private static async Task S3BucketTagsPutGetDeleteRoundTripAsync(CancellationToken cancellationToken)
         {
             await WithDefaultBucketAsync("s3-bucket-tags", async (server, client, bucketName) =>
@@ -3629,6 +4179,37 @@ namespace Test.Shared
                     BucketName = bucketName
                 }, cancellationToken).ConfigureAwait(false);
                 EnsureTrue(delete.HttpStatusCode == HttpStatusCode.OK || delete.HttpStatusCode == HttpStatusCode.NoContent, "delete bucket tags");
+            }, cancellationToken).ConfigureAwait(false);
+        }
+
+        private static async Task S3BucketTagValidationFailsAsync(CancellationToken cancellationToken)
+        {
+            await WithDefaultBucketAsync("s3-bucket-tags-invalid", async (server, client, bucketName) =>
+            {
+                List<Tag> tooManyTags = new List<Tag>();
+                for (int i = 0; i < 51; i++)
+                {
+                    tooManyTags.Add(new Tag { Key = "Key" + i, Value = "Value" + i });
+                }
+
+                await EnsureS3FailureAsync(
+                    () => client.PutBucketTaggingAsync(new PutBucketTaggingRequest
+                    {
+                        BucketName = bucketName,
+                        TagSet = tooManyTags
+                    }, cancellationToken),
+                    "bucket tag max count").ConfigureAwait(false);
+
+                await EnsureS3FailureAsync(
+                    () => client.PutBucketTaggingAsync(new PutBucketTaggingRequest
+                    {
+                        BucketName = bucketName,
+                        TagSet = new List<Tag>
+                        {
+                            new Tag { Key = "aws:reserved", Value = "blocked" }
+                        }
+                    }, cancellationToken),
+                    "bucket tag invalid reserved key").ConfigureAwait(false);
             }, cancellationToken).ConfigureAwait(false);
         }
 
@@ -4006,6 +4587,32 @@ namespace Test.Shared
             EnsureStatus(HttpStatusCode.Created, credentialAssignmentResponse.StatusCode, "assign tenant admin role to second tenant credential");
         }
 
+        private static async Task CreateAdminTenantAndUserAsync(
+            Less3TestServer server,
+            string tenantId,
+            string userId,
+            CancellationToken cancellationToken)
+        {
+            HttpResponseMessage tenantResponse = await server.AdminPostAsync("tenants", JsonSerializer.Serialize(new
+            {
+                Id = tenantId,
+                Name = "Admin helper tenant",
+                Active = true
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, tenantResponse.StatusCode, "admin helper create tenant");
+
+            HttpResponseMessage userResponse = await server.AdminPostAsync("users", JsonSerializer.Serialize(new
+            {
+                Id = userId,
+                TenantId = tenantId,
+                Name = "Admin helper user",
+                Email = userId + "@example.com",
+                PasswordHash = "password",
+                Active = true
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, userResponse.StatusCode, "admin helper create user");
+        }
+
         private static IReadOnlyList<Type> TenantOwnedContractTypes()
         {
             return new List<Type>
@@ -4381,6 +4988,21 @@ namespace Test.Shared
             string tempDirectory = Path.Combine(server.TempDirectory, "temp");
             if (!Directory.Exists(tempDirectory)) return 0;
             return Directory.GetFiles(tempDirectory, "*", SearchOption.AllDirectories).Length;
+        }
+
+        private static bool ContainsGrant(S3AccessControlList acl, string canonicalUserId, S3Permission permission)
+        {
+            if (acl == null || acl.Grants == null) return false;
+
+            foreach (S3Grant grant in acl.Grants)
+            {
+                if (grant == null || grant.Grantee == null) continue;
+                if (!String.Equals(grant.Grantee.CanonicalUser, canonicalUserId, StringComparison.Ordinal)) continue;
+                if (!String.Equals(grant.Permission?.Value, permission.Value, StringComparison.Ordinal)) continue;
+                return true;
+            }
+
+            return false;
         }
 
         private static int CountGrants(System.Collections.ICollection grants)

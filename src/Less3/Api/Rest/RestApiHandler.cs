@@ -173,7 +173,17 @@ namespace Less3.Api.Rest
                 return;
             }
 
-            object created = Create(ctx, resourceType);
+            object created = null;
+            try
+            {
+                created = Create(ctx, resourceType);
+            }
+            catch (ResourceConflictException)
+            {
+                await SendConflict(ctx).ConfigureAwait(false);
+                return;
+            }
+
             if (created == null)
             {
                 await SendInvalidRequest(ctx).ConfigureAwait(false);
@@ -486,6 +496,7 @@ namespace Less3.Api.Rest
         {
             Tenant tenant = Deserialize<Tenant>(ctx);
             if (tenant == null) return null;
+            if (_Config.TenantExists(tenant.Id)) throw new ResourceConflictException();
             if (!_Config.AddTenant(tenant)) return null;
             return tenant;
         }
@@ -680,7 +691,7 @@ namespace Less3.Api.Rest
 
         private static int NormalizeExpirationMinutes(int minutes)
         {
-            if (minutes < 1) return 480;
+            if (minutes < 1) return minutes;
             if (minutes > 1440) return 1440;
             return minutes;
         }
@@ -1216,9 +1227,20 @@ namespace Less3.Api.Rest
             await ctx.Response.Send(message).ConfigureAwait(false);
         }
 
+        private static async Task SendConflict(S3Context ctx)
+        {
+            ctx.Response.StatusCode = 409;
+            ctx.Response.ContentType = "text/plain";
+            await ctx.Response.Send().ConfigureAwait(false);
+        }
+
         private static async Task SendInvalidRequest(S3Context ctx)
         {
             await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest).ConfigureAwait(false);
+        }
+
+        private sealed class ResourceConflictException : Exception
+        {
         }
 
         #endregion

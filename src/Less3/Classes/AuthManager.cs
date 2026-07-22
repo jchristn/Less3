@@ -200,6 +200,13 @@ namespace Less3.Classes
                 return false;
             }
 
+            if (IsCrossTenantResourceRequest(requestContext, resourceType, resourceId))
+            {
+                reason = "Requested tenant resource is outside the authenticated tenant.";
+                RecordAuthorizationAudit(requestContext, resourceType, resourceId, operation, false, reason);
+                return false;
+            }
+
             bool hasDecision = TryEvaluateRbac(
                 requestContext.TenantId,
                 "User",
@@ -230,7 +237,9 @@ namespace Less3.Classes
                 hasDecision = true;
             }
 
-            if (!hasDecision && requestContext.IsTenantAdmin)
+            if (!hasDecision
+                && requestContext.IsTenantAdmin
+                && CanTenantAdminBypass(requestContext, resourceType, resourceId))
             {
                 permitted = true;
                 reason = "Principal is a tenant administrator.";
@@ -245,6 +254,21 @@ namespace Less3.Classes
 
             RecordAuthorizationAudit(requestContext, resourceType, resourceId, operation, permitted, reason);
             return permitted;
+        }
+
+        private static bool IsCrossTenantResourceRequest(RequestContext requestContext, string resourceType, string resourceId)
+        {
+            if (requestContext == null || requestContext.IsAdmin) return false;
+            if (!String.Equals(resourceType, "Tenant", StringComparison.OrdinalIgnoreCase)) return false;
+            if (String.IsNullOrEmpty(resourceId)) return false;
+            return !String.Equals(resourceId, requestContext.TenantId, StringComparison.Ordinal);
+        }
+
+        private static bool CanTenantAdminBypass(RequestContext requestContext, string resourceType, string resourceId)
+        {
+            if (requestContext == null) return false;
+            if (!String.Equals(resourceType, "Tenant", StringComparison.OrdinalIgnoreCase)) return true;
+            return String.Equals(resourceId, requestContext.TenantId, StringComparison.Ordinal);
         }
 
         internal RequestMetadata AuthenticateAndBuildMetadata(S3Context ctx)

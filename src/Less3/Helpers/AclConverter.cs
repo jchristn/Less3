@@ -182,11 +182,11 @@ namespace Less3.Helpers
 
                 if (!String.IsNullOrEmpty(curr.Grantee.ID))
                 {
-                    User tempUser = config.GetUserById(curr.Grantee.ID);
+                    User tempUser = config.GetUserById(currentUser.TenantId, curr.Grantee.ID);
                     if (tempUser == null)
                     {
-                        logging.Warn(header + "unable to find user Id " + curr.Grantee.ID);
-                        continue;
+                        logging.Warn(header + "unable to find user Id " + curr.Grantee.ID + " in tenant " + currentUser.TenantId);
+                        throw new S3Exception(new Error(ErrorCode.InvalidRequest));
                     }
 
                     acl = GrantToBucketUserAcl(curr, curr.Grantee.ID, ownerId, bucketId);
@@ -255,11 +255,11 @@ namespace Less3.Helpers
 
                 if (!String.IsNullOrEmpty(curr.Grantee.ID))
                 {
-                    User tempUser = config.GetUserById(curr.Grantee.ID);
+                    User tempUser = config.GetUserById(currentUser.TenantId, curr.Grantee.ID);
                     if (tempUser == null)
                     {
-                        logging.Warn(header + "unable to find user Id " + curr.Grantee.ID);
-                        continue;
+                        logging.Warn(header + "unable to find user Id " + curr.Grantee.ID + " in tenant " + currentUser.TenantId);
+                        throw new S3Exception(new Error(ErrorCode.InvalidRequest));
                     }
 
                     acl = GrantToObjectUserAcl(curr, curr.Grantee.ID, ownerId, bucketId, objectId);
@@ -376,7 +376,10 @@ namespace Less3.Helpers
                     foreach (string curr in grantees)
                     {
                         grant = null;
-                        if (!GrantFromString(curr, PermissionEnum.Read, config, out grant)) continue;
+                        if (!GrantFromString(curr, PermissionEnum.Read, user.TenantId, config, out grant))
+                        {
+                            throw new S3Exception(new Error(ErrorCode.InvalidRequest));
+                        }
                         ret.Add(grant);
                     }
                 }
@@ -391,7 +394,10 @@ namespace Less3.Helpers
                     foreach (string curr in grantees)
                     {
                         grant = null;
-                        if (!GrantFromString(curr, PermissionEnum.Write, config, out grant)) continue;
+                        if (!GrantFromString(curr, PermissionEnum.Write, user.TenantId, config, out grant))
+                        {
+                            throw new S3Exception(new Error(ErrorCode.InvalidRequest));
+                        }
                         ret.Add(grant);
                     }
                 }
@@ -406,7 +412,10 @@ namespace Less3.Helpers
                     foreach (string curr in grantees)
                     {
                         grant = null;
-                        if (!GrantFromString(curr, PermissionEnum.ReadAcp, config, out grant)) continue;
+                        if (!GrantFromString(curr, PermissionEnum.ReadAcp, user.TenantId, config, out grant))
+                        {
+                            throw new S3Exception(new Error(ErrorCode.InvalidRequest));
+                        }
                         ret.Add(grant);
                     }
                 }
@@ -421,7 +430,10 @@ namespace Less3.Helpers
                     foreach (string curr in grantees)
                     {
                         grant = null;
-                        if (!GrantFromString(curr, PermissionEnum.WriteAcp, config, out grant)) continue;
+                        if (!GrantFromString(curr, PermissionEnum.WriteAcp, user.TenantId, config, out grant))
+                        {
+                            throw new S3Exception(new Error(ErrorCode.InvalidRequest));
+                        }
                         ret.Add(grant);
                     }
                 }
@@ -436,7 +448,10 @@ namespace Less3.Helpers
                     foreach (string curr in grantees)
                     {
                         grant = null;
-                        if (!GrantFromString(curr, PermissionEnum.FullControl, config, out grant)) continue;
+                        if (!GrantFromString(curr, PermissionEnum.FullControl, user.TenantId, config, out grant))
+                        {
+                            throw new S3Exception(new Error(ErrorCode.InvalidRequest));
+                        }
                         ret.Add(grant);
                     }
                 }
@@ -457,7 +472,19 @@ namespace Less3.Helpers
             LoggingModule logging,
             string header) where T : class
         {
-            User tempUser = config.GetUserById(userId);
+            string tenantId = null;
+            if (acl is BucketAcl tenantBucketAcl)
+            {
+                tenantId = tenantBucketAcl.TenantId;
+            }
+            else if (acl is ObjectAcl tenantObjectAcl)
+            {
+                tenantId = tenantObjectAcl.TenantId;
+            }
+
+            User tempUser = String.IsNullOrEmpty(tenantId)
+                ? config.GetUserById(userId)
+                : config.GetUserById(tenantId, userId);
             if (tempUser == null)
             {
                 string aclId = null;
@@ -723,7 +750,7 @@ namespace Less3.Helpers
             return null;
         }
 
-        private static bool GrantFromString(string str, PermissionEnum permType, ConfigManager config, out Grant grant)
+        private static bool GrantFromString(string str, PermissionEnum permType, string tenantId, ConfigManager config, out Grant grant)
         {
             grant = null;
             if (String.IsNullOrEmpty(str)) return false;
@@ -731,14 +758,14 @@ namespace Less3.Helpers
             string[] parts = str.Split('=');
             if (parts.Length != 2) return false;
             string granteeType = parts[0];
-            string grantee = parts[1];
+            string grantee = parts[1].Trim().Trim('"');
 
             grant = new Grant();
             grant.Permission = permType;
 
             if (granteeType.Equals("emailAddress"))
             {
-                User user = config.GetUserByEmail(grantee);
+                User user = config.GetUserByEmail(tenantId, grantee);
                 if (user == null)
                 {
                     return false;
@@ -753,7 +780,7 @@ namespace Less3.Helpers
             }
             else if (granteeType.Equals("id"))
             {
-                User user = config.GetUserById(grantee);
+                User user = config.GetUserById(tenantId, grantee);
                 if (user == null)
                 {
                     return false;

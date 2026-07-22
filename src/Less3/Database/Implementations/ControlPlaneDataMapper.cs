@@ -3,6 +3,7 @@ namespace Less3.Database.Implementations
     using System;
     using System.Collections.Generic;
     using System.Data;
+    using System.Globalization;
     using Less3.Classes;
 
     internal static class ControlPlaneDataMapper
@@ -30,14 +31,14 @@ namespace Less3.Database.Implementations
         {
             string value = StringValue(row, column);
             if (String.IsNullOrWhiteSpace(value)) return DateTime.UtcNow;
-            return DateTime.Parse(value).ToUniversalTime();
+            return DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
         }
 
         internal static DateTime? NullableDateValue(DataRow row, string column)
         {
             string value = StringValue(row, column);
             if (String.IsNullOrWhiteSpace(value)) return null;
-            return DateTime.Parse(value).ToUniversalTime();
+            return DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
         }
 
         internal static long Count(DataTable table)

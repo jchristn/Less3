@@ -299,7 +299,7 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
 - [x] Add `test/Test.Nunit` Touchstone NUnit adapter.
 - [x] Ensure every runner consumes the same descriptors from `Test.Shared`.
 - [x] Add exhaustive backend Touchstone descriptor inventory covering identifiers, tenants, schema/migrations, auth/session, RBAC, S3, Less3 REST, admin APIs, health, reporting, provider matrix, security, concurrency/reliability, Docker, and bootstrap behavior.
-  - [x] Current automated Touchstone run: 405 descriptors, 196 active passing live/static assertions, 209 planned/skipped descriptors, 0 failures.
+  - [x] Current automated Touchstone run: 405 descriptors, 227 active passing live/static assertions, 178 planned/skipped descriptors, 0 failures.
 - [x] Add reusable temporary Less3 server fixture that:
   - [x] creates isolated temp database and storage paths
   - [x] starts Less3 on a temporary port
@@ -311,7 +311,8 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
   - [x] Add live temporary-instance S3 cross-tenant bucket/object denial coverage.
   - [x] Add active repository-scan assertions for identifier/public-contract S3-adjacent invariants.
   - [x] Add live temporary-instance S3 service, bucket, object, multipart, ACL/tagging, and versioning assertions for currently implemented behavior.
-  - [ ] Convert remaining planned S3 duplicate-name, protocol-compatibility, pagination, conditional, legal-hold/retention, and error-shape descriptors into active assertions.
+  - [x] Add live temporary-instance S3 duplicate bucket, idempotent missing delete, canonical-user ACL, cross-tenant ACL, and tag validation assertions.
+  - [ ] Convert remaining planned S3 protocol-compatibility, pagination, conditional, legal-hold/retention, and error-shape descriptors into active assertions.
 - [ ] Add Less3 REST API coverage for CRUD, exists, enumeration, pagination, and authorization.
   - [x] Add live temporary-instance tenant CRUD/enumeration/exists coverage.
   - [x] Add live temporary-instance bucket CRUD/enumeration/exists coverage.
@@ -374,7 +375,7 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
   - [ ] missing XML docs on public surface
 - [x] Run all backend builds.
 - [x] Run Touchstone automated tests.
-  - [x] Latest run: 405 total, 196 passed, 0 failed, 209 skipped/planned.
+  - [x] Latest run: 405 total, 227 passed, 0 failed, 178 skipped/planned.
 - [x] Run xUnit adapter tests.
 - [x] Run NUnit adapter tests.
 - [x] Run dashboard production build.

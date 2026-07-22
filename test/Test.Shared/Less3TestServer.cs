@@ -387,11 +387,12 @@ namespace Test.Shared
         /// </summary>
         /// <param name="method">HTTP method.</param>
         /// <param name="relativePathAndQuery">Path and query, beginning with '/'.</param>
+        /// <param name="accessKey">Optional access key to place in the Authorization header.</param>
         /// <returns>The configured request.</returns>
-        public HttpRequestMessage CreateS3Request(HttpMethod method, string relativePathAndQuery)
+        public HttpRequestMessage CreateS3Request(HttpMethod method, string relativePathAndQuery, string? accessKey = null)
         {
             HttpRequestMessage request = new HttpRequestMessage(method, BaseUrl + relativePathAndQuery);
-            request.Headers.TryAddWithoutValidation("Authorization", BuildAuthHeader());
+            request.Headers.TryAddWithoutValidation("Authorization", BuildAuthHeader(accessKey ?? _AccessKey));
             return request;
         }
 
@@ -606,9 +607,9 @@ namespace Test.Shared
             throw new TimeoutException($"Less3 server did not become ready within {maxAttempts * delayMs / 1000} seconds");
         }
 
-        private string BuildAuthHeader()
+        private string BuildAuthHeader(string accessKey)
         {
-            return $"AWS4-HMAC-SHA256 Credential={_AccessKey}/20260101/us-west-1/s3/aws4_request, SignedHeaders=host, Signature=placeholder";
+            return $"AWS4-HMAC-SHA256 Credential={accessKey}/20260101/us-west-1/s3/aws4_request, SignedHeaders=host, Signature=placeholder";
         }
         #endregion
     }

@@ -2,13 +2,13 @@
 IF "%1" == "" GOTO :Usage
 ECHO.
 ECHO Building for linux/amd64 and linux/arm64/v8...
-docker buildx build -f src\Less3\Dockerfile --builder cloud-jchristn77-jchristn77 --platform linux/amd64,linux/arm64/v8 --tag jchristn77/less3:%1 --tag jchristn77/less3:latest --push src
+docker buildx build -f src\Less3\Dockerfile --platform linux/amd64,linux/arm64/v8 --tag jchristn77/less3:%1 --tag jchristn77/less3:latest --push src
 GOTO :Done
 
 :Usage
 ECHO.
 ECHO Provide an argument specifying the version or tag.
-ECHO Example: build-server.bat v2.1.12
+ECHO Example: build-server.bat v3.0.0
 
 :Done
 ECHO.

@@ -1,6 +1,6 @@
 /* eslint-disable max-lines-per-function */
 'use client';
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { MenuProps } from 'antd';
 import {
   SearchOutlined,
@@ -8,6 +8,9 @@ import {
   DeleteOutlined,
   EyeOutlined,
   ReloadOutlined,
+  DownloadOutlined,
+  CopyOutlined,
+  SaveOutlined,
 } from '@ant-design/icons';
 import CopyToClipboard from '#/components/copy-to-clipboard/CopyToClipboard';
 import DataTable, { DataTableColumn } from '#/components/DataTable';
@@ -39,6 +42,16 @@ const METHOD_OPTIONS = [
   { label: 'HEAD', value: 'HEAD' },
 ];
 
+const STATUS_FAMILY_OPTIONS = [
+  { label: 'All Families', value: '' },
+  { label: '2xx', value: '2' },
+  { label: '3xx', value: '3' },
+  { label: '4xx', value: '4' },
+  { label: '5xx', value: '5' },
+];
+
+const SAVED_FILTERS_KEY = 'less3_request_history_saved_filters';
+
 const METHOD_COLORS: Record<string, string> = {
   GET: '#22AF79',
   POST: '#1890ff',
@@ -56,6 +69,24 @@ const getStatusColor = (code: number): string => {
 };
 
 const formatDurationMs = (value: number): string => `${value.toFixed(2)}ms`;
+
+const createCurlCommand = (entry: RequestHistoryEntry): string => {
+  const method = entry.HttpMethod || 'GET';
+  const url = entry.RequestUrl || '/';
+  let command = `curl -X ${method} '${url}'`;
+
+  if (entry.RequestContentType) {
+    command += ` \\\n  -H 'Content-Type: ${entry.RequestContentType}'`;
+  }
+
+  if (entry.RequestBody) {
+    command += ` \\\n  -d '${entry.RequestBody.replace(/'/g, "'\\''")}'`;
+  }
+
+  return command;
+};
+
+const csvEscape = (value: unknown): string => `"${String(value ?? '').replace(/"/g, '""')}"`;
 
 interface DetailBlockProps {
   title: string;
@@ -136,7 +167,11 @@ const DetailBlock: React.FC<DetailBlockProps> = ({
 const RequestHistoryPage: React.FC = () => {
   const [methodFilter, setMethodFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('');
+  const [statusFamilyFilter, setStatusFamilyFilter] = useState<string>('');
   const [sourceIpFilter, setSourceIpFilter] = useState<string>('');
+  const [slowRequestMs, setSlowRequestMs] = useState<string>('');
+  const [failedOnly, setFailedOnly] = useState(false);
+  const [groupedView, setGroupedView] = useState(false);
   const [timeRange, setTimeRange] = useState<string>('hour');
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
@@ -160,6 +195,24 @@ const RequestHistoryPage: React.FC = () => {
     pollingInterval: 10000,
   });
 
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(SAVED_FILTERS_KEY);
+      if (!stored) return;
+
+      const parsed = JSON.parse(stored);
+      setMethodFilter(typeof parsed.methodFilter === 'string' ? parsed.methodFilter : '');
+      setStatusFilter(typeof parsed.statusFilter === 'string' ? parsed.statusFilter : '');
+      setStatusFamilyFilter(typeof parsed.statusFamilyFilter === 'string' ? parsed.statusFamilyFilter : '');
+      setSourceIpFilter(typeof parsed.sourceIpFilter === 'string' ? parsed.sourceIpFilter : '');
+      setSlowRequestMs(typeof parsed.slowRequestMs === 'string' ? parsed.slowRequestMs : '');
+      setFailedOnly(Boolean(parsed.failedOnly));
+      setGroupedView(Boolean(parsed.groupedView));
+    } catch {
+      localStorage.removeItem(SAVED_FILTERS_KEY);
+    }
+  }, []);
+
   const handleViewDetail = useCallback((entry: RequestHistoryEntry) => {
     setSelectedEntry(entry);
     setIsDetailModalVisible(true);
@@ -182,6 +235,36 @@ const RequestHistoryPage: React.FC = () => {
     }
   };
 
+  const handleCopyCurl = useCallback(async (entry: RequestHistoryEntry) => {
+    const command = createCurlCommand(entry);
+    try {
+      await navigator.clipboard.writeText(command);
+      message.success('cURL command copied');
+    } catch {
+      message.error('Failed to copy cURL command');
+    }
+  }, []);
+
+  const handleSaveFilters = useCallback(() => {
+    const savedFilters = {
+      methodFilter,
+      statusFilter,
+      statusFamilyFilter,
+      sourceIpFilter,
+      slowRequestMs,
+      failedOnly,
+      groupedView,
+      savedUtc: new Date().toISOString(),
+    };
+
+    try {
+      localStorage.setItem(SAVED_FILTERS_KEY, JSON.stringify(savedFilters));
+      message.success('Filters saved');
+    } catch {
+      message.error('Failed to save filters');
+    }
+  }, [failedOnly, groupedView, methodFilter, slowRequestMs, sourceIpFilter, statusFamilyFilter, statusFilter]);
+
   const filteredData = useMemo(() => {
     if (!data) return [];
     let result: RequestHistoryEntry[] = [...data];
@@ -198,13 +281,95 @@ const RequestHistoryPage: React.FC = () => {
       result = result.filter((entry) => String(entry.StatusCode).includes(statusStr));
     }
 
+    if (statusFamilyFilter) {
+      result = result.filter((entry) => String(entry.StatusCode).startsWith(statusFamilyFilter));
+    }
+
     if (sourceIpFilter.trim()) {
       const ipStr: string = sourceIpFilter.trim().toLowerCase();
       result = result.filter((entry) => (entry.SourceIp || '').toLowerCase().includes(ipStr));
     }
 
+    if (failedOnly) {
+      result = result.filter((entry) => !entry.Success || entry.StatusCode >= 400);
+    }
+
+    if (slowRequestMs.trim()) {
+      const threshold = Number(slowRequestMs);
+      if (!Number.isNaN(threshold)) {
+        result = result.filter((entry) => entry.DurationMs >= threshold);
+      }
+    }
+
     return result;
-  }, [data, methodFilter, statusFilter, sourceIpFilter]);
+  }, [data, failedOnly, methodFilter, slowRequestMs, sourceIpFilter, statusFamilyFilter, statusFilter]);
+
+  const groupedRows = useMemo(() => {
+    const groups = new Map<string, { Key: string; Count: number; Failures: number; AverageMs: number; TotalMs: number }>();
+
+    filteredData.forEach((entry) => {
+      const family = `${Math.floor(entry.StatusCode / 100)}xx`;
+      const key = `${entry.HttpMethod || 'GET'} ${family}`;
+      const existing = groups.get(key) || {
+        Key: key,
+        Count: 0,
+        Failures: 0,
+        AverageMs: 0,
+        TotalMs: 0,
+      };
+
+      existing.Count += 1;
+      existing.Failures += entry.StatusCode >= 400 ? 1 : 0;
+      existing.TotalMs += entry.DurationMs;
+      existing.AverageMs = existing.TotalMs / existing.Count;
+      groups.set(key, existing);
+    });
+
+    return Array.from(groups.values()).sort((a, b) => b.Count - a.Count);
+  }, [filteredData]);
+
+  const handleExportCsv = useCallback(() => {
+    const header = [
+      'Id',
+      'CreatedUtc',
+      'HttpMethod',
+      'RequestUrl',
+      'StatusCode',
+      'Success',
+      'DurationMs',
+      'SourceIp',
+      'RequestType',
+      'UserId',
+      'AccessKey',
+    ];
+
+    const rows = filteredData.map((entry) => [
+      entry.Id,
+      entry.CreatedUtc,
+      entry.HttpMethod,
+      entry.RequestUrl,
+      entry.StatusCode,
+      entry.Success,
+      entry.DurationMs,
+      entry.SourceIp,
+      entry.RequestType,
+      entry.UserId,
+      entry.AccessKey,
+    ]);
+
+    const csv = [header, ...rows]
+      .map((row) => row.map(csvEscape).join(','))
+      .join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `less3-request-history-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  }, [filteredData]);
 
   const columns: DataTableColumn<RequestHistoryEntry>[] = [
     {
@@ -306,6 +471,15 @@ const RequestHistoryPage: React.FC = () => {
               handleViewDetail(item);
             },
           },
+          {
+            key: 'copy-curl',
+            icon: <CopyOutlined />,
+            label: 'Copy as cURL',
+            onClick: () => {
+              setOpenDropdownKey(null);
+              void handleCopyCurl(item);
+            },
+          },
           { type: 'divider' },
           {
             key: 'delete',
@@ -340,6 +514,12 @@ const RequestHistoryPage: React.FC = () => {
       pageTitle="Request History"
       pageTitleRightContent={
         <Less3Flex gap={10} align="center">
+          <Less3Button icon={<SaveOutlined />} onClick={handleSaveFilters}>
+            Save Filters
+          </Less3Button>
+          <Less3Button icon={<DownloadOutlined />} onClick={handleExportCsv}>
+            Export CSV
+          </Less3Button>
           <Less3Button icon={<ReloadOutlined />} onClick={() => refetch()} loading={isLoading}>
             Refresh
           </Less3Button>
@@ -362,6 +542,13 @@ const RequestHistoryPage: React.FC = () => {
           style={{ width: 150 }}
           placeholder="HTTP Method"
         />
+        <Less3Select
+          options={STATUS_FAMILY_OPTIONS}
+          value={statusFamilyFilter}
+          onChange={(value) => setStatusFamilyFilter(value as string)}
+          style={{ width: 140 }}
+          placeholder="Status Family"
+        />
         <Less3Input
           placeholder="Status Code"
           prefix={<SearchOutlined />}
@@ -378,7 +565,45 @@ const RequestHistoryPage: React.FC = () => {
           style={{ width: 180 }}
           allowClear
         />
+        <Less3Input
+          placeholder="Slow >= ms"
+          prefix={<SearchOutlined />}
+          value={slowRequestMs}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSlowRequestMs(e.target.value)}
+          style={{ width: 140 }}
+          allowClear
+        />
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+          <input type="checkbox" checked={failedOnly} onChange={(event) => setFailedOnly(event.target.checked)} />
+          Failed only
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+          <input type="checkbox" checked={groupedView} onChange={(event) => setGroupedView(event.target.checked)} />
+          Grouped
+        </label>
       </Less3Flex>
+
+      {groupedView && (
+        <div style={{ marginBottom: 16 }}>
+          <DataTable
+            columns={[
+              { key: 'Key', label: 'Group' },
+              { key: 'Count', label: 'Requests', sortValue: (item) => item.Count },
+              { key: 'Failures', label: 'Failures', sortValue: (item) => item.Failures },
+              {
+                key: 'AverageMs',
+                label: 'Avg Duration',
+                render: (item) => formatDurationMs(item.AverageMs),
+                sortValue: (item) => item.AverageMs,
+              },
+            ]}
+            data={groupedRows}
+            loading={isLoading}
+            rowKey="Key"
+            hidePagination
+          />
+        </div>
+      )}
 
       <DataTable
         columns={columns}
@@ -430,6 +655,9 @@ const RequestHistoryPage: React.FC = () => {
                 {selectedEntry.RequestUrl}
               </span>
               <CopyToClipboard text={selectedEntry.RequestUrl} tooltip="Copy URL" ariaLabel="Copy URL" />
+              <Less3Button icon={<CopyOutlined />} onClick={() => void handleCopyCurl(selectedEntry)}>
+                Copy as cURL
+              </Less3Button>
             </Less3Flex>
 
             {/* Summary Header */}

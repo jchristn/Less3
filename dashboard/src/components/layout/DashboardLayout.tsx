@@ -15,6 +15,7 @@ import ThemeModeSwitch from '../theme-mode-switch/ThemeModeSwitch';
 import styles from './dashboard.module.scss';
 
 const { Header, Content } = Layout;
+const dashboardVersion = process.env.NEXT_PUBLIC_LESS3_VERSION || '3.0.0';
 
 interface LayoutWrapperProps {
   children: React.ReactNode;
@@ -40,8 +41,21 @@ const DashboardLayout = ({ children }: LayoutWrapperProps) => {
         <Less3Flex align="center" gap={16}>
           <Less3Logo showOnlyIcon={false} size={16} imageSize={32} />
         </Less3Flex>
-        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', alignSelf: 'center' }}>
+        <div className={styles.contextBar}>
+          <span className={styles.contextChip}>
+            <span className={styles.contextLabel}>Tenant</span>
+            <span className={styles.contextValue}>default</span>
+          </span>
+          <span className={styles.contextChip}>
+            <span className={styles.contextLabel}>User</span>
+            <span className={styles.contextValue}>admin@less3</span>
+          </span>
+          <span className={styles.contextChip}>
+            <span className={styles.contextLabel}>Role</span>
+            <span className={styles.contextValue}>System Admin</span>
+          </span>
           <span className={styles.serverUrlBadge}>
+            <span className={styles.contextLabel}>Endpoint</span>
             <span className={styles.serverUrlValue}>{serverUrl}</span>
             <CopyToClipboard
               text={serverUrl}
@@ -52,6 +66,10 @@ const DashboardLayout = ({ children }: LayoutWrapperProps) => {
               iconSize={12}
               buttonSize={20}
             />
+          </span>
+          <span className={styles.contextChip}>
+            <span className={styles.contextLabel}>Version</span>
+            <span className={styles.contextValue}>{dashboardVersion}</span>
           </span>
         </div>
         <Less3Flex gap={16} align="center">

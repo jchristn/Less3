@@ -103,7 +103,35 @@ async function mockLess3(page: Page): Promise<void> {
   });
 
   await page.route('**/admin/buckets**', async (route) => {
-    await route.fulfill({ status: 200, headers: jsonHeaders, body: emptyArray });
+    const requestUrl = route.request().url();
+    if (/\/admin\/buckets\/[^/?]+/.test(requestUrl)) {
+      await route.fulfill({
+        status: 200,
+        headers: jsonHeaders,
+        body: JSON.stringify({
+          Id: 'bkt_test',
+          TenantId: 'default',
+          Name: 'test-bucket',
+          EnableVersioning: true,
+          CreatedUtc: '2026-07-22T00:00:00.000Z',
+        }),
+      });
+      return;
+    }
+
+    await route.fulfill({
+      status: 200,
+      headers: jsonHeaders,
+      body: JSON.stringify([
+        {
+          Id: 'bkt_test',
+          TenantId: 'default',
+          Name: 'test-bucket',
+          EnableVersioning: true,
+          CreatedUtc: '2026-07-22T00:00:00.000Z',
+        },
+      ]),
+    });
   });
 
   await page.route('**/admin/requesthistory**', async (route) => {
@@ -201,6 +229,7 @@ test.describe('Less3 dashboard smoke', () => {
     { path: '/dashboard', heading: 'Home' },
     { path: '/admin/tenants', heading: 'Tenants' },
     { path: '/admin/buckets', heading: 'Buckets' },
+    { path: '/admin/buckets/bkt_test?name=test-bucket', heading: 'Bucket: test-bucket' },
     { path: '/admin/objects', heading: 'Objects' },
     { path: '/admin/request-history', heading: 'Request History' },
     { path: '/admin/maintenance', heading: 'Maintenance' },

@@ -222,6 +222,10 @@ const BucketsPage: React.FC = () => {
     setIsBucketDetailsModalVisible(true);
   };
 
+  const handleOpenBucketDetailPage = (record: Bucket) => {
+    router.push(`/admin/buckets/${encodeURIComponent(record.Id || record.Name)}?name=${encodeURIComponent(record.Name)}`);
+  };
+
   const handleWriteACLOk = async () => {
     if (!selectedBucket?.Name) return;
 
@@ -461,6 +465,14 @@ const BucketsPage: React.FC = () => {
               handleViewBucketDetails(item);
             },
           },
+          {
+            key: 'open-detail-page',
+            label: 'Open Detail Page',
+            onClick: () => {
+              setOpenDropdownKey(null);
+              handleOpenBucketDetailPage(item);
+            },
+          },
           { type: 'divider' },
           {
             key: 'view-objects',
@@ -629,6 +641,16 @@ const BucketsPage: React.FC = () => {
           setViewingBucket(null);
         }}
         footer={[
+          <Less3Button
+            key="open"
+            onClick={() => {
+              if (viewingBucket) {
+                handleOpenBucketDetailPage(viewingBucket);
+              }
+            }}
+          >
+            Open Detail Page
+          </Less3Button>,
           <Less3Button
             key="close"
             onClick={() => {

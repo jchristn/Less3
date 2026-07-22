@@ -8,10 +8,11 @@ const mockCreateUser = jest.fn();
 const mockUpdateUser = jest.fn();
 const mockDeleteUser = jest.fn();
 const mockRefetch = jest.fn();
+const mockPush = jest.fn();
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({
-    push: jest.fn(),
+    push: mockPush,
     replace: jest.fn(),
   }),
   usePathname: () => "/admin/users",
@@ -20,15 +21,41 @@ jest.mock("next/navigation", () => ({
 jest.mock("#/store/slice/usersSlice", () => ({
   useGetUsersQuery: () => ({
     data: [
-      { Id: "1", Name: "John Doe", Email: "john@example.com", CreatedUtc: "2024-01-01" },
-      { Id: "2", Name: "Jane Smith", Email: "jane@example.com", CreatedUtc: "2024-01-02" },
+      {
+        Id: "1",
+        TenantId: "default",
+        Name: "John Doe",
+        Email: "john@example.com",
+        Active: true,
+        IsAdmin: false,
+        IsTenantAdmin: false,
+        CreatedUtc: "2024-01-01",
+      },
+      {
+        Id: "2",
+        TenantId: "default",
+        Name: "Jane Smith",
+        Email: "jane@example.com",
+        Active: true,
+        IsAdmin: false,
+        IsTenantAdmin: false,
+        CreatedUtc: "2024-01-02",
+      },
     ],
     isLoading: false,
     error: null,
     refetch: mockRefetch,
   }),
   useGetUserByIdQuery: () => ({
-    data: { Id: "1", Name: "John Doe", Email: "john@example.com" },
+    data: {
+      Id: "1",
+      TenantId: "default",
+      Name: "John Doe",
+      Email: "john@example.com",
+      Active: true,
+      IsAdmin: false,
+      IsTenantAdmin: false,
+    },
     isLoading: false,
   }),
   useCreateUserMutation: () => [mockCreateUser, { isLoading: false }],
@@ -137,11 +164,15 @@ describe("UsersPage", () => {
       }
 
       await waitFor(() => {
-        expect(mockUpdateUser).toHaveBeenCalledWith({
+        expect(mockUpdateUser).toHaveBeenCalledWith(expect.objectContaining({
           Id: "1",
+          TenantId: "default",
           Name: "John Updated",
           Email: "john@example.com",
-        });
+          Active: true,
+          IsAdmin: false,
+          IsTenantAdmin: false,
+        }));
       });
     });
 
@@ -190,5 +221,24 @@ describe("UsersPage", () => {
         expect(screen.getAllByText("john@example.com").length).toBeGreaterThan(0);
       }
     }, 10000);
+
+    it("should link users to role assignments and session inspection", async () => {
+      renderWithRedux(<UsersPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("John Doe")).toBeInTheDocument();
+      }, { timeout: 3000 });
+
+      const moreButton = screen.getAllByRole("button").find((btn) => btn.querySelector(".anticon-more"));
+      expect(moreButton).toBeDefined();
+
+      await userEvent.click(moreButton as HTMLElement);
+      await userEvent.click(await screen.findByText("Role Assignments", {}, { timeout: 3000 }));
+      expect(mockPush).toHaveBeenCalledWith("/admin/role-assignments?principalId=1");
+
+      await userEvent.click(moreButton as HTMLElement);
+      await userEvent.click(await screen.findByText("Sessions", {}, { timeout: 3000 }));
+      expect(mockPush).toHaveBeenCalledWith("/admin/api-explorer?operation=rest-list-authsessions&userId=1");
+    }, 20000);
   });
 });

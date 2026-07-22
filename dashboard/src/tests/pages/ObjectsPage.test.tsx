@@ -6,6 +6,7 @@ import { message } from "#/utils/message";
 
 const mockDownloadBucketObject = jest.fn();
 const mockDeleteBucketObject = jest.fn();
+const mockWriteBucketObject = jest.fn();
 const mockRefetchObjects = jest.fn();
 
 jest.mock("next/navigation", () => ({
@@ -30,6 +31,15 @@ jest.mock("#/store/slice/bucketsSlice", () => ({
           Size: 100,
           LastModified: "2024-01-01",
           ContentType: "text/plain",
+          VersionId: "objv_current",
+        },
+        {
+          Key: "deleted-file.txt",
+          Size: 0,
+          LastModified: "2024-01-02",
+          ContentType: "text/plain",
+          VersionId: "objv_deleted",
+          IsDeleteMarker: true,
         },
       ],
     },
@@ -42,7 +52,7 @@ jest.mock("#/store/slice/bucketsSlice", () => ({
     { isLoading: false },
   ],
   useDeleteBucketObjectMutation: () => [mockDeleteBucketObject, { isLoading: false }],
-  useWriteBucketObjectMutation: () => [jest.fn(), { isLoading: false }],
+  useWriteBucketObjectMutation: () => [mockWriteBucketObject, { isLoading: false }],
   useUploadBucketObjectMutation: () => [jest.fn(), { isLoading: false }],
   useDeleteMultipleObjectsMutation: () => [jest.fn(), { isLoading: false }],
   useWriteObjectTagsMutation: () => [jest.fn(), { isLoading: false }],
@@ -72,6 +82,9 @@ describe("ObjectsPage", () => {
       }),
     });
     mockDeleteBucketObject.mockReturnValue({
+      unwrap: jest.fn().mockResolvedValue({}),
+    });
+    mockWriteBucketObject.mockReturnValue({
       unwrap: jest.fn().mockResolvedValue({}),
     });
   });
@@ -250,6 +263,72 @@ describe("ObjectsPage", () => {
       const objectsTexts = screen.getAllByText("Objects");
       expect(objectsTexts.length).toBeGreaterThan(0);
     });
+
+    it("should toggle delete markers and page size controls", async () => {
+      renderWithRedux(<ObjectsPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("test-file.txt")).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText("deleted-file.txt")).not.toBeInTheDocument();
+
+      await userEvent.click(screen.getByLabelText("Delete markers"));
+
+      expect(await screen.findByText("deleted-file.txt")).toBeInTheDocument();
+
+      const pageSizeSelect = screen.getAllByRole("combobox").find((select) =>
+        select.closest(".ant-select")?.textContent?.includes("50 / page")
+      );
+      expect(pageSizeSelect).toBeDefined();
+
+      await userEvent.click(pageSizeSelect as HTMLElement);
+      await userEvent.click(await screen.findByText("25 / page"));
+
+      expect(screen.getByText("1 / 1")).toBeInTheDocument();
+    }, 20000);
+
+    it("should copy and restore the selected object version", async () => {
+      renderWithRedux(<ObjectsPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("test-file.txt")).toBeInTheDocument();
+      });
+
+      const moreButton = screen.getAllByRole("button").find((btn) => btn.querySelector(".anticon-more"));
+      expect(moreButton).toBeDefined();
+
+      await userEvent.click(moreButton as HTMLElement);
+      await userEvent.click(await screen.findByText("Restore Version", {}, { timeout: 3000 }));
+
+      await waitFor(() => {
+        expect(mockDownloadBucketObject).toHaveBeenCalledWith({
+          bucketId: "test-bucket",
+          objectKey: "test-file.txt",
+        });
+        expect(mockWriteBucketObject).toHaveBeenCalledWith(expect.objectContaining({
+          bucketId: "test-bucket",
+          objectKey: "test-file.txt",
+          content: "test content",
+        }));
+      });
+
+      await userEvent.click(moreButton as HTMLElement);
+      await userEvent.click(await screen.findByText("Copy Version", {}, { timeout: 3000 }));
+
+      expect(await screen.findByText("Copy Version - test-file.txt")).toBeInTheDocument();
+
+      const okButton = screen.getByRole("button", { name: "OK" });
+      await userEvent.click(okButton);
+
+      await waitFor(() => {
+        expect(mockWriteBucketObject).toHaveBeenCalledWith(expect.objectContaining({
+          bucketId: "test-bucket",
+          objectKey: "test-file.txt.copy",
+          content: "test content",
+        }));
+      });
+    }, 20000);
   });
 
   describe("Snapshots", () => {

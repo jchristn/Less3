@@ -28,6 +28,25 @@ jest.mock('#/store/slice/requestHistorySlice', () => ({
         ResponseBody: '{"response":true}',
         CreatedUtc: '2026-05-15T12:00:00.000Z',
       },
+      {
+        Id: 'entry-2',
+        HttpMethod: 'POST',
+        RequestUrl: '/bucket/slow',
+        SourceIp: '10.0.0.5',
+        StatusCode: 503,
+        Success: false,
+        DurationMs: 220.5,
+        RequestType: 'S3',
+        UserId: 'user-2',
+        AccessKey: 'AK456',
+        RequestContentType: 'application/json',
+        RequestBodyLength: 15,
+        ResponseContentType: 'application/json',
+        ResponseBodyLength: 16,
+        RequestBody: '{"retry":true}',
+        ResponseBody: '{"error":true}',
+        CreatedUtc: '2026-05-15T12:01:00.000Z',
+      },
     ],
     isLoading: false,
     refetch: mockRefetch,
@@ -56,6 +75,12 @@ jest.mock('#/page/request-history/SummaryChart', () => ({
 describe('RequestHistoryPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: jest.fn().mockResolvedValue(undefined) },
+      configurable: true,
+    });
+    global.URL.createObjectURL = jest.fn(() => 'blob:request-history');
+    global.URL.revokeObjectURL = jest.fn();
     mockDeleteRequestHistory.mockReturnValue({
       unwrap: jest.fn().mockResolvedValue({ success: true }),
     });
@@ -95,5 +120,33 @@ describe('RequestHistoryPage', () => {
     });
 
     expect(screen.getAllByRole('button', { name: 'Show Raw' })).toHaveLength(2);
-  });
+  }, 15000);
+
+  it('filters, groups, saves, exports, and copies request history entries', async () => {
+    renderWithRedux(<RequestHistoryPage />, false, undefined, true);
+
+    fireEvent.click(screen.getByLabelText('Failed only'));
+    fireEvent.change(screen.getByPlaceholderText('Slow >= ms'), { target: { value: '100' } });
+
+    expect(screen.getByText('/bucket/slow')).toBeInTheDocument();
+    expect(screen.queryByText('/bucket/object')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText('Grouped'));
+    expect(await screen.findByText('POST 5xx')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Save Filters/i }));
+    expect(localStorage.getItem('less3_request_history_saved_filters')).toContain('"failedOnly":true');
+
+    fireEvent.click(screen.getByRole('button', { name: /Export CSV/i }));
+    expect(global.URL.createObjectURL).toHaveBeenCalled();
+
+    const moreButton = screen.getAllByRole('button').find((button) => button.querySelector('.anticon-more'));
+    expect(moreButton).toBeDefined();
+    fireEvent.click(moreButton as HTMLElement);
+    fireEvent.click(await screen.findByText('Copy as cURL'));
+
+    await waitFor(() => {
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith(expect.stringContaining("curl -X POST '/bucket/slow'"));
+    });
+  }, 15000);
 });

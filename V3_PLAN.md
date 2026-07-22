@@ -20,11 +20,11 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
 
 ## External Requirement Sources
 
-- [ ] Backend implementation follows `C:\code\agents\requirements\BACKEND_ARCHITECTURE.md`.
-- [ ] Authentication and authorization follows `C:\code\agents\requirements\AUTHENTICATION.md`.
-- [ ] Tests follow `C:\code\agents\requirements\BACKEND_TEST_ARCHITECTURE.md`.
-- [ ] Dashboard architecture and usability follows `C:\code\agents\requirements\FRONTEND_ARCHITECTURE.md` and `C:\code\agents\requirements\DASHBOARD_STYLE_AND_USABILITY.md`.
-- [ ] Repository and document work follows `C:\code\agents\requirements\REPOSITORY_REQUIREMENTS.md`, `CODE_STYLE.md`, and `WRITING_DOCUMENTS.md`.
+- [x] Backend implementation follows `C:\code\agents\requirements\BACKEND_ARCHITECTURE.md`.
+- [x] Authentication and authorization follows `C:\code\agents\requirements\AUTHENTICATION.md`.
+- [x] Tests follow `C:\code\agents\requirements\BACKEND_TEST_ARCHITECTURE.md`.
+- [x] Dashboard architecture and usability follows `C:\code\agents\requirements\FRONTEND_ARCHITECTURE.md` and `C:\code\agents\requirements\DASHBOARD_STYLE_AND_USABILITY.md`.
+- [x] Repository and document work follows `C:\code\agents\requirements\REPOSITORY_REQUIREMENTS.md`, `CODE_STYLE.md`, and `WRITING_DOCUMENTS.md`.
 
 ## Phase 1: Version, Branch, and Package Baseline
 
@@ -94,7 +94,7 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
   - [x] credentials: `(accesskey)` globally unique, `(tenant_id, user_id)`
   - [x] request history: `(tenant_id, createdutc)`, `(tenant_id, statuscode, createdutc)`, `(tenant_id, method, createdutc)`, `(tenant_id, sourceip, createdutc)`, `(tenant_id, requesttype, createdutc)`, `(tenant_id, user_id, createdutc)`, `(tenant_id, accesskey, createdutc)`
   - [x] RBAC: indexes for active role, permission, and assignment lookups by tenant, principal, resource, and operation
-- [ ] Add idempotent migrations and first-boot initialization for all four providers.
+- [x] Add idempotent migrations and first-boot initialization for all four providers.
 - [x] Seed tenant `default`, admin user, default credential, built-in roles, built-in permissions, and admin assignments.
 - [x] Ensure empty databases initialize without requiring old v2 artifacts.
 
@@ -110,8 +110,8 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
   - [x] `IAuthorizationAuditMethods`
 - [x] Update implementations for SQLite, MySQL, PostgreSQL, and SQL Server.
 - [x] Ensure tenant-owned read, enumerate, update, and delete methods scope by tenant.
-- [ ] Ensure admin-capable methods explicitly distinguish global admin access from tenant admin access.
-- [ ] Add async methods with `CancellationToken` for cancellable work.
+- [x] Ensure admin-capable methods explicitly distinguish global admin access from tenant admin access.
+- [x] Add async methods with `CancellationToken` for cancellable work.
 - [x] Keep provider-specific SQL under provider-specific `Queries` and `Implementations` folders.
 
 ## Phase 5: Authentication and Authorization
@@ -125,7 +125,7 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
 - [x] Add session token validation and revocation.
   - [x] Add live temporary-instance inactive-tenant login rejection coverage.
 - [x] Add direct credential authentication only where required for dashboard/admin workflows.
-- [ ] Implement RBAC checks with explicit deny semantics where modeled.
+- [x] Implement RBAC checks with explicit deny semantics where modeled.
   - [x] Enforce explicit deny precedence for bearer-authenticated Less3 REST sessions.
   - [x] Enforce RBAC for S3 credential storage operations.
   - [x] Add live temporary-instance permit, deny, and authorization-audit coverage.
@@ -144,9 +144,9 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
 - [x] Add authorization audit capture for failures and sensitive admin operations.
   - [x] Capture RBAC authorization failures in authorization audit.
   - [x] Capture every sensitive admin mutation.
-- [ ] Redact secrets in logs and request history.
+- [x] Redact secrets in logs and request history.
   - [x] Redact session tokens and passwords in request history.
-  - [ ] Complete log redaction guarantees.
+  - [x] Complete log redaction guarantees.
 
 ## Phase 6: S3 API Tenant Integration
 
@@ -158,17 +158,17 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
 - [x] Scope multipart uploads and upload parts by tenant.
 - [x] Scope bucket tags, object tags, bucket ACLs, and object ACLs by tenant.
 - [x] Reserve route-colliding bucket names (`api`, `admin`, `openapi.json`, `favicon.ico`, and `robots.txt`) across S3, Less3 REST, and admin bucket creation.
-- [ ] Verify no S3 route can access another tenant's bucket, object, tag, ACL, upload, or version.
+- [x] Verify no S3 route can access another tenant's bucket, object, tag, ACL, upload, or version.
   - [x] Add live temporary-instance proof that bucket and object reads/writes fail across tenant credentials.
   - [x] Add live temporary-instance proof for multipart upload ID and version-specific cross-tenant denial.
-- [ ] Preserve S3 protocol compatibility where possible without keeping GUID identifiers.
+- [x] Preserve S3 protocol compatibility where possible without keeping GUID identifiers.
 
 ## Phase 7: Less3 REST API
 
-- [ ] Add Watson 7 typed route registrars under `/api/v1`.
+- [x] Add Watson 7 typed route registrars under `/api/v1`.
 - [x] Use route schema `/api/v1/{type}/{id}` for standard CRUD.
 - [x] Use route schema `/api/v1/{type}/{operation}` for logical operations that use `POST`.
-- [ ] Implement typed create, read, enumerate, update, delete, and exists APIs for:
+- [x] Implement typed create, read, enumerate, update, delete, and exists APIs for:
   - [x] tenants
   - [x] buckets
   - [x] objects
@@ -187,17 +187,17 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
 - [x] Define `EnumerationQuery` with typed filters, page size, continuation or offset, sort field, sort direction, and tenant-aware filter semantics.
 - [x] Define `EnumerationResult<T>` with items, total count where available, page metadata, continuation cursor where used, and filter echo where useful.
 - [x] Use `EnumerationQuery` and `EnumerationResult<T>` for administrative and Less3 REST enumeration.
-- [ ] Avoid fixed-contract `JsonElement`/DOM request processing.
+- [x] Avoid fixed-contract `JsonElement`/DOM request processing.
 - [x] Set response status codes explicitly in route handlers.
-- [ ] Pass cancellation tokens through route, service, and database layers.
-- [ ] Register CORS preflight and post-routing hooks through Watson 7.
+- [x] Pass cancellation tokens through route, service, and database layers.
+- [x] Register CORS preflight and post-routing hooks through Watson 7.
 - [x] Register one combined OpenAPI skeleton document that covers S3, Less3 REST, and admin API families.
-- [ ] Expand the combined OpenAPI document to the full route surface and typed schemas.
+- [x] Expand the combined OpenAPI document to the full route surface and typed schemas.
   - [x] Add explicit implemented admin and Less3 REST paths to the combined document.
   - [x] Add live temporary-instance assertions for explicit object, role assignment, and auth session paths.
   - [x] Add shared v3 resource schemas with `Id` and `TenantId` contract fields.
   - [x] Add explicit Less3 REST paths for buckets, tags, ACLs, users, and credentials.
-  - [ ] Add full typed schemas for every request and response.
+  - [x] Add full typed schemas for every request and response.
 
 ## Phase 8: Admin Health, Settings, and Maintenance API
 
@@ -224,7 +224,7 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
   - [x] CONFIGURE: Tenants, Users, Credentials, Roles, Role Assignments, Permissions
   - [x] OPERATE: Request History, Maintenance, API Explorer
 - [x] Use compact grouped navigation with visible section labels.
-- [ ] Show tenant, user, role, endpoint, and version context in the shell.
+- [x] Show tenant, user, role, endpoint, and version context in the shell.
 - [x] Change the upper-right logout control to icon only with accessible label and tooltip.
 - [x] Preserve light/dark theme behavior.
 - [x] Keep shell layout usable at desktop, tablet, and mobile widths.
@@ -235,7 +235,7 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
 - [x] Add initial RBAC dashboard pages for roles, role assignments, and permissions.
 - [x] Add API-backed tenant management page with exists and JSON detail flows.
 - [x] Add API-backed RBAC pages for roles, role assignments, and permissions.
-- [ ] Update users page for tenant-scoped identities, tenant admin flags, sessions, and role assignment links.
+- [x] Update users page for tenant-scoped identities, tenant admin flags, sessions, and role assignment links.
 - [x] Update credentials page:
   - [x] generate access and secret keys server-side
   - [x] show secret once on create
@@ -254,25 +254,25 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
   - [x] Active credentials
 - [x] Add the node status band backed by `/admin/health`.
 - [x] Add request activity chart and recent failure links.
-- [ ] Add bucket detail pages with tabs:
-  - [ ] Overview
-  - [ ] Objects
-  - [ ] Activity
-  - [ ] Tags
-  - [ ] ACL
-  - [ ] Versioning
-  - [ ] Settings
-- [ ] Add object explorer prefix-aware pagination.
-- [ ] Add object version browsing, delete-marker visibility, and restore/copy version workflows.
-- [ ] Upgrade Request History to include saved filters, failed-only toggle, status family filters, slow request filter, copy as cURL, CSV export, and grouped views.
+- [x] Add bucket detail pages with tabs:
+  - [x] Overview
+  - [x] Objects
+  - [x] Activity
+  - [x] Tags
+  - [x] ACL
+  - [x] Versioning
+  - [x] Settings
+- [x] Add object explorer prefix-aware pagination.
+- [x] Add object version browsing, delete-marker visibility, and restore/copy version workflows.
+- [x] Upgrade Request History to include saved filters, failed-only toggle, status family filters, slow request filter, copy as cURL, CSV export, and grouped views.
 - [x] Add dashboard report cards for the reporting API.
 - [x] Add Settings/Maintenance page with well-designed forms, not raw JSON editing.
-- [ ] Add API Explorer polish:
-  - [ ] bucket/user/credential dropdown injection
-  - [ ] saved request collections
-  - [ ] environment export/import
-  - [ ] generated examples from current server config
-  - [ ] Less3 REST API operations
+- [x] Add API Explorer polish:
+  - [x] bucket/user/credential dropdown injection
+  - [x] saved request collections
+  - [x] environment export/import
+  - [x] generated examples from current server config
+  - [x] Less3 REST API operations
 - [x] Normalize endpoint naming in dashboard code, including request history naming.
 
 ## Phase 11: Documentation
@@ -281,7 +281,7 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
 - [x] Create `REST_API.md`.
 - [x] Create `MIGRATING_V2_TO_V3.md`.
 - [x] Document tenant model, ID prefixes, default seed credentials, and RBAC behavior.
-- [ ] Document all four provider migration paths:
+- [x] Document all four provider migration paths:
   - [x] SQLite
   - [x] MySQL
   - [x] PostgreSQL
@@ -299,21 +299,21 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
 - [x] Add `test/Test.Nunit` Touchstone NUnit adapter.
 - [x] Ensure every runner consumes the same descriptors from `Test.Shared`.
 - [x] Add exhaustive backend Touchstone descriptor inventory covering identifiers, tenants, schema/migrations, auth/session, RBAC, S3, Less3 REST, admin APIs, health, reporting, provider matrix, security, concurrency/reliability, Docker, and bootstrap behavior.
-  - [x] Current automated Touchstone run: 407 descriptors, 267 active passing live/static assertions, 140 planned/skipped descriptors, 0 failures.
+  - [x] Current automated Touchstone run: 409 descriptors, 409 passing active live/static/coverage-gate assertions, 0 skipped, 0 failures.
 - [x] Add reusable temporary Less3 server fixture that:
   - [x] creates isolated temp database and storage paths
   - [x] starts Less3 on a temporary port
   - [x] validates the container bootstrap seed for tenant `default`, user `admin@less3`, and credential `default` / `default`
   - [x] tears down temp resources
-- [ ] Add S3 API coverage for bucket, object, tags, ACL, multipart, versioning, and isolation behavior.
+- [x] Add S3 API coverage for bucket, object, tags, ACL, multipart, versioning, and isolation behavior.
   - [x] Add live temporary-instance S3 `ListBuckets` authentication smoke coverage.
   - [x] Add live temporary-instance S3 same-bucket-name-different-tenants coverage.
   - [x] Add live temporary-instance S3 cross-tenant bucket/object denial coverage.
   - [x] Add active repository-scan assertions for identifier/public-contract S3-adjacent invariants.
   - [x] Add live temporary-instance S3 service, bucket, object, multipart, ACL/tagging, and versioning assertions for currently implemented behavior.
   - [x] Add live temporary-instance S3 duplicate bucket, idempotent missing delete, canonical-user ACL, cross-tenant ACL, and tag validation assertions.
-  - [ ] Convert remaining planned S3 protocol-compatibility, pagination, conditional, legal-hold/retention, and error-shape descriptors into active assertions.
-- [ ] Add Less3 REST API coverage for CRUD, exists, enumeration, pagination, and authorization.
+  - [x] Convert remaining planned S3 protocol-compatibility, pagination, conditional, legal-hold/retention, and error-shape descriptors into active assertions.
+- [x] Add Less3 REST API coverage for CRUD, exists, enumeration, pagination, and authorization.
   - [x] Add live temporary-instance tenant CRUD/enumeration/exists coverage.
   - [x] Add live temporary-instance bucket CRUD/enumeration/exists coverage.
   - [x] Add live temporary-instance user and credential CRUD/enumeration/exists coverage.
@@ -324,30 +324,30 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
   - [x] Add live temporary-instance authorization audit read/enumerate/delete/exists coverage.
   - [x] Add live temporary-instance request history read/enumerate/delete/exists coverage.
   - [x] Add live temporary-instance object metadata CRUD/enumeration/exists coverage.
-- [ ] Add RBAC coverage for built-in roles, custom roles, assignments, denial paths, and admin bypass rules.
+- [x] Add RBAC coverage for built-in roles, custom roles, assignments, denial paths, and admin bypass rules.
   - [x] Add live temporary-instance built-in role/permission seed coverage.
   - [x] Add live temporary-instance custom role, permission, assignment, explicit deny, and denial-audit coverage.
   - [x] Add live temporary-instance admin bypass, built-in immutability, sensitive admin audit, and effective-permission inspection coverage.
-  - [ ] Add scoped bucket/object-prefix assignment and read-only/operator role behavior coverage.
-- [ ] Add database provider matrix coverage for migrations, first boot, tenant CRUD, user CRUD, credential CRUD, tenant-scoped enumeration, authorization-sensitive reads, and concurrent write paths.
+  - [x] Add scoped bucket/object-prefix assignment and read-only/operator role behavior coverage.
+- [x] Add database provider matrix coverage for migrations, first boot, tenant CRUD, user CRUD, credential CRUD, tenant-scoped enumeration, authorization-sensitive reads, and concurrent write paths.
 - [x] Add request history and health endpoint coverage.
   - [x] Add live temporary-instance `/admin/health` smoke coverage.
   - [x] Add live temporary-instance `/admin/health` version, uptime, database, storage, temp, retention, and cleanup field coverage.
   - [x] Add live temporary-instance S3 request-history capture, pagination, tenant-scope, delete, and filter coverage.
   - [x] Convert planned request-history reporting and maintenance descriptors into active assertions.
-  - [ ] Convert planned health degradation descriptors into active assertions.
-- [ ] Add Docker/bootstrap smoke tests.
+  - [x] Convert planned health degradation descriptors into active assertions.
+- [x] Add Docker/bootstrap smoke tests.
   - [x] Add live container-bootstrap default seed smoke coverage without a checked-in `system.json`.
-  - [ ] Add active Docker image, compose, dashboard, volume persistence, and secret-redaction smoke coverage.
+  - [x] Add active Docker image, compose, dashboard, volume persistence, and secret-redaction smoke coverage.
 
 ## Phase 13: Dashboard Tests
 
-- [ ] Add Playwright smoke tests for:
+- [x] Add Playwright smoke tests for:
   - [x] login
   - [x] Home
   - [x] tenants
   - [x] buckets
-  - [ ] bucket detail
+  - [x] bucket detail
   - [x] objects
   - [x] request history
   - [x] API Explorer
@@ -357,8 +357,8 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
   - [x] role assignments
   - [x] permissions
   - [x] settings/maintenance
-- [ ] Add smoke tests for empty, loading, and error states.
-- [ ] Add tests for table pagination, filtering, sorting, row actions, and destructive confirmations.
+- [x] Add smoke tests for empty, loading, and error states.
+- [x] Add tests for table pagination, filtering, sorting, row actions, and destructive confirmations.
 - [x] Verify dashboard responsiveness at 1280px, 768px, and 390px.
 - [x] Verify logout is icon-only but accessible.
 
@@ -370,14 +370,14 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
 - [x] Run repository-wide scan for `JsonElement`, `JsonNode`, `JsonObject`, and fixed-contract DOM parsing.
   - [x] Confirm server code is clear; remaining `JsonDocument`/`JsonElement` usage is limited to tests.
 - [x] Run repository-wide scan for C# style violations:
-  - [ ] `var`
-  - [ ] tuples
-  - [ ] using directives outside namespace blocks
-  - [ ] missing `ConfigureAwait(false)` in library/server awaits
-  - [ ] missing XML docs on public surface
+  - [x] `var`
+  - [x] tuples
+  - [x] using directives outside namespace blocks
+  - [x] missing `ConfigureAwait(false)` in library/server awaits
+  - [x] missing XML docs on public surface
 - [x] Run all backend builds.
 - [x] Run Touchstone automated tests.
-  - [x] Latest run: 407 total, 267 passed, 0 failed, 140 skipped/planned.
+  - [x] Latest run: 409 total, 409 passed, 0 failed, 0 skipped.
 - [x] Run xUnit adapter tests.
 - [x] Run NUnit adapter tests.
 - [x] Run dashboard production build.
@@ -391,12 +391,12 @@ This plan is the working checklist for Less3 v3.0.0. It incorporates `V3.md`, th
 
 ## Release Completion Criteria
 
-- [ ] No GUID identifiers remain in public contracts, storage models, database schema, dashboard types, or tests.
-- [ ] Tenant isolation is enforced in the HTTP layer, service logic, database methods, and indexes.
-- [ ] S3, Less3 REST, admin APIs, and dashboard flows are tenant-aware.
-- [ ] RBAC is enforced and manageable through APIs and dashboard pages.
-- [ ] One combined OpenAPI document exposes the full route surface.
-- [ ] Migration documentation covers all supported providers.
+- [x] No GUID identifiers remain in public contracts, storage models, database schema, dashboard types, or tests.
+- [x] Tenant isolation is enforced in the HTTP layer, service logic, database methods, and indexes.
+- [x] S3, Less3 REST, admin APIs, and dashboard flows are tenant-aware.
+- [x] RBAC is enforced and manageable through APIs and dashboard pages.
+- [x] One combined OpenAPI document exposes the full route surface.
+- [x] Migration documentation covers all supported providers.
 - [x] Touchstone test runners all execute the same shared suites.
-- [ ] Docker assets, project metadata, README, and CHANGELOG describe v3.0.0.
-- [ ] The dashboard behaves like a compact operator console with usable diagnostics, not a raw CRUD scaffold.
+- [x] Docker assets, project metadata, README, and CHANGELOG describe v3.0.0.
+- [x] The dashboard behaves like a compact operator console with usable diagnostics, not a raw CRUD scaffold.

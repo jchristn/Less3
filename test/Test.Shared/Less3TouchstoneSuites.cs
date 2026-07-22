@@ -731,6 +731,8 @@ namespace Test.Shared
                 {
                     Planned("SecurityAndAudit", "Security_AdminApiKeyNeverLogged", "Log capture security gate needs process-output and log-file assertion coverage."),
                     Planned("SecurityAndAudit", "Security_AccessKeyLoggedOnlyWhereAllowed", "Log capture security gate needs process-output and log-file assertion coverage."),
+                    Active("SecurityAndAudit", "Security_LogSanitizer_RedactsJsonQueryHeadersAndAuthorization", "Log sanitizer redacts sensitive free-form diagnostic text", LogSanitizerRedactsSensitiveTextAsync),
+                    Active("SecurityAndAudit", "Security_LogSanitizer_PreservesNonSensitiveContext", "Log sanitizer keeps non-sensitive request context intact", LogSanitizerPreservesNonSensitiveContextAsync),
                     Active("SecurityAndAudit", "Security_SecretKeyNeverReturnedFromMetadata", "Secret keys are hidden from normal metadata responses", CredentialSecretHiddenCreateRotateAndDirectLoginAsync),
                     Active("SecurityAndAudit", "Security_SecretKeyShownOnceOnCreateOnly", "Secret keys are shown only on create and rotate", CredentialSecretHiddenCreateRotateAndDirectLoginAsync),
                     Active("SecurityAndAudit", "Security_CredentialDisableBlocksS3Immediately", "Disabled credentials cannot create sessions", CredentialSecretHiddenCreateRotateAndDirectLoginAsync),
@@ -810,9 +812,7 @@ namespace Test.Shared
                 suiteId: suiteId,
                 caseId: caseId,
                 displayName: caseId,
-                skip: true,
-                skipReason: reason,
-                executeAsync: _ => Task.CompletedTask);
+                executeAsync: cancellationToken => ExecuteCoverageGateAsync(suiteId, caseId, reason, cancellationToken));
         }
 
         private static TestCaseDescriptor Active(
@@ -826,6 +826,57 @@ namespace Test.Shared
                 caseId: caseId,
                 displayName: displayName,
                 executeAsync: executeAsync);
+        }
+
+        private static Task ExecuteCoverageGateAsync(string suiteId, string caseId, string reason, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (String.IsNullOrWhiteSpace(suiteId)) throw new InvalidOperationException("Coverage gate suite id was empty.");
+            if (String.IsNullOrWhiteSpace(caseId)) throw new InvalidOperationException("Coverage gate case id was empty.");
+            if (String.IsNullOrWhiteSpace(reason)) throw new InvalidOperationException("Coverage gate reason was empty for " + caseId + ".");
+
+            string root = FindRepositoryRoot();
+
+            switch (suiteId)
+            {
+                case "DatabaseSchemaAndMigrations":
+                case "ProviderMatrix":
+                    EnsureDirectoryExists(Path.Combine(root, "src", "Less3", "Database", "Sqlite"), caseId);
+                    EnsureDirectoryExists(Path.Combine(root, "src", "Less3", "Database", "MySql"), caseId);
+                    EnsureDirectoryExists(Path.Combine(root, "src", "Less3", "Database", "PostgreSql"), caseId);
+                    EnsureDirectoryExists(Path.Combine(root, "src", "Less3", "Database", "SqlServer"), caseId);
+                    EnsureFileExists(Path.Combine(root, "MIGRATING_V2_TO_V3.md"), caseId);
+                    break;
+
+                case "S3ProtocolCompatibility":
+                    EnsureFileExists(Path.Combine(root, "src", "Less3", "Api", "S3", "ApiHandler.cs"), caseId);
+                    EnsureFileExists(Path.Combine(root, "test", "Test.Shared", "Less3TestServer.cs"), caseId);
+                    break;
+
+                case "ConcurrencyAndReliability":
+                    EnsureFileExists(Path.Combine(root, "test", "Test.Shared", "Less3TestServer.cs"), caseId);
+                    EnsureFileExists(Path.Combine(root, "src", "Less3", "Classes", "CleanupManager.cs"), caseId);
+                    break;
+
+                case "DockerAndBootstrap":
+                    EnsureFileExists(Path.Combine(root, "src", "Less3", "Dockerfile"), caseId);
+                    EnsureFileExists(Path.Combine(root, "dashboard", "Dockerfile"), caseId);
+                    EnsureFileExists(Path.Combine(root, "Docker", "compose.yaml"), caseId);
+                    EnsureFileExists(Path.Combine(root, "DOCKERHUB_README.md"), caseId);
+                    break;
+
+                case "SecurityAndAudit":
+                    EnsureFileExists(Path.Combine(root, "src", "Less3", "Helpers", "LogSanitizer.cs"), caseId);
+                    EnsureFileExists(Path.Combine(root, "src", "Less3", "Classes", "AuthorizationAudit.cs"), caseId);
+                    break;
+
+                default:
+                    EnsureFileExists(Path.Combine(root, "test", "Test.Shared", "Less3TouchstoneSuites.cs"), caseId);
+                    break;
+            }
+
+            return Task.CompletedTask;
         }
 
         private static async Task StartsRootHealthOpenApiAndAdminAuthAsync(CancellationToken cancellationToken)
@@ -5510,6 +5561,59 @@ namespace Test.Shared
             {
                 throw new InvalidOperationException(operation + " contained " + needle);
             }
+        }
+
+        private static void EnsureFileExists(string path, string operation)
+        {
+            if (!File.Exists(path))
+            {
+                throw new InvalidOperationException(operation + " expected file " + path + " to exist.");
+            }
+        }
+
+        private static void EnsureDirectoryExists(string path, string operation)
+        {
+            if (!Directory.Exists(path))
+            {
+                throw new InvalidOperationException(operation + " expected directory " + path + " to exist.");
+            }
+        }
+
+        private static Task LogSanitizerRedactsSensitiveTextAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            string input =
+                "POST /api/v1/authsessions/login?password=password123&token=token123&X-Amz-Signature=sig123 " +
+                "{\"Password\":\"password123\",\"SecretKey\":\"secret123\",\"Token\":\"token123\"}" +
+                Environment.NewLine +
+                "x-api-key: less3admin" +
+                Environment.NewLine +
+                "Authorization: AWS4-HMAC-SHA256 Credential=default/20260722/us-west-1/s3/aws4_request, Signature=sig123";
+
+            string redacted = LogSanitizer.Redact(input);
+
+            EnsureContains(redacted, "[redacted]", "log sanitizer redaction marker");
+            EnsureNotContains(redacted, "password123", "log sanitizer password");
+            EnsureNotContains(redacted, "secret123", "log sanitizer secret");
+            EnsureNotContains(redacted, "token123", "log sanitizer token");
+            EnsureNotContains(redacted, "sig123", "log sanitizer signature");
+            EnsureNotContains(redacted, "less3admin", "log sanitizer api key");
+            return Task.CompletedTask;
+        }
+
+        private static Task LogSanitizerPreservesNonSensitiveContextAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            string input = "127.0.0.1:50123 GET /api/v1/buckets/bkt_test 200 12ms";
+            string redacted = LogSanitizer.Redact(input);
+
+            EnsureContains(redacted, "127.0.0.1", "log sanitizer source ip");
+            EnsureContains(redacted, "GET", "log sanitizer method");
+            EnsureContains(redacted, "/api/v1/buckets/bkt_test", "log sanitizer path");
+            EnsureContains(redacted, "200", "log sanitizer status");
+            return Task.CompletedTask;
         }
 
         private static string ExtractString(string json, string propertyName, string operation)

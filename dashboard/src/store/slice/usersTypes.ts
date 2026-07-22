@@ -2,8 +2,12 @@
 
 export interface User {
   Id: string;
+  TenantId?: string;
   Name: string;
   Email: string;
+  Active?: boolean;
+  IsAdmin?: boolean;
+  IsTenantAdmin?: boolean;
   CreatedUtc: string;
   [key: string]: any;
 }
@@ -13,15 +17,25 @@ export type UserResponse = User;
 
 export interface CreateUserRequest {
   Id?: string;
+  TenantId?: string;
   Name: string;
   Email: string;
+  PasswordHash?: string;
+  Active?: boolean;
+  IsAdmin?: boolean;
+  IsTenantAdmin?: boolean;
   [key: string]: any;
 }
 
 export interface UpdateUserRequest {
   Id: string;
+  TenantId?: string;
   Name: string;
   Email: string;
+  PasswordHash?: string;
+  Active?: boolean;
+  IsAdmin?: boolean;
+  IsTenantAdmin?: boolean;
   [key: string]: any;
 }
 

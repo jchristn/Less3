@@ -34,11 +34,58 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
       </div>
     </div>
     <div
-      style="flex: 1; display: flex; justify-content: center; align-items: center; align-self: center;"
+      class="contextBar"
     >
+      <span
+        class="contextChip"
+      >
+        <span
+          class="contextLabel"
+        >
+          Tenant
+        </span>
+        <span
+          class="contextValue"
+        >
+          default
+        </span>
+      </span>
+      <span
+        class="contextChip"
+      >
+        <span
+          class="contextLabel"
+        >
+          User
+        </span>
+        <span
+          class="contextValue"
+        >
+          admin@less3
+        </span>
+      </span>
+      <span
+        class="contextChip"
+      >
+        <span
+          class="contextLabel"
+        >
+          Role
+        </span>
+        <span
+          class="contextValue"
+        >
+          System Admin
+        </span>
+      </span>
       <span
         class="serverUrlBadge"
       >
+        <span
+          class="contextLabel"
+        >
+          Endpoint
+        </span>
         <span
           class="serverUrlValue"
         >
@@ -76,6 +123,20 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
             />
           </svg>
         </button>
+      </span>
+      <span
+        class="contextChip"
+      >
+        <span
+          class="contextLabel"
+        >
+          Version
+        </span>
+        <span
+          class="contextValue"
+        >
+          3.0.0
+        </span>
       </span>
     </div>
     <div

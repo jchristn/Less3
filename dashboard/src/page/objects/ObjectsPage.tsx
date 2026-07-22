@@ -14,6 +14,8 @@ import {
   HomeOutlined,
   ReloadOutlined,
   UploadOutlined,
+  CopyOutlined,
+  RollbackOutlined,
 } from '@ant-design/icons';
 import { Breadcrumb } from 'antd';
 import { useSearchParams } from 'next/navigation';
@@ -28,6 +30,7 @@ import PageContainer from '#/components/base/pageContainer/PageContainer';
 import Less3Flex from '#/components/base/flex/Flex';
 import Less3Text from '#/components/base/typograpghy/Text';
 import CopyToClipboard from '#/components/copy-to-clipboard/CopyToClipboard';
+import IdDisplay from '#/components/id-display';
 import JsonViewerModal from '#/components/json-viewer-modal/JsonViewerModal';
 import {
   useGetBucketsQuery,
@@ -122,6 +125,14 @@ const ObjectsPage: React.FC = () => {
   const [isDeleteFolderModalVisible, setIsDeleteFolderModalVisible] = useState(false);
   const [deletingFolderPrefix, setDeletingFolderPrefix] = useState<string | null>(null);
   const [isDeletingFolder, setIsDeletingFolder] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
+  const [showDeleteMarkers, setShowDeleteMarkers] = useState(false);
+  const [copyingObject, setCopyingObject] = useState<BucketObject | null>(null);
+  const [isCopyModalVisible, setIsCopyModalVisible] = useState(false);
+  const [isCopyingVersion, setIsCopyingVersion] = useState(false);
+  const [isRestoringVersion, setIsRestoringVersion] = useState(false);
+  const [copyForm] = Form.useForm<{ targetKey: string }>();
 
   const { data: bucketsData, isLoading: isLoadingBuckets } = useGetBucketsQuery();
 
@@ -271,7 +282,11 @@ const ObjectsPage: React.FC = () => {
     }));
 
     // Combine parent entry, folders and files
-    const allItems = [...parentEntry, ...folderObjects, ...files];
+    const allItems = [...parentEntry, ...folderObjects, ...files].filter((item) => {
+      const deleteMarker = Boolean((item as BucketObject & { IsDeleteMarker?: boolean; DeleteMarker?: boolean }).IsDeleteMarker)
+        || Boolean((item as BucketObject & { IsDeleteMarker?: boolean; DeleteMarker?: boolean }).DeleteMarker);
+      return showDeleteMarkers || !deleteMarker;
+    });
 
     const q = searchText.trim().toLowerCase();
     if (!q) return allItems;
@@ -285,7 +300,21 @@ const ObjectsPage: React.FC = () => {
 
       return key.includes(q) || contentType.includes(q) || storageClass.includes(q) || owner.includes(q);
     });
-  }, [objectsAtCurrentLevel, currentPrefix, searchText]);
+  }, [objectsAtCurrentLevel, currentPrefix, searchText, showDeleteMarkers]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [currentPrefix, pageSize, searchText, selectedBucketName, showDeleteMarkers]);
+
+  const totalObjectPages = useMemo(() => {
+    return Math.max(1, Math.ceil(filteredObjects.length / pageSize));
+  }, [filteredObjects.length, pageSize]);
+
+  const paginatedObjects = useMemo(() => {
+    const safePage = Math.min(currentPage, totalObjectPages);
+    const start = (safePage - 1) * pageSize;
+    return filteredObjects.slice(start, start + pageSize);
+  }, [currentPage, filteredObjects, pageSize, totalObjectPages]);
 
   const selectableObjectKeys = useMemo(() => {
     return filteredObjects
@@ -557,6 +586,79 @@ const ObjectsPage: React.FC = () => {
     } finally {
       // Clear the downloading key to hide loading state
       setDownloadingObjectKey(null);
+    }
+  };
+
+  const handleRestoreVersion = async (record: BucketObject) => {
+    if (!selectedBucketName) {
+      message.error('Bucket information not available');
+      return;
+    }
+
+    setIsRestoringVersion(true);
+    try {
+      const result = await downloadBucketObject({
+        bucketId: selectedBucketName,
+        objectKey: record.Key,
+      }).unwrap();
+
+      await writeBucketObject({
+        bucketId: selectedBucketName,
+        objectKey: record.Key,
+        content: result.content,
+        contentType: result.contentType || record.ContentType || inferTextObjectContentType(undefined, record.Key),
+      }).unwrap();
+
+      message.success(`Version restored to current object "${record.Key}"`);
+      refetchObjects();
+    } catch (error: any) {
+      message.error(error?.data?.data || error?.message || 'Failed to restore object version');
+    } finally {
+      setIsRestoringVersion(false);
+    }
+  };
+
+  const handleCopyVersion = (record: BucketObject) => {
+    setCopyingObject(record);
+    copyForm.setFieldsValue({
+      targetKey: `${record.Key}.copy`,
+    });
+    setIsCopyModalVisible(true);
+  };
+
+  const handleCopyVersionConfirm = async () => {
+    if (!copyingObject || !selectedBucketName) {
+      message.error('Object or bucket information not available');
+      return;
+    }
+
+    try {
+      const values = await copyForm.validateFields();
+      const targetKey = values.targetKey.trim();
+      setIsCopyingVersion(true);
+
+      const result = await downloadBucketObject({
+        bucketId: selectedBucketName,
+        objectKey: copyingObject.Key,
+      }).unwrap();
+
+      await writeBucketObject({
+        bucketId: selectedBucketName,
+        objectKey: targetKey,
+        content: result.content,
+        contentType: result.contentType || copyingObject.ContentType || inferTextObjectContentType(undefined, copyingObject.Key),
+      }).unwrap();
+
+      message.success(`Copied "${copyingObject.Key}" to "${targetKey}"`);
+      setIsCopyModalVisible(false);
+      setCopyingObject(null);
+      copyForm.resetFields();
+      refetchObjects();
+    } catch (error: any) {
+      if (error?.errorFields) return;
+      message.error(error?.data?.data || error?.message || 'Failed to copy object version');
+    } finally {
+      setIsCopyingVersion(false);
     }
   };
 
@@ -1131,6 +1233,36 @@ const ObjectsPage: React.FC = () => {
       label: 'ETag',
     },
     {
+      key: 'VersionId',
+      label: 'Version',
+      width: '160px',
+      render: (item) => {
+        const versionId = (item as BucketObject & { VersionId?: string; Version?: string }).VersionId
+          || (item as BucketObject & { VersionId?: string; Version?: string }).Version
+          || '';
+        return versionId ? <IdDisplay id={versionId} /> : '-';
+      },
+      filterValue: (item) =>
+        (item as BucketObject & { VersionId?: string; Version?: string }).VersionId
+        || (item as BucketObject & { VersionId?: string; Version?: string }).Version
+        || '',
+    },
+    {
+      key: 'DeleteMarker',
+      label: 'Delete Marker',
+      width: '130px',
+      render: (item) => {
+        const deleteMarker = Boolean((item as BucketObject & { IsDeleteMarker?: boolean; DeleteMarker?: boolean }).IsDeleteMarker)
+          || Boolean((item as BucketObject & { IsDeleteMarker?: boolean; DeleteMarker?: boolean }).DeleteMarker);
+        return deleteMarker ? 'Yes' : 'No';
+      },
+      filterValue: (item) => {
+        const deleteMarker = Boolean((item as BucketObject & { IsDeleteMarker?: boolean; DeleteMarker?: boolean }).IsDeleteMarker)
+          || Boolean((item as BucketObject & { IsDeleteMarker?: boolean; DeleteMarker?: boolean }).DeleteMarker);
+        return deleteMarker ? 'Yes' : 'No';
+      },
+    },
+    {
       key: 'StorageClass',
       label: 'Storage Class',
     },
@@ -1244,6 +1376,25 @@ const ObjectsPage: React.FC = () => {
             disabled: downloadingObjectKey === item.Key,
           },
           {
+            key: 'copy-version',
+            icon: <CopyOutlined />,
+            label: 'Copy Version',
+            onClick: () => {
+              setOpenDropdownKey(null);
+              handleCopyVersion(item);
+            },
+          },
+          {
+            key: 'restore-version',
+            icon: <RollbackOutlined />,
+            label: 'Restore Version',
+            onClick: () => {
+              setOpenDropdownKey(null);
+              void handleRestoreVersion(item);
+            },
+            disabled: isRestoringVersion,
+          },
+          {
             key: 'delete',
             label: 'Delete Object',
             onClick: () => {
@@ -1291,6 +1442,7 @@ const ObjectsPage: React.FC = () => {
               setSearchText(''); // Clear search when bucket changes
               setCurrentPrefix(''); // Reset to root when bucket changes
               setSelectedRowKeys([]); // Clear selection when bucket changes
+              setCurrentPage(1);
             }}
             style={{ width: 250 }}
             loading={isLoadingBuckets}
@@ -1441,6 +1593,42 @@ const ObjectsPage: React.FC = () => {
                 ]}
               />
               <Less3Flex style={{ marginLeft: 'auto' }} align="center" gap={8}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+                  <input
+                    type="checkbox"
+                    checked={showDeleteMarkers}
+                    onChange={(event) => setShowDeleteMarkers(event.target.checked)}
+                  />
+                  Delete markers
+                </label>
+                <Less3Select
+                  options={[
+                    { label: '25 / page', value: 25 },
+                    { label: '50 / page', value: 50 },
+                    { label: '100 / page', value: 100 },
+                  ]}
+                  value={pageSize}
+                  onChange={(value) => setPageSize(Number(value))}
+                  style={{ width: 112 }}
+                  size="small"
+                />
+                <Less3Button
+                  size="small"
+                  disabled={currentPage <= 1}
+                  onClick={() => setCurrentPage((value) => Math.max(1, value - 1))}
+                >
+                  Previous
+                </Less3Button>
+                <Less3Text type="secondary" style={{ fontSize: 12 }}>
+                  {`${currentPage} / ${totalObjectPages}`}
+                </Less3Text>
+                <Less3Button
+                  size="small"
+                  disabled={currentPage >= totalObjectPages}
+                  onClick={() => setCurrentPage((value) => Math.min(totalObjectPages, value + 1))}
+                >
+                  Next
+                </Less3Button>
                 {selectedRowKeys.length > 0 && (
                   <Less3Text type="secondary" style={{ fontSize: 12 }}>
                     {selectedRowKeys.length} selected
@@ -1460,7 +1648,7 @@ const ObjectsPage: React.FC = () => {
 
             <DataTable
               columns={columns}
-              data={filteredObjects}
+              data={paginatedObjects}
               loading={isLoadingObjects}
               rowKey="Key"
               onRowClick={handleObjectRowClick}
@@ -1617,6 +1805,33 @@ const ObjectsPage: React.FC = () => {
             This will delete {deletingFolderPrefix ? getFolderObjectCount(deletingFolderPrefix) : 0} object(s). This action cannot be undone.
           </p>
         </Less3Flex>
+      </Less3Modal>
+
+      <Less3Modal
+        title={`Copy Version - ${copyingObject?.Key || ''}`}
+        open={isCopyModalVisible}
+        forceRender
+        onOk={handleCopyVersionConfirm}
+        onCancel={() => {
+          setIsCopyModalVisible(false);
+          setCopyingObject(null);
+          copyForm.resetFields();
+        }}
+        confirmLoading={isCopyingVersion}
+        centered
+        keyboard={true}
+      >
+        <Form form={copyForm} layout="vertical" autoComplete="off">
+          <Less3FormItem
+            label="Target Key"
+            name="targetKey"
+            rules={[
+              { required: true, message: 'Please enter a target key' },
+            ]}
+          >
+            <Less3Input placeholder="path/to/copied-object.txt" />
+          </Less3FormItem>
+        </Form>
       </Less3Modal>
 
       <Less3Modal

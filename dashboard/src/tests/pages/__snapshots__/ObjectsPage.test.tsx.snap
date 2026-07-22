@@ -34,11 +34,58 @@ exports[`ObjectsPage Snapshots should match default render 1`] = `
       </div>
     </div>
     <div
-      style="flex: 1; display: flex; justify-content: center; align-items: center; align-self: center;"
+      class="contextBar"
     >
+      <span
+        class="contextChip"
+      >
+        <span
+          class="contextLabel"
+        >
+          Tenant
+        </span>
+        <span
+          class="contextValue"
+        >
+          default
+        </span>
+      </span>
+      <span
+        class="contextChip"
+      >
+        <span
+          class="contextLabel"
+        >
+          User
+        </span>
+        <span
+          class="contextValue"
+        >
+          admin@less3
+        </span>
+      </span>
+      <span
+        class="contextChip"
+      >
+        <span
+          class="contextLabel"
+        >
+          Role
+        </span>
+        <span
+          class="contextValue"
+        >
+          System Admin
+        </span>
+      </span>
       <span
         class="serverUrlBadge"
       >
+        <span
+          class="contextLabel"
+        >
+          Endpoint
+        </span>
         <span
           class="serverUrlValue"
         >
@@ -76,6 +123,20 @@ exports[`ObjectsPage Snapshots should match default render 1`] = `
             />
           </svg>
         </button>
+      </span>
+      <span
+        class="contextChip"
+      >
+        <span
+          class="contextLabel"
+        >
+          Version
+        </span>
+        <span
+          class="contextValue"
+        >
+          3.0.0
+        </span>
       </span>
     </div>
     <div
@@ -1110,6 +1171,103 @@ exports[`ObjectsPage Snapshots should match default render 1`] = `
                     class="ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-align-center"
                     style="margin-left: auto; gap: 8px;"
                   >
+                    <label
+                      style="display: flex; align-items: center; gap: 6px; font-size: 12px;"
+                    >
+                      <input
+                        type="checkbox"
+                      />
+                      Delete markers
+                    </label>
+                    <div
+                      class="ant-select ant-select-sm ant-select-outlined css-dev-only-do-not-override-mncuj7 ant-select-single ant-select-show-arrow"
+                      style="width: 112px;"
+                    >
+                      <div
+                        class="ant-select-selector"
+                      >
+                        <span
+                          class="ant-select-selection-wrap"
+                        >
+                          <span
+                            class="ant-select-selection-search"
+                          >
+                            <input
+                              aria-autocomplete="list"
+                              aria-controls="rc_select_TEST_OR_SSR_list"
+                              aria-expanded="false"
+                              aria-haspopup="listbox"
+                              aria-owns="rc_select_TEST_OR_SSR_list"
+                              autocomplete="off"
+                              class="ant-select-selection-search-input"
+                              id="rc_select_TEST_OR_SSR"
+                              readonly=""
+                              role="combobox"
+                              style="opacity: 0;"
+                              type="search"
+                              unselectable="on"
+                              value=""
+                            />
+                          </span>
+                          <span
+                            class="ant-select-selection-item"
+                            title="50 / page"
+                          >
+                            50 / page
+                          </span>
+                        </span>
+                      </div>
+                      <span
+                        aria-hidden="true"
+                        class="ant-select-arrow"
+                        style="user-select: none;"
+                        unselectable="on"
+                      >
+                        <span
+                          aria-label="down"
+                          class="anticon anticon-down ant-select-suffix"
+                          role="img"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            data-icon="down"
+                            fill="currentColor"
+                            focusable="false"
+                            height="1em"
+                            viewBox="64 64 896 896"
+                            width="1em"
+                          >
+                            <path
+                              d="M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z"
+                            />
+                          </svg>
+                        </span>
+                      </span>
+                    </div>
+                    <button
+                      class="ant-btn css-dev-only-do-not-override-mncuj7 ant-btn-default ant-btn-color-default ant-btn-variant-outlined ant-btn-sm"
+                      disabled=""
+                      type="button"
+                    >
+                      <span>
+                        Previous
+                      </span>
+                    </button>
+                    <span
+                      class="ant-typography ant-typography-secondary css-dev-only-do-not-override-mncuj7"
+                      style="font-size: 12px;"
+                    >
+                      1 / 1
+                    </span>
+                    <button
+                      class="ant-btn css-dev-only-do-not-override-mncuj7 ant-btn-default ant-btn-color-default ant-btn-variant-outlined ant-btn-sm"
+                      disabled=""
+                      type="button"
+                    >
+                      <span>
+                        Next
+                      </span>
+                    </button>
                     <button
                       class="ant-btn css-dev-only-do-not-override-mncuj7 ant-btn-text ant-btn-dangerous ant-btn-color-dangerous ant-btn-variant-text"
                       disabled=""
@@ -1214,8 +1372,7 @@ exports[`ObjectsPage Snapshots should match default render 1`] = `
                           type="number"
                           value="1"
                         />
-                        / 
-                        1
+                         / 1
                       </span>
                       <button
                         class="datatable-page-btn"
@@ -1320,6 +1477,40 @@ exports[`ObjectsPage Snapshots should match default render 1`] = `
                           </th>
                           <th
                             class="sortable"
+                            style="width: 160px; min-width: 160px;"
+                          >
+                            <div
+                              class="datatable-th-content"
+                            >
+                              <span>
+                                Version
+                              </span>
+                              <span
+                                class="datatable-sort-icon"
+                              >
+                                ↕
+                              </span>
+                            </div>
+                          </th>
+                          <th
+                            class="sortable"
+                            style="width: 130px; min-width: 130px;"
+                          >
+                            <div
+                              class="datatable-th-content"
+                            >
+                              <span>
+                                Delete Marker
+                              </span>
+                              <span
+                                class="datatable-sort-icon"
+                              >
+                                ↕
+                              </span>
+                            </div>
+                          </th>
+                          <th
+                            class="sortable"
                           >
                             <div
                               class="datatable-th-content"
@@ -1351,6 +1542,22 @@ exports[`ObjectsPage Snapshots should match default render 1`] = `
                           class="datatable-filter-row"
                         >
                           <th />
+                          <th>
+                            <input
+                              class="datatable-filter-input"
+                              placeholder="Filter..."
+                              type="text"
+                              value=""
+                            />
+                          </th>
+                          <th>
+                            <input
+                              class="datatable-filter-input"
+                              placeholder="Filter..."
+                              type="text"
+                              value=""
+                            />
+                          </th>
                           <th>
                             <input
                               class="datatable-filter-input"
@@ -1474,6 +1681,53 @@ exports[`ObjectsPage Snapshots should match default render 1`] = `
                             100 B
                           </td>
                           <td />
+                          <td>
+                            <div
+                              class="ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-align-center"
+                              style="gap: 8px;"
+                            >
+                              <span
+                                class="idText"
+                              >
+                                objv_current
+                              </span>
+                              <button
+                                aria-describedby="test-id"
+                                aria-label="Copy Id"
+                                class="copyButton"
+                                data-row-click-ignore="true"
+                                style="--copy-button-size: 22px;"
+                                type="button"
+                              >
+                                <svg
+                                  aria-hidden="true"
+                                  fill="none"
+                                  height="14"
+                                  stroke="currentColor"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="2"
+                                  viewBox="0 0 24 24"
+                                  width="14"
+                                >
+                                  <rect
+                                    height="13"
+                                    rx="2"
+                                    ry="2"
+                                    width="13"
+                                    x="9"
+                                    y="9"
+                                  />
+                                  <path
+                                    d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                                  />
+                                </svg>
+                              </button>
+                            </div>
+                          </td>
+                          <td>
+                            No
+                          </td>
                           <td />
                           <td
                             data-row-click-ignore="true"

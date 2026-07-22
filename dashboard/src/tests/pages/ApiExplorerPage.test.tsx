@@ -1,5 +1,5 @@
 import { renderWithRedux } from '../store/utils';
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ApiExplorerPage from '#/page/api-explorer/ApiExplorerPage';
 
@@ -21,6 +21,29 @@ jest.mock('#/store/slice/credentialsSlice', () => ({
       AccessKey: 'AK123',
       SecretKey: 'SK123',
     },
+  }),
+}));
+
+jest.mock('#/store/slice/bucketsSlice', () => ({
+  useGetBucketsQuery: () => ({
+    data: [
+      {
+        Id: 'bkt_test',
+        Name: 'test-bucket',
+      },
+    ],
+  }),
+}));
+
+jest.mock('#/store/slice/usersSlice', () => ({
+  useGetUsersQuery: () => ({
+    data: [
+      {
+        Id: 'usr_test',
+        Name: 'Test User',
+        Email: 'test@example.com',
+      },
+    ],
   }),
 }));
 
@@ -62,11 +85,30 @@ describe('ApiExplorerPage', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText('Credential selection is preserved for S3 requests. Admin requests use the saved dashboard API key.')
+        screen.getByText('Credential selection is preserved for S3 requests. Admin and REST requests use the saved dashboard API key.')
       ).toBeInTheDocument();
     });
 
     expect(screen.getByText('S3 Credential')).toBeInTheDocument();
+  });
+
+  it('shows REST operations with resource dropdown injection', async () => {
+    renderWithRedux(<ApiExplorerPage />, false, undefined, true);
+
+    const filterSelect = screen.getAllByRole('combobox')[0];
+    await userEvent.click(filterSelect);
+    await userEvent.click(await screen.findByText('REST API'));
+
+    const operationSelect = screen.getAllByRole('combobox')[1];
+    await userEvent.click(operationSelect);
+    await userEvent.click(await screen.findByText('[Buckets] GET - Get Bucket'));
+
+    await userEvent.click(screen.getAllByRole('combobox')[3]);
+    await userEvent.click(await screen.findByText('test-bucket (bkt_test)'));
+
+    await waitFor(() => {
+      expect(screen.getByText(/\/api\/v1\/buckets\/bkt_test/)).toBeInTheDocument();
+    });
   });
 
   it('lets the user pretty-print a JSON response body', async () => {
@@ -94,6 +136,32 @@ describe('ApiExplorerPage', () => {
 
     expect(screen.getByRole('button', { name: 'Show Raw' })).toBeInTheDocument();
   });
+
+  it('saves collections and round-trips explorer environment data', async () => {
+    renderWithRedux(<ApiExplorerPage />, false, undefined, true);
+
+    await userEvent.click(screen.getByRole('button', { name: /Save/i }));
+
+    expect(localStorage.getItem('less3_api_explorer_collections')).toContain('s3-list-buckets');
+    expect(screen.getByText('Saved Collections')).toBeInTheDocument();
+    expect(screen.getByText('List Buckets')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /Export Environment/i }));
+
+    const environmentEditor = screen.getByRole('textbox') as HTMLTextAreaElement;
+    expect(environmentEditor.value).toContain('"operationId": "s3-list-buckets"');
+
+    fireEvent.change(environmentEditor, {
+      target: {
+        value: '{"operationId":"rest-list-tenants","selectedCredentialId":"cred-1","paramValues":{}}',
+      },
+    });
+    await userEvent.click(screen.getByRole('button', { name: /Import Environment/i }));
+
+    await waitFor(() => {
+      expect(localStorage.getItem('less3_api_explorer_environment')).toContain('rest-list-tenants');
+    });
+  }, 15000);
 
   it('disables send when required parameters are missing', async () => {
     renderWithRedux(<ApiExplorerPage />, false, undefined, true);

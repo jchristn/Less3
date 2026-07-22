@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import LoggedUserInfo from "#/components/layout/components/LoggedUserInfo";
 import { renderWithRedux } from "../../../store/utils";
@@ -14,17 +14,17 @@ jest.mock("next/navigation", () => ({
 describe("LoggedUserInfo", () => {
   describe("Rendering", () => {
     it("should render user name", () => {
-      renderWithRedux(<LoggedUserInfo />);
+      renderWithRedux(<LoggedUserInfo />, false, undefined, true);
       expect(screen.getByText("User")).toBeInTheDocument();
     });
 
     it("should render avatar with first letter", () => {
-      renderWithRedux(<LoggedUserInfo />);
+      renderWithRedux(<LoggedUserInfo />, false, undefined, true);
       expect(screen.getByText("U")).toBeInTheDocument();
     });
 
     it("should render dropdown trigger", () => {
-      renderWithRedux(<LoggedUserInfo />);
+      renderWithRedux(<LoggedUserInfo />, false, undefined, true);
       const trigger = screen.getByText("User").closest("div");
       expect(trigger).toBeInTheDocument();
     });
@@ -32,7 +32,7 @@ describe("LoggedUserInfo", () => {
 
   describe("User Interactions", () => {
     it("should open dropdown on click", async () => {
-      renderWithRedux(<LoggedUserInfo />);
+      renderWithRedux(<LoggedUserInfo />, false, undefined, true);
       const trigger = screen.getByText("User").closest("div");
       if (trigger) {
         await userEvent.click(trigger);
@@ -43,4 +43,3 @@ describe("LoggedUserInfo", () => {
 
   });
 });
-

@@ -4,6 +4,7 @@ namespace Less3
     using Less3.Api.Rest;
     using Less3.Api.S3;
     using Less3.Classes;
+    using Less3.Helpers;
     using Less3.Settings;
     using S3ServerLibrary;
     using SyslogLogging;
@@ -16,7 +17,6 @@ namespace Less3
     using System.Reflection;
     using System.Runtime.Loader;
     using System.Text;
-    using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
     using Less3.Database;
@@ -49,13 +49,6 @@ namespace Less3
         private static ConsoleManager _Console;
 
         private static bool _Exiting = false;
-        private static readonly Regex _SensitiveJsonValueRegex = new Regex(
-            "(\"(?:Password|PasswordHash|SecretKey|Token|TokenHash)\"\\s*:\\s*\")([^\"]*)(\")",
-            RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private static readonly Regex _SensitiveQueryValueRegex = new Regex(
-            "([?&](?:password|passwordHash|secretKey|token|tokenHash)=)[^&]*",
-            RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
         static void Main(string[] args)
         {
             _Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
@@ -286,7 +279,7 @@ namespace Less3
             _S3Settings.Logging.HttpRequests = _Settings.Logging.LogHttpRequests;
             _S3Settings.Logging.S3Requests = _Settings.Logging.LogS3Requests;
             _S3Settings.Logging.SignatureV4Validation = _Settings.Logging.LogSignatureValidation;
-            _S3Settings.Logger = Console.WriteLine;
+            _S3Settings.Logger = message => Console.WriteLine(LogSanitizer.Redact(message));
             _S3Settings.EnableSignatures = _Settings.ValidateSignatures;
             _S3Settings.Webserver = _Settings.Webserver;
 
@@ -509,7 +502,7 @@ namespace Less3
 
             if (_Settings.Logging.LogHttpRequests || ctx.Http.Request.QuerystringExists("logrequest"))
             {
-                _Logging.Debug(Environment.NewLine + ctx.Http.Request.ToString());
+                _Logging.Debug(Environment.NewLine + RedactSensitiveText(ctx.Http.Request.ToString()));
             }
 
             #endregion
@@ -585,7 +578,7 @@ namespace Less3
                 {
                     if (!ctx.Http.Request.Headers[_Settings.HeaderApiKey].Equals(_Settings.AdminApiKey))
                     {
-                        _Logging.Warn(header + "invalid REST API key supplied: " + ctx.Http.Request.Headers[_Settings.HeaderApiKey]);
+                        _Logging.Warn(header + "invalid REST API key supplied: [redacted]");
                         ctx.Response.StatusCode = 401;
                         ctx.Response.ContentType = "text/plain";
                         await ctx.Response.Send();
@@ -658,7 +651,7 @@ namespace Less3
                 {
                     if (!ctx.Http.Request.Headers[_Settings.HeaderApiKey].Equals(_Settings.AdminApiKey))
                     {
-                        _Logging.Warn(header + "invalid admin API key supplied: " + ctx.Http.Request.Headers[_Settings.HeaderApiKey]);
+                        _Logging.Warn(header + "invalid admin API key supplied: [redacted]");
                         ctx.Response.StatusCode = 401;
                         ctx.Response.ContentType = "text/plain";
                         await ctx.Response.Send();
@@ -1306,7 +1299,7 @@ namespace Less3
             _Logging.Debug(
                 ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " "
                 + ctx.Http.Request.Method.ToString() + " "
-                + ctx.Http.Request.Url.RawWithQuery + " "
+                + RedactSensitiveText(ctx.Http.Request.Url.RawWithQuery) + " "
                 + ctx.Request.RequestType.ToString() + " "
                 + ctx.Http.Response.StatusCode + " "
                 + ctx.Http.Timestamp.TotalMs + "ms");
@@ -1379,7 +1372,7 @@ namespace Less3
             }
             catch (Exception e)
             {
-                _Logging.Debug("PostRequestHandler failed to persist request history: " + e.Message);
+                _Logging.Debug("PostRequestHandler failed to persist request history: " + RedactSensitiveText(e.Message));
             }
         }
 
@@ -1458,7 +1451,7 @@ namespace Less3
         private static void LogException(Exception ex)
         {
             if (_Logging == null || ex == null) return;
-            _Logging.Warn(_Header + $"exception:{Environment.NewLine}{ex.ToString()}");
+            _Logging.Warn(_Header + $"exception:{Environment.NewLine}{RedactSensitiveText(ex.ToString())}");
         }
 
         private static bool ShouldLogException(Exception ex)
@@ -1488,11 +1481,7 @@ namespace Less3
 
         private static string RedactSensitiveText(string value)
         {
-            if (String.IsNullOrEmpty(value)) return value;
-
-            string redacted = _SensitiveJsonValueRegex.Replace(value, "$1[redacted]$3");
-            redacted = _SensitiveQueryValueRegex.Replace(redacted, "$1[redacted]");
-            return redacted;
+            return LogSanitizer.Redact(value);
         }
 
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously

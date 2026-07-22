@@ -49,6 +49,11 @@ namespace Less3.Classes
         internal bool Add(Bucket bucket)
         {
             if (bucket == null) throw new ArgumentNullException(nameof(bucket));
+            if (BucketNameValidator.IsInvalid(bucket.Name))
+            {
+                _Logging.Warn("BucketManager Add invalid bucket name " + bucket.Name);
+                return false;
+            }
 
             bool success = _Config.AddBucket(bucket);
             if (success)

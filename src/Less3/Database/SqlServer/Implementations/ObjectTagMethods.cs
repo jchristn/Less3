@@ -34,11 +34,57 @@ namespace Less3.Database.SqlServer.Implementations
         }
 
         /// <inheritdoc />
+        public List<ObjectTag> GetByObjectId(string tenantId, string objectId, string bucketId)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(objectId)) throw new ArgumentNullException(nameof(objectId));
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Database.ExecuteQuery(ObjectTagQueries.SelectByObjectId(tenantId, objectId, bucketId)).Result;
+            return MapList(result);
+        }
+
+        /// <inheritdoc />
+        public ObjectTag GetById(string tenantId, string id)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            DataTable result = _Database.ExecuteQuery(ObjectTagQueries.SelectById(tenantId, id)).Result;
+            List<ObjectTag> tags = MapList(result);
+            if (tags == null || tags.Count < 1) return null;
+            return tags[0];
+        }
+
+        /// <inheritdoc />
+        public bool ExistsById(string tenantId, string id)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            DataTable result = _Database.ExecuteQuery(ObjectTagQueries.ExistsById(tenantId, id)).Result;
+            if (result != null && result.Rows.Count > 0) return Convert.ToInt32(result.Rows[0]["cnt"]) > 0;
+            return false;
+        }
+
+        /// <inheritdoc />
+        public void Update(ObjectTag tag)
+        {
+            if (tag == null) throw new ArgumentNullException(nameof(tag));
+            _Database.ExecuteQuery(ObjectTagQueries.UpdateQuery(tag), true).Wait();
+        }
+
+        /// <inheritdoc />
         public void DeleteByObjectId(string objectId, string bucketId)
         {
             if (String.IsNullOrEmpty(objectId)) throw new ArgumentNullException(nameof(objectId));
             if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
             _Database.ExecuteQuery(ObjectTagQueries.DeleteByObjectId(objectId, bucketId), true).Wait();
+        }
+
+        /// <inheritdoc />
+        public void DeleteById(string tenantId, string id)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            _Database.ExecuteQuery(ObjectTagQueries.DeleteById(tenantId, id), true).Wait();
         }
 
         private ObjectTag MapFromRow(DataRow row)

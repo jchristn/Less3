@@ -109,6 +109,12 @@ namespace Less3.Database.PostgreSql.Implementations
             _Driver.ExecuteQuery(BucketQueries.InsertQuery(bucket), true).Wait();
         }
 
+        public void Update(Bucket bucket)
+        {
+            if (bucket == null) throw new ArgumentNullException(nameof(bucket));
+            _Driver.ExecuteQuery(BucketQueries.UpdateQuery(bucket), true).Wait();
+        }
+
         public void DeleteById(string id)
         {
             if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));

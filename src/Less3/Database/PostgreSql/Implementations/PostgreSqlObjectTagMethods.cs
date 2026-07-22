@@ -31,11 +31,52 @@ namespace Less3.Database.PostgreSql.Implementations
             return MapObjectTags(result);
         }
 
+        public List<ObjectTag> GetByObjectId(string tenantId, string objectId, string bucketId)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(objectId)) throw new ArgumentNullException(nameof(objectId));
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Driver.ExecuteQuery(ObjectTagQueries.SelectByObjectId(tenantId, objectId, bucketId)).Result;
+            return MapObjectTags(result);
+        }
+
+        public ObjectTag GetById(string tenantId, string id)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            DataTable result = _Driver.ExecuteQuery(ObjectTagQueries.SelectById(tenantId, id)).Result;
+            List<ObjectTag> tags = MapObjectTags(result);
+            if (tags == null || tags.Count < 1) return null;
+            return tags[0];
+        }
+
+        public bool ExistsById(string tenantId, string id)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            DataTable result = _Driver.ExecuteQuery(ObjectTagQueries.ExistsById(tenantId, id)).Result;
+            if (result != null && result.Rows.Count > 0) return Convert.ToInt32(result.Rows[0]["cnt"]) > 0;
+            return false;
+        }
+
+        public void Update(ObjectTag tag)
+        {
+            if (tag == null) throw new ArgumentNullException(nameof(tag));
+            _Driver.ExecuteQuery(ObjectTagQueries.UpdateQuery(tag), true).Wait();
+        }
+
         public void DeleteByObjectId(string objectId, string bucketId)
         {
             if (String.IsNullOrEmpty(objectId)) throw new ArgumentNullException(nameof(objectId));
             if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
             _Driver.ExecuteQuery(ObjectTagQueries.DeleteByObjectId(objectId, bucketId), true).Wait();
+        }
+
+        public void DeleteById(string tenantId, string id)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            _Driver.ExecuteQuery(ObjectTagQueries.DeleteById(tenantId, id), true).Wait();
         }
 
         private List<ObjectTag> MapObjectTags(DataTable dt)

@@ -140,7 +140,11 @@ namespace Less3.Api.Admin
                 return;
             }
              
-            _Buckets.Add(bucket);
+            if (!_Buckets.Add(bucket))
+            {
+                await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest);
+                return;
+            }
 
             ctx.Response.StatusCode = 201;
             ctx.Response.ContentType = "text/plain";

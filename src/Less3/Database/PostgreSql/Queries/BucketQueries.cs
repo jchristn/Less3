@@ -72,6 +72,23 @@ namespace Less3.Database.PostgreSql.Queries
             return "SELECT COUNT(*) AS cnt FROM buckets WHERE tenant_id = '" + Sanitizer.SanitizeString(tenantId) + "' AND name = '" + Sanitizer.SanitizeString(name) + "';";
         }
 
+        internal static string UpdateQuery(Bucket bucket)
+        {
+            return "UPDATE buckets SET "
+                + "tenant_id = '" + Sanitizer.SanitizeString(bucket.TenantId) + "', "
+                + "owner_id = '" + Sanitizer.SanitizeString(bucket.OwnerId) + "', "
+                + "name = '" + Sanitizer.SanitizeString(bucket.Name) + "', "
+                + "regionstring = '" + Sanitizer.SanitizeString(bucket.RegionString) + "', "
+                + "storagetype = '" + Sanitizer.SanitizeString(bucket.StorageType.ToString()) + "', "
+                + "diskdirectory = '" + Sanitizer.SanitizeString(bucket.DiskDirectory) + "', "
+                + "enableversioning = " + (bucket.EnableVersioning ? "TRUE" : "FALSE") + ", "
+                + "enablepublicwrite = " + (bucket.EnablePublicWrite ? "TRUE" : "FALSE") + ", "
+                + "enablepublicread = " + (bucket.EnablePublicRead ? "TRUE" : "FALSE") + ", "
+                + "createdutc = '" + bucket.CreatedUtc.ToString(Sanitizer.TimestampFormat) + "' "
+                + "WHERE tenant_id = '" + Sanitizer.SanitizeString(bucket.TenantId)
+                + "' AND id = '" + Sanitizer.SanitizeString(bucket.Id) + "';";
+        }
+
         internal static string DeleteById(string id)
         {
             return "DELETE FROM buckets WHERE id = '" + Sanitizer.SanitizeString(id) + "';";

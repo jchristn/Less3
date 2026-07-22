@@ -564,6 +564,18 @@
             Bucket manager.
             </summary>
         </member>
+        <member name="T:Less3.Classes.BucketNameValidator">
+            <summary>
+            Shared bucket-name validation for all bucket creation paths.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.BucketNameValidator.IsInvalid(System.String)">
+            <summary>
+            Check if a bucket name is invalid for Less3.
+            </summary>
+            <param name="name">Bucket name.</param>
+            <returns>True if invalid.</returns>
+        </member>
         <member name="T:Less3.Classes.BucketStatistics">
             <summary>
             Bucket statistics.
@@ -2191,10 +2203,28 @@
             <param name="bucketId">Bucket Id.</param>
             <returns>True if the ACL exists.</returns>
         </member>
+        <member name="M:Less3.Database.Interfaces.IBucketAclMethods.ExistsByGroupName(System.String,System.String,System.String)">
+            <summary>
+            Check if a tenant bucket group ACL exists.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="groupName">Group name.</param>
+            <param name="bucketId">Bucket Id.</param>
+            <returns>True if the ACL exists.</returns>
+        </member>
         <member name="M:Less3.Database.Interfaces.IBucketAclMethods.ExistsByUserId(System.String,System.String)">
             <summary>
             Check if a bucket user ACL exists.
             </summary>
+            <param name="userId">User Id.</param>
+            <param name="bucketId">Bucket Id.</param>
+            <returns>True if the ACL exists.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketAclMethods.ExistsByUserId(System.String,System.String,System.String)">
+            <summary>
+            Check if a tenant bucket user ACL exists.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
             <param name="userId">User Id.</param>
             <param name="bucketId">Bucket Id.</param>
             <returns>True if the ACL exists.</returns>
@@ -2206,17 +2236,54 @@
             <param name="bucketId">Bucket Id.</param>
             <returns>List of bucket ACLs.</returns>
         </member>
+        <member name="M:Less3.Database.Interfaces.IBucketAclMethods.GetByBucketId(System.String,System.String)">
+            <summary>
+            Retrieve all ACLs for a tenant bucket.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="bucketId">Bucket Id.</param>
+            <returns>List of bucket ACLs.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketAclMethods.GetById(System.String,System.String)">
+            <summary>
+            Retrieve a bucket ACL by Id.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="id">Bucket ACL Id.</param>
+            <returns>Bucket ACL.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketAclMethods.ExistsById(System.String,System.String)">
+            <summary>
+            Check if a bucket ACL exists.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="id">Bucket ACL Id.</param>
+            <returns>True if the bucket ACL exists.</returns>
+        </member>
         <member name="M:Less3.Database.Interfaces.IBucketAclMethods.Insert(Less3.Classes.BucketAcl)">
             <summary>
             Insert a new bucket ACL.
             </summary>
             <param name="acl">Bucket ACL to insert.</param>
         </member>
+        <member name="M:Less3.Database.Interfaces.IBucketAclMethods.Update(Less3.Classes.BucketAcl)">
+            <summary>
+            Update a bucket ACL.
+            </summary>
+            <param name="acl">Bucket ACL.</param>
+        </member>
         <member name="M:Less3.Database.Interfaces.IBucketAclMethods.DeleteByBucketId(System.String)">
             <summary>
             Delete all ACLs for a bucket.
             </summary>
             <param name="bucketId">Bucket Id.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketAclMethods.DeleteById(System.String,System.String)">
+            <summary>
+            Delete a bucket ACL by Id.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="id">Bucket ACL Id.</param>
         </member>
         <member name="T:Less3.Database.Interfaces.IBucketMethods">
             <summary>
@@ -2302,6 +2369,12 @@
             </summary>
             <param name="bucket">Bucket to insert.</param>
         </member>
+        <member name="M:Less3.Database.Interfaces.IBucketMethods.Update(Less3.Classes.Bucket)">
+            <summary>
+            Update a bucket.
+            </summary>
+            <param name="bucket">Bucket to update.</param>
+        </member>
         <member name="M:Less3.Database.Interfaces.IBucketMethods.DeleteById(System.String)">
             <summary>
             Delete a bucket by Id.
@@ -2333,11 +2406,48 @@
             <param name="bucketId">Bucket Id.</param>
             <returns>List of bucket tags.</returns>
         </member>
+        <member name="M:Less3.Database.Interfaces.IBucketTagMethods.GetByBucketId(System.String,System.String)">
+            <summary>
+            Retrieve all tags for a tenant bucket.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="bucketId">Bucket Id.</param>
+            <returns>List of bucket tags.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketTagMethods.GetById(System.String,System.String)">
+            <summary>
+            Retrieve a bucket tag by Id.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="id">Bucket tag Id.</param>
+            <returns>Bucket tag.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketTagMethods.ExistsById(System.String,System.String)">
+            <summary>
+            Check if a bucket tag exists.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="id">Bucket tag Id.</param>
+            <returns>True if the bucket tag exists.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketTagMethods.Update(Less3.Classes.BucketTag)">
+            <summary>
+            Update a bucket tag.
+            </summary>
+            <param name="tag">Bucket tag.</param>
+        </member>
         <member name="M:Less3.Database.Interfaces.IBucketTagMethods.DeleteByBucketId(System.String)">
             <summary>
             Delete all tags for a bucket.
             </summary>
             <param name="bucketId">Bucket Id.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketTagMethods.DeleteById(System.String,System.String)">
+            <summary>
+            Delete a bucket tag by Id.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="id">Bucket tag Id.</param>
         </member>
         <member name="T:Less3.Database.Interfaces.ICredentialMethods">
             <summary>
@@ -2448,10 +2558,30 @@
             <param name="bucketId">Bucket Id.</param>
             <returns>True if the ACL exists.</returns>
         </member>
+        <member name="M:Less3.Database.Interfaces.IObjectAclMethods.ExistsByGroupName(System.String,System.String,System.String,System.String)">
+            <summary>
+            Check if a tenant object group ACL exists.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="groupName">Group name.</param>
+            <param name="objectId">Object Id.</param>
+            <param name="bucketId">Bucket Id.</param>
+            <returns>True if the ACL exists.</returns>
+        </member>
         <member name="M:Less3.Database.Interfaces.IObjectAclMethods.ExistsByUserId(System.String,System.String,System.String)">
             <summary>
             Check if an object user ACL exists.
             </summary>
+            <param name="userId">User Id.</param>
+            <param name="objectId">Object Id.</param>
+            <param name="bucketId">Bucket Id.</param>
+            <returns>True if the ACL exists.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjectAclMethods.ExistsByUserId(System.String,System.String,System.String,System.String)">
+            <summary>
+            Check if a tenant object user ACL exists.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
             <param name="userId">User Id.</param>
             <param name="objectId">Object Id.</param>
             <param name="bucketId">Bucket Id.</param>
@@ -2465,6 +2595,15 @@
             <param name="bucketId">Bucket Id.</param>
             <returns>List of object ACLs.</returns>
         </member>
+        <member name="M:Less3.Database.Interfaces.IObjectAclMethods.GetByObjectId(System.String,System.String,System.String)">
+            <summary>
+            Retrieve ACLs for an object by tenant, object Id, and bucket Id.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="objectId">Object Id.</param>
+            <param name="bucketId">Bucket Id.</param>
+            <returns>List of object ACLs.</returns>
+        </member>
         <member name="M:Less3.Database.Interfaces.IObjectAclMethods.GetByBucketId(System.String)">
             <summary>
             Retrieve all object ACLs for a bucket.
@@ -2472,11 +2611,41 @@
             <param name="bucketId">Bucket Id.</param>
             <returns>List of object ACLs.</returns>
         </member>
+        <member name="M:Less3.Database.Interfaces.IObjectAclMethods.GetByBucketId(System.String,System.String)">
+            <summary>
+            Retrieve all object ACLs for a tenant bucket.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="bucketId">Bucket Id.</param>
+            <returns>List of object ACLs.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjectAclMethods.GetById(System.String,System.String)">
+            <summary>
+            Retrieve an object ACL by Id.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="id">Object ACL Id.</param>
+            <returns>Object ACL.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjectAclMethods.ExistsById(System.String,System.String)">
+            <summary>
+            Check if an object ACL exists.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="id">Object ACL Id.</param>
+            <returns>True if the object ACL exists.</returns>
+        </member>
         <member name="M:Less3.Database.Interfaces.IObjectAclMethods.Insert(Less3.Classes.ObjectAcl)">
             <summary>
             Insert a new object ACL.
             </summary>
             <param name="acl">Object ACL to insert.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjectAclMethods.Update(Less3.Classes.ObjectAcl)">
+            <summary>
+            Update an object ACL.
+            </summary>
+            <param name="acl">Object ACL.</param>
         </member>
         <member name="M:Less3.Database.Interfaces.IObjectAclMethods.DeleteByObjectIdAndBucketId(System.String,System.String)">
             <summary>
@@ -2484,6 +2653,13 @@
             </summary>
             <param name="objectId">Object Id.</param>
             <param name="bucketId">Bucket Id.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjectAclMethods.DeleteById(System.String,System.String)">
+            <summary>
+            Delete an object ACL by Id.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="id">Object ACL Id.</param>
         </member>
         <member name="T:Less3.Database.Interfaces.IObjectTagMethods">
             <summary>
@@ -2504,12 +2680,50 @@
             <param name="bucketId">Bucket Id.</param>
             <returns>List of object tags.</returns>
         </member>
+        <member name="M:Less3.Database.Interfaces.IObjectTagMethods.GetByObjectId(System.String,System.String,System.String)">
+            <summary>
+            Retrieve tags for an object by tenant, object Id, and bucket Id.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="objectId">Object Id.</param>
+            <param name="bucketId">Bucket Id.</param>
+            <returns>List of object tags.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjectTagMethods.GetById(System.String,System.String)">
+            <summary>
+            Retrieve an object tag by Id.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="id">Object tag Id.</param>
+            <returns>Object tag.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjectTagMethods.ExistsById(System.String,System.String)">
+            <summary>
+            Check if an object tag exists.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="id">Object tag Id.</param>
+            <returns>True if the object tag exists.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjectTagMethods.Update(Less3.Classes.ObjectTag)">
+            <summary>
+            Update an object tag.
+            </summary>
+            <param name="tag">Object tag.</param>
+        </member>
         <member name="M:Less3.Database.Interfaces.IObjectTagMethods.DeleteByObjectId(System.String,System.String)">
             <summary>
             Delete all tags for an object by object Id and bucket Id.
             </summary>
             <param name="objectId">Object Id.</param>
             <param name="bucketId">Bucket Id.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjectTagMethods.DeleteById(System.String,System.String)">
+            <summary>
+            Delete an object tag by Id.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="id">Object tag Id.</param>
         </member>
         <member name="T:Less3.Database.Interfaces.IObjMethods">
             <summary>
@@ -3025,16 +3239,37 @@
         <member name="M:Less3.Database.MySql.Implementations.BucketAclMethods.ExistsByGroupName(System.String,System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketAclMethods.ExistsByGroupName(System.String,System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.MySql.Implementations.BucketAclMethods.ExistsByUserId(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketAclMethods.ExistsByUserId(System.String,System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.BucketAclMethods.GetByBucketId(System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketAclMethods.GetByBucketId(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketAclMethods.GetById(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketAclMethods.ExistsById(System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.MySql.Implementations.BucketAclMethods.Insert(Less3.Classes.BucketAcl)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketAclMethods.Update(Less3.Classes.BucketAcl)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.MySql.Implementations.BucketAclMethods.DeleteByBucketId(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketAclMethods.DeleteById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.BucketMethods.GetAll">
@@ -3070,6 +3305,9 @@
         <member name="M:Less3.Database.MySql.Implementations.BucketMethods.Insert(Less3.Classes.Bucket)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketMethods.Update(Less3.Classes.Bucket)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.MySql.Implementations.BucketMethods.DeleteById(System.String)">
             <inheritdoc />
         </member>
@@ -3082,7 +3320,22 @@
         <member name="M:Less3.Database.MySql.Implementations.BucketTagMethods.GetByBucketId(System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketTagMethods.GetByBucketId(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketTagMethods.GetById(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketTagMethods.ExistsById(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketTagMethods.Update(Less3.Classes.BucketTag)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.MySql.Implementations.BucketTagMethods.DeleteByBucketId(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketTagMethods.DeleteById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.GetAll">
@@ -3127,19 +3380,43 @@
         <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.ExistsByGroupName(System.String,System.String,System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.ExistsByGroupName(System.String,System.String,System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.ExistsByUserId(System.String,System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.ExistsByUserId(System.String,System.String,System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.GetByObjectId(System.String,System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.GetByObjectId(System.String,System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.GetByBucketId(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.GetByBucketId(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.GetById(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.ExistsById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.Insert(Less3.Classes.ObjectAcl)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.Update(Less3.Classes.ObjectAcl)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.DeleteByObjectIdAndBucketId(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.DeleteById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.ObjectTagMethods.Insert(Less3.Classes.ObjectTag)">
@@ -3148,7 +3425,22 @@
         <member name="M:Less3.Database.MySql.Implementations.ObjectTagMethods.GetByObjectId(System.String,System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjectTagMethods.GetByObjectId(System.String,System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjectTagMethods.GetById(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjectTagMethods.ExistsById(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjectTagMethods.Update(Less3.Classes.ObjectTag)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.MySql.Implementations.ObjectTagMethods.DeleteByObjectId(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjectTagMethods.DeleteById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.ObjMethods.Insert(Less3.Classes.Obj)">
@@ -3357,16 +3649,37 @@
         <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.ExistsByGroupName(System.String,System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.ExistsByGroupName(System.String,System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.ExistsByUserId(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.ExistsByUserId(System.String,System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.GetByBucketId(System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.GetByBucketId(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.GetById(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.ExistsById(System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.Insert(Less3.Classes.BucketAcl)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.Update(Less3.Classes.BucketAcl)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.DeleteByBucketId(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.DeleteById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.GetAll">
@@ -3402,6 +3715,9 @@
         <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.Insert(Less3.Classes.Bucket)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.Update(Less3.Classes.Bucket)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.DeleteById(System.String)">
             <inheritdoc />
         </member>
@@ -3414,7 +3730,22 @@
         <member name="M:Less3.Database.Sqlite.Implementations.BucketTagMethods.GetByBucketId(System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketTagMethods.GetByBucketId(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketTagMethods.GetById(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketTagMethods.ExistsById(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketTagMethods.Update(Less3.Classes.BucketTag)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.Sqlite.Implementations.BucketTagMethods.DeleteByBucketId(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketTagMethods.DeleteById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.GetAll">
@@ -3459,19 +3790,43 @@
         <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.ExistsByGroupName(System.String,System.String,System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.ExistsByGroupName(System.String,System.String,System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.ExistsByUserId(System.String,System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.ExistsByUserId(System.String,System.String,System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.GetByObjectId(System.String,System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.GetByObjectId(System.String,System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.GetByBucketId(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.GetByBucketId(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.GetById(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.ExistsById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.Insert(Less3.Classes.ObjectAcl)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.Update(Less3.Classes.ObjectAcl)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.DeleteByObjectIdAndBucketId(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.DeleteById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.ObjectTagMethods.Insert(Less3.Classes.ObjectTag)">
@@ -3480,7 +3835,22 @@
         <member name="M:Less3.Database.Sqlite.Implementations.ObjectTagMethods.GetByObjectId(System.String,System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectTagMethods.GetByObjectId(System.String,System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectTagMethods.GetById(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectTagMethods.ExistsById(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectTagMethods.Update(Less3.Classes.ObjectTag)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.Sqlite.Implementations.ObjectTagMethods.DeleteByObjectId(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectTagMethods.DeleteById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.ObjMethods.Insert(Less3.Classes.Obj)">
@@ -3669,16 +4039,37 @@
         <member name="M:Less3.Database.SqlServer.Implementations.BucketAclMethods.ExistsByGroupName(System.String,System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketAclMethods.ExistsByGroupName(System.String,System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.SqlServer.Implementations.BucketAclMethods.ExistsByUserId(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketAclMethods.ExistsByUserId(System.String,System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.BucketAclMethods.GetByBucketId(System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketAclMethods.GetByBucketId(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketAclMethods.GetById(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketAclMethods.ExistsById(System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.SqlServer.Implementations.BucketAclMethods.Insert(Less3.Classes.BucketAcl)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketAclMethods.Update(Less3.Classes.BucketAcl)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.SqlServer.Implementations.BucketAclMethods.DeleteByBucketId(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketAclMethods.DeleteById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.GetAll">
@@ -3714,6 +4105,9 @@
         <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.Insert(Less3.Classes.Bucket)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.Update(Less3.Classes.Bucket)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.DeleteById(System.String)">
             <inheritdoc />
         </member>
@@ -3726,7 +4120,22 @@
         <member name="M:Less3.Database.SqlServer.Implementations.BucketTagMethods.GetByBucketId(System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketTagMethods.GetByBucketId(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketTagMethods.GetById(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketTagMethods.ExistsById(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketTagMethods.Update(Less3.Classes.BucketTag)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.SqlServer.Implementations.BucketTagMethods.DeleteByBucketId(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketTagMethods.DeleteById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.GetAll">
@@ -3771,19 +4180,43 @@
         <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.ExistsByGroupName(System.String,System.String,System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.ExistsByGroupName(System.String,System.String,System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.ExistsByUserId(System.String,System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.ExistsByUserId(System.String,System.String,System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.GetByObjectId(System.String,System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.GetByObjectId(System.String,System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.GetByBucketId(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.GetByBucketId(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.GetById(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.ExistsById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.Insert(Less3.Classes.ObjectAcl)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.Update(Less3.Classes.ObjectAcl)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.DeleteByObjectIdAndBucketId(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.DeleteById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.ObjectTagMethods.Insert(Less3.Classes.ObjectTag)">
@@ -3792,7 +4225,22 @@
         <member name="M:Less3.Database.SqlServer.Implementations.ObjectTagMethods.GetByObjectId(System.String,System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectTagMethods.GetByObjectId(System.String,System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectTagMethods.GetById(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectTagMethods.ExistsById(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectTagMethods.Update(Less3.Classes.ObjectTag)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.SqlServer.Implementations.ObjectTagMethods.DeleteByObjectId(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectTagMethods.DeleteById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.ObjMethods.Insert(Less3.Classes.Obj)">
@@ -4678,7 +5126,7 @@
             Read an object.
             Your code must close the stream when complete.
             </summary>
-            <param name="key">Key.</param> 
+            <param name="key">Key.</param>
             <returns>ObjectStream.</returns>
         </member>
         <member name="M:Less3.Storage.DiskStorageDriver.ReadRange(System.String,System.Int64,System.Int64)">
@@ -4687,7 +5135,7 @@
             </summary>
             <param name="key">Key.</param>
             <param name="indexStart">Starting position.</param>
-            <param name="count">Number of bytes to read.</param> 
+            <param name="count">Number of bytes to read.</param>
             <returns>Data.</returns>
         </member>
         <member name="M:Less3.Storage.DiskStorageDriver.ReadRangeAsync(System.String,System.Int64,System.Int64)">
@@ -4696,7 +5144,7 @@
             </summary>
             <param name="key">Key.</param>
             <param name="indexStart">Starting position.</param>
-            <param name="count">Number of bytes to read.</param> 
+            <param name="count">Number of bytes to read.</param>
             <returns>Data.</returns>
         </member>
         <member name="M:Less3.Storage.DiskStorageDriver.ReadRangeStream(System.String,System.Int64,System.Int64)">
@@ -4724,7 +5172,7 @@
             Write an object.
             </summary>
             <param name="key">Key.</param>
-            <param name="data">Data.</param> 
+            <param name="data">Data.</param>
             <returns>MD5 hash.</returns>
         </member>
         <member name="M:Less3.Storage.DiskStorageDriver.WriteAsync(System.String,System.Byte[])">
@@ -4732,7 +5180,7 @@
             Write an object asynchronously.
             </summary>
             <param name="key">Key.</param>
-            <param name="data">Data.</param> 
+            <param name="data">Data.</param>
             <returns>MD5 hash.</returns>
         </member>
         <member name="M:Less3.Storage.DiskStorageDriver.Write(System.String,System.Int64,System.IO.Stream)">
@@ -4873,7 +5321,7 @@
             Write an object.
             </summary>
             <param name="key">Key.</param>
-            <param name="data">Data.</param> 
+            <param name="data">Data.</param>
             <returns>MD5 hash.</returns>
         </member>
         <member name="M:Less3.Storage.StorageDriverBase.WriteAsync(System.String,System.Byte[])">
@@ -4881,7 +5329,7 @@
             Write an object asynchronously.
             </summary>
             <param name="key">Key.</param>
-            <param name="data">Data.</param> 
+            <param name="data">Data.</param>
             <returns>MD5 hash.</returns>
         </member>
         <member name="M:Less3.Storage.StorageDriverBase.Write(System.String,System.Int64,System.IO.Stream)">
@@ -4890,7 +5338,7 @@
             </summary>
             <param name="key">Key.</param>
             <param name="contentLength">Number of bytes to read from the stream.</param>
-            <param name="stream">Stream.</param> 
+            <param name="stream">Stream.</param>
             <returns>MD5 hash.</returns>
         </member>
         <member name="M:Less3.Storage.StorageDriverBase.WriteAsync(System.String,System.Int64,System.IO.Stream)">
@@ -4899,7 +5347,7 @@
             </summary>
             <param name="key">Key.</param>
             <param name="contentLength">Number of bytes to read from the stream.</param>
-            <param name="stream">Stream.</param> 
+            <param name="stream">Stream.</param>
             <returns>MD5 hash.</returns>
         </member>
         <member name="T:Less3.Storage.StorageDriverType">

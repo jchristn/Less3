@@ -33,10 +33,55 @@ namespace Less3.Database.Sqlite.Implementations
         }
 
         /// <inheritdoc />
+        public List<BucketTag> GetByBucketId(string tenantId, string bucketId)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Database.ExecuteQuery(BucketTagQueries.SelectByBucketId(tenantId, bucketId)).Result;
+            return MapList(result);
+        }
+
+        /// <inheritdoc />
+        public BucketTag GetById(string tenantId, string id)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            DataTable result = _Database.ExecuteQuery(BucketTagQueries.SelectById(tenantId, id)).Result;
+            List<BucketTag> tags = MapList(result);
+            if (tags == null || tags.Count < 1) return null;
+            return tags[0];
+        }
+
+        /// <inheritdoc />
+        public bool ExistsById(string tenantId, string id)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            DataTable result = _Database.ExecuteQuery(BucketTagQueries.ExistsById(tenantId, id)).Result;
+            if (result != null && result.Rows.Count > 0) return Convert.ToInt32(result.Rows[0]["cnt"]) > 0;
+            return false;
+        }
+
+        /// <inheritdoc />
+        public void Update(BucketTag tag)
+        {
+            if (tag == null) throw new ArgumentNullException(nameof(tag));
+            _Database.ExecuteQuery(BucketTagQueries.UpdateQuery(tag), true).Wait();
+        }
+
+        /// <inheritdoc />
         public void DeleteByBucketId(string bucketId)
         {
             if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
             _Database.ExecuteQuery(BucketTagQueries.DeleteByBucketId(bucketId), true).Wait();
+        }
+
+        /// <inheritdoc />
+        public void DeleteById(string tenantId, string id)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            _Database.ExecuteQuery(BucketTagQueries.DeleteById(tenantId, id), true).Wait();
         }
 
         private BucketTag MapFromRow(DataRow row)

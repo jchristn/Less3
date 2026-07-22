@@ -258,6 +258,18 @@ namespace Less3.Api.Rest
                 case "objects":
                     await SendJson(ctx, BuildResult(_Config.GetObjects(query.TenantId, GetBucketId(ctx), query), query), 200).ConfigureAwait(false);
                     return;
+                case "buckettags":
+                    await SendJson(ctx, BuildResult(_Config.GetBucketTags(query.TenantId, GetBucketId(ctx), query), query), 200).ConfigureAwait(false);
+                    return;
+                case "objecttags":
+                    await SendJson(ctx, BuildResult(_Config.GetObjectTags(query.TenantId, GetBucketId(ctx), GetObjectId(ctx), query), query), 200).ConfigureAwait(false);
+                    return;
+                case "bucketacls":
+                    await SendJson(ctx, BuildResult(_Config.GetBucketAcls(query.TenantId, GetBucketId(ctx), query), query), 200).ConfigureAwait(false);
+                    return;
+                case "objectacls":
+                    await SendJson(ctx, BuildResult(_Config.GetObjectAcls(query.TenantId, GetBucketId(ctx), GetObjectId(ctx), query), query), 200).ConfigureAwait(false);
+                    return;
                 case "requesthistory":
                     await SendJson(ctx, BuildResult(FilterRequestHistory(_Config.GetRequestHistories(), query), query), 200).ConfigureAwait(false);
                     return;
@@ -292,6 +304,14 @@ namespace Less3.Api.Rest
                     return _Config.GetBucketById(tenantId, id);
                 case "objects":
                     return _Config.GetObjectById(tenantId, GetBucketId(ctx), id);
+                case "buckettags":
+                    return _Config.GetBucketTagById(tenantId, id);
+                case "objecttags":
+                    return _Config.GetObjectTagById(tenantId, id);
+                case "bucketacls":
+                    return _Config.GetBucketAclById(tenantId, id);
+                case "objectacls":
+                    return _Config.GetObjectAclById(tenantId, id);
                 case "requesthistory":
                     return _Config.GetRequestHistoryById(id);
             }
@@ -323,6 +343,14 @@ namespace Less3.Api.Rest
                     return CreateBucket(ctx);
                 case "objects":
                     return CreateObject(ctx);
+                case "buckettags":
+                    return CreateBucketTag(ctx);
+                case "objecttags":
+                    return CreateObjectTag(ctx);
+                case "bucketacls":
+                    return CreateBucketAcl(ctx);
+                case "objectacls":
+                    return CreateObjectAcl(ctx);
             }
 
             return null;
@@ -346,8 +374,18 @@ namespace Less3.Api.Rest
                     return UpdateUser(ctx, id);
                 case "credentials":
                     return UpdateCredential(ctx, id);
+                case "buckets":
+                    return UpdateBucket(ctx, id);
                 case "objects":
                     return UpdateObject(ctx, id);
+                case "buckettags":
+                    return UpdateBucketTag(ctx, id);
+                case "objecttags":
+                    return UpdateObjectTag(ctx, id);
+                case "bucketacls":
+                    return UpdateBucketAcl(ctx, id);
+                case "objectacls":
+                    return UpdateObjectAcl(ctx, id);
             }
 
             return null;
@@ -386,6 +424,14 @@ namespace Less3.Api.Rest
                     return true;
                 case "objects":
                     return _Config.DeleteObject(tenantId, GetBucketId(ctx), id);
+                case "buckettags":
+                    return _Config.DeleteBucketTag(tenantId, id);
+                case "objecttags":
+                    return _Config.DeleteObjectTag(tenantId, id);
+                case "bucketacls":
+                    return _Config.DeleteBucketAcl(tenantId, id);
+                case "objectacls":
+                    return _Config.DeleteObjectAcl(tenantId, id);
                 case "requesthistory":
                     if (_Config.GetRequestHistoryById(id) == null) return false;
                     _Config.DeleteRequestHistory(id);
@@ -421,6 +467,14 @@ namespace Less3.Api.Rest
                     return _Config.GetBucketById(tenantId, id) != null;
                 case "objects":
                     return _Config.GetObjectById(tenantId, GetBucketId(ctx), id) != null;
+                case "buckettags":
+                    return _Config.GetBucketTagById(tenantId, id) != null;
+                case "objecttags":
+                    return _Config.GetObjectTagById(tenantId, id) != null;
+                case "bucketacls":
+                    return _Config.GetBucketAclById(tenantId, id) != null;
+                case "objectacls":
+                    return _Config.GetObjectAclById(tenantId, id) != null;
                 case "requesthistory":
                     return _Config.GetRequestHistoryById(id) != null;
             }
@@ -676,6 +730,66 @@ namespace Less3.Api.Rest
             return obj;
         }
 
+        private BucketTag CreateBucketTag(S3Context ctx)
+        {
+            BucketTag tag = Deserialize<BucketTag>(ctx);
+            if (tag == null) return null;
+
+            string tenantId = GetTenantId(ctx);
+            string bucketId = GetBucketId(ctx);
+            if (String.IsNullOrEmpty(tag.TenantId)) tag.TenantId = tenantId;
+            if (!String.IsNullOrEmpty(bucketId)) tag.BucketId = bucketId;
+
+            if (!_Config.AddBucketTag(tag)) return null;
+            return tag;
+        }
+
+        private ObjectTag CreateObjectTag(S3Context ctx)
+        {
+            ObjectTag tag = Deserialize<ObjectTag>(ctx);
+            if (tag == null) return null;
+
+            string tenantId = GetTenantId(ctx);
+            string bucketId = GetBucketId(ctx);
+            string objectId = GetObjectId(ctx);
+            if (String.IsNullOrEmpty(tag.TenantId)) tag.TenantId = tenantId;
+            if (!String.IsNullOrEmpty(bucketId)) tag.BucketId = bucketId;
+            if (!String.IsNullOrEmpty(objectId)) tag.ObjectId = objectId;
+
+            if (!_Config.AddObjectTag(tag)) return null;
+            return tag;
+        }
+
+        private BucketAcl CreateBucketAcl(S3Context ctx)
+        {
+            BucketAcl acl = Deserialize<BucketAcl>(ctx);
+            if (acl == null) return null;
+
+            string tenantId = GetTenantId(ctx);
+            string bucketId = GetBucketId(ctx);
+            if (String.IsNullOrEmpty(acl.TenantId)) acl.TenantId = tenantId;
+            if (!String.IsNullOrEmpty(bucketId)) acl.BucketId = bucketId;
+
+            if (!_Config.AddBucketAcl(acl)) return null;
+            return acl;
+        }
+
+        private ObjectAcl CreateObjectAcl(S3Context ctx)
+        {
+            ObjectAcl acl = Deserialize<ObjectAcl>(ctx);
+            if (acl == null) return null;
+
+            string tenantId = GetTenantId(ctx);
+            string bucketId = GetBucketId(ctx);
+            string objectId = GetObjectId(ctx);
+            if (String.IsNullOrEmpty(acl.TenantId)) acl.TenantId = tenantId;
+            if (!String.IsNullOrEmpty(bucketId)) acl.BucketId = bucketId;
+            if (!String.IsNullOrEmpty(objectId)) acl.ObjectId = objectId;
+
+            if (!_Config.AddObjectAcl(acl)) return null;
+            return acl;
+        }
+
         private Tenant UpdateTenant(S3Context ctx, string id)
         {
             Tenant existing = _Config.GetTenantById(id);
@@ -779,6 +893,23 @@ namespace Less3.Api.Rest
             return credential;
         }
 
+        private Bucket UpdateBucket(S3Context ctx, string id)
+        {
+            string tenantId = GetTenantId(ctx);
+            Bucket existing = _Config.GetBucketById(tenantId, id);
+            if (existing == null) return null;
+
+            Bucket bucket = Deserialize<Bucket>(ctx);
+            if (bucket == null) return null;
+            bucket.Id = existing.Id;
+            bucket.TenantId = String.IsNullOrEmpty(bucket.TenantId) ? tenantId : bucket.TenantId;
+            if (String.IsNullOrEmpty(bucket.OwnerId)) bucket.OwnerId = existing.OwnerId;
+            if (String.IsNullOrEmpty(bucket.DiskDirectory)) bucket.DiskDirectory = existing.DiskDirectory;
+            bucket.CreatedUtc = existing.CreatedUtc;
+            if (!_Config.UpdateBucket(bucket)) return null;
+            return bucket;
+        }
+
         private Obj UpdateObject(S3Context ctx, string id)
         {
             string tenantId = GetTenantId(ctx);
@@ -799,6 +930,80 @@ namespace Less3.Api.Rest
 
             if (!_Config.UpdateObject(obj)) return null;
             return obj;
+        }
+
+        private BucketTag UpdateBucketTag(S3Context ctx, string id)
+        {
+            string tenantId = GetTenantId(ctx);
+            BucketTag existing = _Config.GetBucketTagById(tenantId, id);
+            if (existing == null) return null;
+
+            BucketTag tag = Deserialize<BucketTag>(ctx);
+            if (tag == null) return null;
+            tag.Id = existing.Id;
+            tag.TenantId = String.IsNullOrEmpty(tag.TenantId) ? tenantId : tag.TenantId;
+            if (String.IsNullOrEmpty(tag.BucketId)) tag.BucketId = existing.BucketId;
+            if (String.IsNullOrEmpty(tag.Key)) tag.Key = existing.Key;
+            tag.CreatedUtc = existing.CreatedUtc;
+
+            if (!_Config.UpdateBucketTag(tag)) return null;
+            return tag;
+        }
+
+        private ObjectTag UpdateObjectTag(S3Context ctx, string id)
+        {
+            string tenantId = GetTenantId(ctx);
+            ObjectTag existing = _Config.GetObjectTagById(tenantId, id);
+            if (existing == null) return null;
+
+            ObjectTag tag = Deserialize<ObjectTag>(ctx);
+            if (tag == null) return null;
+            tag.Id = existing.Id;
+            tag.TenantId = String.IsNullOrEmpty(tag.TenantId) ? tenantId : tag.TenantId;
+            if (String.IsNullOrEmpty(tag.BucketId)) tag.BucketId = existing.BucketId;
+            if (String.IsNullOrEmpty(tag.ObjectId)) tag.ObjectId = existing.ObjectId;
+            if (String.IsNullOrEmpty(tag.Key)) tag.Key = existing.Key;
+            tag.CreatedUtc = existing.CreatedUtc;
+
+            if (!_Config.UpdateObjectTag(tag)) return null;
+            return tag;
+        }
+
+        private BucketAcl UpdateBucketAcl(S3Context ctx, string id)
+        {
+            string tenantId = GetTenantId(ctx);
+            BucketAcl existing = _Config.GetBucketAclById(tenantId, id);
+            if (existing == null) return null;
+
+            BucketAcl acl = Deserialize<BucketAcl>(ctx);
+            if (acl == null) return null;
+            acl.Id = existing.Id;
+            acl.TenantId = String.IsNullOrEmpty(acl.TenantId) ? tenantId : acl.TenantId;
+            if (String.IsNullOrEmpty(acl.BucketId)) acl.BucketId = existing.BucketId;
+            if (String.IsNullOrEmpty(acl.IssuedByUserId)) acl.IssuedByUserId = existing.IssuedByUserId;
+            acl.CreatedUtc = existing.CreatedUtc;
+
+            if (!_Config.UpdateBucketAcl(acl)) return null;
+            return acl;
+        }
+
+        private ObjectAcl UpdateObjectAcl(S3Context ctx, string id)
+        {
+            string tenantId = GetTenantId(ctx);
+            ObjectAcl existing = _Config.GetObjectAclById(tenantId, id);
+            if (existing == null) return null;
+
+            ObjectAcl acl = Deserialize<ObjectAcl>(ctx);
+            if (acl == null) return null;
+            acl.Id = existing.Id;
+            acl.TenantId = String.IsNullOrEmpty(acl.TenantId) ? tenantId : acl.TenantId;
+            if (String.IsNullOrEmpty(acl.BucketId)) acl.BucketId = existing.BucketId;
+            if (String.IsNullOrEmpty(acl.ObjectId)) acl.ObjectId = existing.ObjectId;
+            if (String.IsNullOrEmpty(acl.IssuedByUserId)) acl.IssuedByUserId = existing.IssuedByUserId;
+            acl.CreatedUtc = existing.CreatedUtc;
+
+            if (!_Config.UpdateObjectAcl(acl)) return null;
+            return acl;
         }
 
         private List<RequestHistory> FilterRequestHistory(List<RequestHistory> entries, EnumerationQuery query)
@@ -897,7 +1102,7 @@ namespace Less3.Api.Rest
             string sortDirection = GetQueryValue(ctx, "sortDirection");
             if (!String.IsNullOrEmpty(sortDirection)) query.SortDirection = sortDirection;
 
-            foreach (string filterName in new string[] { "method", "status", "success", "sourceIp", "requestType", "userId", "accessKey", "prefix" })
+            foreach (string filterName in new string[] { "method", "status", "success", "sourceIp", "requestType", "userId", "accessKey", "prefix", "objectId" })
             {
                 string value = GetQueryValue(ctx, filterName);
                 if (!String.IsNullOrEmpty(value)) query.Filters[filterName] = value;
@@ -926,6 +1131,11 @@ namespace Less3.Api.Rest
         private static string GetBucketId(S3Context ctx)
         {
             return GetQueryValue(ctx, "bucketId");
+        }
+
+        private static string GetObjectId(S3Context ctx)
+        {
+            return GetQueryValue(ctx, "objectId");
         }
 
         private static string GetQueryValue(S3Context ctx, string name)
@@ -960,6 +1170,10 @@ namespace Less3.Api.Rest
             if (normalized.Equals("sessions")) return "authsessions";
             if (normalized.Equals("audit")) return "authorizationaudit";
             if (normalized.Equals("requesthistories")) return "requesthistory";
+            if (normalized.Equals("buckettag")) return "buckettags";
+            if (normalized.Equals("objecttag")) return "objecttags";
+            if (normalized.Equals("bucketacl")) return "bucketacls";
+            if (normalized.Equals("objectacl")) return "objectacls";
 
             return normalized;
         }

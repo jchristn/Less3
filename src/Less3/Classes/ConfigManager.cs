@@ -677,6 +677,11 @@ namespace Less3.Classes
         internal bool AddBucket(Bucket bucket)
         {
             if (bucket == null) throw new ArgumentNullException(nameof(bucket));
+            if (BucketNameValidator.IsInvalid(bucket.Name))
+            {
+                _Logging.Warn("ConfigManager AddBucket invalid bucket name " + bucket.Name);
+                return false;
+            }
 
             if (BucketExists(bucket.TenantId, bucket.Name))
             {
@@ -685,6 +690,30 @@ namespace Less3.Classes
             }
 
             _Database.Buckets.Insert(bucket);
+            return true;
+        }
+
+        internal bool UpdateBucket(Bucket bucket)
+        {
+            if (bucket == null) throw new ArgumentNullException(nameof(bucket));
+            if (BucketNameValidator.IsInvalid(bucket.Name))
+            {
+                _Logging.Warn("ConfigManager UpdateBucket invalid bucket name " + bucket.Name);
+                return false;
+            }
+
+            Bucket existing = GetBucketById(bucket.TenantId, bucket.Id);
+            if (existing == null) return false;
+
+            Bucket bucketByName = GetBucketByName(bucket.TenantId, bucket.Name);
+            if (bucketByName != null && !bucketByName.Id.Equals(bucket.Id, StringComparison.Ordinal))
+            {
+                _Logging.Warn("ConfigManager UpdateBucket bucket " + bucket.Name + " already exists");
+                return false;
+            }
+
+            bucket.CreatedUtc = existing.CreatedUtc;
+            _Database.Buckets.Update(bucket);
             return true;
         }
 
@@ -780,6 +809,274 @@ namespace Less3.Classes
             if (obj == null) return false;
             _Database.Objects.Delete(obj);
             return true;
+        }
+
+        #endregion
+
+        #region Internal-Tag-and-Acl-Methods
+
+        internal List<BucketTag> GetBucketTags(string tenantId, string bucketId, EnumerationQuery query)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+
+            List<BucketTag> tags = new List<BucketTag>();
+            if (!String.IsNullOrEmpty(bucketId))
+            {
+                if (GetBucketById(tenantId, bucketId) == null) return tags;
+                tags.AddRange(_Database.BucketTags.GetByBucketId(tenantId, bucketId));
+            }
+            else
+            {
+                foreach (Bucket bucket in GetBuckets(tenantId))
+                {
+                    tags.AddRange(_Database.BucketTags.GetByBucketId(tenantId, bucket.Id));
+                }
+            }
+
+            return tags.OrderBy(t => t.Id).ToList();
+        }
+
+        internal BucketTag GetBucketTagById(string tenantId, string id)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            return _Database.BucketTags.GetById(tenantId, id);
+        }
+
+        internal bool AddBucketTag(BucketTag tag)
+        {
+            if (tag == null) throw new ArgumentNullException(nameof(tag));
+            if (String.IsNullOrEmpty(tag.TenantId)) throw new ArgumentNullException(nameof(tag.TenantId));
+            if (String.IsNullOrEmpty(tag.BucketId)) throw new ArgumentNullException(nameof(tag.BucketId));
+            if (String.IsNullOrEmpty(tag.Key)) throw new ArgumentNullException(nameof(tag.Key));
+            if (GetBucketById(tag.TenantId, tag.BucketId) == null) return false;
+            if (_Database.BucketTags.ExistsById(tag.TenantId, tag.Id)) return false;
+            _Database.BucketTags.Insert(tag);
+            return true;
+        }
+
+        internal bool UpdateBucketTag(BucketTag tag)
+        {
+            if (tag == null) throw new ArgumentNullException(nameof(tag));
+            BucketTag existing = GetBucketTagById(tag.TenantId, tag.Id);
+            if (existing == null) return false;
+            if (GetBucketById(tag.TenantId, tag.BucketId) == null) return false;
+            tag.CreatedUtc = existing.CreatedUtc;
+            _Database.BucketTags.Update(tag);
+            return true;
+        }
+
+        internal bool DeleteBucketTag(string tenantId, string id)
+        {
+            if (GetBucketTagById(tenantId, id) == null) return false;
+            _Database.BucketTags.DeleteById(tenantId, id);
+            return true;
+        }
+
+        internal List<ObjectTag> GetObjectTags(string tenantId, string bucketId, string objectId, EnumerationQuery query)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+
+            List<ObjectTag> tags = new List<ObjectTag>();
+            if (!String.IsNullOrEmpty(objectId))
+            {
+                Obj obj = FindObjectById(tenantId, bucketId, objectId);
+                if (obj == null) return tags;
+                tags.AddRange(_Database.ObjectTags.GetByObjectId(tenantId, obj.Id, obj.BucketId));
+            }
+            else if (!String.IsNullOrEmpty(bucketId))
+            {
+                if (GetBucketById(tenantId, bucketId) == null) return tags;
+                foreach (Obj obj in GetObjects(tenantId, bucketId, query))
+                {
+                    tags.AddRange(_Database.ObjectTags.GetByObjectId(tenantId, obj.Id, bucketId));
+                }
+            }
+            else
+            {
+                foreach (Bucket bucket in GetBuckets(tenantId))
+                {
+                    foreach (Obj obj in GetObjects(tenantId, bucket.Id, query))
+                    {
+                        tags.AddRange(_Database.ObjectTags.GetByObjectId(tenantId, obj.Id, bucket.Id));
+                    }
+                }
+            }
+
+            return tags.OrderBy(t => t.Id).ToList();
+        }
+
+        internal ObjectTag GetObjectTagById(string tenantId, string id)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            return _Database.ObjectTags.GetById(tenantId, id);
+        }
+
+        internal bool AddObjectTag(ObjectTag tag)
+        {
+            if (tag == null) throw new ArgumentNullException(nameof(tag));
+            if (String.IsNullOrEmpty(tag.TenantId)) throw new ArgumentNullException(nameof(tag.TenantId));
+            if (String.IsNullOrEmpty(tag.BucketId)) throw new ArgumentNullException(nameof(tag.BucketId));
+            if (String.IsNullOrEmpty(tag.ObjectId)) throw new ArgumentNullException(nameof(tag.ObjectId));
+            if (String.IsNullOrEmpty(tag.Key)) throw new ArgumentNullException(nameof(tag.Key));
+            if (GetObjectById(tag.TenantId, tag.BucketId, tag.ObjectId) == null) return false;
+            if (_Database.ObjectTags.ExistsById(tag.TenantId, tag.Id)) return false;
+            _Database.ObjectTags.Insert(tag);
+            return true;
+        }
+
+        internal bool UpdateObjectTag(ObjectTag tag)
+        {
+            if (tag == null) throw new ArgumentNullException(nameof(tag));
+            ObjectTag existing = GetObjectTagById(tag.TenantId, tag.Id);
+            if (existing == null) return false;
+            if (GetObjectById(tag.TenantId, tag.BucketId, tag.ObjectId) == null) return false;
+            tag.CreatedUtc = existing.CreatedUtc;
+            _Database.ObjectTags.Update(tag);
+            return true;
+        }
+
+        internal bool DeleteObjectTag(string tenantId, string id)
+        {
+            if (GetObjectTagById(tenantId, id) == null) return false;
+            _Database.ObjectTags.DeleteById(tenantId, id);
+            return true;
+        }
+
+        internal List<BucketAcl> GetBucketAcls(string tenantId, string bucketId, EnumerationQuery query)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+
+            List<BucketAcl> acls = new List<BucketAcl>();
+            if (!String.IsNullOrEmpty(bucketId))
+            {
+                if (GetBucketById(tenantId, bucketId) == null) return acls;
+                acls.AddRange(_Database.BucketAcls.GetByBucketId(tenantId, bucketId));
+            }
+            else
+            {
+                foreach (Bucket bucket in GetBuckets(tenantId))
+                {
+                    acls.AddRange(_Database.BucketAcls.GetByBucketId(tenantId, bucket.Id));
+                }
+            }
+
+            return acls.OrderBy(a => a.Id).ToList();
+        }
+
+        internal BucketAcl GetBucketAclById(string tenantId, string id)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            return _Database.BucketAcls.GetById(tenantId, id);
+        }
+
+        internal bool AddBucketAcl(BucketAcl acl)
+        {
+            if (acl == null) throw new ArgumentNullException(nameof(acl));
+            if (String.IsNullOrEmpty(acl.TenantId)) throw new ArgumentNullException(nameof(acl.TenantId));
+            if (String.IsNullOrEmpty(acl.BucketId)) throw new ArgumentNullException(nameof(acl.BucketId));
+            if (GetBucketById(acl.TenantId, acl.BucketId) == null) return false;
+            if (_Database.BucketAcls.ExistsById(acl.TenantId, acl.Id)) return false;
+            _Database.BucketAcls.Insert(acl);
+            return true;
+        }
+
+        internal bool UpdateBucketAcl(BucketAcl acl)
+        {
+            if (acl == null) throw new ArgumentNullException(nameof(acl));
+            BucketAcl existing = GetBucketAclById(acl.TenantId, acl.Id);
+            if (existing == null) return false;
+            if (GetBucketById(acl.TenantId, acl.BucketId) == null) return false;
+            acl.CreatedUtc = existing.CreatedUtc;
+            _Database.BucketAcls.Update(acl);
+            return true;
+        }
+
+        internal bool DeleteBucketAcl(string tenantId, string id)
+        {
+            if (GetBucketAclById(tenantId, id) == null) return false;
+            _Database.BucketAcls.DeleteById(tenantId, id);
+            return true;
+        }
+
+        internal List<ObjectAcl> GetObjectAcls(string tenantId, string bucketId, string objectId, EnumerationQuery query)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+
+            List<ObjectAcl> acls = new List<ObjectAcl>();
+            if (!String.IsNullOrEmpty(objectId))
+            {
+                Obj obj = FindObjectById(tenantId, bucketId, objectId);
+                if (obj == null) return acls;
+                acls.AddRange(_Database.ObjectAcls.GetByObjectId(tenantId, obj.Id, obj.BucketId));
+            }
+            else if (!String.IsNullOrEmpty(bucketId))
+            {
+                if (GetBucketById(tenantId, bucketId) == null) return acls;
+                acls.AddRange(_Database.ObjectAcls.GetByBucketId(tenantId, bucketId));
+            }
+            else
+            {
+                foreach (Bucket bucket in GetBuckets(tenantId))
+                {
+                    acls.AddRange(_Database.ObjectAcls.GetByBucketId(tenantId, bucket.Id));
+                }
+            }
+
+            return acls.OrderBy(a => a.Id).ToList();
+        }
+
+        internal ObjectAcl GetObjectAclById(string tenantId, string id)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            return _Database.ObjectAcls.GetById(tenantId, id);
+        }
+
+        internal bool AddObjectAcl(ObjectAcl acl)
+        {
+            if (acl == null) throw new ArgumentNullException(nameof(acl));
+            if (String.IsNullOrEmpty(acl.TenantId)) throw new ArgumentNullException(nameof(acl.TenantId));
+            if (String.IsNullOrEmpty(acl.BucketId)) throw new ArgumentNullException(nameof(acl.BucketId));
+            if (String.IsNullOrEmpty(acl.ObjectId)) throw new ArgumentNullException(nameof(acl.ObjectId));
+            if (GetObjectById(acl.TenantId, acl.BucketId, acl.ObjectId) == null) return false;
+            if (_Database.ObjectAcls.ExistsById(acl.TenantId, acl.Id)) return false;
+            _Database.ObjectAcls.Insert(acl);
+            return true;
+        }
+
+        internal bool UpdateObjectAcl(ObjectAcl acl)
+        {
+            if (acl == null) throw new ArgumentNullException(nameof(acl));
+            ObjectAcl existing = GetObjectAclById(acl.TenantId, acl.Id);
+            if (existing == null) return false;
+            if (GetObjectById(acl.TenantId, acl.BucketId, acl.ObjectId) == null) return false;
+            acl.CreatedUtc = existing.CreatedUtc;
+            _Database.ObjectAcls.Update(acl);
+            return true;
+        }
+
+        internal bool DeleteObjectAcl(string tenantId, string id)
+        {
+            if (GetObjectAclById(tenantId, id) == null) return false;
+            _Database.ObjectAcls.DeleteById(tenantId, id);
+            return true;
+        }
+
+        private Obj FindObjectById(string tenantId, string bucketId, string objectId)
+        {
+            if (String.IsNullOrEmpty(objectId)) return null;
+            if (!String.IsNullOrEmpty(bucketId)) return GetObjectById(tenantId, bucketId, objectId);
+
+            foreach (Bucket bucket in GetBuckets(tenantId))
+            {
+                Obj obj = GetObjectById(tenantId, bucket.Id, objectId);
+                if (obj != null) return obj;
+            }
+
+            return null;
         }
 
         #endregion

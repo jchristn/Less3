@@ -6,13 +6,13 @@ This review records the current v3 implementation state against the requirement 
 
 The v3 branch now uses PrettyId-backed string IDs for public server, dashboard, and test contracts. The active Touchstone catalog checks ID prefixes, maximum length, K-sort behavior, public contract `Id`/`TenantId` shape, dashboard GUID naming, OpenAPI ID naming, and server/database interface GUID regressions.
 
-Tenant context is resolved from the S3 access key, and the active live-instance tests cover default bootstrap, inactive tenant rejection, session login/validate/revoke/read/enumerate/exists, REST tenant/RBAC/object/request-history/authorization-audit CRUD surfaces, request-history filters and tenant isolation, cross-tenant S3 bucket/object/multipart/version denial, and same bucket names in different tenants. Provider query files were scanned for tenant-owned table access without `tenant_id`; no scan findings remain after the multipart upload and cleanup paths were switched to tenant-bound database methods.
+Tenant context is resolved from the S3 access key, and the active live-instance tests cover default bootstrap, inactive tenant rejection, session login/validate/revoke/read/enumerate/exists, REST tenant/bucket/object/tag/ACL/user/credential/RBAC/request-history/authorization-audit CRUD surfaces, request-history filters and tenant isolation, cross-tenant S3 bucket/object/multipart/version denial, reserved route-name bucket rejection, and same bucket names in different tenants. Provider query files were scanned for tenant-owned table access without `tenant_id`; no scan findings remain after the multipart upload and cleanup paths were switched to tenant-bound database methods.
 
 The dashboard now has routes for tenants, roles, role assignments, and permissions; Playwright covers login, responsive login layout at 1280/768/390, logout accessibility, and main route rendering. Docker server and dashboard images build locally, and the compose smoke test validates live health, OpenAPI, REST session login, S3 ListBuckets with the default credential, and real dashboard login against the smoke server.
 
 ## Backend Deviations
 
-The backend still diverges from `BACKEND_ARCHITECTURE.md` in important ways. `Program.cs` remains a large static composition root, and Less3 still routes through S3ServerLibrary/Watson handlers instead of Watson 7 feature-specific typed route registrars. The REST API is implemented with a custom handler and manual routing rather than `server.Get`, `server.Post<T>`, `server.Put<T>`, and `server.Delete` route registration.
+The backend still diverges from `BACKEND_ARCHITECTURE.md` in important ways. `Program.cs` remains a large static composition root, and Less3 still routes through S3ServerLibrary/Watson handlers instead of Watson 7 feature-specific typed route registrars. The REST API is implemented with a custom handler and manual routing rather than `server.Get`, `server.Post<T>`, `server.Put<T>`, and `server.Delete` route registration, though the standard REST CRUD surface now includes buckets, objects, tags, ACLs, users, credentials, tenants, RBAC, sessions, request history, and authorization audit.
 
 Cancellation-token propagation is incomplete. The database control-plane interfaces have async methods that accept `CancellationToken`, but the broader route/service/database surface still has synchronous methods and many server awaits without `ConfigureAwait(false)`. The C# style scan was run; it confirms remaining style debt rather than a clean strict-style state.
 
@@ -30,7 +30,7 @@ The requirement file still uses GUID terminology in examples, but the v3 decisio
 
 ## Test Deviations
 
-`BACKEND_TEST_ARCHITECTURE.md` is followed structurally: `Test.Shared`, `Test.Automated`, `Test.Xunit`, and `Test.Nunit` all consume the same Touchstone descriptor catalog. The catalog is exhaustive as an inventory, with 402 descriptors. The latest automated run completed with 186 active live/static assertions passing, 0 failures, and 216 planned/skipped descriptors.
+`BACKEND_TEST_ARCHITECTURE.md` is followed structurally: `Test.Shared`, `Test.Automated`, `Test.Xunit`, and `Test.Nunit` all consume the same Touchstone descriptor catalog. The catalog is exhaustive as an inventory, with 405 descriptors. The latest automated run completed with 196 active live/static assertions passing, 0 failures, and 209 planned/skipped descriptors.
 
 Many descriptors remain skipped because the corresponding product behavior or infrastructure is not yet complete. The remaining planned groups are primarily provider-matrix migration/runtime tests, protocol-compatibility edge cases, reporting and maintenance APIs, health degradation cases, security/degradation tests, concurrency/reliability tests, and Docker persistence/image flows.
 

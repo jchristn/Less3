@@ -1366,6 +1366,10 @@ namespace Less3.Classes
             {
                 return String.Equals(requestedResourceType, "Bucket", StringComparison.OrdinalIgnoreCase)
                     || String.Equals(requestedResourceType, "Object", StringComparison.OrdinalIgnoreCase)
+                    || String.Equals(requestedResourceType, "BucketTag", StringComparison.OrdinalIgnoreCase)
+                    || String.Equals(requestedResourceType, "ObjectTag", StringComparison.OrdinalIgnoreCase)
+                    || String.Equals(requestedResourceType, "BucketAcl", StringComparison.OrdinalIgnoreCase)
+                    || String.Equals(requestedResourceType, "ObjectAcl", StringComparison.OrdinalIgnoreCase)
                     || String.Equals(requestedResourceType, "Storage", StringComparison.OrdinalIgnoreCase);
             }
 

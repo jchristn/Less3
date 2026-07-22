@@ -88,6 +88,12 @@ namespace Less3.Database.Interfaces
         void Insert(Bucket bucket);
 
         /// <summary>
+        /// Update a bucket.
+        /// </summary>
+        /// <param name="bucket">Bucket to update.</param>
+        void Update(Bucket bucket);
+
+        /// <summary>
         /// Delete a bucket by Id.
         /// </summary>
         /// <param name="id">Bucket Id.</param>

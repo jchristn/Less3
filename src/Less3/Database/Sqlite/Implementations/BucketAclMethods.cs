@@ -29,11 +29,35 @@ namespace Less3.Database.Sqlite.Implementations
         }
 
         /// <inheritdoc />
+        public bool ExistsByGroupName(string tenantId, string groupName, string bucketId)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(groupName)) throw new ArgumentNullException(nameof(groupName));
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Database.ExecuteQuery(BucketAclQueries.ExistsByGroupName(tenantId, groupName, bucketId)).Result;
+            if (result != null && result.Rows.Count > 0)
+                return Convert.ToInt32(result.Rows[0]["cnt"]) > 0;
+            return false;
+        }
+
+        /// <inheritdoc />
         public bool ExistsByUserId(string userId, string bucketId)
         {
             if (String.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
             if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
             DataTable result = _Database.ExecuteQuery(BucketAclQueries.ExistsByUserId(userId, bucketId)).Result;
+            if (result != null && result.Rows.Count > 0)
+                return Convert.ToInt32(result.Rows[0]["cnt"]) > 0;
+            return false;
+        }
+
+        /// <inheritdoc />
+        public bool ExistsByUserId(string tenantId, string userId, string bucketId)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Database.ExecuteQuery(BucketAclQueries.ExistsByUserId(tenantId, userId, bucketId)).Result;
             if (result != null && result.Rows.Count > 0)
                 return Convert.ToInt32(result.Rows[0]["cnt"]) > 0;
             return false;
@@ -48,6 +72,36 @@ namespace Less3.Database.Sqlite.Implementations
         }
 
         /// <inheritdoc />
+        public List<BucketAcl> GetByBucketId(string tenantId, string bucketId)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Database.ExecuteQuery(BucketAclQueries.SelectByBucketId(tenantId, bucketId)).Result;
+            return MapList(result);
+        }
+
+        /// <inheritdoc />
+        public BucketAcl GetById(string tenantId, string id)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            DataTable result = _Database.ExecuteQuery(BucketAclQueries.SelectById(tenantId, id)).Result;
+            List<BucketAcl> acls = MapList(result);
+            if (acls == null || acls.Count < 1) return null;
+            return acls[0];
+        }
+
+        /// <inheritdoc />
+        public bool ExistsById(string tenantId, string id)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            DataTable result = _Database.ExecuteQuery(BucketAclQueries.ExistsById(tenantId, id)).Result;
+            if (result != null && result.Rows.Count > 0) return Convert.ToInt32(result.Rows[0]["cnt"]) > 0;
+            return false;
+        }
+
+        /// <inheritdoc />
         public void Insert(BucketAcl acl)
         {
             if (acl == null) throw new ArgumentNullException(nameof(acl));
@@ -55,10 +109,25 @@ namespace Less3.Database.Sqlite.Implementations
         }
 
         /// <inheritdoc />
+        public void Update(BucketAcl acl)
+        {
+            if (acl == null) throw new ArgumentNullException(nameof(acl));
+            _Database.ExecuteQuery(BucketAclQueries.UpdateQuery(acl), true).Wait();
+        }
+
+        /// <inheritdoc />
         public void DeleteByBucketId(string bucketId)
         {
             if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
             _Database.ExecuteQuery(BucketAclQueries.DeleteByBucketId(bucketId), true).Wait();
+        }
+
+        /// <inheritdoc />
+        public void DeleteById(string tenantId, string id)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            _Database.ExecuteQuery(BucketAclQueries.DeleteById(tenantId, id), true).Wait();
         }
 
         private BucketAcl MapFromRow(DataRow row)

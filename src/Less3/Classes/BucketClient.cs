@@ -521,6 +521,7 @@ namespace Less3.Classes
             {
                 foreach (BucketTag tag in tags)
                 {
+                    tag.TenantId = _Bucket.TenantId;
                     tag.BucketId = _Bucket.Id;
                     _Database.BucketTags.Insert(tag);
                 }
@@ -538,6 +539,7 @@ namespace Less3.Classes
             {
                 foreach (ObjectTag tag in tags)
                 {
+                    tag.TenantId = _Bucket.TenantId;
                     tag.BucketId = _Bucket.Id;
                     _Database.ObjectTags.Insert(tag);
                 }
@@ -546,7 +548,7 @@ namespace Less3.Classes
 
         internal List<BucketTag> GetBucketTags()
         {
-            return _Database.BucketTags.GetByBucketId(_Bucket.Id);
+            return _Database.BucketTags.GetByBucketId(_Bucket.TenantId, _Bucket.Id);
         }
 
         internal List<ObjectTag> GetObjectTags(string key, long version)
@@ -561,13 +563,13 @@ namespace Less3.Classes
                 return null;
             }
 
-            return _Database.ObjectTags.GetByObjectId(obj.Id, _Bucket.Id);
+            return _Database.ObjectTags.GetByObjectId(_Bucket.TenantId, obj.Id, _Bucket.Id);
         }
 
         internal List<ObjectTag> GetObjectTags(string id)
         {
             if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
-            return _Database.ObjectTags.GetByObjectId(id, _Bucket.Id);
+            return _Database.ObjectTags.GetByObjectId(_Bucket.TenantId, id, _Bucket.Id);
         }
 
         internal void DeleteBucketTags()
@@ -601,7 +603,7 @@ namespace Less3.Classes
                 return false;
             }
 
-            return _Database.ObjectAcls.ExistsByGroupName(groupName, obj.Id, _Bucket.Id);
+            return _Database.ObjectAcls.ExistsByGroupName(_Bucket.TenantId, groupName, obj.Id, _Bucket.Id);
         }
 
         internal bool ObjectUserAclExists(string userId, string key, long version)
@@ -616,24 +618,24 @@ namespace Less3.Classes
                 return false;
             }
 
-            return _Database.ObjectAcls.ExistsByUserId(userId, obj.Id, _Bucket.Id);
+            return _Database.ObjectAcls.ExistsByUserId(_Bucket.TenantId, userId, obj.Id, _Bucket.Id);
         }
 
         internal bool BucketGroupAclExists(string groupName)
         {
             if (String.IsNullOrEmpty(groupName)) throw new ArgumentNullException(nameof(groupName));
-            return _Database.BucketAcls.ExistsByGroupName(groupName, _Bucket.Id);
+            return _Database.BucketAcls.ExistsByGroupName(_Bucket.TenantId, groupName, _Bucket.Id);
         }
 
         internal bool BucketUserAclExists(string userId)
         {
             if (String.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
-            return _Database.BucketAcls.ExistsByUserId(userId, _Bucket.Id);
+            return _Database.BucketAcls.ExistsByUserId(_Bucket.TenantId, userId, _Bucket.Id);
         }
 
         internal List<BucketAcl> GetBucketAcl()
         {
-            return _Database.BucketAcls.GetByBucketId(_Bucket.Id);
+            return _Database.BucketAcls.GetByBucketId(_Bucket.TenantId, _Bucket.Id);
         }
 
         internal List<ObjectAcl> GetObjectVersionAcl(string key, long version)
@@ -647,13 +649,13 @@ namespace Less3.Classes
                 return null;
             }
 
-            return _Database.ObjectAcls.GetByObjectId(obj.Id, _Bucket.Id);
+            return _Database.ObjectAcls.GetByObjectId(_Bucket.TenantId, obj.Id, _Bucket.Id);
         }
 
         internal List<ObjectAcl> GetObjectAcl(string id)
         {
             if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
-            return _Database.ObjectAcls.GetByObjectId(id, _Bucket.Id);
+            return _Database.ObjectAcls.GetByObjectId(_Bucket.TenantId, id, _Bucket.Id);
         }
 
         internal void AddBucketAcl(BucketAcl acl)
@@ -661,6 +663,7 @@ namespace Less3.Classes
             if (acl != null)
             {
                 acl.BucketId = _Bucket.Id;
+                acl.TenantId = _Bucket.TenantId;
                 _Database.BucketAcls.Insert(acl);
             }
         }
@@ -674,6 +677,7 @@ namespace Less3.Classes
                 foreach (BucketAcl acl in acls)
                 {
                     acl.BucketId = _Bucket.Id;
+                    acl.TenantId = _Bucket.TenantId;
                     _Database.BucketAcls.Insert(acl);
                 }
             }
@@ -692,6 +696,7 @@ namespace Less3.Classes
 
                 acl.BucketId = _Bucket.Id;
                 acl.ObjectId = obj.Id;
+                acl.TenantId = _Bucket.TenantId;
                 _Database.ObjectAcls.Insert(acl);
             }
         }
@@ -715,6 +720,7 @@ namespace Less3.Classes
                 {
                     acl.BucketId = _Bucket.Id;
                     acl.ObjectId = obj.Id;
+                    acl.TenantId = _Bucket.TenantId;
                     _Database.ObjectAcls.Insert(acl);
                 }
             }

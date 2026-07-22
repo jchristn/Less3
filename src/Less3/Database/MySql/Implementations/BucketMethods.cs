@@ -121,6 +121,13 @@ namespace Less3.Database.MySql.Implementations
         }
 
         /// <inheritdoc />
+        public void Update(Bucket bucket)
+        {
+            if (bucket == null) throw new ArgumentNullException(nameof(bucket));
+            _Database.ExecuteQuery(BucketQueries.UpdateQuery(bucket), true).Wait();
+        }
+
+        /// <inheritdoc />
         public void DeleteById(string id)
         {
             if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));

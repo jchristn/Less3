@@ -516,7 +516,8 @@ namespace Less3
 
             #region Misc-URLs
               
-            if (ctx.Http.Request.Url.Elements.Length == 1)
+            if (ctx.Http.Request.Method == WatsonWebserver.Core.HttpMethod.GET
+                && ctx.Http.Request.Url.Elements.Length == 1)
             { 
                 if (ctx.Http.Request.Url.Elements[0].Equals("favicon.ico"))
                 { 
@@ -834,6 +835,10 @@ namespace Less3
             if (normalized.Equals("tenants")) return "Tenant";
             if (normalized.Equals("buckets")) return "Bucket";
             if (normalized.Equals("objects")) return "Object";
+            if (normalized.Equals("buckettags") || normalized.Equals("buckettag")) return "BucketTag";
+            if (normalized.Equals("objecttags") || normalized.Equals("objecttag")) return "ObjectTag";
+            if (normalized.Equals("bucketacls") || normalized.Equals("bucketacl")) return "BucketAcl";
+            if (normalized.Equals("objectacls") || normalized.Equals("objectacl")) return "ObjectAcl";
             if (normalized.Equals("users")) return "User";
             if (normalized.Equals("credentials")) return "Credential";
             if (normalized.Equals("roles")) return "Role";
@@ -1017,6 +1022,10 @@ namespace Less3
                 "tenants",
                 "buckets",
                 "objects",
+                "buckettags",
+                "objecttags",
+                "bucketacls",
+                "objectacls",
                 "users",
                 "credentials",
                 "roles",

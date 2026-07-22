@@ -400,6 +400,7 @@ namespace Test.Shared
                     Planned("S3ServiceAndBuckets", "S3_CreateBucket_DuplicateNameSameTenantFails", "Current S3 create-bucket behavior is idempotent for the same owner and must be reconciled with the v3 contract."),
                     Active("S3ServiceAndBuckets", "S3_CreateBucket_SameNameDifferentTenantSucceeds", "S3 CreateBucket allows the same bucket name in different tenants", S3SameBucketNameDifferentTenantsAsync),
                     Active("S3ServiceAndBuckets", "S3_CreateBucket_InvalidNameFails", "S3 CreateBucket rejects invalid bucket names", S3CreateBucketInvalidNameFailsAsync),
+                    Active("S3ServiceAndBuckets", "S3_CreateBucket_ReservedRouteNameFails", "S3 CreateBucket rejects reserved route names", BucketReservedRouteNamesRejectedAcrossApisAsync),
                     Active("S3ServiceAndBuckets", "S3_CreateBucket_UnauthorizedRoleFails", "S3 CreateBucket rejects credentials without RBAC permission", S3UnauthorizedCredentialCannotCreateBucketAsync),
                     Active("S3ServiceAndBuckets", "S3_HeadBucket_ExistingSameTenantSucceeds", "S3 HeadBucket succeeds for an existing same-tenant bucket", S3HeadBucketExistingSameTenantSucceedsAsync),
                     Active("S3ServiceAndBuckets", "S3_HeadBucket_OtherTenantBucketReturnsNotFoundOrAccessDenied", "S3 HeadBucket fails for another tenant's bucket", S3HeadBucketOtherTenantBucketFailsAsync),
@@ -570,14 +571,15 @@ namespace Test.Shared
                 cases: new List<TestCaseDescriptor>
                 {
                     Active("Less3RestApi", "Rest_Tenants_CreateReadEnumerateUpdateDeleteExists", "Less3 REST tenants CRUD/enumerate/exists", Less3RestTenantCrudEnumerateAndExistsAsync),
-                    Planned("Less3RestApi", "Rest_Buckets_CreateReadEnumerateUpdateDeleteExists", "REST bucket CRUD needs exact active assertion."),
+                    Active("Less3RestApi", "Rest_Buckets_CreateReadEnumerateUpdateDeleteExists", "Less3 REST bucket CRUD/enumerate/exists", Less3RestBucketCrudEnumerateAndExistsAsync),
+                    Active("Less3RestApi", "Rest_Buckets_ReservedRouteNameFails", "Less3 REST bucket create rejects reserved route names", BucketReservedRouteNamesRejectedAcrossApisAsync),
                     Active("Less3RestApi", "Rest_Objects_CreateReadEnumerateUpdateDeleteExists", "Less3 REST objects CRUD/enumerate/exists", Less3RestObjectCrudEnumerateAndExistsAsync),
-                    Planned("Less3RestApi", "Rest_BucketTags_CreateReadEnumerateUpdateDeleteExists", "REST bucket tag routes are not implemented."),
-                    Planned("Less3RestApi", "Rest_ObjectTags_CreateReadEnumerateUpdateDeleteExists", "REST object tag routes are not implemented."),
-                    Planned("Less3RestApi", "Rest_BucketAcls_CreateReadEnumerateUpdateDeleteExists", "REST bucket ACL routes are not implemented."),
-                    Planned("Less3RestApi", "Rest_ObjectAcls_CreateReadEnumerateUpdateDeleteExists", "REST object ACL routes are not implemented."),
-                    Planned("Less3RestApi", "Rest_Users_CreateReadEnumerateUpdateDeleteExists", "REST user CRUD needs exact active assertion."),
-                    Planned("Less3RestApi", "Rest_Credentials_CreateReadEnumerateUpdateDeleteExists", "REST credential CRUD needs exact active assertion."),
+                    Active("Less3RestApi", "Rest_BucketTags_CreateReadEnumerateUpdateDeleteExists", "Less3 REST bucket tag CRUD/enumerate/exists", Less3RestTagAndAclCrudEnumerateAndExistsAsync),
+                    Active("Less3RestApi", "Rest_ObjectTags_CreateReadEnumerateUpdateDeleteExists", "Less3 REST object tag CRUD/enumerate/exists", Less3RestTagAndAclCrudEnumerateAndExistsAsync),
+                    Active("Less3RestApi", "Rest_BucketAcls_CreateReadEnumerateUpdateDeleteExists", "Less3 REST bucket ACL CRUD/enumerate/exists", Less3RestTagAndAclCrudEnumerateAndExistsAsync),
+                    Active("Less3RestApi", "Rest_ObjectAcls_CreateReadEnumerateUpdateDeleteExists", "Less3 REST object ACL CRUD/enumerate/exists", Less3RestTagAndAclCrudEnumerateAndExistsAsync),
+                    Active("Less3RestApi", "Rest_Users_CreateReadEnumerateUpdateDeleteExists", "Less3 REST user CRUD/enumerate/exists", Less3RestUserAndCredentialCrudEnumerateAndExistsAsync),
+                    Active("Less3RestApi", "Rest_Credentials_CreateReadEnumerateUpdateDeleteExists", "Less3 REST credential CRUD/enumerate/exists", Less3RestUserAndCredentialCrudEnumerateAndExistsAsync),
                     Active("Less3RestApi", "Rest_Roles_CreateReadEnumerateUpdateDeleteExists", "Less3 REST roles CRUD/enumerate/exists", Less3RestRbacCrudEnumerateAndExistsAsync),
                     Active("Less3RestApi", "Rest_Permissions_CreateReadEnumerateUpdateDeleteExists", "Less3 REST permissions CRUD/enumerate/exists", Less3RestRbacCrudEnumerateAndExistsAsync),
                     Active("Less3RestApi", "Rest_RoleAssignments_CreateReadEnumerateUpdateDeleteExists", "Less3 REST role assignments CRUD/enumerate/exists", Less3RestRbacCrudEnumerateAndExistsAsync),
@@ -619,6 +621,7 @@ namespace Test.Shared
                     Planned("AdminApi", "Admin_Credentials_Disable", "Credential disable needs exact active assertion."),
                     Active("AdminApi", "Admin_Credentials_LastUsedLastFailed", "Credential last-used/last-failed fields update through S3 auth", S3CredentialLastUsedAndLastFailedTimestampsAsync),
                     Planned("AdminApi", "Admin_Buckets_CreateReadListDelete", "Admin bucket CRUD needs exact active assertion."),
+                    Active("AdminApi", "Admin_Buckets_ReservedRouteNameFails", "Admin bucket create rejects reserved route names", BucketReservedRouteNamesRejectedAcrossApisAsync),
                     Planned("AdminApi", "Admin_Buckets_DuplicateNameSameTenantFails", "Same-tenant duplicate bucket behavior currently differs from the v3 contract."),
                     Active("AdminApi", "Admin_Buckets_DuplicateNameDifferentTenantSucceeds", "Same bucket name can exist in different tenants", S3SameBucketNameDifferentTenantsAsync),
                     Active("AdminApi", "Admin_RequestHistory_ServerSideEnumeration", "Admin request history enumeration is available through REST", RequestHistoryCapturesS3TenantCredentialAndFiltersAsync),
@@ -1663,6 +1666,157 @@ namespace Test.Shared
             EnsureContains(await missingResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false), "\"Exists\": false", "REST tenant missing exists");
         }
 
+        private static async Task Less3RestBucketCrudEnumerateAndExistsAsync(CancellationToken cancellationToken)
+        {
+            using Less3TestServer server = new Less3TestServer();
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
+
+            string bucketId = TestIds.Bucket();
+            string bucketName = "rest-buckets-" + TestIds.Suffix().Substring(0, 8);
+
+            string createJson = JsonSerializer.Serialize(new
+            {
+                Id = bucketId,
+                TenantId = "default",
+                OwnerId = "usr_default_admin",
+                Name = bucketName,
+                RegionString = "us-west-1",
+                EnableVersioning = false,
+                EnablePublicWrite = false,
+                EnablePublicRead = false
+            });
+
+            HttpResponseMessage createResponse = await server.RestPostAsync("buckets?tenantId=default", createJson, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, createResponse.StatusCode, "REST create bucket");
+
+            HttpResponseMessage readResponse = await server.RestGetAsync("buckets/" + bucketId + "?tenantId=default", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, readResponse.StatusCode, "REST read bucket");
+            EnsureContains(await readResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false), bucketName, "REST read bucket");
+
+            HttpResponseMessage existsResponse = await server.RestGetAsync("buckets/" + bucketId + "/exists?tenantId=default", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, existsResponse.StatusCode, "REST bucket exists");
+            EnsureContains(await existsResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false), "\"Exists\": true", "REST bucket exists");
+
+            HttpResponseMessage enumerateResponse = await server.RestPostAsync("buckets/enumerate?tenantId=default", JsonSerializer.Serialize(new
+            {
+                TenantId = "default",
+                Limit = 100,
+                Offset = 0,
+                SortField = "id"
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, enumerateResponse.StatusCode, "REST enumerate buckets");
+            EnsureContains(await enumerateResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false), bucketId, "REST enumerate buckets");
+
+            string updateJson = JsonSerializer.Serialize(new
+            {
+                Id = bucketId,
+                TenantId = "default",
+                OwnerId = "usr_default_admin",
+                Name = bucketName,
+                RegionString = "us-west-2",
+                EnableVersioning = true,
+                EnablePublicWrite = false,
+                EnablePublicRead = false
+            });
+
+            HttpResponseMessage updateResponse = await server.RestPutAsync("buckets/" + bucketId + "?tenantId=default", updateJson, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, updateResponse.StatusCode, "REST update bucket");
+            EnsureContains(await updateResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false), "\"EnableVersioning\": true", "REST update bucket");
+
+            HttpResponseMessage deleteResponse = await server.RestDeleteAsync("buckets/" + bucketId + "?tenantId=default", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.NoContent, deleteResponse.StatusCode, "REST delete bucket");
+
+            HttpResponseMessage missingResponse = await server.RestGetAsync("buckets/" + bucketId + "/exists?tenantId=default", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, missingResponse.StatusCode, "REST missing bucket exists");
+            EnsureContains(await missingResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false), "\"Exists\": false", "REST missing bucket exists");
+        }
+
+        private static async Task Less3RestUserAndCredentialCrudEnumerateAndExistsAsync(CancellationToken cancellationToken)
+        {
+            using Less3TestServer server = new Less3TestServer();
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
+
+            string userId = TestIds.User();
+            string credentialId = TestIds.Credential();
+            string accessKey = "rest-cred-" + TestIds.Suffix();
+
+            HttpResponseMessage userCreateResponse = await server.RestPostAsync("users?tenantId=default", JsonSerializer.Serialize(new
+            {
+                Id = userId,
+                TenantId = "default",
+                Name = "REST user",
+                Email = userId + "@example.com",
+                PasswordHash = "password",
+                Active = true
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, userCreateResponse.StatusCode, "REST create user");
+
+            await AssertRestCrudRoundTripAsync(
+                server,
+                "users",
+                userId,
+                "tenantId=default",
+                "user",
+                JsonSerializer.Serialize(new
+                {
+                    Id = userId,
+                    TenantId = "default",
+                    Name = "REST user updated",
+                    Email = userId + "@example.com",
+                    PasswordHash = "password",
+                    Active = true
+                }),
+                "REST user updated",
+                cancellationToken).ConfigureAwait(false);
+
+            HttpResponseMessage replacementUserResponse = await server.RestPostAsync("users?tenantId=default", JsonSerializer.Serialize(new
+            {
+                Id = userId,
+                TenantId = "default",
+                Name = "REST user",
+                Email = userId + "@example.com",
+                PasswordHash = "password",
+                Active = true
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, replacementUserResponse.StatusCode, "REST recreate user for credential");
+
+            HttpResponseMessage credentialCreateResponse = await server.RestPostAsync("credentials?tenantId=default", JsonSerializer.Serialize(new
+            {
+                Id = credentialId,
+                TenantId = "default",
+                UserId = userId,
+                Description = "REST credential",
+                AccessKey = accessKey,
+                SecretKey = "secret-" + TestIds.Suffix(),
+                IsBase64 = false,
+                Active = true
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, credentialCreateResponse.StatusCode, "REST create credential");
+
+            await AssertRestCrudRoundTripAsync(
+                server,
+                "credentials",
+                credentialId,
+                "tenantId=default",
+                "credential",
+                JsonSerializer.Serialize(new
+                {
+                    Id = credentialId,
+                    TenantId = "default",
+                    UserId = userId,
+                    Description = "REST credential updated",
+                    AccessKey = accessKey,
+                    SecretKey = "secret-updated-" + TestIds.Suffix(),
+                    IsBase64 = false,
+                    Active = false
+                }),
+                "REST credential updated",
+                cancellationToken).ConfigureAwait(false);
+
+            HttpResponseMessage userDeleteResponse = await server.RestDeleteAsync("users/" + userId + "?tenantId=default", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.NoContent, userDeleteResponse.StatusCode, "REST delete user after credential");
+        }
+
         private static async Task Less3RestRbacCrudEnumerateAndExistsAsync(CancellationToken cancellationToken)
         {
             using Less3TestServer server = new Less3TestServer();
@@ -1855,6 +2009,182 @@ namespace Test.Shared
             HttpResponseMessage missingResponse = await server.RestGetAsync("objects/" + objectId + "/exists?tenantId=default&bucketId=" + bucketId, cancellationToken).ConfigureAwait(false);
             EnsureStatus(HttpStatusCode.OK, missingResponse.StatusCode, "REST missing object exists");
             EnsureContains(await missingResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false), "\"Exists\": false", "REST missing object exists");
+        }
+
+        private static async Task Less3RestTagAndAclCrudEnumerateAndExistsAsync(CancellationToken cancellationToken)
+        {
+            using Less3TestServer server = new Less3TestServer();
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
+
+            string bucketId = TestIds.Bucket();
+            string objectId = TestIds.Object();
+            string bucketName = "rest-tags-acls-" + TestIds.Suffix().Substring(0, 8);
+
+            HttpResponseMessage bucketResponse = await server.RestPostAsync("buckets?tenantId=default", JsonSerializer.Serialize(new
+            {
+                Id = bucketId,
+                TenantId = "default",
+                OwnerId = "usr_default_admin",
+                Name = bucketName,
+                RegionString = "us-west-1"
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, bucketResponse.StatusCode, "REST create tag/ACL test bucket");
+
+            HttpResponseMessage objectResponse = await server.RestPostAsync("objects?tenantId=default&bucketId=" + bucketId, JsonSerializer.Serialize(new
+            {
+                Id = objectId,
+                TenantId = "default",
+                BucketId = bucketId,
+                OwnerId = "usr_default_admin",
+                AuthorId = "usr_default_admin",
+                Key = "rest-tag-acl-object.txt",
+                ContentType = "text/plain",
+                ContentLength = 3,
+                Version = 1,
+                Etag = "",
+                BlobFilename = "",
+                IsFolder = false,
+                DeleteMarker = false,
+                Md5 = "",
+                Metadata = "{}"
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, objectResponse.StatusCode, "REST create tag/ACL test object");
+
+            string bucketTagId = TestIds.BucketTag();
+            HttpResponseMessage bucketTagCreate = await server.RestPostAsync("buckettags?tenantId=default&bucketId=" + bucketId, JsonSerializer.Serialize(new
+            {
+                Id = bucketTagId,
+                TenantId = "default",
+                BucketId = bucketId,
+                Key = "env",
+                Value = "test"
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, bucketTagCreate.StatusCode, "REST create bucket tag");
+
+            await AssertRestCrudRoundTripAsync(
+                server,
+                "buckettags",
+                bucketTagId,
+                "tenantId=default&bucketId=" + bucketId,
+                "bucket tag",
+                JsonSerializer.Serialize(new
+                {
+                    Id = bucketTagId,
+                    TenantId = "default",
+                    BucketId = bucketId,
+                    Key = "env",
+                    Value = "updated"
+                }),
+                "updated",
+                cancellationToken).ConfigureAwait(false);
+
+            string objectTagId = TestIds.ObjectTag();
+            HttpResponseMessage objectTagCreate = await server.RestPostAsync("objecttags?tenantId=default&bucketId=" + bucketId + "&objectId=" + objectId, JsonSerializer.Serialize(new
+            {
+                Id = objectTagId,
+                TenantId = "default",
+                BucketId = bucketId,
+                ObjectId = objectId,
+                Key = "state",
+                Value = "new"
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, objectTagCreate.StatusCode, "REST create object tag");
+
+            await AssertRestCrudRoundTripAsync(
+                server,
+                "objecttags",
+                objectTagId,
+                "tenantId=default&bucketId=" + bucketId + "&objectId=" + objectId,
+                "object tag",
+                JsonSerializer.Serialize(new
+                {
+                    Id = objectTagId,
+                    TenantId = "default",
+                    BucketId = bucketId,
+                    ObjectId = objectId,
+                    Key = "state",
+                    Value = "updated"
+                }),
+                "updated",
+                cancellationToken).ConfigureAwait(false);
+
+            string bucketAclId = IdGenerator.GenerateBucketAclId();
+            HttpResponseMessage bucketAclCreate = await server.RestPostAsync("bucketacls?tenantId=default&bucketId=" + bucketId, JsonSerializer.Serialize(new
+            {
+                Id = bucketAclId,
+                TenantId = "default",
+                BucketId = bucketId,
+                UserId = "usr_default_admin",
+                IssuedByUserId = "usr_default_admin",
+                PermitRead = true,
+                PermitWrite = false,
+                PermitReadAcp = true,
+                PermitWriteAcp = false,
+                FullControl = false
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, bucketAclCreate.StatusCode, "REST create bucket ACL");
+
+            await AssertRestCrudRoundTripAsync(
+                server,
+                "bucketacls",
+                bucketAclId,
+                "tenantId=default&bucketId=" + bucketId,
+                "bucket ACL",
+                JsonSerializer.Serialize(new
+                {
+                    Id = bucketAclId,
+                    TenantId = "default",
+                    BucketId = bucketId,
+                    UserId = "usr_default_admin",
+                    IssuedByUserId = "usr_default_admin",
+                    PermitRead = true,
+                    PermitWrite = true,
+                    PermitReadAcp = true,
+                    PermitWriteAcp = false,
+                    FullControl = false
+                }),
+                "\"PermitWrite\": true",
+                cancellationToken).ConfigureAwait(false);
+
+            string objectAclId = IdGenerator.GenerateObjectAclId();
+            HttpResponseMessage objectAclCreate = await server.RestPostAsync("objectacls?tenantId=default&bucketId=" + bucketId + "&objectId=" + objectId, JsonSerializer.Serialize(new
+            {
+                Id = objectAclId,
+                TenantId = "default",
+                BucketId = bucketId,
+                ObjectId = objectId,
+                UserId = "usr_default_admin",
+                IssuedByUserId = "usr_default_admin",
+                PermitRead = true,
+                PermitWrite = false,
+                PermitReadAcp = true,
+                PermitWriteAcp = false,
+                FullControl = false
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, objectAclCreate.StatusCode, "REST create object ACL");
+
+            await AssertRestCrudRoundTripAsync(
+                server,
+                "objectacls",
+                objectAclId,
+                "tenantId=default&bucketId=" + bucketId + "&objectId=" + objectId,
+                "object ACL",
+                JsonSerializer.Serialize(new
+                {
+                    Id = objectAclId,
+                    TenantId = "default",
+                    BucketId = bucketId,
+                    ObjectId = objectId,
+                    UserId = "usr_default_admin",
+                    IssuedByUserId = "usr_default_admin",
+                    PermitRead = true,
+                    PermitWrite = true,
+                    PermitReadAcp = true,
+                    PermitWriteAcp = false,
+                    FullControl = false
+                }),
+                "\"PermitWrite\": true",
+                cancellationToken).ConfigureAwait(false);
         }
 
         private static async Task S3TenantIsolationRejectsCrossTenantBucketAndObjectAccessAsync(CancellationToken cancellationToken)
@@ -2232,6 +2562,45 @@ namespace Test.Shared
             }
 
             throw new InvalidOperationException("invalid bucket name unexpectedly succeeded.");
+        }
+
+        private static async Task BucketReservedRouteNamesRejectedAcrossApisAsync(CancellationToken cancellationToken)
+        {
+            using Less3TestServer server = new Less3TestServer();
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
+
+            using IAmazonS3 client = server.CreateS3Client("default", "default");
+            foreach (string name in new string[] { "api", "admin", "openapi.json", "favicon.ico", "robots.txt" })
+            {
+                await EnsureS3FailureAsync(
+                    () => client.PutBucketAsync(new PutBucketRequest
+                    {
+                        BucketName = name
+                    }, cancellationToken),
+                    "S3 reserved bucket name " + name).ConfigureAwait(false);
+
+                string restJson = JsonSerializer.Serialize(new
+                {
+                    Id = TestIds.Bucket(),
+                    TenantId = "default",
+                    OwnerId = "usr_default_admin",
+                    Name = name
+                });
+
+                HttpResponseMessage restResponse = await server.RestPostAsync("buckets?tenantId=default", restJson, cancellationToken).ConfigureAwait(false);
+                EnsureTrue((int)restResponse.StatusCode >= 400, "REST reserved bucket name " + name);
+
+                string adminJson = JsonSerializer.Serialize(new
+                {
+                    Id = TestIds.Bucket(),
+                    TenantId = "default",
+                    OwnerId = "usr_default_admin",
+                    Name = name
+                });
+
+                HttpResponseMessage adminResponse = await server.AdminPostAsync("buckets", adminJson, cancellationToken).ConfigureAwait(false);
+                EnsureTrue((int)adminResponse.StatusCode >= 400, "admin reserved bucket name " + name);
+            }
         }
 
         private static async Task S3HeadBucketExistingSameTenantSucceedsAsync(CancellationToken cancellationToken)
@@ -4045,6 +4414,47 @@ namespace Test.Shared
             return count;
         }
 
+        private static async Task AssertRestCrudRoundTripAsync(
+            Less3TestServer server,
+            string resourceType,
+            string id,
+            string queryString,
+            string operation,
+            string updateJson,
+            string updateNeedle,
+            CancellationToken cancellationToken)
+        {
+            string query = String.IsNullOrEmpty(queryString) ? "" : "?" + queryString;
+
+            HttpResponseMessage readResponse = await server.RestGetAsync(resourceType + "/" + id + query, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, readResponse.StatusCode, "REST read " + operation);
+            EnsureContains(await readResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false), id, "REST read " + operation);
+
+            HttpResponseMessage existsResponse = await server.RestGetAsync(resourceType + "/" + id + "/exists" + query, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, existsResponse.StatusCode, "REST exists " + operation);
+            EnsureContains(await existsResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false), "\"Exists\": true", "REST exists " + operation);
+
+            HttpResponseMessage enumerateResponse = await server.RestPostAsync(resourceType + "/enumerate" + query, JsonSerializer.Serialize(new
+            {
+                TenantId = "default",
+                Limit = 100,
+                Offset = 0,
+                SortField = "id"
+            }), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, enumerateResponse.StatusCode, "REST enumerate " + operation);
+            EnsureContains(await enumerateResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false), id, "REST enumerate " + operation);
+
+            HttpResponseMessage updateResponse = await server.RestPutAsync(resourceType + "/" + id + query, updateJson, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, updateResponse.StatusCode, "REST update " + operation);
+            EnsureContains(await updateResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false), updateNeedle, "REST update " + operation);
+
+            HttpResponseMessage deleteResponse = await server.RestDeleteAsync(resourceType + "/" + id + query, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.NoContent, deleteResponse.StatusCode, "REST delete " + operation);
+
+            HttpResponseMessage missingResponse = await server.RestGetAsync(resourceType + "/" + id + "/exists" + query, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, missingResponse.StatusCode, "REST missing exists " + operation);
+            EnsureContains(await missingResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false), "\"Exists\": false", "REST missing exists " + operation);
+        }
 
         private static void EnsureStatus(HttpStatusCode expected, HttpStatusCode actual, string operation)
         {

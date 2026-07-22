@@ -449,7 +449,7 @@ namespace Less3.Api.S3
                 throw new S3Exception(new Error(ErrorCode.BucketAlreadyExists));
             }
                
-            if (IsInvalidBucketName(ctx.Request.Bucket))
+            if (BucketNameValidator.IsInvalid(ctx.Request.Bucket))
             {
                 _Logging.Warn(header + "invalid bucket name: " + ctx.Request.Bucket);
                 throw new S3Exception(new Error(ErrorCode.InvalidRequest));
@@ -962,61 +962,6 @@ namespace Less3.Api.S3
             }
 
             return false;
-        }
-
-        private bool IsInvalidBucketName(string name)
-        {
-            List<string> invalidNames = new List<string>
-            {
-                "admin"
-            };
-
-            if (String.IsNullOrWhiteSpace(name)) return true;
-            if (name.Length < 3 || name.Length > 63) return true;
-            if (invalidNames.Contains(name.ToLower())) return true;
-            if (!IsLowercaseLetterOrNumber(name[0])) return true;
-            if (!IsLowercaseLetterOrNumber(name[name.Length - 1])) return true;
-
-            bool hasDot = false;
-            for (int i = 0; i < name.Length; i++)
-            {
-                char current = name[i];
-                bool valid = IsLowercaseLetterOrNumber(current) || current == '-' || current == '.';
-                if (!valid) return true;
-                if (current == '.') hasDot = true;
-
-                if (i > 0)
-                {
-                    char previous = name[i - 1];
-                    if (previous == '.' && current == '.') return true;
-                    if (previous == '-' && current == '.') return true;
-                    if (previous == '.' && current == '-') return true;
-                }
-            }
-
-            if (hasDot && LooksLikeIpv4Address(name)) return true;
-            return false;
-        }
-
-        private bool IsLowercaseLetterOrNumber(char value)
-        {
-            return (value >= 'a' && value <= 'z')
-                || (value >= '0' && value <= '9');
-        }
-
-        private bool LooksLikeIpv4Address(string name)
-        {
-            string[] parts = name.Split('.');
-            if (parts.Length != 4) return false;
-
-            foreach (string part in parts)
-            {
-                if (String.IsNullOrEmpty(part)) return false;
-                if (!Int32.TryParse(part, out int value)) return false;
-                if (value < 0 || value > 255) return false;
-            }
-
-            return true;
         }
 
         #endregion

@@ -16,9 +16,9 @@ namespace Test.Shared.Suites
         #region Private-Members
 
         private readonly Less3TestServer _Server;
-        private readonly string _UserGuid = Guid.NewGuid().ToString();
-        private readonly string _CredGuid = Guid.NewGuid().ToString();
-        private readonly string _BucketName = "s3-bucket-advanced-" + Guid.NewGuid().ToString("N").Substring(0, 8);
+        private readonly string _UserId = Test.Shared.TestIds.User();
+        private readonly string _CredentialId = Test.Shared.TestIds.Credential();
+        private readonly string _BucketName = "s3-bucket-advanced-" + Test.Shared.TestIds.Suffix().Substring(0, 8);
 
         #endregion
 
@@ -216,7 +216,7 @@ namespace Test.Shared.Suites
         {
             string userJson = JsonSerializer.Serialize(new
             {
-                GUID = _UserGuid,
+                Id = _UserId,
                 Name = "BucketAdvancedUser",
                 Email = "bucket-advanced@example.com"
             });
@@ -224,20 +224,22 @@ namespace Test.Shared.Suites
 
             string credJson = JsonSerializer.Serialize(new
             {
-                GUID = _CredGuid,
-                UserGUID = _UserGuid,
+                Id = _CredentialId,
+                UserId = _UserId,
                 Description = "Bucket advanced credential",
                 AccessKey = _Server.AccessKey,
                 SecretKey = _Server.SecretKey,
                 IsBase64 = false
             });
             await _Server.AdminPostAsync("credentials", credJson).ConfigureAwait(false);
+            await _Server.GrantTenantAdminAsync("User", _UserId).ConfigureAwait(false);
+            await _Server.GrantTenantAdminAsync("Credential", _CredentialId).ConfigureAwait(false);
         }
 
         private async Task CleanupUser()
         {
-            try { await _Server.AdminDeleteAsync($"credentials/{_CredGuid}").ConfigureAwait(false); } catch { }
-            try { await _Server.AdminDeleteAsync($"users/{_UserGuid}").ConfigureAwait(false); } catch { }
+            try { await _Server.AdminDeleteAsync($"credentials/{_CredentialId}").ConfigureAwait(false); } catch { }
+            try { await _Server.AdminDeleteAsync($"users/{_UserId}").ConfigureAwait(false); } catch { }
         }
 
         #endregion

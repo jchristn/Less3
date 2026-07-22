@@ -39,8 +39,8 @@ const buildQueryString = (params: GetUsersParams): string => {
   return queryParams.toString();
 };
 
-const getUserTags = (guid: string) => [
-  { type: UsersSliceTags.USERS as const, id: guid },
+const getUserTags = (id: string) => [
+  { type: UsersSliceTags.USERS as const, id: id },
   { type: UsersSliceTags.USERS, id: 'LIST' },
 ];
 
@@ -56,16 +56,16 @@ const usersSliceInstance = enhancedSdk.injectEndpoints({
       providesTags: (result: User[] | undefined) =>
         result
           ? [
-              ...result.map(({ GUID }: User) => ({ type: UsersSliceTags.USERS as const, id: GUID })),
+              ...result.map(({ Id }: User) => ({ type: UsersSliceTags.USERS as const, id: Id })),
               { type: UsersSliceTags.USERS, id: 'LIST' },
             ]
           : [{ type: UsersSliceTags.USERS, id: 'LIST' }],
     }),
 
     getUserById: build.query<UserResponse, string>({
-      query: (guid: string) => ({ url: buildApiUrl(`admin/users/${guid}`), method: 'GET' }),
+      query: (id: string) => ({ url: buildApiUrl(`admin/users/${id}`), method: 'GET' }),
       transformResponse: (response: any): User => response,
-      providesTags: (_result: User | undefined, _error: unknown, guid: string) => getUserTags(guid),
+      providesTags: (_result: User | undefined, _error: unknown, id: string) => getUserTags(id),
     }),
 
     createUser: build.mutation<UserResponse, CreateUserRequest>({
@@ -75,27 +75,27 @@ const usersSliceInstance = enhancedSdk.injectEndpoints({
     }),
 
     updateUser: build.mutation<UserResponse, UpdateUserRequest>({
-      query: ({ GUID, ...body }: UpdateUserRequest) => ({
-        url: buildApiUrl(`admin/users/${GUID}`),
+      query: ({ Id, ...body }: UpdateUserRequest) => ({
+        url: buildApiUrl(`admin/users/${Id}`),
         method: 'PUT',
         body: {
-          GUID,
+          Id,
           ...body,
         },
       }),
       transformResponse: (response: any): User => response,
-      invalidatesTags: (_result: User | undefined, _error: unknown, { GUID }: UpdateUserRequest) =>
-        getUserTags(GUID),
+      invalidatesTags: (_result: User | undefined, _error: unknown, { Id }: UpdateUserRequest) =>
+        getUserTags(Id),
     }),
 
     deleteUser: build.mutation<DeleteUserResponse, DeleteUserParams>({
-      query: ({ guid }: DeleteUserParams) => ({
-        url: buildApiUrl(`admin/users/${guid}`),
+      query: ({ id }: DeleteUserParams) => ({
+        url: buildApiUrl(`admin/users/${id}`),
         method: 'DELETE',
       }),
       transformResponse: (): DeleteUserResponse => ({ success: true }),
-      invalidatesTags: (_result: DeleteUserResponse | undefined, _error: unknown, { guid }: DeleteUserParams) =>
-        getUserTags(guid),
+      invalidatesTags: (_result: DeleteUserResponse | undefined, _error: unknown, { id }: DeleteUserParams) =>
+        getUserTags(id),
     }),
   }),
 });

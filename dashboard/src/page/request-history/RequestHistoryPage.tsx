@@ -171,9 +171,9 @@ const RequestHistoryPage: React.FC = () => {
   }, []);
 
   const handleDeleteConfirm = async () => {
-    if (!deletingEntry?.GUID) return;
+    if (!deletingEntry?.Id) return;
     try {
-      await deleteRequestHistory({ guid: deletingEntry.GUID }).unwrap();
+      await deleteRequestHistory({ id: deletingEntry.Id }).unwrap();
       message.success('Request history entry deleted');
       setIsDeleteModalVisible(false);
       setDeletingEntry(null);
@@ -293,7 +293,7 @@ const RequestHistoryPage: React.FC = () => {
       sortable: false,
       filterable: false,
       render: (item) => {
-        const dropdownKey: string = item.GUID || '';
+        const dropdownKey: string = item.Id || '';
         const isOpen: boolean = openDropdownKey === dropdownKey;
 
         const menuItems: MenuProps['items'] = [
@@ -384,7 +384,7 @@ const RequestHistoryPage: React.FC = () => {
         columns={columns}
         data={filteredData}
         loading={isLoading}
-        rowKey="GUID"
+        rowKey="Id"
         onRowClick={handleViewDetail}
       />
 
@@ -449,7 +449,7 @@ const RequestHistoryPage: React.FC = () => {
                   {[
                     {
                       label: 'Entry ID',
-                      value: selectedEntry.GUID,
+                      value: selectedEntry.Id,
                       copyable: true,
                       mono: true,
                     },
@@ -535,11 +535,11 @@ const RequestHistoryPage: React.FC = () => {
                 BodyLength: selectedEntry.ResponseBodyLength,
               }, null, 2)} />
               <DetailBlock title="Authentication" value={JSON.stringify({
-                UserGUID: selectedEntry.UserGUID || null,
+                UserId: selectedEntry.UserId || null,
                 AccessKey: selectedEntry.AccessKey || null,
               }, null, 2)} />
               <DetailBlock title="Metadata" value={JSON.stringify({
-                GUID: selectedEntry.GUID,
+                Id: selectedEntry.Id,
                 CreatedUtc: selectedEntry.CreatedUtc,
                 SourceIp: selectedEntry.SourceIp,
               }, null, 2)} />

@@ -7,12 +7,12 @@ namespace Less3.Database.SqlServer.Queries
     {
         internal static string InsertQuery(BucketAcl acl)
         {
-            return "INSERT INTO bucketacls (guid, usergroup, bucketguid, userguid, issuedbyuserguid, permitread, permitwrite, permitreadacp, permitwriteacp, fullcontrol, createdutc) VALUES ("
-                + "'" + Sanitizer.SanitizeString(acl.GUID) + "', "
+            return "INSERT INTO bucketacls (id, usergroup, bucket_id, user_id, issued_by_user_id, permitread, permitwrite, permitreadacp, permitwriteacp, fullcontrol, createdutc) VALUES ("
+                + "'" + Sanitizer.SanitizeString(acl.Id) + "', "
                 + "'" + Sanitizer.SanitizeString(acl.UserGroup) + "', "
-                + "'" + Sanitizer.SanitizeString(acl.BucketGUID) + "', "
-                + "'" + Sanitizer.SanitizeString(acl.UserGUID) + "', "
-                + "'" + Sanitizer.SanitizeString(acl.IssuedByUserGUID) + "', "
+                + "'" + Sanitizer.SanitizeString(acl.BucketId) + "', "
+                + "'" + Sanitizer.SanitizeString(acl.UserId) + "', "
+                + "'" + Sanitizer.SanitizeString(acl.IssuedByUserId) + "', "
                 + (acl.PermitRead ? 1 : 0) + ", "
                 + (acl.PermitWrite ? 1 : 0) + ", "
                 + (acl.PermitReadAcp ? 1 : 0) + ", "
@@ -22,24 +22,24 @@ namespace Less3.Database.SqlServer.Queries
                 + ");";
         }
 
-        internal static string SelectByBucketGuid(string bucketGuid)
+        internal static string SelectByBucketId(string bucketId)
         {
-            return "SELECT * FROM bucketacls WHERE bucketguid = '" + Sanitizer.SanitizeString(bucketGuid) + "';";
+            return "SELECT * FROM bucketacls WHERE bucket_id = '" + Sanitizer.SanitizeString(bucketId) + "';";
         }
 
-        internal static string ExistsByGroupName(string groupName, string bucketGuid)
+        internal static string ExistsByGroupName(string groupName, string bucketId)
         {
-            return "SELECT COUNT(*) AS cnt FROM bucketacls WHERE usergroup = '" + Sanitizer.SanitizeString(groupName) + "' AND bucketguid = '" + Sanitizer.SanitizeString(bucketGuid) + "';";
+            return "SELECT COUNT(*) AS cnt FROM bucketacls WHERE usergroup = '" + Sanitizer.SanitizeString(groupName) + "' AND bucket_id = '" + Sanitizer.SanitizeString(bucketId) + "';";
         }
 
-        internal static string ExistsByUserGuid(string userGuid, string bucketGuid)
+        internal static string ExistsByUserId(string userId, string bucketId)
         {
-            return "SELECT COUNT(*) AS cnt FROM bucketacls WHERE userguid = '" + Sanitizer.SanitizeString(userGuid) + "' AND bucketguid = '" + Sanitizer.SanitizeString(bucketGuid) + "';";
+            return "SELECT COUNT(*) AS cnt FROM bucketacls WHERE user_id = '" + Sanitizer.SanitizeString(userId) + "' AND bucket_id = '" + Sanitizer.SanitizeString(bucketId) + "';";
         }
 
-        internal static string DeleteByBucketGuid(string bucketGuid)
+        internal static string DeleteByBucketId(string bucketId)
         {
-            return "DELETE FROM bucketacls WHERE bucketguid = '" + Sanitizer.SanitizeString(bucketGuid) + "';";
+            return "DELETE FROM bucketacls WHERE bucket_id = '" + Sanitizer.SanitizeString(bucketId) + "';";
         }
     }
 }

@@ -12,7 +12,7 @@ import PageContainer from '#/components/base/pageContainer/PageContainer';
 import Less3Flex from '#/components/base/flex/Flex';
 import Less3Dropdown from '#/components/base/dropdown/Dropdown';
 import Less3Text from '#/components/base/typograpghy/Text';
-import GuidDisplay from '#/components/guid-display';
+import IdDisplay from '#/components/id-display';
 import TextWithCopy from '#/components/text-with-copy/TextWithCopy';
 import {
   useGetUsersQuery,
@@ -36,14 +36,14 @@ const UsersPage: React.FC = () => {
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [isMetadataModalVisible, setIsMetadataModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [viewingUserGUID, setViewingUserGUID] = useState<string | null>(null);
+  const [viewingUserId, setViewingUserId] = useState<string | null>(null);
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
   const [searchText, setSearchText] = useState('');
 
   const { data, isLoading, refetch } = useGetUsersQuery();
 
-  const { data: userMetadata, isLoading: isMetadataLoading } = useGetUserByIdQuery(viewingUserGUID || '', {
-    skip: !viewingUserGUID,
+  const { data: userMetadata, isLoading: isMetadataLoading } = useGetUserByIdQuery(viewingUserId || '', {
+    skip: !viewingUserId,
   });
 
   const [createUser, { isLoading: isCreating }] = useCreateUserMutation();
@@ -66,7 +66,7 @@ const UsersPage: React.FC = () => {
   };
 
   const handleViewMetadata = (record: User) => {
-    setViewingUserGUID(record.GUID);
+    setViewingUserId(record.Id);
     setIsMetadataModalVisible(true);
   };
 
@@ -83,9 +83,9 @@ const UsersPage: React.FC = () => {
         Email: values.Email,
       };
 
-      if (editingUser?.GUID) {
+      if (editingUser?.Id) {
         await updateUser({
-          GUID: editingUser.GUID,
+          Id: editingUser.Id,
           ...createPayload,
         }).unwrap();
         message.success('User updated successfully');
@@ -104,10 +104,10 @@ const UsersPage: React.FC = () => {
   };
 
   const handleDeleteConfirm = async () => {
-    if (!deletingUser?.GUID) return;
+    if (!deletingUser?.Id) return;
 
     try {
-      await deleteUser({ guid: deletingUser.GUID }).unwrap();
+      await deleteUser({ id: deletingUser.Id }).unwrap();
       message.success('User deleted successfully');
       setIsDeleteModalVisible(false);
       setDeletingUser(null);
@@ -119,10 +119,10 @@ const UsersPage: React.FC = () => {
 
   const columns: DataTableColumn<User>[] = [
     {
-      key: 'GUID',
-      label: 'GUID',
+      key: 'Id',
+      label: 'Id',
       width: '320px',
-      render: (item) => <GuidDisplay guid={item.GUID} />,
+      render: (item) => <IdDisplay id={item.Id} />,
     },
     {
       key: 'Name',
@@ -185,11 +185,11 @@ const UsersPage: React.FC = () => {
     if (!q) return data;
 
     return data.filter((user) => {
-      const guid = user.GUID?.toLowerCase() ?? '';
+      const id = user.Id?.toLowerCase() ?? '';
       const name = user.Name?.toLowerCase() ?? '';
       const email = user.Email?.toLowerCase() ?? '';
 
-      return guid.includes(q) || name.includes(q) || email.includes(q);
+      return id.includes(q) || name.includes(q) || email.includes(q);
     });
   }, [data, searchText]);
 
@@ -221,7 +221,7 @@ const UsersPage: React.FC = () => {
         columns={columns}
         data={filteredData}
         loading={isLoading}
-        rowKey="GUID"
+        rowKey="Id"
         onRowClick={handleEdit}
       />
 
@@ -292,14 +292,14 @@ const UsersPage: React.FC = () => {
         open={isMetadataModalVisible}
         onCancel={() => {
           setIsMetadataModalVisible(false);
-          setViewingUserGUID(null);
+          setViewingUserId(null);
         }}
         footer={[
           <Less3Button
             key="close"
             onClick={() => {
               setIsMetadataModalVisible(false);
-              setViewingUserGUID(null);
+              setViewingUserId(null);
             }}
           >
             Close
@@ -312,8 +312,8 @@ const UsersPage: React.FC = () => {
           <div style={{ textAlign: 'center', padding: '20px' }}>Loading metadata...</div>
         ) : userMetadata ? (
           <Descriptions bordered column={1} size="small">
-            <Descriptions.Item label="GUID">
-              <GuidDisplay guid={userMetadata.GUID} />
+            <Descriptions.Item label="Id">
+              <IdDisplay id={userMetadata.Id} />
             </Descriptions.Item>
             <Descriptions.Item label="Name">
               <Less3Text>{userMetadata.Name}</Less3Text>

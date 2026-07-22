@@ -4,6 +4,7 @@ namespace Less3.Database.Sqlite.Implementations
     using System.Collections.Generic;
     using System.Data;
     using Less3.Classes;
+    using Less3.Database.Implementations;
     using Less3.Database.Interfaces;
     using Less3.Database.Sqlite.Queries;
 
@@ -17,10 +18,21 @@ namespace Less3.Database.Sqlite.Implementations
         }
 
         /// <inheritdoc />
-        public Upload GetByGuid(string guid)
+        public Upload GetById(string id)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            DataTable result = _Database.ExecuteQuery(UploadQueries.SelectByGuid(guid)).Result;
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            DataTable result = _Database.ExecuteQuery(UploadQueries.SelectById(id)).Result;
+            if (result != null && result.Rows.Count > 0)
+                return MapFromRow(result.Rows[0]);
+            return null;
+        }
+
+        /// <inheritdoc />
+        public Upload GetById(string tenantId, string id)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            DataTable result = _Database.ExecuteQuery(UploadQueries.SelectById(tenantId, id)).Result;
             if (result != null && result.Rows.Count > 0)
                 return MapFromRow(result.Rows[0]);
             return null;
@@ -34,10 +46,27 @@ namespace Less3.Database.Sqlite.Implementations
         }
 
         /// <inheritdoc />
-        public List<Upload> GetByBucketGuid(string bucketGuid)
+        public List<Upload> GetAll(string tenantId)
         {
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            DataTable result = _Database.ExecuteQuery(UploadQueries.SelectByBucketGuid(bucketGuid)).Result;
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            DataTable result = _Database.ExecuteQuery(UploadQueries.SelectAll(tenantId)).Result;
+            return MapList(result);
+        }
+
+        /// <inheritdoc />
+        public List<Upload> GetByBucketId(string bucketId)
+        {
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Database.ExecuteQuery(UploadQueries.SelectByBucketId(bucketId)).Result;
+            return MapList(result);
+        }
+
+        /// <inheritdoc />
+        public List<Upload> GetByBucketId(string tenantId, string bucketId)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Database.ExecuteQuery(UploadQueries.SelectByBucketId(tenantId, bucketId)).Result;
             return MapList(result);
         }
 
@@ -49,20 +78,28 @@ namespace Less3.Database.Sqlite.Implementations
         }
 
         /// <inheritdoc />
-        public void DeleteByGuid(string guid)
+        public void DeleteById(string id)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            _Database.ExecuteQuery(UploadQueries.DeleteByGuid(guid), true).Wait();
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            _Database.ExecuteQuery(UploadQueries.DeleteById(id), true).Wait();
+        }
+
+        /// <inheritdoc />
+        public void DeleteById(string tenantId, string id)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            _Database.ExecuteQuery(UploadQueries.DeleteById(tenantId, id), true).Wait();
         }
 
         private Upload MapFromRow(DataRow row)
         {
             Upload upload = new Upload();
-            upload.Id = Convert.ToInt32(row["id"]);
-            upload.GUID = row["guid"] != null && row["guid"] != DBNull.Value ? row["guid"].ToString() : null;
-            upload.BucketGUID = row["bucketguid"] != null && row["bucketguid"] != DBNull.Value ? row["bucketguid"].ToString() : null;
-            upload.OwnerGUID = row["ownerguid"] != null && row["ownerguid"] != DBNull.Value ? row["ownerguid"].ToString() : null;
-            upload.AuthorGUID = row["authorguid"] != null && row["authorguid"] != DBNull.Value ? row["authorguid"].ToString() : null;
+            upload.Id = row["id"] != null && row["id"] != DBNull.Value ? row["id"].ToString() : null;
+            upload.TenantId = ControlPlaneDataMapper.StringValue(row, "tenant_id") ?? "default";
+            upload.BucketId = row["bucket_id"] != null && row["bucket_id"] != DBNull.Value ? row["bucket_id"].ToString() : null;
+            upload.OwnerId = row["owner_id"] != null && row["owner_id"] != DBNull.Value ? row["owner_id"].ToString() : null;
+            upload.AuthorId = row["author_id"] != null && row["author_id"] != DBNull.Value ? row["author_id"].ToString() : null;
             upload.Key = row["key"] != null && row["key"] != DBNull.Value ? row["key"].ToString() : null;
             upload.CreatedUtc = DateTime.Parse(row["createdutc"].ToString());
             upload.LastAccessUtc = DateTime.Parse(row["lastaccessutc"].ToString());

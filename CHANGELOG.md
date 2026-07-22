@@ -2,6 +2,18 @@
 
 ## Current Version
 
+v3.0.0
+
+- Added the v3 tenant and RBAC foundation, including tenant, role, permission, role assignment, session, authorization audit, and request context contracts
+- Switched new identifier generation to PrettyID K-sortable string IDs with stable prefixes and a 32-character maximum
+- Added tenant-aware schema setup and index definitions for SQLite, MySQL, PostgreSQL, and SQL Server
+- Added default v3 bootstrap values: tenant `default`, user `admin@less3`, password `password`, access key `default`, and secret key `default`
+- Added dashboard navigation and management pages for tenants, roles, and permissions
+- Added `S3_API.md`, `REST_API.md`, and `MIGRATING_V2_TO_V3.md`
+- Added shared Touchstone descriptors and CLI, xUnit, and NUnit runners for v3 coverage expansion
+
+## Previous Versions
+
 v2.2.0
 
 - Updated to `S3Server v7.0.3`
@@ -13,8 +25,6 @@ v2.2.0
 - Added credential selection in API Explorer, improved request validation, and aligned dashboard bucket management with admin APIs and signed S3 object requests
 - Added admin statistics APIs and dashboard summary cards for total buckets, total objects, total storage, plus per-bucket object count and total size in the Buckets table
 - Added admin-side user and credential edit flows backed by update endpoints, with clearer dashboard error reporting during connectivity and admin operations
-
-## Previous Versions
 
 v2.1.x
 

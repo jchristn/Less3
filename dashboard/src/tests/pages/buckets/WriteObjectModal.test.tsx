@@ -13,7 +13,7 @@ jest.mock("#/store/slice/bucketsSlice", () => ({
 }));
 
 describe("WriteObjectModal", () => {
-  const mockBucket = { Name: "test-bucket", GUID: "test-guid" };
+  const mockBucket = { Name: "test-bucket", Id: "bkt_test" };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -87,7 +87,7 @@ describe("WriteObjectModal", () => {
 
       await waitFor(() => {
         expect(mockWriteBucketObject).toHaveBeenCalledWith({
-          bucketGUID: "test-bucket",
+          bucketId: "test-bucket",
           objectKey: "test.txt",
           content: "test content",
         });

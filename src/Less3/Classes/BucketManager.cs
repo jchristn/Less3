@@ -72,14 +72,14 @@ namespace Less3.Classes
 
             bool removed = false;
 
-            if (_Config.BucketExists(bucket.Name))
+            if (_Config.BucketExists(bucket.TenantId, bucket.Name))
             {
-                BucketClient client = GetClient(bucket.Name);
+                BucketClient client = GetClient(bucket.TenantId, bucket.Name);
                 if (client != null)
                 {
                     lock (_BucketsLock)
                     {
-                        List<BucketClient> clients = _Buckets.Where(b => !b.Name.Equals(bucket.Name)).ToList();
+                        List<BucketClient> clients = _Buckets.Where(b => !b.Id.Equals(bucket.Id)).ToList();
                         _Buckets = new List<BucketClient>(clients);
                         client.Dispose();
                         client = null;
@@ -88,7 +88,7 @@ namespace Less3.Classes
 
                 removed = true;
 
-                _Config.DeleteBucket(bucket.GUID);
+                _Config.DeleteBucket(bucket.Id);
             }
 
             if (removed)
@@ -98,11 +98,11 @@ namespace Less3.Classes
                     if (!Destroy(bucket))
                         _Logging.Warn("BucketManager Remove issues encountered removing data for bucket " + bucket.Name + ", cleanup required");
                     else
-                        _Logging.Info("BucketManager Remove removed bucket with name " + bucket.Name + " with owner " + bucket.OwnerGUID);
+                        _Logging.Info("BucketManager Remove removed bucket with name " + bucket.Name + " with owner " + bucket.OwnerId);
                 }
                 else
                 {
-                    _Logging.Info("BucketManager Remove removed bucket with name " + bucket.Name + " with owner " + bucket.OwnerGUID);
+                    _Logging.Info("BucketManager Remove removed bucket with name " + bucket.Name + " with owner " + bucket.OwnerId);
                 }
 
                 return true;
@@ -120,10 +120,17 @@ namespace Less3.Classes
             return _Config.GetBucketByName(bucketName);
         }
 
-        internal Bucket GetByGuid(string guid)
+        internal Bucket GetByName(string tenantId, string bucketName)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            return _Config.GetBucketByGuid(guid);
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(bucketName)) throw new ArgumentNullException(nameof(bucketName));
+            return _Config.GetBucketByName(tenantId, bucketName);
+        }
+
+        internal Bucket GetById(string id)
+        {
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            return _Config.GetBucketById(id);
         }
 
         internal BucketClient GetClient(string bucketName)
@@ -138,10 +145,30 @@ namespace Less3.Classes
             }
         }
 
-        internal List<Bucket> GetUserBuckets(string userGuid)
+        internal BucketClient GetClient(string tenantId, string bucketName)
         {
-            if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
-            return _Config.GetBucketsByUser(userGuid);
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(bucketName)) throw new ArgumentNullException(nameof(bucketName));
+
+            lock (_BucketsLock)
+            {
+                bool exists = _Buckets.Exists(b => b.TenantId.Equals(tenantId) && b.Name.Equals(bucketName));
+                if (!exists) return null;
+                return _Buckets.First(b => b.TenantId.Equals(tenantId) && b.Name.Equals(bucketName));
+            }
+        }
+
+        internal List<Bucket> GetUserBuckets(string userId)
+        {
+            if (String.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
+            return _Config.GetBucketsByUser(userId);
+        }
+
+        internal List<Bucket> GetUserBuckets(string tenantId, string userId)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
+            return _Config.GetBucketsByUser(tenantId, userId);
         }
 
         #endregion

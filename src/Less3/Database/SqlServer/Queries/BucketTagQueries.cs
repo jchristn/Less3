@@ -7,23 +7,23 @@ namespace Less3.Database.SqlServer.Queries
     {
         internal static string InsertQuery(BucketTag tag)
         {
-            return "INSERT INTO buckettags (guid, bucketguid, [key], value, createdutc) VALUES ("
-                + "'" + Sanitizer.SanitizeString(tag.GUID) + "', "
-                + "'" + Sanitizer.SanitizeString(tag.BucketGUID) + "', "
+            return "INSERT INTO buckettags (id, bucket_id, [key], value, createdutc) VALUES ("
+                + "'" + Sanitizer.SanitizeString(tag.Id) + "', "
+                + "'" + Sanitizer.SanitizeString(tag.BucketId) + "', "
                 + "'" + Sanitizer.SanitizeString(tag.Key) + "', "
                 + "'" + Sanitizer.SanitizeString(tag.Value) + "', "
                 + "'" + tag.CreatedUtc.ToString(Sanitizer.TimestampFormat) + "'"
                 + ");";
         }
 
-        internal static string SelectByBucketGuid(string bucketGuid)
+        internal static string SelectByBucketId(string bucketId)
         {
-            return "SELECT * FROM buckettags WHERE bucketguid = '" + Sanitizer.SanitizeString(bucketGuid) + "';";
+            return "SELECT * FROM buckettags WHERE bucket_id = '" + Sanitizer.SanitizeString(bucketId) + "';";
         }
 
-        internal static string DeleteByBucketGuid(string bucketGuid)
+        internal static string DeleteByBucketId(string bucketId)
         {
-            return "DELETE FROM buckettags WHERE bucketguid = '" + Sanitizer.SanitizeString(bucketGuid) + "';";
+            return "DELETE FROM buckettags WHERE bucket_id = '" + Sanitizer.SanitizeString(bucketId) + "';";
         }
     }
 }

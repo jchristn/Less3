@@ -7,7 +7,7 @@ jest.mock('#/store/slice/credentialsSlice', () => ({
   useGetCredentialsQuery: () => ({
     data: [
       {
-        GUID: 'cred-1',
+        Id: 'cred-1',
         Description: 'Primary Key',
         AccessKey: 'AK123',
         SecretKey: 'SK123',
@@ -16,7 +16,7 @@ jest.mock('#/store/slice/credentialsSlice', () => ({
   }),
   useGetCredentialByIdQuery: () => ({
     data: {
-      GUID: 'cred-1',
+      Id: 'cred-1',
       Description: 'Primary Key',
       AccessKey: 'AK123',
       SecretKey: 'SK123',

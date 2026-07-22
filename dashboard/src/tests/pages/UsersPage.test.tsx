@@ -20,15 +20,15 @@ jest.mock("next/navigation", () => ({
 jest.mock("#/store/slice/usersSlice", () => ({
   useGetUsersQuery: () => ({
     data: [
-      { GUID: "1", Name: "John Doe", Email: "john@example.com", CreatedUtc: "2024-01-01" },
-      { GUID: "2", Name: "Jane Smith", Email: "jane@example.com", CreatedUtc: "2024-01-02" },
+      { Id: "1", Name: "John Doe", Email: "john@example.com", CreatedUtc: "2024-01-01" },
+      { Id: "2", Name: "Jane Smith", Email: "jane@example.com", CreatedUtc: "2024-01-02" },
     ],
     isLoading: false,
     error: null,
     refetch: mockRefetch,
   }),
   useGetUserByIdQuery: () => ({
-    data: { GUID: "1", Name: "John Doe", Email: "john@example.com" },
+    data: { Id: "1", Name: "John Doe", Email: "john@example.com" },
     isLoading: false,
   }),
   useCreateUserMutation: () => [mockCreateUser, { isLoading: false }],
@@ -138,7 +138,7 @@ describe("UsersPage", () => {
 
       await waitFor(() => {
         expect(mockUpdateUser).toHaveBeenCalledWith({
-          GUID: "1",
+          Id: "1",
           Name: "John Updated",
           Email: "john@example.com",
         });

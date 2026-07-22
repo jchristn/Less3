@@ -11,11 +11,12 @@ namespace Less3.Database.PostgreSql.Queries
                 ? "'" + obj.ExpirationUtc.Value.ToString(Sanitizer.TimestampFormat) + "'"
                 : "NULL";
 
-            return "INSERT INTO objects (guid, bucketguid, ownerguid, authorguid, key, contenttype, contentlength, version, etag, retention, blobfilename, isfolder, deletemarker, md5, createdutc, lastupdateutc, lastaccessutc, metadata, expirationutc) VALUES ("
-                + "'" + Sanitizer.SanitizeString(obj.GUID) + "', "
-                + "'" + Sanitizer.SanitizeString(obj.BucketGUID) + "', "
-                + "'" + Sanitizer.SanitizeString(obj.OwnerGUID) + "', "
-                + "'" + Sanitizer.SanitizeString(obj.AuthorGUID) + "', "
+            return "INSERT INTO objects (id, tenant_id, bucket_id, owner_id, author_id, key, contenttype, contentlength, version, etag, retention, blobfilename, isfolder, deletemarker, md5, createdutc, lastupdateutc, lastaccessutc, metadata, expirationutc) VALUES ("
+                + "'" + Sanitizer.SanitizeString(obj.Id) + "', "
+                + "'" + Sanitizer.SanitizeString(obj.TenantId) + "', "
+                + "'" + Sanitizer.SanitizeString(obj.BucketId) + "', "
+                + "'" + Sanitizer.SanitizeString(obj.OwnerId) + "', "
+                + "'" + Sanitizer.SanitizeString(obj.AuthorId) + "', "
                 + "'" + Sanitizer.SanitizeString(obj.Key) + "', "
                 + "'" + Sanitizer.SanitizeString(obj.ContentType) + "', "
                 + obj.ContentLength + ", "
@@ -34,32 +35,32 @@ namespace Less3.Database.PostgreSql.Queries
                 + ");";
         }
 
-        internal static string SelectLatestByKey(string key, string bucketGuid)
+        internal static string SelectLatestByKey(string key, string bucketId)
         {
             return "SELECT * FROM objects WHERE key = '" + Sanitizer.SanitizeString(key)
-                + "' AND bucketguid = '" + Sanitizer.SanitizeString(bucketGuid)
+                + "' AND bucket_id = '" + Sanitizer.SanitizeString(bucketId)
                 + "' ORDER BY version DESC LIMIT 1;";
         }
 
-        internal static string SelectByKeyAndVersion(string key, long version, string bucketGuid)
+        internal static string SelectByKeyAndVersion(string key, long version, string bucketId)
         {
             return "SELECT * FROM objects WHERE key = '" + Sanitizer.SanitizeString(key)
                 + "' AND version = " + version
-                + " AND bucketguid = '" + Sanitizer.SanitizeString(bucketGuid)
+                + " AND bucket_id = '" + Sanitizer.SanitizeString(bucketId)
                 + "' LIMIT 1;";
         }
 
-        internal static string SelectByGuid(string guid, string bucketGuid)
+        internal static string SelectById(string id, string bucketId)
         {
-            return "SELECT * FROM objects WHERE guid = '" + Sanitizer.SanitizeString(guid)
-                + "' AND bucketguid = '" + Sanitizer.SanitizeString(bucketGuid)
+            return "SELECT * FROM objects WHERE id = '" + Sanitizer.SanitizeString(id)
+                + "' AND bucket_id = '" + Sanitizer.SanitizeString(bucketId)
                 + "' LIMIT 1;";
         }
 
-        internal static string SelectLatestVersion(string key, string bucketGuid)
+        internal static string SelectLatestVersion(string key, string bucketId)
         {
             return "SELECT COALESCE(MAX(version), 0) AS maxversion FROM objects WHERE key = '" + Sanitizer.SanitizeString(key)
-                + "' AND bucketguid = '" + Sanitizer.SanitizeString(bucketGuid) + "';";
+                + "' AND bucket_id = '" + Sanitizer.SanitizeString(bucketId) + "';";
         }
 
         internal static string UpdateQuery(Obj obj)
@@ -69,8 +70,10 @@ namespace Less3.Database.PostgreSql.Queries
                 : "NULL";
 
             return "UPDATE objects SET "
-                + "ownerguid = '" + Sanitizer.SanitizeString(obj.OwnerGUID) + "', "
-                + "authorguid = '" + Sanitizer.SanitizeString(obj.AuthorGUID) + "', "
+                + "tenant_id = '" + Sanitizer.SanitizeString(obj.TenantId) + "', "
+                + "bucket_id = '" + Sanitizer.SanitizeString(obj.BucketId) + "', "
+                + "owner_id = '" + Sanitizer.SanitizeString(obj.OwnerId) + "', "
+                + "author_id = '" + Sanitizer.SanitizeString(obj.AuthorId) + "', "
                 + "key = '" + Sanitizer.SanitizeString(obj.Key) + "', "
                 + "contenttype = '" + Sanitizer.SanitizeString(obj.ContentType) + "', "
                 + "contentlength = " + obj.ContentLength + ", "
@@ -85,18 +88,18 @@ namespace Less3.Database.PostgreSql.Queries
                 + "lastaccessutc = '" + obj.LastAccessUtc.ToString(Sanitizer.TimestampFormat) + "', "
                 + "metadata = '" + Sanitizer.SanitizeString(obj.Metadata) + "', "
                 + "expirationutc = " + expirationVal + " "
-                + "WHERE id = " + obj.Id + ";";
+                + "WHERE id = '" + Sanitizer.SanitizeString(obj.Id) + "';";
         }
 
         internal static string DeleteQuery(Obj obj)
         {
-            return "DELETE FROM objects WHERE id = " + obj.Id + ";";
+            return "DELETE FROM objects WHERE id = '" + Sanitizer.SanitizeString(obj.Id) + "';";
         }
 
-        internal static string Enumerate(string bucketGuid, int startIndex, int maxResults, bool excludeDeleteMarkers, string prefix)
+        internal static string Enumerate(string bucketId, int startIndex, int maxResults, bool excludeDeleteMarkers, string prefix)
         {
-            string query = "SELECT * FROM objects WHERE bucketguid = '" + Sanitizer.SanitizeString(bucketGuid) + "'"
-                + " AND id >= " + startIndex;
+            string query = "SELECT * FROM objects WHERE bucket_id = '" + Sanitizer.SanitizeString(bucketId) + "'"
+                + "";
 
             if (excludeDeleteMarkers)
                 query += " AND deletemarker = FALSE";
@@ -104,13 +107,13 @@ namespace Less3.Database.PostgreSql.Queries
             if (!String.IsNullOrEmpty(prefix))
                 query += " AND key LIKE '" + Sanitizer.SanitizeString(prefix) + "%'";
 
-            query += " ORDER BY id ASC LIMIT " + maxResults + ";";
+            query += " ORDER BY id ASC LIMIT " + maxResults + " OFFSET " + startIndex + ";";
             return query;
         }
 
-        internal static string GetStatistics(string bucketGuid)
+        internal static string GetStatistics(string bucketId)
         {
-            return "SELECT COUNT(*) AS objectcount, COALESCE(SUM(contentlength), 0) AS totalbytes FROM objects WHERE bucketguid = '" + Sanitizer.SanitizeString(bucketGuid) + "';";
+            return "SELECT COUNT(*) AS objectcount, COALESCE(SUM(contentlength), 0) AS totalbytes FROM objects WHERE bucket_id = '" + Sanitizer.SanitizeString(bucketId) + "';";
         }
     }
 }

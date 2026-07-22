@@ -7,8 +7,9 @@ namespace Less3.Database.MySql.Queries
     {
         internal static string InsertQuery(RequestHistory entry)
         {
-            return "INSERT INTO requesthistory (guid, httpmethod, requesturl, sourceip, statuscode, success, durationms, requesttype, userguid, accesskey, requestcontenttype, requestbodylength, responsecontenttype, responsebodylength, requestbody, responsebody, createdutc) VALUES ("
-                + "'" + Sanitizer.SanitizeString(entry.GUID) + "', "
+            return "INSERT INTO requesthistory (tenant_id, id, httpmethod, requesturl, sourceip, statuscode, success, durationms, requesttype, user_id, accesskey, requestcontenttype, requestbodylength, responsecontenttype, responsebodylength, requestbody, responsebody, createdutc) VALUES ("
+                + "'" + Sanitizer.SanitizeString(entry.TenantId) + "', "
+                + "'" + Sanitizer.SanitizeString(entry.Id) + "', "
                 + "'" + Sanitizer.SanitizeString(entry.HttpMethod) + "', "
                 + "'" + Sanitizer.SanitizeString(entry.RequestUrl) + "', "
                 + "'" + Sanitizer.SanitizeString(entry.SourceIp) + "', "
@@ -16,7 +17,7 @@ namespace Less3.Database.MySql.Queries
                 + (entry.Success ? 1 : 0) + ", "
                 + entry.DurationMs + ", "
                 + "'" + Sanitizer.SanitizeString(entry.RequestType) + "', "
-                + "'" + Sanitizer.SanitizeString(entry.UserGUID) + "', "
+                + "'" + Sanitizer.SanitizeString(entry.UserId) + "', "
                 + "'" + Sanitizer.SanitizeString(entry.AccessKey) + "', "
                 + "'" + Sanitizer.SanitizeString(entry.RequestContentType) + "', "
                 + entry.RequestBodyLength + ", "
@@ -33,14 +34,14 @@ namespace Less3.Database.MySql.Queries
             return "SELECT * FROM requesthistory;";
         }
 
-        internal static string SelectByGuid(string guid)
+        internal static string SelectById(string id)
         {
-            return "SELECT * FROM requesthistory WHERE guid = '" + Sanitizer.SanitizeString(guid) + "' LIMIT 1;";
+            return "SELECT * FROM requesthistory WHERE id = '" + Sanitizer.SanitizeString(id) + "' LIMIT 1;";
         }
 
-        internal static string DeleteByGuid(string guid)
+        internal static string DeleteById(string id)
         {
-            return "DELETE FROM requesthistory WHERE guid = '" + Sanitizer.SanitizeString(guid) + "';";
+            return "DELETE FROM requesthistory WHERE id = '" + Sanitizer.SanitizeString(id) + "';";
         }
 
         internal static string DeleteOlderThan(DateTime cutoff)

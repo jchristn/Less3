@@ -21,7 +21,7 @@ const normalizeApiEndpoint = (endpoint: string): string => {
 let apiEndpoint = normalizeApiEndpoint(apiEndpointURL);
 let adminApiKey = '';
 
-const getStorageValue = (key: string): string | null => {
+const getLocalStorageValue = (key: string): string | null => {
   if (typeof window === 'undefined') {
     return null;
   }
@@ -34,8 +34,21 @@ const getStorageValue = (key: string): string | null => {
   }
 };
 
+const getSessionStorageValue = (key: string): string | null => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    const storedValue = window.sessionStorage.getItem(key)?.trim();
+    return storedValue || null;
+  } catch {
+    return null;
+  }
+};
+
 const getStoredApiEndpoint = (): string | null => {
-  const storedEndpoint = getStorageValue(localStorageKeys.less3APIUrl);
+  const storedEndpoint = getLocalStorageValue(localStorageKeys.less3APIUrl);
   if (!storedEndpoint) {
     return null;
   }
@@ -76,7 +89,9 @@ const getBrowserAwareDefaultApiEndpoint = (): string => {
 };
 
 export const getInitialApiEndpoint = (): string => getStoredApiEndpoint() || getBrowserAwareDefaultApiEndpoint();
-export const getInitialAdminApiKey = (): string => getStorageValue(localStorageKeys.adminApiKey) || '';
+export const getInitialAdminApiKey = (): string =>
+  getSessionStorageValue(localStorageKeys.adminApiKey) || getLocalStorageValue(localStorageKeys.adminApiKey) || '';
+export const getInitialRememberAdminApiKey = (): boolean => !getSessionStorageValue(localStorageKeys.adminApiKey);
 
 export const getApiEndpoint = (): string => {
   const storedEndpoint = getStoredApiEndpoint();
@@ -90,7 +105,8 @@ export const getApiEndpoint = (): string => {
 };
 
 export const getAdminApiKey = (): string => {
-  const storedAdminApiKey = getStorageValue(localStorageKeys.adminApiKey);
+  const storedAdminApiKey =
+    getSessionStorageValue(localStorageKeys.adminApiKey) || getLocalStorageValue(localStorageKeys.adminApiKey);
   if (storedAdminApiKey) {
     adminApiKey = storedAdminApiKey;
   }
@@ -106,9 +122,16 @@ export const updateAdminApiKey = (apiKey: string) => {
   adminApiKey = apiKey.trim();
 };
 
-export const persistDashboardSession = (endpoint: string, apiKey: string) => {
+export const persistDashboardSession = (
+  endpoint: string,
+  apiKey: string,
+  options?: {
+    rememberAdminKey?: boolean;
+  }
+) => {
   const trimmedEndpoint = endpoint.trim();
   const trimmedApiKey = apiKey.trim();
+  const rememberAdminKey = options?.rememberAdminKey ?? true;
 
   updateSdkEndPoint(trimmedEndpoint);
   updateAdminApiKey(trimmedApiKey);
@@ -124,9 +147,16 @@ export const persistDashboardSession = (endpoint: string, apiKey: string) => {
   }
 
   if (trimmedApiKey) {
-    window.localStorage.setItem(localStorageKeys.adminApiKey, trimmedApiKey);
+    if (rememberAdminKey) {
+      window.localStorage.setItem(localStorageKeys.adminApiKey, trimmedApiKey);
+      window.sessionStorage.removeItem(localStorageKeys.adminApiKey);
+    } else {
+      window.sessionStorage.setItem(localStorageKeys.adminApiKey, trimmedApiKey);
+      window.localStorage.removeItem(localStorageKeys.adminApiKey);
+    }
   } else {
     window.localStorage.removeItem(localStorageKeys.adminApiKey);
+    window.sessionStorage.removeItem(localStorageKeys.adminApiKey);
   }
 };
 
@@ -140,6 +170,7 @@ export const clearDashboardSession = () => {
 
   window.localStorage.removeItem(localStorageKeys.less3APIUrl);
   window.localStorage.removeItem(localStorageKeys.adminApiKey);
+  window.sessionStorage.removeItem(localStorageKeys.adminApiKey);
 };
 
 export const buildAdminApiHeaders = (

@@ -254,6 +254,47 @@ exports[`LoginPage matches the login page snapshot 1`] = `
               </div>
             </div>
           </div>
+          <div
+            class="ant-form-item css-dev-only-do-not-override-mncuj7 ant-form-item-vertical"
+          >
+            <div
+              class="ant-row ant-form-item-row css-dev-only-do-not-override-mncuj7"
+            >
+              <div
+                class="ant-col ant-form-item-control css-dev-only-do-not-override-mncuj7"
+              >
+                <div
+                  class="ant-form-item-control-input"
+                >
+                  <div
+                    class="ant-form-item-control-input-content"
+                  >
+                    <label
+                      class="ant-checkbox-wrapper ant-checkbox-wrapper-in-form-item css-dev-only-do-not-override-mncuj7"
+                    >
+                      <span
+                        class="ant-checkbox ant-wave-target css-dev-only-do-not-override-mncuj7"
+                      >
+                        <input
+                          class="ant-checkbox-input"
+                          id="rememberAdminKey"
+                          type="checkbox"
+                        />
+                        <span
+                          class="ant-checkbox-inner"
+                        />
+                      </span>
+                      <span
+                        class="ant-checkbox-label"
+                      >
+                        Remember key on this device
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           <button
             class="ant-btn css-dev-only-do-not-override-mncuj7 ant-btn-primary ant-btn-color-primary ant-btn-variant-solid ant-btn-lg ant-btn-block submitButton"
             type="submit"

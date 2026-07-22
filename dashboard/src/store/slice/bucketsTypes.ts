@@ -3,7 +3,7 @@
 export interface Bucket {
   Name: string;
   CreationDate: string;
-  GUID?: string;
+  Id?: string;
   CreatedUtc?: string;
   [key: string]: any;
 }
@@ -16,7 +16,7 @@ export interface CreateBucketRequest {
 }
 
 export interface UpdateBucketRequest {
-  GUID: string;
+  Id: string;
   Name?: string;
   StorageType?: string;
   DiskDirectory?: string;
@@ -27,7 +27,7 @@ export interface UpdateBucketRequest {
 }
 
 export interface DeleteBucketParams {
-  guid: string;
+  id: string;
   bucketName: string;
 }
 
@@ -40,11 +40,11 @@ export interface GetBucketsParams {
 }
 
 export interface ListBucketObjectsParams {
-  bucketGUID: string;
+  bucketId: string;
 }
 
 export interface DownloadBucketObjectParams {
-  bucketGUID: string;
+  bucketId: string;
   objectKey: string;
 }
 
@@ -54,7 +54,7 @@ export interface DownloadBucketObjectResponse {
 }
 
 export interface WriteBucketObjectParams {
-  bucketGUID: string;
+  bucketId: string;
   objectKey: string;
   content: string;
   contentType?: string;
@@ -65,7 +65,7 @@ export interface WriteBucketObjectResponse {
 }
 
 export interface UploadBucketObjectParams {
-  bucketGUID: string;
+  bucketId: string;
   objectKey: string;
   file: File;
 }
@@ -75,7 +75,7 @@ export interface UploadBucketObjectResponse {
 }
 
 export interface DeleteBucketObjectParams {
-  bucketGUID: string;
+  bucketId: string;
   objectKey: string;
 }
 
@@ -120,7 +120,7 @@ export interface DeleteBucketTagsResponse {
 }
 
 export interface WriteObjectTagsParams {
-  bucketGUID: string;
+  bucketId: string;
   objectKey: string;
   tags: BucketTag[];
 }
@@ -130,7 +130,7 @@ export interface WriteObjectTagsResponse {
 }
 
 export interface GetObjectTagsParams {
-  bucketGUID: string;
+  bucketId: string;
   objectKey: string;
 }
 
@@ -139,7 +139,7 @@ export interface GetObjectTagsResponse {
 }
 
 export interface DeleteObjectTagsParams {
-  bucketGUID: string;
+  bucketId: string;
   objectKey: string;
 }
 
@@ -191,7 +191,7 @@ export interface GetBucketACLResponse {
 }
 
 export interface WriteObjectACLParams {
-  bucketGUID: string;
+  bucketId: string;
   objectKey: string;
   owner: ACLOwner;
   grants: ACLGrant[];
@@ -202,7 +202,7 @@ export interface WriteObjectACLResponse {
 }
 
 export interface GetObjectACLParams {
-  bucketGUID: string;
+  bucketId: string;
   objectKey: string;
 }
 

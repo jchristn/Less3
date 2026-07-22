@@ -1,15 +1,17 @@
 {
   "name": "less3-ui",
-  "version": "0.1.0",
+  "version": "3.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "lint:fix": "next lint --fix",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "prepare": "husky",
     "test": "jest --verbose",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
     "test:watch": "npm run test -- -watch",
     "test:update": "npm run test -- -u",
     "test:coverage": "npm run test --  --coverage"
@@ -31,10 +33,10 @@
     "react-password-checklist": "^1.8.1",
     "react-redux": "^9.1.2",
     "sass": "^1.83.0",
-    "uuid": "^11.1.1",
     "xml-js": "^1.6.11"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",

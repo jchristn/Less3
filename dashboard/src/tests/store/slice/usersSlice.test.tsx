@@ -43,7 +43,7 @@ describe("usersSlice", () => {
         <Provider store={store}>{children}</Provider>
       );
 
-      const { result } = renderHook(() => useGetUserByIdQuery("test-id", { skip: true }), { wrapper });
+      const { result } = renderHook(() => useGetUserByIdQuery("bkt_test", { skip: true }), { wrapper });
       expect(result.current).toBeDefined();
     });
   });

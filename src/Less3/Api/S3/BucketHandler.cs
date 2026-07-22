@@ -1,4 +1,4 @@
-﻿namespace Less3.Api.S3
+namespace Less3.Api.S3
 {
     using System;
     using System.Collections.Generic;
@@ -176,7 +176,7 @@
             if (!String.IsNullOrEmpty(ctx.Request.Marker))
             {
                 Obj marker = md.BucketClient.GetObjectLatestMetadata(ctx.Request.Marker);
-                if (marker != null) startIndex = (marker.Id + 1);
+                if (marker != null) startIndex += 1;
             }
               
             List<Obj> objects = new List<Obj>();
@@ -224,18 +224,18 @@
                 if (fetchOwner)
                 {
                     c.Owner = new S3ServerLibrary.S3Objects.Owner();
-                    if (ownerCache.ContainsKey(curr.OwnerGUID))
+                    if (ownerCache.ContainsKey(curr.OwnerId))
                     {
-                        c.Owner = ownerCache[curr.OwnerGUID];
+                        c.Owner = ownerCache[curr.OwnerId];
                     }
                     else
                     {
-                        User u = _Config.GetUserByGuid(curr.OwnerGUID);
+                        User u = _Config.GetUserById(curr.OwnerId);
                         if (u != null)
                         {
                             c.Owner.DisplayName = u.Name;
-                            c.Owner.ID = u.GUID;
-                            ownerCache.Add(u.GUID, c.Owner);
+                            c.Owner.ID = u.Id;
+                            ownerCache.Add(u.Id, c.Owner);
                         }
                     }
                 }
@@ -259,10 +259,10 @@
             RequestValidator.ValidateAuthorization(md, _Logging, header);
             RequestValidator.ValidateBucketExists(md, _Logging, header);
 
-            User owner = _Config.GetUserByGuid(md.Bucket.OwnerGUID);
+            User owner = _Config.GetUserById(md.Bucket.OwnerId);
             if (owner == null)
             {
-                _Logging.Warn(header + "unable to find owner GUID " + md.Bucket.OwnerGUID + " for bucket GUID " + md.Bucket.GUID);
+                _Logging.Warn(header + "unable to find owner Id " + md.Bucket.OwnerId + " for bucket Id " + md.Bucket.Id);
                 throw new S3Exception(new Error(ErrorCode.InternalError));
             }
 
@@ -314,7 +314,7 @@
             if (!String.IsNullOrEmpty(ctx.Request.Marker))
             {
                 Obj marker = md.BucketClient.GetObjectLatestMetadata(ctx.Request.Marker);
-                if (marker != null) startIndex = (marker.Id + 1);
+                if (marker != null) startIndex += 1;
             }
               
             List<Obj> objects = new List<Obj>();
@@ -358,16 +358,16 @@
                     d.VersionId = curr.Version.ToString();
 
                     d.Owner = new S3ServerLibrary.S3Objects.Owner();
-                    if (ownerCache.ContainsKey(curr.OwnerGUID))
+                    if (ownerCache.ContainsKey(curr.OwnerId))
                     {
-                        d.Owner = ownerCache[curr.OwnerGUID];
+                        d.Owner = ownerCache[curr.OwnerId];
                     }
                     else
                     {
-                        User u = _Config.GetUserByGuid(curr.OwnerGUID);
+                        User u = _Config.GetUserById(curr.OwnerId);
                         d.Owner.DisplayName = u.Name;
-                        d.Owner.ID = u.GUID;
-                        ownerCache.Add(u.GUID, d.Owner);
+                        d.Owner.ID = u.Id;
+                        ownerCache.Add(u.Id, d.Owner);
                     }
 
                     lvr.DeleteMarkers.Add(d);
@@ -385,16 +385,16 @@
                     v.StorageClass = StorageClassEnum.STANDARD;
 
                     v.Owner = new S3ServerLibrary.S3Objects.Owner();
-                    if (ownerCache.ContainsKey(curr.OwnerGUID))
+                    if (ownerCache.ContainsKey(curr.OwnerId))
                     {
-                        v.Owner = ownerCache[curr.OwnerGUID];
+                        v.Owner = ownerCache[curr.OwnerId];
                     }
                     else
                     {
-                        User u = _Config.GetUserByGuid(curr.OwnerGUID);
+                        User u = _Config.GetUserById(curr.OwnerId);
                         v.Owner.DisplayName = u.Name;
-                        v.Owner.ID = u.GUID;
-                        ownerCache.Add(u.GUID, v.Owner);
+                        v.Owner.ID = u.Id;
+                        ownerCache.Add(u.Id, v.Owner);
                     }
 
                     lvr.Versions.Add(v);
@@ -434,10 +434,11 @@
 
             RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
             RequestValidator.ValidateAuthentication(md, _Logging, header);
+            RequestValidator.ValidateAuthorization(md, _Logging, header);
 
             if (md.Bucket != null || md.BucketClient != null)
             {
-                if (md.Bucket != null && md.Bucket.OwnerGUID == md.User.GUID)
+                if (md.Bucket != null && md.Bucket.OwnerId == md.User.Id)
                 {
                     _Logging.Info(header + "bucket already exists and owned by same user, returning success");
                     ctx.Response.Headers.Add("Location", "/" + ctx.Request.Bucket);
@@ -456,10 +457,11 @@
              
             Classes.Bucket bucket = new Classes.Bucket(
                 ctx.Request.Bucket,
-                md.User.GUID, 
+                md.User.Id, 
                 _Settings.Storage.StorageType, 
                 _Settings.Storage.DiskDirectory + ctx.Request.Bucket + "/Objects/", 
                 _Settings.RegionString);
+            bucket.TenantId = md.TenantId;
              
             if (!_Buckets.Add(bucket))
             {
@@ -467,7 +469,7 @@
                 throw new S3Exception(new Error(ErrorCode.InternalError));
             }
 
-            BucketClient client = _Buckets.GetClient(ctx.Request.Bucket);
+            BucketClient client = _Buckets.GetClient(md.TenantId, ctx.Request.Bucket);
             if (client == null)
             {
                 _Logging.Warn(header + "unable to retrieve bucket client for bucket " + ctx.Request.Bucket);
@@ -495,10 +497,10 @@
 
                         if (!String.IsNullOrEmpty(curr.Grantee.ID))
                         {
-                            tempUser = _Config.GetUserByGuid(curr.Grantee.ID);
+                            tempUser = _Config.GetUserById(md.TenantId, curr.Grantee.ID);
                             if (tempUser == null) 
                             {
-                                _Logging.Warn(header + "unable to retrieve user " + curr.Grantee.ID + " to add ACL to bucket " + bucket.GUID);
+                                _Logging.Warn(header + "unable to retrieve user " + curr.Grantee.ID + " to add ACL to bucket " + bucket.Id);
                                 continue;
                             }
 
@@ -510,13 +512,14 @@
 
                             bucketAcl = BucketAcl.UserAcl(
                                 curr.Grantee.ID, 
-                                md.User.GUID, 
-                                bucket.GUID,
+                                md.User.Id, 
+                                bucket.Id,
                                 permitRead, 
                                 permitWrite, 
                                 permitReadAcp, 
                                 permitWriteAcp, 
                                 fullControl);
+                            bucketAcl.TenantId = md.TenantId;
 
                             client.AddBucketAcl(bucketAcl);
                         }
@@ -530,13 +533,14 @@
 
                             bucketAcl = BucketAcl.GroupAcl(
                                 curr.Grantee.URI, 
-                                md.User.GUID, 
-                                bucket.GUID,
+                                md.User.Id, 
+                                bucket.Id,
                                 permitRead, 
                                 permitWrite, 
                                 permitReadAcp, 
                                 permitWriteAcp, 
                                 fullControl);
+                            bucketAcl.TenantId = md.TenantId;
 
                             client.AddBucketAcl(bucketAcl);
                         }
@@ -561,14 +565,15 @@
                 acp,
                 ctx.Http.Request.Headers,
                 md.User,
-                md.Bucket.GUID,
-                md.Bucket.OwnerGUID,
+                md.Bucket.Id,
+                md.Bucket.OwnerId,
                 _Config,
                 _Logging,
                 header);
 
             foreach (BucketAcl acl in acls)
             {
+                acl.TenantId = md.Bucket.TenantId;
                 md.BucketClient.AddBucketAcl(acl);
             }
         }
@@ -589,7 +594,8 @@
                 foreach (Tag curr in tagging.Tags.Tags)
                 {
                     BucketTag tag = new BucketTag();
-                    tag.BucketGUID = md.Bucket.GUID;
+                    tag.TenantId = md.Bucket.TenantId;
+                    tag.BucketId = md.Bucket.Id;
                     tag.Key = curr.Key;
                     tag.Value = curr.Value;
                     tags.Add(tag);
@@ -629,7 +635,7 @@
             RequestValidator.ValidateAuthorization(md, _Logging, header);
             RequestValidator.ValidateBucketExists(md, _Logging, header);
 
-            List<Less3.Classes.Upload> uploads = _Config.GetUploadsByBucketGuid(md.Bucket.GUID);
+            List<Less3.Classes.Upload> uploads = _Config.GetUploadsByBucketId(md.Bucket.TenantId, md.Bucket.Id);
             if (uploads == null)
             {
                 uploads = new List<Less3.Classes.Upload>();
@@ -665,55 +671,55 @@
             foreach (Less3.Classes.Upload upload in uploads)
             {
                 S3ServerLibrary.S3Objects.Upload u = new S3ServerLibrary.S3Objects.Upload();
-                u.UploadId = upload.GUID;
+                u.UploadId = upload.Id;
                 u.Key = upload.Key;
                 u.Initiated = upload.CreatedUtc;
                 u.StorageClass = StorageClassEnum.STANDARD;
 
-                if (ownerCache.ContainsKey(upload.AuthorGUID))
+                if (ownerCache.ContainsKey(upload.AuthorId))
                 {
-                    u.Initiator = ownerCache[upload.AuthorGUID];
+                    u.Initiator = ownerCache[upload.AuthorId];
                 }
                 else
                 {
-                    User author = _Config.GetUserByGuid(upload.AuthorGUID);
+                    User author = _Config.GetUserById(upload.AuthorId);
                     if (author != null)
                     {
                         S3ServerLibrary.S3Objects.Owner initiatorOwner = new S3ServerLibrary.S3Objects.Owner();
-                        initiatorOwner.ID = author.GUID;
+                        initiatorOwner.ID = author.Id;
                         initiatorOwner.DisplayName = author.Name;
                         u.Initiator = initiatorOwner;
-                        ownerCache.Add(author.GUID, initiatorOwner);
+                        ownerCache.Add(author.Id, initiatorOwner);
                     }
                     else
                     {
                         S3ServerLibrary.S3Objects.Owner initiatorOwner = new S3ServerLibrary.S3Objects.Owner();
-                        initiatorOwner.ID = upload.AuthorGUID;
-                        initiatorOwner.DisplayName = upload.AuthorGUID;
+                        initiatorOwner.ID = upload.AuthorId;
+                        initiatorOwner.DisplayName = upload.AuthorId;
                         u.Initiator = initiatorOwner;
                     }
                 }
 
-                if (ownerCache.ContainsKey(upload.OwnerGUID))
+                if (ownerCache.ContainsKey(upload.OwnerId))
                 {
-                    u.Owner = ownerCache[upload.OwnerGUID];
+                    u.Owner = ownerCache[upload.OwnerId];
                 }
                 else
                 {
-                    User owner = _Config.GetUserByGuid(upload.OwnerGUID);
+                    User owner = _Config.GetUserById(upload.OwnerId);
                     if (owner != null)
                     {
                         S3ServerLibrary.S3Objects.Owner ownerObj = new S3ServerLibrary.S3Objects.Owner();
-                        ownerObj.ID = owner.GUID;
+                        ownerObj.ID = owner.Id;
                         ownerObj.DisplayName = owner.Name;
                         u.Owner = ownerObj;
-                        ownerCache.Add(owner.GUID, ownerObj);
+                        ownerCache.Add(owner.Id, ownerObj);
                     }
                     else
                     {
                         S3ServerLibrary.S3Objects.Owner ownerObj = new S3ServerLibrary.S3Objects.Owner();
-                        ownerObj.ID = upload.OwnerGUID;
-                        ownerObj.DisplayName = upload.OwnerGUID;
+                        ownerObj.ID = upload.OwnerId;
+                        ownerObj.DisplayName = upload.OwnerId;
                         u.Owner = ownerObj;
                     }
                 }
@@ -775,7 +781,7 @@
                         grant = new Grant();
                         grant.Permission = PermissionEnum.FullControl;
                         grant.Grantee = new CanonicalUser();
-                        grant.Grantee.ID = user.GUID;
+                        grant.Grantee.ID = user.Id;
                         grant.Grantee.DisplayName = user.Name;
                         ret.Add(grant);
                         break;
@@ -784,7 +790,7 @@
                         grant = new Grant();
                         grant.Permission = PermissionEnum.FullControl;
                         grant.Grantee = new CanonicalUser();
-                        grant.Grantee.ID = user.GUID;
+                        grant.Grantee.ID = user.Id;
                         grant.Grantee.DisplayName = user.Name;
                         ret.Add(grant);
 
@@ -799,7 +805,7 @@
                         grant = new Grant();
                         grant.Permission = PermissionEnum.FullControl;
                         grant.Grantee = new CanonicalUser();
-                        grant.Grantee.ID = user.GUID;
+                        grant.Grantee.ID = user.Id;
                         grant.Grantee.DisplayName = user.Name;
                         ret.Add(grant);
 
@@ -820,7 +826,7 @@
                         grant = new Grant();
                         grant.Permission = PermissionEnum.FullControl;
                         grant.Grantee = new CanonicalUser();
-                        grant.Grantee.ID = user.GUID;
+                        grant.Grantee.ID = user.Id;
                         grant.Grantee.DisplayName = user.Name;
                         ret.Add(grant);
 
@@ -932,19 +938,19 @@
                     return false;
                 }
                 grant.Grantee = new CanonicalUser();
-                grant.Grantee.ID = user.GUID;
+                grant.Grantee.ID = user.Id;
                 grant.Grantee.DisplayName = user.Name;
                 return true;
             }
             else if (granteeType.Equals("id"))
             {
-                User user = _Config.GetUserByGuid(grantee);
+                User user = _Config.GetUserById(grantee);
                 if (user == null)
                 {
                     return false;
                 }
                 grant.Grantee = new CanonicalUser();
-                grant.Grantee.ID = user.GUID;
+                grant.Grantee.ID = user.Id;
                 grant.Grantee.DisplayName = user.Name;
                 return true;
             }
@@ -965,8 +971,52 @@
                 "admin"
             };
 
+            if (String.IsNullOrWhiteSpace(name)) return true;
+            if (name.Length < 3 || name.Length > 63) return true;
             if (invalidNames.Contains(name.ToLower())) return true;
+            if (!IsLowercaseLetterOrNumber(name[0])) return true;
+            if (!IsLowercaseLetterOrNumber(name[name.Length - 1])) return true;
+
+            bool hasDot = false;
+            for (int i = 0; i < name.Length; i++)
+            {
+                char current = name[i];
+                bool valid = IsLowercaseLetterOrNumber(current) || current == '-' || current == '.';
+                if (!valid) return true;
+                if (current == '.') hasDot = true;
+
+                if (i > 0)
+                {
+                    char previous = name[i - 1];
+                    if (previous == '.' && current == '.') return true;
+                    if (previous == '-' && current == '.') return true;
+                    if (previous == '.' && current == '-') return true;
+                }
+            }
+
+            if (hasDot && LooksLikeIpv4Address(name)) return true;
             return false;
+        }
+
+        private bool IsLowercaseLetterOrNumber(char value)
+        {
+            return (value >= 'a' && value <= 'z')
+                || (value >= '0' && value <= '9');
+        }
+
+        private bool LooksLikeIpv4Address(string name)
+        {
+            string[] parts = name.Split('.');
+            if (parts.Length != 4) return false;
+
+            foreach (string part in parts)
+            {
+                if (String.IsNullOrEmpty(part)) return false;
+                if (!Int32.TryParse(part, out int value)) return false;
+                if (value < 0 || value > 255) return false;
+            }
+
+            return true;
         }
 
         #endregion

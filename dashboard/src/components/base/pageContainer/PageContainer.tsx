@@ -1,7 +1,7 @@
 import React from 'react';
 import classNames from 'classnames';
 import Less3Flex from '../flex/Flex';
-import Less3Text from '../typograpghy/Text';
+import Less3Title from '../typograpghy/Title';
 import styles from './pageContainer.module.scss';
 import { Content } from 'antd/es/layout/layout';
 import { ArrowLeftOutlined } from '@ant-design/icons';
@@ -61,9 +61,9 @@ const PageContainer = ({
                   />
                 </Link>
               )}
-              <Less3Text fontSize={16} weight={600} data-testid="heading">
+              <Less3Title level={4} fontSize={16} weight={600} data-testid="heading" style={{ margin: 0 }}>
                 {pageTitle}
-              </Less3Text>
+              </Less3Title>
             </Less3Flex>
             {pageTitleRightContent}
           </Less3Flex>

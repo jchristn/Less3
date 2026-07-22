@@ -10,6 +10,7 @@ namespace Less3.Database.Sqlite
     using Microsoft.Data.Sqlite;
     using SyslogLogging;
 
+    using Less3.Database.Implementations;
     using Less3.Database.Sqlite.Implementations;
     using Less3.Database.Sqlite.Queries;
 
@@ -62,6 +63,12 @@ namespace Less3.Database.Sqlite
             Uploads = new UploadMethods(this);
             UploadParts = new UploadPartMethods(this);
             RequestHistory = new RequestHistoryMethods(this);
+            Tenants = new ControlPlaneTenantMethods(this, SqlDialect.Sqlite);
+            Roles = new ControlPlaneRoleMethods(this, SqlDialect.Sqlite);
+            Permissions = new ControlPlanePermissionMethods(this, SqlDialect.Sqlite);
+            RoleAssignments = new ControlPlaneRoleAssignmentMethods(this, SqlDialect.Sqlite);
+            AuthSessions = new ControlPlaneAuthSessionMethods(this, SqlDialect.Sqlite);
+            AuthorizationAudit = new ControlPlaneAuthorizationAuditMethods(this, SqlDialect.Sqlite);
 
             ExecuteQuery("PRAGMA journal_mode=WAL;").Wait();
             ExecuteQuery("PRAGMA synchronous=NORMAL;").Wait();

@@ -30,8 +30,8 @@ const enhancedSdk = sdkSlice.enhanceEndpoints({
   addTagTypes: [RequestHistorySliceTags.REQUEST_HISTORY],
 });
 
-const getRequestHistoryTags = (guid: string) => [
-  { type: RequestHistorySliceTags.REQUEST_HISTORY as const, id: guid },
+const getRequestHistoryTags = (id: string) => [
+  { type: RequestHistorySliceTags.REQUEST_HISTORY as const, id: id },
   { type: RequestHistorySliceTags.REQUEST_HISTORY, id: 'LIST' },
 ];
 
@@ -49,9 +49,9 @@ const requestHistorySliceInstance = enhancedSdk.injectEndpoints({
       providesTags: (result: RequestHistoryEntry[] | undefined) =>
         result
           ? [
-              ...result.map(({ GUID }: RequestHistoryEntry) => ({
+              ...result.map(({ Id }: RequestHistoryEntry) => ({
                 type: RequestHistorySliceTags.REQUEST_HISTORY as const,
-                id: GUID,
+                id: Id,
               })),
               { type: RequestHistorySliceTags.REQUEST_HISTORY, id: 'LIST' },
             ]
@@ -59,10 +59,10 @@ const requestHistorySliceInstance = enhancedSdk.injectEndpoints({
     }),
 
     getRequestHistoryById: build.query<RequestHistoryResponse, string>({
-      query: (guid: string) => ({ url: buildApiUrl(`admin/requesthistory/${guid}`), method: 'GET' }),
+      query: (id: string) => ({ url: buildApiUrl(`admin/requesthistory/${id}`), method: 'GET' }),
       transformResponse: (response: any): RequestHistoryEntry => response,
-      providesTags: (_result: RequestHistoryEntry | undefined, _error: unknown, guid: string) =>
-        getRequestHistoryTags(guid),
+      providesTags: (_result: RequestHistoryEntry | undefined, _error: unknown, id: string) =>
+        getRequestHistoryTags(id),
     }),
 
     getRequestHistorySummary: build.query<RequestHistorySummaryResult, RequestHistorySummaryParams>({
@@ -78,16 +78,16 @@ const requestHistorySliceInstance = enhancedSdk.injectEndpoints({
     }),
 
     deleteRequestHistory: build.mutation<DeleteRequestHistoryResponse, DeleteRequestHistoryParams>({
-      query: ({ guid }: DeleteRequestHistoryParams) => ({
-        url: buildApiUrl(`admin/requesthistory/${guid}`),
+      query: ({ id }: DeleteRequestHistoryParams) => ({
+        url: buildApiUrl(`admin/requesthistory/${id}`),
         method: 'DELETE',
       }),
       transformResponse: (): DeleteRequestHistoryResponse => ({ success: true }),
       invalidatesTags: (
         _result: DeleteRequestHistoryResponse | undefined,
         _error: unknown,
-        { guid }: DeleteRequestHistoryParams
-      ) => getRequestHistoryTags(guid),
+        { id }: DeleteRequestHistoryParams
+      ) => getRequestHistoryTags(id),
     }),
   }),
 });

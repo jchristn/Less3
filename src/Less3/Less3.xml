@@ -29,6 +29,11 @@
             Admin API PUT handler.
             </summary>
         </member>
+        <member name="T:Less3.Api.Rest.RestApiHandler">
+            <summary>
+            Less3 REST API handler for /api/v1 routes.
+            </summary>
+        </member>
         <member name="T:Less3.Api.S3.ApiHandler">
             <summary>
             API handler.
@@ -47,6 +52,71 @@
         <member name="T:Less3.Api.S3.ServiceHandler">
             <summary>
             Service APIs.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.AdminHealthStatus">
+            <summary>
+            Compact health status exposed by the admin API.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AdminHealthStatus.ServerVersion">
+            <summary>
+            Server version.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AdminHealthStatus.UptimeSeconds">
+            <summary>
+            Process uptime in seconds.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AdminHealthStatus.DatabaseType">
+            <summary>
+            Configured database type.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AdminHealthStatus.DatabaseReachable">
+            <summary>
+            Indicates if the database can be reached.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AdminHealthStatus.StoragePath">
+            <summary>
+            Configured storage path.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AdminHealthStatus.StoragePathWritable">
+            <summary>
+            Indicates if the storage path is writable.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AdminHealthStatus.FreeDiskBytes">
+            <summary>
+            Free disk bytes for the storage path drive.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AdminHealthStatus.TempPath">
+            <summary>
+            Configured temporary upload path.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AdminHealthStatus.TempUploadCount">
+            <summary>
+            Number of files currently in the temporary upload path.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AdminHealthStatus.RequestHistoryRetentionDays">
+            <summary>
+            Request history retention in days.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AdminHealthStatus.LastCleanupRunUtc">
+            <summary>
+            Last cleanup run timestamp in UTC, if available.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AdminHealthStatus.GeneratedUtc">
+            <summary>
+            Generation timestamp in UTC.
             </summary>
         </member>
         <member name="T:Less3.Classes.AuthenticationResult">
@@ -69,6 +139,26 @@
             The supplied access key was not found.
             </summary>
         </member>
+        <member name="F:Less3.Classes.AuthenticationResult.CredentialInactive">
+            <summary>
+            The credential is inactive.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.AuthenticationResult.UserInactive">
+            <summary>
+            The user is inactive.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.AuthenticationResult.TenantInactive">
+            <summary>
+            The tenant is inactive.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.AuthenticationResult.TenantMismatch">
+            <summary>
+            The credential and user do not belong to the same tenant.
+            </summary>
+        </member>
         <member name="F:Less3.Classes.AuthenticationResult.Authenticated">
             <summary>
             Authentication was successful.
@@ -82,6 +172,66 @@
         <member name="T:Less3.Classes.AuthManager">
             <summary>
             Authentication manager.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.AuthorizationAudit">
+            <summary>
+            Audit record for authorization decisions and sensitive administrative operations.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AuthorizationAudit.Id">
+            <summary>
+            Audit record identifier.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AuthorizationAudit.TenantId">
+            <summary>
+            Tenant identifier when the request resolved to a tenant.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AuthorizationAudit.UserId">
+            <summary>
+            User identifier when the principal is a user.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AuthorizationAudit.CredentialId">
+            <summary>
+            Credential identifier when the principal is a credential.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AuthorizationAudit.ResourceType">
+            <summary>
+            Resource type being evaluated.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AuthorizationAudit.ResourceId">
+            <summary>
+            Resource identifier when known.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AuthorizationAudit.Operation">
+            <summary>
+            Operation being evaluated.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AuthorizationAudit.Permitted">
+            <summary>
+            Whether the operation was permitted.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AuthorizationAudit.Reason">
+            <summary>
+            Reason recorded by the authorization layer.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AuthorizationAudit.CreatedUtc">
+            <summary>
+            UTC creation timestamp.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.AuthorizationAudit.#ctor">
+            <summary>
+            Instantiate the authorization audit record.
             </summary>
         </member>
         <member name="T:Less3.Classes.AuthorizationResult">
@@ -144,9 +294,74 @@
             Operation permitted due to object ownership.
             </summary>
         </member>
+        <member name="F:Less3.Classes.AuthorizationResult.PermitRbac">
+            <summary>
+            Operation permitted by tenant RBAC.
+            </summary>
+        </member>
         <member name="F:Less3.Classes.AuthorizationResult.NotAuthorized">
             <summary>
             Operation not authorized.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.AuthSession">
+            <summary>
+            Revocable authenticated session bound to a tenant and principal.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AuthSession.Id">
+            <summary>
+            Session identifier.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AuthSession.TenantId">
+            <summary>
+            Tenant identifier.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AuthSession.PrincipalType">
+            <summary>
+            Principal type, such as User or Credential.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AuthSession.PrincipalId">
+            <summary>
+            Principal identifier.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AuthSession.TokenHash">
+            <summary>
+            Session token hash.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AuthSession.Active">
+            <summary>
+            Whether this session is active.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AuthSession.CreatedUtc">
+            <summary>
+            UTC time the session was created.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AuthSession.ExpirationUtc">
+            <summary>
+            UTC time the session expires.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AuthSession.RevokedUtc">
+            <summary>
+            UTC time the session was revoked.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.AuthSession.SourceIp">
+            <summary>
+            Last observed source IP address.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.AuthSession.#ctor">
+            <summary>
+            Instantiate the auth session.
             </summary>
         </member>
         <member name="T:Less3.Classes.Bucket">
@@ -156,17 +371,17 @@
         </member>
         <member name="P:Less3.Classes.Bucket.Id">
             <summary>
-            Database identifier.
+            Id of the bucket.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Bucket.GUID">
+        <member name="P:Less3.Classes.Bucket.TenantId">
             <summary>
-            GUID of the bucket.
+            Tenant identifier.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Bucket.OwnerGUID">
+        <member name="P:Less3.Classes.Bucket.OwnerId">
             <summary>
-            GUID of the owner.
+            Id of the owner.
             </summary>
         </member>
         <member name="P:Less3.Classes.Bucket.Name">
@@ -219,7 +434,7 @@
             Instantiate.
             </summary>
             <param name="name">Name.</param>
-            <param name="owner">Owner GUID.</param>
+            <param name="owner">Owner Id.</param>
             <param name="storageType">Storage type.</param>
             <param name="diskDirectory">Disk directory.</param>
             <param name="region">Region.</param>
@@ -228,9 +443,9 @@
             <summary>
             Instantiate.
             </summary>
-            <param name="guid">GUID.</param>
+            <param name="id">Id.</param>
             <param name="name">Name.</param>
-            <param name="owner">Owner GUID.</param>
+            <param name="owner">Owner Id.</param>
             <param name="storageType">Storage type.</param>
             <param name="diskDirectory">Disk directory.</param>
             <param name="region">Region.</param>
@@ -242,12 +457,12 @@
         </member>
         <member name="P:Less3.Classes.BucketAcl.Id">
             <summary>
-            Database identifier.
+            Id.
             </summary>
         </member>
-        <member name="P:Less3.Classes.BucketAcl.GUID">
+        <member name="P:Less3.Classes.BucketAcl.TenantId">
             <summary>
-            GUID.
+            Tenant identifier.
             </summary>
         </member>
         <member name="P:Less3.Classes.BucketAcl.UserGroup">
@@ -255,19 +470,19 @@
             User group.
             </summary>
         </member>
-        <member name="P:Less3.Classes.BucketAcl.BucketGUID">
+        <member name="P:Less3.Classes.BucketAcl.BucketId">
             <summary>
-            Bucket GUID.
+            Bucket Id.
             </summary>
         </member>
-        <member name="P:Less3.Classes.BucketAcl.UserGUID">
+        <member name="P:Less3.Classes.BucketAcl.UserId">
             <summary>
-            User GUID.
+            User Id.
             </summary>
         </member>
-        <member name="P:Less3.Classes.BucketAcl.IssuedByUserGUID">
+        <member name="P:Less3.Classes.BucketAcl.IssuedByUserId">
             <summary>
-            GUID of the issuing user.
+            Id of the issuing user.
             </summary>
         </member>
         <member name="P:Less3.Classes.BucketAcl.PermitRead">
@@ -310,8 +525,8 @@
             Create a group ACL.
             </summary>
             <param name="groupName">Group name.</param>
-            <param name="issuedByUserGuid">Issued by user GUID.</param>
-            <param name="bucketGuid">Bucket GUID.</param>
+            <param name="issuedByUserId">Issued by user Id.</param>
+            <param name="bucketId">Bucket Id.</param>
             <param name="permitRead">Permit read.</param>
             <param name="permitWrite">Permit write.</param>
             <param name="permitReadAcp">Permit access control read.</param>
@@ -323,9 +538,9 @@
             <summary>
             Create a user ACL.
             </summary>
-            <param name="userGuid">User GUID.</param>
-            <param name="issuedByUserGuid">Issued by user GUID.</param>
-            <param name="bucketGuid">Bucket GUID.</param>
+            <param name="userId">User Id.</param>
+            <param name="issuedByUserId">Issued by user Id.</param>
+            <param name="bucketId">Bucket Id.</param>
             <param name="permitRead">Permit read.</param>
             <param name="permitWrite">Permit write.</param>
             <param name="permitReadAcp">Permit access control read.</param>
@@ -359,9 +574,9 @@
             The name of the bucket.
             </summary>
         </member>
-        <member name="P:Less3.Classes.BucketStatistics.GUID">
+        <member name="P:Less3.Classes.BucketStatistics.Id">
             <summary>
-            GUID of the bucket.
+            Id of the bucket.
             </summary>
         </member>
         <member name="F:Less3.Classes.BucketStatistics.Objects">
@@ -384,7 +599,7 @@
             Instantiate.
             </summary>
             <param name="name">Name.</param>
-            <param name="guid">GUID.</param>
+            <param name="id">Id.</param>
             <param name="objects">Number of objects.</param>
             <param name="bytes">Number of bytes.</param>
         </member>
@@ -395,17 +610,17 @@
         </member>
         <member name="P:Less3.Classes.BucketTag.Id">
             <summary>
-            Database identifier.
+            Id.
             </summary>
         </member>
-        <member name="P:Less3.Classes.BucketTag.GUID">
+        <member name="P:Less3.Classes.BucketTag.TenantId">
             <summary>
-            GUID.
+            Tenant identifier.
             </summary>
         </member>
-        <member name="P:Less3.Classes.BucketTag.BucketGUID">
+        <member name="P:Less3.Classes.BucketTag.BucketId">
             <summary>
-            GUID of the bucket.
+            Id of the bucket.
             </summary>
         </member>
         <member name="P:Less3.Classes.BucketTag.Key">
@@ -432,7 +647,7 @@
             <summary>
             Instantiate.
             </summary>
-            <param name="bucketGuid">Bucket GUID.</param>
+            <param name="bucketId">Bucket Id.</param>
             <param name="key">Key.</param>
             <param name="val">Value.</param>
         </member>
@@ -440,8 +655,8 @@
             <summary>
             Instantiate.
             </summary>
-            <param name="guid">GUID.</param>
-            <param name="bucketGuid">Bucket GUID.</param>
+            <param name="id">Id.</param>
+            <param name="bucketId">Bucket Id.</param>
             <param name="key">Key.</param>
             <param name="val">Value.</param>
         </member>
@@ -499,17 +714,17 @@
         </member>
         <member name="P:Less3.Classes.Credential.Id">
             <summary>
-            Database identifier.
+            Id of the credential.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Credential.GUID">
+        <member name="P:Less3.Classes.Credential.TenantId">
             <summary>
-            GUID of the credential.
+            Tenant identifier.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Credential.UserGUID">
+        <member name="P:Less3.Classes.Credential.UserId">
             <summary>
-            User GUID.
+            User Id.
             </summary>
         </member>
         <member name="P:Less3.Classes.Credential.Description">
@@ -532,6 +747,21 @@
             Indicates if the secret key is base64 encoded.
             </summary>
         </member>
+        <member name="P:Less3.Classes.Credential.Active">
+            <summary>
+            Whether the credential is active.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Credential.LastUsedUtc">
+            <summary>
+            UTC timestamp of the last successful use.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Credential.LastFailedUtc">
+            <summary>
+            UTC timestamp of the last failed use.
+            </summary>
+        </member>
         <member name="P:Less3.Classes.Credential.CreatedUtc">
             <summary>
             Timestamp from record creation, in UTC time.
@@ -546,7 +776,7 @@
             <summary>
             Instantiate.
             </summary>
-            <param name="userGuid">User GUID.</param>
+            <param name="userId">User Id.</param>
             <param name="description">Description.</param>
             <param name="accessKey">Access key.</param>
             <param name="secretKey">Secret key.</param>
@@ -556,8 +786,8 @@
             <summary>
             Instantiate.
             </summary>
-            <param name="guid">GUID.</param>
-            <param name="userGuid">User GUID.</param>
+            <param name="id">Id.</param>
+            <param name="userId">User Id.</param>
             <param name="description">Description.</param>
             <param name="accessKey">Access key.</param>
             <param name="secretKey">Secret key.</param>
@@ -630,27 +860,27 @@
         </member>
         <member name="P:Less3.Classes.Obj.Id">
             <summary>
-            Database identifier.
+            Id of the object.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Obj.GUID">
+        <member name="P:Less3.Classes.Obj.TenantId">
             <summary>
-            GUID of the object.
+            Tenant identifier.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Obj.BucketGUID">
+        <member name="P:Less3.Classes.Obj.BucketId">
             <summary>
-            GUID of the bucket.
+            Id of the bucket.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Obj.OwnerGUID">
+        <member name="P:Less3.Classes.Obj.OwnerId">
             <summary>
-            GUID of the owner.
+            Id of the owner.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Obj.AuthorGUID">
+        <member name="P:Less3.Classes.Obj.AuthorId">
             <summary>
-            GUID of the author.
+            Id of the author.
             </summary>
         </member>
         <member name="P:Less3.Classes.Obj.Key">
@@ -740,12 +970,12 @@
         </member>
         <member name="P:Less3.Classes.ObjectAcl.Id">
             <summary>
-            Database identifier.
+            Id.
             </summary>
         </member>
-        <member name="P:Less3.Classes.ObjectAcl.GUID">
+        <member name="P:Less3.Classes.ObjectAcl.TenantId">
             <summary>
-            GUID.
+            Tenant identifier.
             </summary>
         </member>
         <member name="P:Less3.Classes.ObjectAcl.UserGroup">
@@ -753,24 +983,24 @@
             User group.
             </summary>
         </member>
-        <member name="P:Less3.Classes.ObjectAcl.UserGUID">
+        <member name="P:Less3.Classes.ObjectAcl.UserId">
             <summary>
-            User GUID.
+            User Id.
             </summary>
         </member>
-        <member name="P:Less3.Classes.ObjectAcl.IssuedByUserGUID">
+        <member name="P:Less3.Classes.ObjectAcl.IssuedByUserId">
             <summary>
-            GUID of the issuing user.
+            Id of the issuing user.
             </summary>
         </member>
-        <member name="P:Less3.Classes.ObjectAcl.BucketGUID">
+        <member name="P:Less3.Classes.ObjectAcl.BucketId">
             <summary>
-            GUID of the bucket.
+            Id of the bucket.
             </summary>
         </member>
-        <member name="P:Less3.Classes.ObjectAcl.ObjectGUID">
+        <member name="P:Less3.Classes.ObjectAcl.ObjectId">
             <summary>
-            GUID of the object.
+            Id of the object.
             </summary>
         </member>
         <member name="P:Less3.Classes.ObjectAcl.PermitRead">
@@ -813,9 +1043,9 @@
             Create a group ACL.
             </summary>
             <param name="groupName">Group name.</param>
-            <param name="issuedByUserGuid">Issued by user GUID.</param>
-            <param name="bucketGuid">Bucket GUID.</param>
-            <param name="objectGuid">Object GUID.</param>
+            <param name="issuedByUserId">Issued by user Id.</param>
+            <param name="bucketId">Bucket Id.</param>
+            <param name="objectId">Object Id.</param>
             <param name="permitRead">Permit read.</param>
             <param name="permitWrite">Permit write.</param>
             <param name="permitReadAcp">Permit access control read.</param>
@@ -827,10 +1057,10 @@
             <summary>
             Create a user ACL.
             </summary>
-            <param name="userGuid">User GUID.</param>
-            <param name="issuedByUserGuid">Issued by user GUID.</param>
-            <param name="bucketGuid">Bucket GUID.</param>
-            <param name="objectGuid">Object GUID.</param>
+            <param name="userId">User Id.</param>
+            <param name="issuedByUserId">Issued by user Id.</param>
+            <param name="bucketId">Bucket Id.</param>
+            <param name="objectId">Object Id.</param>
             <param name="permitRead">Permit read.</param>
             <param name="permitWrite">Permit write.</param>
             <param name="permitReadAcp">Permit access control read.</param>
@@ -851,22 +1081,22 @@
         </member>
         <member name="P:Less3.Classes.ObjectTag.Id">
             <summary>
-            Database identifier.
+            Id.
             </summary>
         </member>
-        <member name="P:Less3.Classes.ObjectTag.GUID">
+        <member name="P:Less3.Classes.ObjectTag.TenantId">
             <summary>
-            GUID.
+            Tenant identifier.
             </summary>
         </member>
-        <member name="P:Less3.Classes.ObjectTag.BucketGUID">
+        <member name="P:Less3.Classes.ObjectTag.BucketId">
             <summary>
-            GUID of the bucket.
+            Id of the bucket.
             </summary>
         </member>
-        <member name="P:Less3.Classes.ObjectTag.ObjectGUID">
+        <member name="P:Less3.Classes.ObjectTag.ObjectId">
             <summary>
-            GUID of the object.
+            Id of the object.
             </summary>
         </member>
         <member name="P:Less3.Classes.ObjectTag.Key">
@@ -893,8 +1123,8 @@
             <summary>
             Instantiate.
             </summary>
-            <param name="bucketGuid">Bucket GUID.</param>
-            <param name="objectGuid">Object GUID.</param>
+            <param name="bucketId">Bucket Id.</param>
+            <param name="objectId">Object Id.</param>
             <param name="key">Key.</param>
             <param name="val">Value.</param>
         </member>
@@ -902,11 +1132,111 @@
             <summary>
             Instantiate.
             </summary>
-            <param name="guid">GUID.</param>
-            <param name="bucketGuid">Bucket GUID.</param>
-            <param name="objectGuid">Object GUID.</param>
+            <param name="id">Id.</param>
+            <param name="bucketId">Bucket Id.</param>
+            <param name="objectId">Object Id.</param>
             <param name="key">Key.</param>
             <param name="val">Value.</param>
+        </member>
+        <member name="T:Less3.Classes.Permission">
+            <summary>
+            Permission rule used by tenant-scoped RBAC.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Permission.Id">
+            <summary>
+            Permission identifier.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Permission.TenantId">
+            <summary>
+            Tenant identifier. Built-in permissions may use null to indicate global visibility.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Permission.RoleId">
+            <summary>
+            Role identifier this permission belongs to.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Permission.ResourceType">
+            <summary>
+            Resource type, such as Tenant, Bucket, Object, User, Credential, Role, Permission, or All.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Permission.Operation">
+            <summary>
+            Operation, such as Create, Read, Update, Delete, Admin, or All.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Permission.Permit">
+            <summary>
+            Whether this permission permits access. False is an explicit deny.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Permission.Active">
+            <summary>
+            Whether this permission is active.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Permission.CreatedUtc">
+            <summary>
+            UTC creation timestamp.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.Permission.#ctor">
+            <summary>
+            Instantiate the permission.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.RequestContext">
+            <summary>
+            Typed request context produced by authentication and consumed by authorization.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestContext.IsAuthenticated">
+            <summary>
+            Whether the request authenticated successfully.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestContext.TenantId">
+            <summary>
+            Tenant identifier resolved for the request.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestContext.UserId">
+            <summary>
+            User identifier resolved for the request.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestContext.CredentialId">
+            <summary>
+            Credential identifier resolved for the request.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestContext.SessionId">
+            <summary>
+            Auth session identifier resolved for the request.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestContext.PrincipalName">
+            <summary>
+            Principal display name or email.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestContext.IsAdmin">
+            <summary>
+            Whether the principal is a global administrator.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestContext.IsTenantAdmin">
+            <summary>
+            Whether the principal is a tenant administrator.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RequestContext.Scopes">
+            <summary>
+            Scope strings attached by authentication or authorization.
+            </summary>
         </member>
         <member name="T:Less3.Classes.RequestHistory">
             <summary>
@@ -915,12 +1245,12 @@
         </member>
         <member name="P:Less3.Classes.RequestHistory.Id">
             <summary>
-            Database identifier.
+            Id of the request history entry.
             </summary>
         </member>
-        <member name="P:Less3.Classes.RequestHistory.GUID">
+        <member name="P:Less3.Classes.RequestHistory.TenantId">
             <summary>
-            GUID of the request history entry.
+            Tenant identifier.
             </summary>
         </member>
         <member name="P:Less3.Classes.RequestHistory.HttpMethod">
@@ -958,9 +1288,9 @@
             S3 request type string (e.g. ListBuckets, GetObject, PutObject).
             </summary>
         </member>
-        <member name="P:Less3.Classes.RequestHistory.UserGUID">
+        <member name="P:Less3.Classes.RequestHistory.UserId">
             <summary>
-            GUID of the authenticated user, or null if unauthenticated.
+            Id of the authenticated user, or null if unauthenticated.
             </summary>
         </member>
         <member name="P:Less3.Classes.RequestHistory.AccessKey">
@@ -1081,6 +1411,11 @@
             Less3 request metadata.
             </summary>
         </member>
+        <member name="F:Less3.Classes.RequestMetadata.TenantId">
+            <summary>
+            Tenant identifier resolved for the request.
+            </summary>
+        </member>
         <member name="F:Less3.Classes.RequestMetadata.User">
             <summary>
             User.
@@ -1161,10 +1496,167 @@
             Compliance retention.
             </summary>
         </member>
+        <member name="T:Less3.Classes.Role">
+            <summary>
+            Role used by tenant-scoped RBAC.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Role.Id">
+            <summary>
+            Role identifier.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Role.TenantId">
+            <summary>
+            Tenant identifier. Built-in roles may use null to indicate global visibility.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Role.Name">
+            <summary>
+            Role name.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Role.Description">
+            <summary>
+            Role description.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Role.IsBuiltIn">
+            <summary>
+            Whether the role is built in and protected from tenant-side mutation.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Role.InheritsToChildren">
+            <summary>
+            Whether assignments to this role inherit to child resources.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Role.Active">
+            <summary>
+            Whether this role is active.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Role.CreatedUtc">
+            <summary>
+            UTC creation timestamp.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Role.LastUpdateUtc">
+            <summary>
+            UTC last update timestamp.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.Role.#ctor">
+            <summary>
+            Instantiate the role.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.RoleAssignment">
+            <summary>
+            Assignment of a role to a user or credential within a tenant.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RoleAssignment.Id">
+            <summary>
+            Assignment identifier.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RoleAssignment.TenantId">
+            <summary>
+            Tenant identifier.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RoleAssignment.RoleId">
+            <summary>
+            Role identifier.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RoleAssignment.PrincipalType">
+            <summary>
+            Principal type, such as User or Credential.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RoleAssignment.PrincipalId">
+            <summary>
+            User or credential identifier receiving the role.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RoleAssignment.ResourceType">
+            <summary>
+            Optional resource type for resource-scoped assignments.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RoleAssignment.ResourceId">
+            <summary>
+            Optional resource identifier for resource-scoped assignments.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RoleAssignment.Active">
+            <summary>
+            Whether this assignment is active.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.RoleAssignment.CreatedUtc">
+            <summary>
+            UTC creation timestamp.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.RoleAssignment.#ctor">
+            <summary>
+            Instantiate the role assignment.
+            </summary>
+        </member>
         <member name="T:Less3.Classes.Setup">
             <summary>
             Setup workflow.
             </summary>
+        </member>
+        <member name="T:Less3.Classes.Tenant">
+            <summary>
+            Tenant record. Tenants are the top-level ownership boundary in Less3.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Tenant.Id">
+            <summary>
+            Tenant identifier.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Tenant.ParentId">
+            <summary>
+            Optional parent tenant identifier for future hierarchical tenant support.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Tenant.Name">
+            <summary>
+            Human-readable tenant name.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Tenant.Active">
+            <summary>
+            Whether this tenant can authenticate and access tenant-owned resources.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Tenant.CreatedUtc">
+            <summary>
+            UTC creation timestamp.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.Tenant.LastUpdateUtc">
+            <summary>
+            UTC last update timestamp.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.Tenant.#ctor">
+            <summary>
+            Instantiate the tenant.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.Tenant.#ctor(System.String,System.String)">
+            <summary>
+            Instantiate the tenant.
+            </summary>
+            <param name="id">Tenant identifier.</param>
+            <param name="name">Tenant name.</param>
         </member>
         <member name="T:Less3.Classes.Upload">
             <summary>
@@ -1173,27 +1665,27 @@
         </member>
         <member name="P:Less3.Classes.Upload.Id">
             <summary>
-            Database identifier.
+            Id of the object.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Upload.GUID">
+        <member name="P:Less3.Classes.Upload.TenantId">
             <summary>
-            GUID of the object.
+            Tenant identifier.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Upload.BucketGUID">
+        <member name="P:Less3.Classes.Upload.BucketId">
             <summary>
-            GUID of the bucket.
+            Id of the bucket.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Upload.OwnerGUID">
+        <member name="P:Less3.Classes.Upload.OwnerId">
             <summary>
-            GUID of the owner.
+            Id of the owner.
             </summary>
         </member>
-        <member name="P:Less3.Classes.Upload.AuthorGUID">
+        <member name="P:Less3.Classes.Upload.AuthorId">
             <summary>
-            GUID of the author.
+            Id of the author.
             </summary>
         </member>
         <member name="P:Less3.Classes.Upload.Key">
@@ -1238,27 +1730,27 @@
         </member>
         <member name="P:Less3.Classes.UploadPart.Id">
             <summary>
-            ID.
+            Id.
             </summary>
         </member>
-        <member name="P:Less3.Classes.UploadPart.GUID">
+        <member name="P:Less3.Classes.UploadPart.TenantId">
             <summary>
-            GUID.
+            Tenant identifier.
             </summary>
         </member>
-        <member name="P:Less3.Classes.UploadPart.BucketGUID">
+        <member name="P:Less3.Classes.UploadPart.BucketId">
             <summary>
-            Bucket GUID.
+            Bucket Id.
             </summary>
         </member>
-        <member name="P:Less3.Classes.UploadPart.OwnerGUID">
+        <member name="P:Less3.Classes.UploadPart.OwnerId">
             <summary>
-            Owner GUID.
+            Owner Id.
             </summary>
         </member>
-        <member name="P:Less3.Classes.UploadPart.UploadGUID">
+        <member name="P:Less3.Classes.UploadPart.UploadId">
             <summary>
-            Multipart upload GUID.
+            Multipart upload Id.
             </summary>
         </member>
         <member name="P:Less3.Classes.UploadPart.PartNumber">
@@ -1308,12 +1800,12 @@
         </member>
         <member name="P:Less3.Classes.User.Id">
             <summary>
-            Database identifier.
+            Id.
             </summary>
         </member>
-        <member name="P:Less3.Classes.User.GUID">
+        <member name="P:Less3.Classes.User.TenantId">
             <summary>
-            GUID.
+            Tenant identifier.
             </summary>
         </member>
         <member name="P:Less3.Classes.User.Name">
@@ -1324,6 +1816,26 @@
         <member name="P:Less3.Classes.User.Email">
             <summary>
             Email address of the user.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.User.PasswordHash">
+            <summary>
+            Password hash for REST/dashboard authentication.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.User.IsAdmin">
+            <summary>
+            Whether the user is a global administrator.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.User.IsTenantAdmin">
+            <summary>
+            Whether the user is an administrator within the user's tenant.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.User.Active">
+            <summary>
+            Whether the user is active.
             </summary>
         </member>
         <member name="P:Less3.Classes.User.CreatedUtc">
@@ -1347,7 +1859,7 @@
             <summary>
             Instantiate.
             </summary>
-            <param name="guid">GUID.</param>
+            <param name="id">Id.</param>
             <param name="name">Name.</param>
             <param name="email">Email.</param>
         </member>
@@ -1359,6 +1871,11 @@
         <member name="T:Less3.Database.DatabaseDriverBase">
             <summary>
             Abstract base class for database drivers.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseDriverBase.Tenants">
+            <summary>
+            Tenant methods.
             </summary>
         </member>
         <member name="P:Less3.Database.DatabaseDriverBase.Users">
@@ -1414,6 +1931,31 @@
         <member name="P:Less3.Database.DatabaseDriverBase.RequestHistory">
             <summary>
             Request history methods.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseDriverBase.Roles">
+            <summary>
+            Role methods.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseDriverBase.Permissions">
+            <summary>
+            Permission methods.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseDriverBase.RoleAssignments">
+            <summary>
+            Role assignment methods.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseDriverBase.AuthSessions">
+            <summary>
+            Auth session methods.
+            </summary>
+        </member>
+        <member name="P:Less3.Database.DatabaseDriverBase.AuthorizationAudit">
+            <summary>
+            Authorization audit methods.
             </summary>
         </member>
         <member name="M:Less3.Database.DatabaseDriverBase.#ctor">
@@ -1571,6 +2113,71 @@
             PostgreSQL.
             </summary>
         </member>
+        <member name="T:Less3.Database.Interfaces.IAuthorizationAuditMethods">
+            <summary>
+            Authorization audit database methods.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IAuthorizationAuditMethods.CreateAsync(Less3.Classes.AuthorizationAudit,System.Threading.CancellationToken)">
+            <summary>
+            Create an authorization audit record.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IAuthorizationAuditMethods.ReadAsync(System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Read an authorization audit record by tenant and identifier.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IAuthorizationAuditMethods.EnumerateAsync(Less3.Requests.EnumerationQuery,System.Threading.CancellationToken)">
+            <summary>
+            Enumerate authorization audit records by query.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IAuthorizationAuditMethods.DeleteAsync(System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Delete an authorization audit record by tenant and identifier.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IAuthorizationAuditMethods.DeleteOlderThanAsync(System.DateTime,System.Threading.CancellationToken)">
+            <summary>
+            Delete audit records older than a UTC timestamp.
+            </summary>
+        </member>
+        <member name="T:Less3.Database.Interfaces.IAuthSessionMethods">
+            <summary>
+            Auth session database methods.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IAuthSessionMethods.CreateAsync(Less3.Classes.AuthSession,System.Threading.CancellationToken)">
+            <summary>
+            Create an auth session.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IAuthSessionMethods.ReadAsync(System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Read an auth session by tenant and identifier.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IAuthSessionMethods.ReadByTokenHashAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Read an auth session by token hash.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IAuthSessionMethods.EnumerateAsync(Less3.Requests.EnumerationQuery,System.Threading.CancellationToken)">
+            <summary>
+            Enumerate auth sessions by query.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IAuthSessionMethods.UpdateAsync(Less3.Classes.AuthSession,System.Threading.CancellationToken)">
+            <summary>
+            Update an auth session.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IAuthSessionMethods.RevokeAsync(System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Revoke an auth session.
+            </summary>
+        </member>
         <member name="T:Less3.Database.Interfaces.IBucketAclMethods">
             <summary>
             Interface for bucket ACL database methods.
@@ -1581,22 +2188,22 @@
             Check if a bucket group ACL exists.
             </summary>
             <param name="groupName">Group name.</param>
-            <param name="bucketGuid">Bucket GUID.</param>
+            <param name="bucketId">Bucket Id.</param>
             <returns>True if the ACL exists.</returns>
         </member>
-        <member name="M:Less3.Database.Interfaces.IBucketAclMethods.ExistsByUserGuid(System.String,System.String)">
+        <member name="M:Less3.Database.Interfaces.IBucketAclMethods.ExistsByUserId(System.String,System.String)">
             <summary>
             Check if a bucket user ACL exists.
             </summary>
-            <param name="userGuid">User GUID.</param>
-            <param name="bucketGuid">Bucket GUID.</param>
+            <param name="userId">User Id.</param>
+            <param name="bucketId">Bucket Id.</param>
             <returns>True if the ACL exists.</returns>
         </member>
-        <member name="M:Less3.Database.Interfaces.IBucketAclMethods.GetByBucketGuid(System.String)">
+        <member name="M:Less3.Database.Interfaces.IBucketAclMethods.GetByBucketId(System.String)">
             <summary>
             Retrieve all ACLs for a bucket.
             </summary>
-            <param name="bucketGuid">Bucket GUID.</param>
+            <param name="bucketId">Bucket Id.</param>
             <returns>List of bucket ACLs.</returns>
         </member>
         <member name="M:Less3.Database.Interfaces.IBucketAclMethods.Insert(Less3.Classes.BucketAcl)">
@@ -1605,11 +2212,11 @@
             </summary>
             <param name="acl">Bucket ACL to insert.</param>
         </member>
-        <member name="M:Less3.Database.Interfaces.IBucketAclMethods.DeleteByBucketGuid(System.String)">
+        <member name="M:Less3.Database.Interfaces.IBucketAclMethods.DeleteByBucketId(System.String)">
             <summary>
             Delete all ACLs for a bucket.
             </summary>
-            <param name="bucketGuid">Bucket GUID.</param>
+            <param name="bucketId">Bucket Id.</param>
         </member>
         <member name="T:Less3.Database.Interfaces.IBucketMethods">
             <summary>
@@ -1622,6 +2229,13 @@
             </summary>
             <returns>List of buckets.</returns>
         </member>
+        <member name="M:Less3.Database.Interfaces.IBucketMethods.GetAll(System.String)">
+            <summary>
+            Retrieve all buckets for a tenant.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <returns>List of buckets.</returns>
+        </member>
         <member name="M:Less3.Database.Interfaces.IBucketMethods.ExistsByName(System.String)">
             <summary>
             Check if a bucket exists by name.
@@ -1629,18 +2243,42 @@
             <param name="name">Bucket name.</param>
             <returns>True if the bucket exists.</returns>
         </member>
-        <member name="M:Less3.Database.Interfaces.IBucketMethods.GetByOwnerGuid(System.String)">
+        <member name="M:Less3.Database.Interfaces.IBucketMethods.ExistsByName(System.String,System.String)">
             <summary>
-            Retrieve buckets by owner GUID.
+            Check if a bucket exists by tenant and name.
             </summary>
-            <param name="ownerGuid">Owner GUID.</param>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="name">Bucket name.</param>
+            <returns>True if the bucket exists.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketMethods.GetByOwnerId(System.String)">
+            <summary>
+            Retrieve buckets by owner Id.
+            </summary>
+            <param name="ownerId">Owner Id.</param>
             <returns>List of buckets.</returns>
         </member>
-        <member name="M:Less3.Database.Interfaces.IBucketMethods.GetByGuid(System.String)">
+        <member name="M:Less3.Database.Interfaces.IBucketMethods.GetByOwnerId(System.String,System.String)">
             <summary>
-            Retrieve a bucket by GUID.
+            Retrieve buckets by tenant and owner Id.
             </summary>
-            <param name="guid">Bucket GUID.</param>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="ownerId">Owner Id.</param>
+            <returns>List of buckets.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketMethods.GetById(System.String)">
+            <summary>
+            Retrieve a bucket by Id.
+            </summary>
+            <param name="id">Bucket Id.</param>
+            <returns>Bucket or null if not found.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketMethods.GetById(System.String,System.String)">
+            <summary>
+            Retrieve a bucket by tenant and Id.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="id">Bucket Id.</param>
             <returns>Bucket or null if not found.</returns>
         </member>
         <member name="M:Less3.Database.Interfaces.IBucketMethods.GetByName(System.String)">
@@ -1650,17 +2288,32 @@
             <param name="name">Bucket name.</param>
             <returns>Bucket or null if not found.</returns>
         </member>
+        <member name="M:Less3.Database.Interfaces.IBucketMethods.GetByName(System.String,System.String)">
+            <summary>
+            Retrieve a bucket by tenant and name.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="name">Bucket name.</param>
+            <returns>Bucket or null if not found.</returns>
+        </member>
         <member name="M:Less3.Database.Interfaces.IBucketMethods.Insert(Less3.Classes.Bucket)">
             <summary>
             Insert a new bucket.
             </summary>
             <param name="bucket">Bucket to insert.</param>
         </member>
-        <member name="M:Less3.Database.Interfaces.IBucketMethods.DeleteByGuid(System.String)">
+        <member name="M:Less3.Database.Interfaces.IBucketMethods.DeleteById(System.String)">
             <summary>
-            Delete a bucket by GUID.
+            Delete a bucket by Id.
             </summary>
-            <param name="guid">Bucket GUID.</param>
+            <param name="id">Bucket Id.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IBucketMethods.DeleteById(System.String,System.String)">
+            <summary>
+            Delete a bucket by tenant and Id.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="id">Bucket Id.</param>
         </member>
         <member name="T:Less3.Database.Interfaces.IBucketTagMethods">
             <summary>
@@ -1673,22 +2326,22 @@
             </summary>
             <param name="tag">Bucket tag to insert.</param>
         </member>
-        <member name="M:Less3.Database.Interfaces.IBucketTagMethods.GetByBucketGuid(System.String)">
+        <member name="M:Less3.Database.Interfaces.IBucketTagMethods.GetByBucketId(System.String)">
             <summary>
             Retrieve all tags for a bucket.
             </summary>
-            <param name="bucketGuid">Bucket GUID.</param>
+            <param name="bucketId">Bucket Id.</param>
             <returns>List of bucket tags.</returns>
         </member>
-        <member name="M:Less3.Database.Interfaces.IBucketTagMethods.DeleteByBucketGuid(System.String)">
+        <member name="M:Less3.Database.Interfaces.IBucketTagMethods.DeleteByBucketId(System.String)">
             <summary>
             Delete all tags for a bucket.
             </summary>
-            <param name="bucketGuid">Bucket GUID.</param>
+            <param name="bucketId">Bucket Id.</param>
         </member>
         <member name="T:Less3.Database.Interfaces.ICredentialMethods">
             <summary>
-            Interface for credential database methods.
+            Interface for credentials database methods.
             </summary>
         </member>
         <member name="M:Less3.Database.Interfaces.ICredentialMethods.GetAll">
@@ -1697,51 +2350,89 @@
             </summary>
             <returns>List of credentials.</returns>
         </member>
-        <member name="M:Less3.Database.Interfaces.ICredentialMethods.ExistsByGuid(System.String)">
+        <member name="M:Less3.Database.Interfaces.ICredentialMethods.GetAll(System.String)">
             <summary>
-            Check if a credential exists by GUID.
+            Retrieve all credentials for a tenant.
             </summary>
-            <param name="guid">Credential GUID.</param>
-            <returns>True if the credential exists.</returns>
+            <param name="tenantId">Tenant Id.</param>
+            <returns>List of credentials.</returns>
         </member>
-        <member name="M:Less3.Database.Interfaces.ICredentialMethods.GetByGuid(System.String)">
+        <member name="M:Less3.Database.Interfaces.ICredentialMethods.ExistsById(System.String)">
             <summary>
-            Retrieve a credential by GUID.
+            Check if a credentials exists by Id.
             </summary>
-            <param name="guid">Credential GUID.</param>
-            <returns>Credential or null if not found.</returns>
+            <param name="id">credentials Id.</param>
+            <returns>True if the credentials exists.</returns>
         </member>
-        <member name="M:Less3.Database.Interfaces.ICredentialMethods.GetByUserGuid(System.String)">
+        <member name="M:Less3.Database.Interfaces.ICredentialMethods.ExistsById(System.String,System.String)">
             <summary>
-            Retrieve credentials by user GUID.
+            Check if credentials exists by tenant and Id.
             </summary>
-            <param name="userGuid">User GUID.</param>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="id">credentials Id.</param>
+            <returns>True if the credentials exists.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.ICredentialMethods.GetById(System.String)">
+            <summary>
+            Retrieve a credentials by Id.
+            </summary>
+            <param name="id">credentials Id.</param>
+            <returns>credentials or null if not found.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.ICredentialMethods.GetById(System.String,System.String)">
+            <summary>
+            Retrieve credentials by tenant and Id.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="id">credentials Id.</param>
+            <returns>credentials or null if not found.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.ICredentialMethods.GetByUserId(System.String)">
+            <summary>
+            Retrieve credentials by user Id.
+            </summary>
+            <param name="userId">User Id.</param>
+            <returns>List of credentials.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.ICredentialMethods.GetByUserId(System.String,System.String)">
+            <summary>
+            Retrieve credentials by tenant and user Id.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="userId">User Id.</param>
             <returns>List of credentials.</returns>
         </member>
         <member name="M:Less3.Database.Interfaces.ICredentialMethods.GetByAccessKey(System.String)">
             <summary>
-            Retrieve a credential by access key.
+            Retrieve a credentials by access key.
             </summary>
             <param name="accessKey">Access key.</param>
-            <returns>Credential or null if not found.</returns>
+            <returns>credentials or null if not found.</returns>
         </member>
         <member name="M:Less3.Database.Interfaces.ICredentialMethods.Insert(Less3.Classes.Credential)">
             <summary>
-            Insert a new credential.
+            Insert a new credentials.
             </summary>
-            <param name="credential">Credential to insert.</param>
+            <param name="credentials">credentials to insert.</param>
         </member>
         <member name="M:Less3.Database.Interfaces.ICredentialMethods.Update(Less3.Classes.Credential)">
             <summary>
-            Update an existing credential.
+            Update an existing credentials.
             </summary>
-            <param name="credential">Credential to update.</param>
+            <param name="credentials">credentials to update.</param>
         </member>
-        <member name="M:Less3.Database.Interfaces.ICredentialMethods.DeleteByGuid(System.String)">
+        <member name="M:Less3.Database.Interfaces.ICredentialMethods.DeleteById(System.String)">
             <summary>
-            Delete a credential by GUID.
+            Delete a credentials by Id.
             </summary>
-            <param name="guid">Credential GUID.</param>
+            <param name="id">credentials Id.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.ICredentialMethods.DeleteById(System.String,System.String)">
+            <summary>
+            Delete credentials by tenant and Id.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="id">credentials Id.</param>
         </member>
         <member name="T:Less3.Database.Interfaces.IObjectAclMethods">
             <summary>
@@ -1753,32 +2444,32 @@
             Check if an object group ACL exists.
             </summary>
             <param name="groupName">Group name.</param>
-            <param name="objectGuid">Object GUID.</param>
-            <param name="bucketGuid">Bucket GUID.</param>
+            <param name="objectId">Object Id.</param>
+            <param name="bucketId">Bucket Id.</param>
             <returns>True if the ACL exists.</returns>
         </member>
-        <member name="M:Less3.Database.Interfaces.IObjectAclMethods.ExistsByUserGuid(System.String,System.String,System.String)">
+        <member name="M:Less3.Database.Interfaces.IObjectAclMethods.ExistsByUserId(System.String,System.String,System.String)">
             <summary>
             Check if an object user ACL exists.
             </summary>
-            <param name="userGuid">User GUID.</param>
-            <param name="objectGuid">Object GUID.</param>
-            <param name="bucketGuid">Bucket GUID.</param>
+            <param name="userId">User Id.</param>
+            <param name="objectId">Object Id.</param>
+            <param name="bucketId">Bucket Id.</param>
             <returns>True if the ACL exists.</returns>
         </member>
-        <member name="M:Less3.Database.Interfaces.IObjectAclMethods.GetByObjectGuid(System.String,System.String)">
+        <member name="M:Less3.Database.Interfaces.IObjectAclMethods.GetByObjectId(System.String,System.String)">
             <summary>
-            Retrieve ACLs for an object by object GUID and bucket GUID.
+            Retrieve ACLs for an object by object Id and bucket Id.
             </summary>
-            <param name="objectGuid">Object GUID.</param>
-            <param name="bucketGuid">Bucket GUID.</param>
+            <param name="objectId">Object Id.</param>
+            <param name="bucketId">Bucket Id.</param>
             <returns>List of object ACLs.</returns>
         </member>
-        <member name="M:Less3.Database.Interfaces.IObjectAclMethods.GetByBucketGuid(System.String)">
+        <member name="M:Less3.Database.Interfaces.IObjectAclMethods.GetByBucketId(System.String)">
             <summary>
             Retrieve all object ACLs for a bucket.
             </summary>
-            <param name="bucketGuid">Bucket GUID.</param>
+            <param name="bucketId">Bucket Id.</param>
             <returns>List of object ACLs.</returns>
         </member>
         <member name="M:Less3.Database.Interfaces.IObjectAclMethods.Insert(Less3.Classes.ObjectAcl)">
@@ -1787,12 +2478,12 @@
             </summary>
             <param name="acl">Object ACL to insert.</param>
         </member>
-        <member name="M:Less3.Database.Interfaces.IObjectAclMethods.DeleteByObjectGuidAndBucketGuid(System.String,System.String)">
+        <member name="M:Less3.Database.Interfaces.IObjectAclMethods.DeleteByObjectIdAndBucketId(System.String,System.String)">
             <summary>
             Delete all ACLs for a specific object within a bucket.
             </summary>
-            <param name="objectGuid">Object GUID.</param>
-            <param name="bucketGuid">Bucket GUID.</param>
+            <param name="objectId">Object Id.</param>
+            <param name="bucketId">Bucket Id.</param>
         </member>
         <member name="T:Less3.Database.Interfaces.IObjectTagMethods">
             <summary>
@@ -1805,20 +2496,20 @@
             </summary>
             <param name="tag">Object tag to insert.</param>
         </member>
-        <member name="M:Less3.Database.Interfaces.IObjectTagMethods.GetByObjectGuid(System.String,System.String)">
+        <member name="M:Less3.Database.Interfaces.IObjectTagMethods.GetByObjectId(System.String,System.String)">
             <summary>
-            Retrieve tags for an object by object GUID and bucket GUID.
+            Retrieve tags for an object by object Id and bucket Id.
             </summary>
-            <param name="objectGuid">Object GUID.</param>
-            <param name="bucketGuid">Bucket GUID.</param>
+            <param name="objectId">Object Id.</param>
+            <param name="bucketId">Bucket Id.</param>
             <returns>List of object tags.</returns>
         </member>
-        <member name="M:Less3.Database.Interfaces.IObjectTagMethods.DeleteByObjectGuid(System.String,System.String)">
+        <member name="M:Less3.Database.Interfaces.IObjectTagMethods.DeleteByObjectId(System.String,System.String)">
             <summary>
-            Delete all tags for an object by object GUID and bucket GUID.
+            Delete all tags for an object by object Id and bucket Id.
             </summary>
-            <param name="objectGuid">Object GUID.</param>
-            <param name="bucketGuid">Bucket GUID.</param>
+            <param name="objectId">Object Id.</param>
+            <param name="bucketId">Bucket Id.</param>
         </member>
         <member name="T:Less3.Database.Interfaces.IObjMethods">
             <summary>
@@ -1836,7 +2527,7 @@
             Retrieve the latest version of an object by key within a bucket.
             </summary>
             <param name="key">Object key.</param>
-            <param name="bucketGuid">Bucket GUID.</param>
+            <param name="bucketId">Bucket Id.</param>
             <returns>Object or null if not found.</returns>
         </member>
         <member name="M:Less3.Database.Interfaces.IObjMethods.GetByKeyAndVersion(System.String,System.Int64,System.String)">
@@ -1845,15 +2536,15 @@
             </summary>
             <param name="key">Object key.</param>
             <param name="version">Object version.</param>
-            <param name="bucketGuid">Bucket GUID.</param>
+            <param name="bucketId">Bucket Id.</param>
             <returns>Object or null if not found.</returns>
         </member>
-        <member name="M:Less3.Database.Interfaces.IObjMethods.GetByGuid(System.String,System.String)">
+        <member name="M:Less3.Database.Interfaces.IObjMethods.GetById(System.String,System.String)">
             <summary>
-            Retrieve an object by GUID within a bucket.
+            Retrieve an object by Id within a bucket.
             </summary>
-            <param name="guid">Object GUID.</param>
-            <param name="bucketGuid">Bucket GUID.</param>
+            <param name="id">Object Id.</param>
+            <param name="bucketId">Bucket Id.</param>
             <returns>Object or null if not found.</returns>
         </member>
         <member name="M:Less3.Database.Interfaces.IObjMethods.GetLatestVersion(System.String,System.String)">
@@ -1861,7 +2552,7 @@
             Get the latest version number for a given key within a bucket.
             </summary>
             <param name="key">Object key.</param>
-            <param name="bucketGuid">Bucket GUID.</param>
+            <param name="bucketId">Bucket Id.</param>
             <returns>Latest version number, or 0 if none found.</returns>
         </member>
         <member name="M:Less3.Database.Interfaces.IObjMethods.Update(Less3.Classes.Obj)">
@@ -1881,7 +2572,7 @@
             Enumerate objects in a bucket with pagination, optional prefix filter, and optional delete marker exclusion.
             Results are ordered by ID ascending.
             </summary>
-            <param name="bucketGuid">Bucket GUID.</param>
+            <param name="bucketId">Bucket Id.</param>
             <param name="startIndex">Minimum ID to start from.</param>
             <param name="maxResults">Maximum number of results to return.</param>
             <param name="excludeDeleteMarkers">Whether to exclude objects with delete markers.</param>
@@ -1892,8 +2583,43 @@
             <summary>
             Get object count and total bytes for a bucket.
             </summary>
-            <param name="bucketGuid">Bucket GUID.</param>
+            <param name="bucketId">Bucket Id.</param>
             <returns>Bucket statistics.</returns>
+        </member>
+        <member name="T:Less3.Database.Interfaces.IPermissionMethods">
+            <summary>
+            Permission database methods.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IPermissionMethods.CreateAsync(Less3.Classes.Permission,System.Threading.CancellationToken)">
+            <summary>
+            Create a permission.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IPermissionMethods.ReadAsync(System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Read a permission by tenant and identifier.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IPermissionMethods.EnumerateAsync(Less3.Requests.EnumerationQuery,System.Threading.CancellationToken)">
+            <summary>
+            Enumerate permissions by query.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IPermissionMethods.UpdateAsync(Less3.Classes.Permission,System.Threading.CancellationToken)">
+            <summary>
+            Update a permission.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IPermissionMethods.DeleteAsync(System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Delete a permission by tenant and identifier.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IPermissionMethods.ExistsAsync(System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Check if a permission exists.
+            </summary>
         </member>
         <member name="T:Less3.Database.Interfaces.IRequestHistoryMethods">
             <summary>
@@ -1906,11 +2632,11 @@
             </summary>
             <returns>List of request history entries.</returns>
         </member>
-        <member name="M:Less3.Database.Interfaces.IRequestHistoryMethods.GetByGuid(System.String)">
+        <member name="M:Less3.Database.Interfaces.IRequestHistoryMethods.GetById(System.String)">
             <summary>
-            Retrieve a request history entry by GUID.
+            Retrieve a request history entry by Id.
             </summary>
-            <param name="guid">Request history GUID.</param>
+            <param name="id">Request history Id.</param>
             <returns>Request history entry or null if not found.</returns>
         </member>
         <member name="M:Less3.Database.Interfaces.IRequestHistoryMethods.Insert(Less3.Classes.RequestHistory)">
@@ -1919,11 +2645,11 @@
             </summary>
             <param name="entry">Request history entry to insert.</param>
         </member>
-        <member name="M:Less3.Database.Interfaces.IRequestHistoryMethods.DeleteByGuid(System.String)">
+        <member name="M:Less3.Database.Interfaces.IRequestHistoryMethods.DeleteById(System.String)">
             <summary>
-            Delete a request history entry by GUID.
+            Delete a request history entry by Id.
             </summary>
-            <param name="guid">Request history GUID.</param>
+            <param name="id">Request history Id.</param>
         </member>
         <member name="M:Less3.Database.Interfaces.IRequestHistoryMethods.DeleteOlderThan(System.DateTime)">
             <summary>
@@ -1939,16 +2665,142 @@
             <param name="endUtc">End datetime in UTC.</param>
             <returns>List of matching request history entries.</returns>
         </member>
+        <member name="T:Less3.Database.Interfaces.IRoleAssignmentMethods">
+            <summary>
+            Role assignment database methods.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IRoleAssignmentMethods.CreateAsync(Less3.Classes.RoleAssignment,System.Threading.CancellationToken)">
+            <summary>
+            Create a role assignment.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IRoleAssignmentMethods.ReadAsync(System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Read a role assignment by tenant and identifier.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IRoleAssignmentMethods.EnumerateAsync(Less3.Requests.EnumerationQuery,System.Threading.CancellationToken)">
+            <summary>
+            Enumerate role assignments by query.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IRoleAssignmentMethods.UpdateAsync(Less3.Classes.RoleAssignment,System.Threading.CancellationToken)">
+            <summary>
+            Update a role assignment.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IRoleAssignmentMethods.DeleteAsync(System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Delete a role assignment by tenant and identifier.
+            </summary>
+        </member>
+        <member name="T:Less3.Database.Interfaces.IRoleMethods">
+            <summary>
+            Role database methods.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IRoleMethods.CreateAsync(Less3.Classes.Role,System.Threading.CancellationToken)">
+            <summary>
+            Create a role.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IRoleMethods.ReadAsync(System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Read a role by tenant and identifier.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IRoleMethods.EnumerateAsync(Less3.Requests.EnumerationQuery,System.Threading.CancellationToken)">
+            <summary>
+            Enumerate roles by query.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IRoleMethods.UpdateAsync(Less3.Classes.Role,System.Threading.CancellationToken)">
+            <summary>
+            Update a role.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IRoleMethods.DeleteAsync(System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Delete a role by tenant and identifier.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IRoleMethods.ExistsAsync(System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Check if a role exists.
+            </summary>
+        </member>
+        <member name="T:Less3.Database.Interfaces.ITenantMethods">
+            <summary>
+            Tenant database methods.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.Interfaces.ITenantMethods.CreateAsync(Less3.Classes.Tenant,System.Threading.CancellationToken)">
+            <summary>
+            Create a tenant.
+            </summary>
+            <param name="tenant">Tenant to create.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Created tenant.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.ITenantMethods.ReadAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Read a tenant by identifier.
+            </summary>
+            <param name="id">Tenant identifier.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Tenant when found.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.ITenantMethods.EnumerateAsync(Less3.Requests.EnumerationQuery,System.Threading.CancellationToken)">
+            <summary>
+            Enumerate tenants.
+            </summary>
+            <param name="query">Enumeration query.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Enumeration result.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.ITenantMethods.UpdateAsync(Less3.Classes.Tenant,System.Threading.CancellationToken)">
+            <summary>
+            Update a tenant.
+            </summary>
+            <param name="tenant">Tenant to update.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>Updated tenant.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.ITenantMethods.DeleteAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Delete a tenant by identifier.
+            </summary>
+            <param name="id">Tenant identifier.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>True if a tenant was deleted.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.ITenantMethods.ExistsAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Check if a tenant exists by identifier.
+            </summary>
+            <param name="id">Tenant identifier.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>True if the tenant exists.</returns>
+        </member>
         <member name="T:Less3.Database.Interfaces.IUploadMethods">
             <summary>
             Interface for upload database methods.
             </summary>
         </member>
-        <member name="M:Less3.Database.Interfaces.IUploadMethods.GetByGuid(System.String)">
+        <member name="M:Less3.Database.Interfaces.IUploadMethods.GetById(System.String)">
             <summary>
-            Retrieve an upload by GUID.
+            Retrieve an upload by Id.
             </summary>
-            <param name="guid">Upload GUID.</param>
+            <param name="id">Upload Id.</param>
+            <returns>Upload or null if not found.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUploadMethods.GetById(System.String,System.String)">
+            <summary>
+            Retrieve an upload by tenant and Id.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="id">Upload Id.</param>
             <returns>Upload or null if not found.</returns>
         </member>
         <member name="M:Less3.Database.Interfaces.IUploadMethods.GetAll">
@@ -1957,11 +2809,26 @@
             </summary>
             <returns>List of uploads.</returns>
         </member>
-        <member name="M:Less3.Database.Interfaces.IUploadMethods.GetByBucketGuid(System.String)">
+        <member name="M:Less3.Database.Interfaces.IUploadMethods.GetAll(System.String)">
             <summary>
-            Retrieve uploads by bucket GUID.
+            Retrieve all uploads for a tenant.
             </summary>
-            <param name="bucketGuid">Bucket GUID.</param>
+            <param name="tenantId">Tenant Id.</param>
+            <returns>List of uploads.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUploadMethods.GetByBucketId(System.String)">
+            <summary>
+            Retrieve uploads by bucket Id.
+            </summary>
+            <param name="bucketId">Bucket Id.</param>
+            <returns>List of uploads.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUploadMethods.GetByBucketId(System.String,System.String)">
+            <summary>
+            Retrieve uploads by tenant and bucket Id.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="bucketId">Bucket Id.</param>
             <returns>List of uploads.</returns>
         </member>
         <member name="M:Less3.Database.Interfaces.IUploadMethods.Insert(Less3.Classes.Upload)">
@@ -1970,11 +2837,18 @@
             </summary>
             <param name="upload">Upload to insert.</param>
         </member>
-        <member name="M:Less3.Database.Interfaces.IUploadMethods.DeleteByGuid(System.String)">
+        <member name="M:Less3.Database.Interfaces.IUploadMethods.DeleteById(System.String)">
             <summary>
-            Delete an upload by GUID.
+            Delete an upload by Id.
             </summary>
-            <param name="guid">Upload GUID.</param>
+            <param name="id">Upload Id.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUploadMethods.DeleteById(System.String,System.String)">
+            <summary>
+            Delete an upload by tenant and Id.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="id">Upload Id.</param>
         </member>
         <member name="T:Less3.Database.Interfaces.IUploadPartMethods">
             <summary>
@@ -1987,24 +2861,47 @@
             </summary>
             <param name="part">Upload part to insert.</param>
         </member>
-        <member name="M:Less3.Database.Interfaces.IUploadPartMethods.GetByUploadGuid(System.String)">
+        <member name="M:Less3.Database.Interfaces.IUploadPartMethods.GetByUploadId(System.String)">
             <summary>
-            Retrieve all parts for an upload by upload GUID.
+            Retrieve all parts for an upload by upload Id.
             </summary>
-            <param name="uploadGuid">Upload GUID.</param>
+            <param name="uploadId">Upload Id.</param>
             <returns>List of upload parts.</returns>
         </member>
-        <member name="M:Less3.Database.Interfaces.IUploadPartMethods.DeleteByUploadGuid(System.String)">
+        <member name="M:Less3.Database.Interfaces.IUploadPartMethods.GetByUploadId(System.String,System.String)">
             <summary>
-            Delete all parts for an upload by upload GUID.
+            Retrieve all parts for an upload by tenant and upload Id.
             </summary>
-            <param name="uploadGuid">Upload GUID.</param>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="uploadId">Upload Id.</param>
+            <returns>List of upload parts.</returns>
         </member>
-        <member name="M:Less3.Database.Interfaces.IUploadPartMethods.DeleteByUploadGuidAndPartNumber(System.String,System.Int32)">
+        <member name="M:Less3.Database.Interfaces.IUploadPartMethods.DeleteByUploadId(System.String)">
+            <summary>
+            Delete all parts for an upload by upload Id.
+            </summary>
+            <param name="uploadId">Upload Id.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUploadPartMethods.DeleteByUploadId(System.String,System.String)">
+            <summary>
+            Delete all parts for an upload by tenant and upload Id.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="uploadId">Upload Id.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUploadPartMethods.DeleteByUploadIdAndPartNumber(System.String,System.Int32)">
             <summary>
             Delete all stored rows for a specific part number within a multipart upload.
             </summary>
-            <param name="uploadGuid">Upload GUID.</param>
+            <param name="uploadId">Upload Id.</param>
+            <param name="partNumber">Part number.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUploadPartMethods.DeleteByUploadIdAndPartNumber(System.String,System.String,System.Int32)">
+            <summary>
+            Delete all stored rows for a specific part number within a tenant multipart upload.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="uploadId">Upload Id.</param>
             <param name="partNumber">Part number.</param>
         </member>
         <member name="T:Less3.Database.Interfaces.IUserMethods">
@@ -2018,11 +2915,26 @@
             </summary>
             <returns>List of users.</returns>
         </member>
-        <member name="M:Less3.Database.Interfaces.IUserMethods.ExistsByGuid(System.String)">
+        <member name="M:Less3.Database.Interfaces.IUserMethods.GetAll(System.String)">
             <summary>
-            Check if a user exists by GUID.
+            Retrieve all users for a tenant.
             </summary>
-            <param name="guid">User GUID.</param>
+            <param name="tenantId">Tenant Id.</param>
+            <returns>List of users.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUserMethods.ExistsById(System.String)">
+            <summary>
+            Check if a user exists by Id.
+            </summary>
+            <param name="id">User Id.</param>
+            <returns>True if the user exists.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUserMethods.ExistsById(System.String,System.String)">
+            <summary>
+            Check if a user exists by tenant and Id.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="id">User Id.</param>
             <returns>True if the user exists.</returns>
         </member>
         <member name="M:Less3.Database.Interfaces.IUserMethods.ExistsByEmail(System.String)">
@@ -2032,11 +2944,27 @@
             <param name="email">Email address.</param>
             <returns>True if the user exists.</returns>
         </member>
-        <member name="M:Less3.Database.Interfaces.IUserMethods.GetByGuid(System.String)">
+        <member name="M:Less3.Database.Interfaces.IUserMethods.ExistsByEmail(System.String,System.String)">
             <summary>
-            Retrieve a user by GUID.
+            Check if a user exists by tenant and email.
             </summary>
-            <param name="guid">User GUID.</param>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="email">Email address.</param>
+            <returns>True if the user exists.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUserMethods.GetById(System.String)">
+            <summary>
+            Retrieve a user by Id.
+            </summary>
+            <param name="id">User Id.</param>
+            <returns>User or null if not found.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUserMethods.GetById(System.String,System.String)">
+            <summary>
+            Retrieve a user by tenant and Id.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="id">User Id.</param>
             <returns>User or null if not found.</returns>
         </member>
         <member name="M:Less3.Database.Interfaces.IUserMethods.GetByName(System.String)">
@@ -2046,10 +2974,26 @@
             <param name="name">User name.</param>
             <returns>User or null if not found.</returns>
         </member>
+        <member name="M:Less3.Database.Interfaces.IUserMethods.GetByName(System.String,System.String)">
+            <summary>
+            Retrieve a user by tenant and name.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="name">User name.</param>
+            <returns>User or null if not found.</returns>
+        </member>
         <member name="M:Less3.Database.Interfaces.IUserMethods.GetByEmail(System.String)">
             <summary>
             Retrieve a user by email.
             </summary>
+            <param name="email">Email address.</param>
+            <returns>User or null if not found.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUserMethods.GetByEmail(System.String,System.String)">
+            <summary>
+            Retrieve a user by tenant and email.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
             <param name="email">Email address.</param>
             <returns>User or null if not found.</returns>
         </member>
@@ -2065,67 +3009,104 @@
             </summary>
             <param name="user">User to update.</param>
         </member>
-        <member name="M:Less3.Database.Interfaces.IUserMethods.DeleteByGuid(System.String)">
+        <member name="M:Less3.Database.Interfaces.IUserMethods.DeleteById(System.String)">
             <summary>
-            Delete a user by GUID.
+            Delete a user by Id.
             </summary>
-            <param name="guid">User GUID.</param>
+            <param name="id">User Id.</param>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IUserMethods.DeleteById(System.String,System.String)">
+            <summary>
+            Delete a user by tenant and Id.
+            </summary>
+            <param name="tenantId">Tenant Id.</param>
+            <param name="id">User Id.</param>
         </member>
         <member name="M:Less3.Database.MySql.Implementations.BucketAclMethods.ExistsByGroupName(System.String,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.BucketAclMethods.ExistsByUserGuid(System.String,System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.BucketAclMethods.ExistsByUserId(System.String,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.BucketAclMethods.GetByBucketGuid(System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.BucketAclMethods.GetByBucketId(System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.BucketAclMethods.Insert(Less3.Classes.BucketAcl)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.BucketAclMethods.DeleteByBucketGuid(System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.BucketAclMethods.DeleteByBucketId(System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.BucketMethods.GetAll">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketMethods.GetAll(System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.MySql.Implementations.BucketMethods.ExistsByName(System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.BucketMethods.GetByOwnerGuid(System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.BucketMethods.ExistsByName(System.String,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.BucketMethods.GetByGuid(System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.BucketMethods.GetByOwnerId(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketMethods.GetByOwnerId(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketMethods.GetById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketMethods.GetById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.BucketMethods.GetByName(System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketMethods.GetByName(System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.MySql.Implementations.BucketMethods.Insert(Less3.Classes.Bucket)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.BucketMethods.DeleteByGuid(System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.BucketMethods.DeleteById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.BucketMethods.DeleteById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.BucketTagMethods.Insert(Less3.Classes.BucketTag)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.BucketTagMethods.GetByBucketGuid(System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.BucketTagMethods.GetByBucketId(System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.BucketTagMethods.DeleteByBucketGuid(System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.BucketTagMethods.DeleteByBucketId(System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.GetAll">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.ExistsByGuid(System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.GetAll(System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.GetByGuid(System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.ExistsById(System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.GetByUserGuid(System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.ExistsById(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.GetById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.GetById(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.GetByUserId(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.GetByUserId(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.GetByAccessKey(System.String)">
@@ -2137,34 +3118,37 @@
         <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.Update(Less3.Classes.Credential)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.DeleteByGuid(System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.DeleteById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.CredentialMethods.DeleteById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.ExistsByGroupName(System.String,System.String,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.ExistsByUserGuid(System.String,System.String,System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.ExistsByUserId(System.String,System.String,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.GetByObjectGuid(System.String,System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.GetByObjectId(System.String,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.GetByBucketGuid(System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.GetByBucketId(System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.Insert(Less3.Classes.ObjectAcl)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.DeleteByObjectGuidAndBucketGuid(System.String,System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.ObjectAclMethods.DeleteByObjectIdAndBucketId(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.ObjectTagMethods.Insert(Less3.Classes.ObjectTag)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.ObjectTagMethods.GetByObjectGuid(System.String,System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.ObjectTagMethods.GetByObjectId(System.String,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.ObjectTagMethods.DeleteByObjectGuid(System.String,System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.ObjectTagMethods.DeleteByObjectId(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.ObjMethods.Insert(Less3.Classes.Obj)">
@@ -2176,7 +3160,7 @@
         <member name="M:Less3.Database.MySql.Implementations.ObjMethods.GetByKeyAndVersion(System.String,System.Int64,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.ObjMethods.GetByGuid(System.String,System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.ObjMethods.GetById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.ObjMethods.GetLatestVersion(System.String,System.String)">
@@ -2197,13 +3181,13 @@
         <member name="M:Less3.Database.MySql.Implementations.RequestHistoryMethods.GetAll">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.RequestHistoryMethods.GetByGuid(System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.RequestHistoryMethods.GetById(System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.RequestHistoryMethods.Insert(Less3.Classes.RequestHistory)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.RequestHistoryMethods.DeleteByGuid(System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.RequestHistoryMethods.DeleteById(System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.RequestHistoryMethods.DeleteOlderThan(System.DateTime)">
@@ -2212,49 +3196,88 @@
         <member name="M:Less3.Database.MySql.Implementations.RequestHistoryMethods.GetInRange(System.DateTime,System.DateTime)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.UploadMethods.GetByGuid(System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.UploadMethods.GetById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UploadMethods.GetById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.UploadMethods.GetAll">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.UploadMethods.GetByBucketGuid(System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.UploadMethods.GetAll(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UploadMethods.GetByBucketId(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UploadMethods.GetByBucketId(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.UploadMethods.Insert(Less3.Classes.Upload)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.UploadMethods.DeleteByGuid(System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.UploadMethods.DeleteById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UploadMethods.DeleteById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.UploadPartMethods.Insert(Less3.Classes.UploadPart)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.UploadPartMethods.GetByUploadGuid(System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.UploadPartMethods.GetByUploadId(System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.UploadPartMethods.DeleteByUploadGuid(System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.UploadPartMethods.GetByUploadId(System.String,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.UploadPartMethods.DeleteByUploadGuidAndPartNumber(System.String,System.Int32)">
+        <member name="M:Less3.Database.MySql.Implementations.UploadPartMethods.DeleteByUploadId(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UploadPartMethods.DeleteByUploadId(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UploadPartMethods.DeleteByUploadIdAndPartNumber(System.String,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UploadPartMethods.DeleteByUploadIdAndPartNumber(System.String,System.String,System.Int32)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.UserMethods.GetAll">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.UserMethods.ExistsByGuid(System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.UserMethods.GetAll(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UserMethods.ExistsById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UserMethods.ExistsById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.UserMethods.ExistsByEmail(System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.UserMethods.GetByGuid(System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.UserMethods.ExistsByEmail(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UserMethods.GetById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UserMethods.GetById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.UserMethods.GetByName(System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.MySql.Implementations.UserMethods.GetByName(System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.MySql.Implementations.UserMethods.GetByEmail(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UserMethods.GetByEmail(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.MySql.Implementations.UserMethods.Insert(Less3.Classes.User)">
@@ -2263,7 +3286,10 @@
         <member name="M:Less3.Database.MySql.Implementations.UserMethods.Update(Less3.Classes.User)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.MySql.Implementations.UserMethods.DeleteByGuid(System.String)">
+        <member name="M:Less3.Database.MySql.Implementations.UserMethods.DeleteById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.UserMethods.DeleteById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="T:Less3.Database.MySql.MySqlDatabaseDriver">
@@ -2331,58 +3357,88 @@
         <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.ExistsByGroupName(System.String,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.ExistsByUserGuid(System.String,System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.ExistsByUserId(System.String,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.GetByBucketGuid(System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.GetByBucketId(System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.Insert(Less3.Classes.BucketAcl)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.DeleteByBucketGuid(System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.DeleteByBucketId(System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.GetAll">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.GetAll(System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.ExistsByName(System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.GetByOwnerGuid(System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.ExistsByName(System.String,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.GetByGuid(System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.GetByOwnerId(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.GetByOwnerId(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.GetById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.GetById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.GetByName(System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.GetByName(System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.Insert(Less3.Classes.Bucket)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.DeleteByGuid(System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.DeleteById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketMethods.DeleteById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.BucketTagMethods.Insert(Less3.Classes.BucketTag)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.BucketTagMethods.GetByBucketGuid(System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketTagMethods.GetByBucketId(System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.BucketTagMethods.DeleteByBucketGuid(System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.BucketTagMethods.DeleteByBucketId(System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.GetAll">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.ExistsByGuid(System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.GetAll(System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.GetByGuid(System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.ExistsById(System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.GetByUserGuid(System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.ExistsById(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.GetById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.GetById(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.GetByUserId(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.GetByUserId(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.GetByAccessKey(System.String)">
@@ -2394,34 +3450,37 @@
         <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.Update(Less3.Classes.Credential)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.DeleteByGuid(System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.DeleteById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.CredentialMethods.DeleteById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.ExistsByGroupName(System.String,System.String,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.ExistsByUserGuid(System.String,System.String,System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.ExistsByUserId(System.String,System.String,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.GetByObjectGuid(System.String,System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.GetByObjectId(System.String,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.GetByBucketGuid(System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.GetByBucketId(System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.Insert(Less3.Classes.ObjectAcl)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.DeleteByObjectGuidAndBucketGuid(System.String,System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectAclMethods.DeleteByObjectIdAndBucketId(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.ObjectTagMethods.Insert(Less3.Classes.ObjectTag)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.ObjectTagMethods.GetByObjectGuid(System.String,System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectTagMethods.GetByObjectId(System.String,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.ObjectTagMethods.DeleteByObjectGuid(System.String,System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjectTagMethods.DeleteByObjectId(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.ObjMethods.Insert(Less3.Classes.Obj)">
@@ -2433,7 +3492,7 @@
         <member name="M:Less3.Database.Sqlite.Implementations.ObjMethods.GetByKeyAndVersion(System.String,System.Int64,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.ObjMethods.GetByGuid(System.String,System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjMethods.GetById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.ObjMethods.GetLatestVersion(System.String,System.String)">
@@ -2454,13 +3513,13 @@
         <member name="M:Less3.Database.Sqlite.Implementations.RequestHistoryMethods.GetAll">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.RequestHistoryMethods.GetByGuid(System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.RequestHistoryMethods.GetById(System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.RequestHistoryMethods.Insert(Less3.Classes.RequestHistory)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.RequestHistoryMethods.DeleteByGuid(System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.RequestHistoryMethods.DeleteById(System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.RequestHistoryMethods.DeleteOlderThan(System.DateTime)">
@@ -2469,49 +3528,88 @@
         <member name="M:Less3.Database.Sqlite.Implementations.RequestHistoryMethods.GetInRange(System.DateTime,System.DateTime)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.UploadMethods.GetByGuid(System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.UploadMethods.GetById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UploadMethods.GetById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.UploadMethods.GetAll">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.UploadMethods.GetByBucketGuid(System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.UploadMethods.GetAll(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UploadMethods.GetByBucketId(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UploadMethods.GetByBucketId(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.UploadMethods.Insert(Less3.Classes.Upload)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.UploadMethods.DeleteByGuid(System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.UploadMethods.DeleteById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UploadMethods.DeleteById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.UploadPartMethods.Insert(Less3.Classes.UploadPart)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.UploadPartMethods.GetByUploadGuid(System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.UploadPartMethods.GetByUploadId(System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.UploadPartMethods.DeleteByUploadGuid(System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.UploadPartMethods.GetByUploadId(System.String,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.UploadPartMethods.DeleteByUploadGuidAndPartNumber(System.String,System.Int32)">
+        <member name="M:Less3.Database.Sqlite.Implementations.UploadPartMethods.DeleteByUploadId(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UploadPartMethods.DeleteByUploadId(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UploadPartMethods.DeleteByUploadIdAndPartNumber(System.String,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UploadPartMethods.DeleteByUploadIdAndPartNumber(System.String,System.String,System.Int32)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.GetAll">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.ExistsByGuid(System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.GetAll(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.ExistsById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.ExistsById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.ExistsByEmail(System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.GetByGuid(System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.ExistsByEmail(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.GetById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.GetById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.GetByName(System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.GetByName(System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.GetByEmail(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.GetByEmail(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.Insert(Less3.Classes.User)">
@@ -2520,7 +3618,10 @@
         <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.Update(Less3.Classes.User)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.DeleteByGuid(System.String)">
+        <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.DeleteById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.UserMethods.DeleteById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="T:Less3.Database.Sqlite.SqliteDatabaseDriver">
@@ -2568,58 +3669,88 @@
         <member name="M:Less3.Database.SqlServer.Implementations.BucketAclMethods.ExistsByGroupName(System.String,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.BucketAclMethods.ExistsByUserGuid(System.String,System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketAclMethods.ExistsByUserId(System.String,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.BucketAclMethods.GetByBucketGuid(System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketAclMethods.GetByBucketId(System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.BucketAclMethods.Insert(Less3.Classes.BucketAcl)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.BucketAclMethods.DeleteByBucketGuid(System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketAclMethods.DeleteByBucketId(System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.GetAll">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.GetAll(System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.ExistsByName(System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.GetByOwnerGuid(System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.ExistsByName(System.String,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.GetByGuid(System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.GetByOwnerId(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.GetByOwnerId(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.GetById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.GetById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.GetByName(System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.GetByName(System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.Insert(Less3.Classes.Bucket)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.DeleteByGuid(System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.DeleteById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketMethods.DeleteById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.BucketTagMethods.Insert(Less3.Classes.BucketTag)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.BucketTagMethods.GetByBucketGuid(System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketTagMethods.GetByBucketId(System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.BucketTagMethods.DeleteByBucketGuid(System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.BucketTagMethods.DeleteByBucketId(System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.GetAll">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.ExistsByGuid(System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.GetAll(System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.GetByGuid(System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.ExistsById(System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.GetByUserGuid(System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.ExistsById(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.GetById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.GetById(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.GetByUserId(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.GetByUserId(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.GetByAccessKey(System.String)">
@@ -2631,34 +3762,37 @@
         <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.Update(Less3.Classes.Credential)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.DeleteByGuid(System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.DeleteById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.CredentialMethods.DeleteById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.ExistsByGroupName(System.String,System.String,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.ExistsByUserGuid(System.String,System.String,System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.ExistsByUserId(System.String,System.String,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.GetByObjectGuid(System.String,System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.GetByObjectId(System.String,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.GetByBucketGuid(System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.GetByBucketId(System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.Insert(Less3.Classes.ObjectAcl)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.DeleteByObjectGuidAndBucketGuid(System.String,System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectAclMethods.DeleteByObjectIdAndBucketId(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.ObjectTagMethods.Insert(Less3.Classes.ObjectTag)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.ObjectTagMethods.GetByObjectGuid(System.String,System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectTagMethods.GetByObjectId(System.String,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.ObjectTagMethods.DeleteByObjectGuid(System.String,System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjectTagMethods.DeleteByObjectId(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.ObjMethods.Insert(Less3.Classes.Obj)">
@@ -2670,7 +3804,7 @@
         <member name="M:Less3.Database.SqlServer.Implementations.ObjMethods.GetByKeyAndVersion(System.String,System.Int64,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.ObjMethods.GetByGuid(System.String,System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjMethods.GetById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.ObjMethods.GetLatestVersion(System.String,System.String)">
@@ -2691,13 +3825,13 @@
         <member name="M:Less3.Database.SqlServer.Implementations.RequestHistoryMethods.GetAll">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.RequestHistoryMethods.GetByGuid(System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.RequestHistoryMethods.GetById(System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.RequestHistoryMethods.Insert(Less3.Classes.RequestHistory)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.RequestHistoryMethods.DeleteByGuid(System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.RequestHistoryMethods.DeleteById(System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.RequestHistoryMethods.DeleteOlderThan(System.DateTime)">
@@ -2706,49 +3840,88 @@
         <member name="M:Less3.Database.SqlServer.Implementations.RequestHistoryMethods.GetInRange(System.DateTime,System.DateTime)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.UploadMethods.GetByGuid(System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.UploadMethods.GetById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UploadMethods.GetById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.UploadMethods.GetAll">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.UploadMethods.GetByBucketGuid(System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.UploadMethods.GetAll(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UploadMethods.GetByBucketId(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UploadMethods.GetByBucketId(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.UploadMethods.Insert(Less3.Classes.Upload)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.UploadMethods.DeleteByGuid(System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.UploadMethods.DeleteById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UploadMethods.DeleteById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.UploadPartMethods.Insert(Less3.Classes.UploadPart)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.UploadPartMethods.GetByUploadGuid(System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.UploadPartMethods.GetByUploadId(System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.UploadPartMethods.DeleteByUploadGuid(System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.UploadPartMethods.GetByUploadId(System.String,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.UploadPartMethods.DeleteByUploadGuidAndPartNumber(System.String,System.Int32)">
+        <member name="M:Less3.Database.SqlServer.Implementations.UploadPartMethods.DeleteByUploadId(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UploadPartMethods.DeleteByUploadId(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UploadPartMethods.DeleteByUploadIdAndPartNumber(System.String,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UploadPartMethods.DeleteByUploadIdAndPartNumber(System.String,System.String,System.Int32)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.GetAll">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.ExistsByGuid(System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.GetAll(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.ExistsById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.ExistsById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.ExistsByEmail(System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.GetByGuid(System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.ExistsByEmail(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.GetById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.GetById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.GetByName(System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.GetByName(System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.GetByEmail(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.GetByEmail(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.Insert(Less3.Classes.User)">
@@ -2757,7 +3930,10 @@
         <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.Update(Less3.Classes.User)">
             <inheritdoc />
         </member>
-        <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.DeleteByGuid(System.String)">
+        <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.DeleteById(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.UserMethods.DeleteById(System.String,System.String)">
             <inheritdoc />
         </member>
         <member name="T:Less3.Database.SqlServer.SqlServerDatabaseDriver">
@@ -2828,8 +4004,8 @@
             <param name="acp">AccessControlPolicy from request body. May be null.</param>
             <param name="headers">HTTP request headers containing ACL grants. May be null.</param>
             <param name="currentUser">User making the request.</param>
-            <param name="bucketGuid">GUID of the bucket.</param>
-            <param name="ownerGuid">GUID of the bucket owner.</param>
+            <param name="bucketId">Id of the bucket.</param>
+            <param name="ownerId">Id of the bucket owner.</param>
             <param name="config">Configuration manager for user lookups.</param>
             <param name="logging">Logging module for warnings about invalid grants.</param>
             <param name="header">Log header prefix for consistent log formatting.</param>
@@ -2843,9 +4019,9 @@
             <param name="acp">AccessControlPolicy from request body. May be null.</param>
             <param name="headers">HTTP request headers containing ACL grants. May be null.</param>
             <param name="currentUser">User making the request.</param>
-            <param name="bucketGuid">GUID of the bucket containing the object.</param>
-            <param name="objectGuid">GUID of the object.</param>
-            <param name="ownerGuid">GUID of the object owner.</param>
+            <param name="bucketId">Id of the bucket containing the object.</param>
+            <param name="objectId">Id of the object.</param>
+            <param name="ownerId">Id of the object owner.</param>
             <param name="config">Configuration manager for user lookups.</param>
             <param name="logging">Logging module for warnings about invalid grants.</param>
             <param name="header">Log header prefix for consistent log formatting.</param>
@@ -2859,7 +4035,7 @@
             </summary>
             <param name="user">User making the request. Used for 'private' canned ACL.</param>
             <param name="headers">HTTP request headers to parse. May be null.</param>
-            <param name="config">Configuration manager for user email/GUID lookups.</param>
+            <param name="config">Configuration manager for user email/Id lookups.</param>
             <returns>List of Grant objects parsed from headers. Empty list if no grants found.</returns>
             <exception cref="T:System.ArgumentNullException">Thrown when user or config is null.</exception>
         </member>
@@ -2875,6 +4051,118 @@
             <param name="data">Byte array containing data to hash.</param>
             <returns>HashResult containing MD5, SHA1, and SHA256 hashes in lowercase hexadecimal format.</returns>
             <exception cref="T:System.ArgumentNullException">Thrown when data is null.</exception>
+        </member>
+        <member name="T:Less3.Helpers.IdGenerator">
+            <summary>
+            Generates Less3 PrettyID identifiers.
+            </summary>
+        </member>
+        <member name="P:Less3.Helpers.IdGenerator.MaximumLength">
+            <summary>
+            Maximum generated identifier length, including the entity prefix.
+            </summary>
+        </member>
+        <member name="M:Less3.Helpers.IdGenerator.GenerateTenantId">
+            <summary>
+            Generate a tenant identifier.
+            </summary>
+            <returns>Tenant identifier.</returns>
+        </member>
+        <member name="M:Less3.Helpers.IdGenerator.GenerateUserId">
+            <summary>
+            Generate a user identifier.
+            </summary>
+            <returns>User identifier.</returns>
+        </member>
+        <member name="M:Less3.Helpers.IdGenerator.GenerateCredentialId">
+            <summary>
+            Generate a credential identifier.
+            </summary>
+            <returns>Credential identifier.</returns>
+        </member>
+        <member name="M:Less3.Helpers.IdGenerator.GenerateBucketId">
+            <summary>
+            Generate a bucket identifier.
+            </summary>
+            <returns>Bucket identifier.</returns>
+        </member>
+        <member name="M:Less3.Helpers.IdGenerator.GenerateObjectId">
+            <summary>
+            Generate an object identifier.
+            </summary>
+            <returns>Object identifier.</returns>
+        </member>
+        <member name="M:Less3.Helpers.IdGenerator.GenerateUploadId">
+            <summary>
+            Generate a multipart upload identifier.
+            </summary>
+            <returns>Multipart upload identifier.</returns>
+        </member>
+        <member name="M:Less3.Helpers.IdGenerator.GenerateUploadPartId">
+            <summary>
+            Generate a multipart upload part identifier.
+            </summary>
+            <returns>Multipart upload part identifier.</returns>
+        </member>
+        <member name="M:Less3.Helpers.IdGenerator.GenerateBucketTagId">
+            <summary>
+            Generate a bucket tag identifier.
+            </summary>
+            <returns>Bucket tag identifier.</returns>
+        </member>
+        <member name="M:Less3.Helpers.IdGenerator.GenerateObjectTagId">
+            <summary>
+            Generate an object tag identifier.
+            </summary>
+            <returns>Object tag identifier.</returns>
+        </member>
+        <member name="M:Less3.Helpers.IdGenerator.GenerateBucketAclId">
+            <summary>
+            Generate a bucket ACL identifier.
+            </summary>
+            <returns>Bucket ACL identifier.</returns>
+        </member>
+        <member name="M:Less3.Helpers.IdGenerator.GenerateObjectAclId">
+            <summary>
+            Generate an object ACL identifier.
+            </summary>
+            <returns>Object ACL identifier.</returns>
+        </member>
+        <member name="M:Less3.Helpers.IdGenerator.GenerateRoleId">
+            <summary>
+            Generate a role identifier.
+            </summary>
+            <returns>Role identifier.</returns>
+        </member>
+        <member name="M:Less3.Helpers.IdGenerator.GeneratePermissionId">
+            <summary>
+            Generate a permission identifier.
+            </summary>
+            <returns>Permission identifier.</returns>
+        </member>
+        <member name="M:Less3.Helpers.IdGenerator.GenerateAssignmentId">
+            <summary>
+            Generate a role assignment identifier.
+            </summary>
+            <returns>Role assignment identifier.</returns>
+        </member>
+        <member name="M:Less3.Helpers.IdGenerator.GenerateSessionId">
+            <summary>
+            Generate an authentication session identifier.
+            </summary>
+            <returns>Authentication session identifier.</returns>
+        </member>
+        <member name="M:Less3.Helpers.IdGenerator.GenerateAuthorizationAuditId">
+            <summary>
+            Generate an authorization audit identifier.
+            </summary>
+            <returns>Authorization audit identifier.</returns>
+        </member>
+        <member name="M:Less3.Helpers.IdGenerator.GenerateRequestHistoryId">
+            <summary>
+            Generate a request history identifier.
+            </summary>
+            <returns>Request history identifier.</returns>
         </member>
         <member name="T:Less3.Helpers.RequestValidator">
             <summary>
@@ -2989,6 +4277,183 @@
             <summary>
             Less3 is an S3-compatible object storage server.
             </summary>
+        </member>
+        <member name="T:Less3.Requests.AuthSessionLoginRequest">
+            <summary>
+            Request to create a user auth session.
+            </summary>
+        </member>
+        <member name="P:Less3.Requests.AuthSessionLoginRequest.TenantId">
+            <summary>
+            Tenant identifier. Defaults to default.
+            </summary>
+        </member>
+        <member name="P:Less3.Requests.AuthSessionLoginRequest.Email">
+            <summary>
+            User email address.
+            </summary>
+        </member>
+        <member name="P:Less3.Requests.AuthSessionLoginRequest.Password">
+            <summary>
+            User password.
+            </summary>
+        </member>
+        <member name="P:Less3.Requests.AuthSessionLoginRequest.ExpirationMinutes">
+            <summary>
+            Session lifetime in minutes.
+            </summary>
+        </member>
+        <member name="T:Less3.Requests.AuthSessionTokenRequest">
+            <summary>
+            Request containing a bearer session token.
+            </summary>
+        </member>
+        <member name="P:Less3.Requests.AuthSessionTokenRequest.Token">
+            <summary>
+            Raw bearer token.
+            </summary>
+        </member>
+        <member name="T:Less3.Requests.EnumerationQuery">
+            <summary>
+            Standard request shape for server-side enumeration, filtering, sorting, and pagination.
+            </summary>
+        </member>
+        <member name="P:Less3.Requests.EnumerationQuery.TenantId">
+            <summary>
+            Tenant identifier. Normal tenant-scoped routes derive this from authentication.
+            </summary>
+        </member>
+        <member name="P:Less3.Requests.EnumerationQuery.Limit">
+            <summary>
+            Maximum number of records to return. Default is 100. Minimum is 1. Maximum is 1000.
+            </summary>
+        </member>
+        <member name="P:Less3.Requests.EnumerationQuery.Offset">
+            <summary>
+            Zero-based offset for offset pagination. Default is 0. Minimum is 0.
+            </summary>
+        </member>
+        <member name="P:Less3.Requests.EnumerationQuery.ContinuationToken">
+            <summary>
+            Optional continuation cursor for cursor pagination.
+            </summary>
+        </member>
+        <member name="P:Less3.Requests.EnumerationQuery.SortField">
+            <summary>
+            Optional field name to sort by.
+            </summary>
+        </member>
+        <member name="P:Less3.Requests.EnumerationQuery.SortDirection">
+            <summary>
+            Sort direction. Allowed values are asc and desc. Default is asc.
+            </summary>
+        </member>
+        <member name="P:Less3.Requests.EnumerationQuery.StartUtc">
+            <summary>
+            Optional UTC start timestamp for time-bounded queries.
+            </summary>
+        </member>
+        <member name="P:Less3.Requests.EnumerationQuery.EndUtc">
+            <summary>
+            Optional UTC end timestamp for time-bounded queries.
+            </summary>
+        </member>
+        <member name="P:Less3.Requests.EnumerationQuery.Filters">
+            <summary>
+            Field filters keyed by API field name.
+            </summary>
+        </member>
+        <member name="T:Less3.Responses.AuthSessionLoginResponse">
+            <summary>
+            Response returned after successful session creation.
+            </summary>
+        </member>
+        <member name="P:Less3.Responses.AuthSessionLoginResponse.Session">
+            <summary>
+            Created session without the raw token.
+            </summary>
+        </member>
+        <member name="P:Less3.Responses.AuthSessionLoginResponse.Token">
+            <summary>
+            Raw bearer token. Shown once.
+            </summary>
+        </member>
+        <member name="T:Less3.Responses.AuthSessionValidationResponse">
+            <summary>
+            Response returned when validating a session token.
+            </summary>
+        </member>
+        <member name="P:Less3.Responses.AuthSessionValidationResponse.Valid">
+            <summary>
+            Whether the token resolves to an active, unexpired session.
+            </summary>
+        </member>
+        <member name="P:Less3.Responses.AuthSessionValidationResponse.Session">
+            <summary>
+            Resolved session when valid.
+            </summary>
+        </member>
+        <member name="P:Less3.Responses.AuthSessionValidationResponse.Reason">
+            <summary>
+            Failure reason when invalid.
+            </summary>
+        </member>
+        <member name="T:Less3.Responses.EnumerationResult`1">
+            <summary>
+            Standard response shape for server-side enumeration results.
+            </summary>
+            <typeparam name="T">Type of item being enumerated.</typeparam>
+        </member>
+        <member name="P:Less3.Responses.EnumerationResult`1.Items">
+            <summary>
+            Records returned for the current page.
+            </summary>
+        </member>
+        <member name="P:Less3.Responses.EnumerationResult`1.Total">
+            <summary>
+            Total matching record count when available.
+            </summary>
+        </member>
+        <member name="P:Less3.Responses.EnumerationResult`1.Limit">
+            <summary>
+            Number of records requested.
+            </summary>
+        </member>
+        <member name="P:Less3.Responses.EnumerationResult`1.Offset">
+            <summary>
+            Zero-based offset used for this page.
+            </summary>
+        </member>
+        <member name="P:Less3.Responses.EnumerationResult`1.NextContinuationToken">
+            <summary>
+            Continuation token to use for the next page.
+            </summary>
+        </member>
+        <member name="P:Less3.Responses.EnumerationResult`1.HasMore">
+            <summary>
+            Whether another page is available.
+            </summary>
+        </member>
+        <member name="T:Less3.Responses.ExistsResponse">
+            <summary>
+            Response indicating whether a resource exists.
+            </summary>
+        </member>
+        <member name="P:Less3.Responses.ExistsResponse.Exists">
+            <summary>
+            Whether the requested resource exists.
+            </summary>
+        </member>
+        <member name="M:Less3.Responses.ExistsResponse.#ctor">
+            <summary>
+            Instantiate the response.
+            </summary>
+        </member>
+        <member name="M:Less3.Responses.ExistsResponse.#ctor(System.Boolean)">
+            <summary>
+            Instantiate the response.
+            </summary>
+            <param name="exists">Whether the requested resource exists.</param>
         </member>
         <member name="T:Less3.Settings.DebugSettings">
             <summary>

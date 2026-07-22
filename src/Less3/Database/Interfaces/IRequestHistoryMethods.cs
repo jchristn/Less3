@@ -16,11 +16,11 @@ namespace Less3.Database.Interfaces
         List<RequestHistory> GetAll();
 
         /// <summary>
-        /// Retrieve a request history entry by GUID.
+        /// Retrieve a request history entry by Id.
         /// </summary>
-        /// <param name="guid">Request history GUID.</param>
+        /// <param name="id">Request history Id.</param>
         /// <returns>Request history entry or null if not found.</returns>
-        RequestHistory GetByGuid(string guid);
+        RequestHistory GetById(string id);
 
         /// <summary>
         /// Insert a new request history entry.
@@ -29,10 +29,10 @@ namespace Less3.Database.Interfaces
         void Insert(RequestHistory entry);
 
         /// <summary>
-        /// Delete a request history entry by GUID.
+        /// Delete a request history entry by Id.
         /// </summary>
-        /// <param name="guid">Request history GUID.</param>
-        void DeleteByGuid(string guid);
+        /// <param name="id">Request history Id.</param>
+        void DeleteById(string id);
 
         /// <summary>
         /// Delete all request history entries older than the specified cutoff.

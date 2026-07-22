@@ -17,14 +17,13 @@ Core use cases for Less3:
 
 ## Current Version
 
-v2.2.0
+v3.0.0
 
-- Updated to `S3Server v7.0.3`
-- Expanded native `AWSSDK.S3` compatibility validation across ACLs, tagging, versioning, multipart upload, and signature enforcement
-- Fixed object overwrite behavior for unversioned buckets, including multipart completion
-- Improved S3 protocol handling around range reads, version enumeration, and signature validation
-- Expanded the dashboard with object upload/view/edit workflows, row-click detail modals, standardized copy actions, and API Explorer credential selection plus pretty-print tools
-- Added admin dashboard statistics for total buckets, total objects, total storage, and per-bucket object count/size visibility in the Buckets table
+- Added the v3 tenant and RBAC foundation with tenant, role, permission, assignment, session, and authorization audit models
+- Switched new identifier generation to PrettyID K-sortable string IDs with stable prefixes and a 32-character maximum
+- Added tenant-aware schema initialization hooks and indexes for SQLite, MySQL, PostgreSQL, and SQL Server
+- Added v3 migration guidance, S3 API notes, Less3 REST API notes, and a shared Touchstone test descriptor baseline
+- Added dashboard navigation and management pages for tenants, roles, and permissions
 - See `CHANGELOG.md` for release details
 
 ## Help and Feedback
@@ -279,23 +278,13 @@ Less3 is available on [DockerHub](https://hub.docker.com/r/jchristn77/less3).
 
 The `Docker` directory contains:
 - `compose.yaml` - Docker Compose configuration that builds from the local `src/` tree
-- `compose.image.yaml` - Docker Compose configuration that uses the published `jchristn77/less3:v2.2.0` image
 - `system.json` - Pre-configured Less3 settings for the local-build compose path
 - `db/less3.db` - SQLite database file created inside the mounted `db/` directory
 - `factory/less3.db` - Factory-reset seed used by the reset scripts
 
 ### Fresh Pull: Run the Published Image
 
-If you want to validate startup from the published image instead of building locally:
-
-```bash
-cd Docker
-docker compose -f compose.image.yaml up -d
-```
-
-`compose.image.yaml` mounts the repository's `system.json` into the container so the current published `jchristn77/less3:v2.2.0` image starts cleanly on a fresh checkout.
-
-You can also run the image directly from the `Docker` directory:
+If you want to validate startup from the published image instead of building locally, run the image directly from the `Docker` directory:
 
 ```bash
 docker run --rm -p 8000:8000 \
@@ -304,7 +293,7 @@ docker run --rm -p 8000:8000 \
   -v ./logs:/app/logs \
   -v ./temp:/app/temp \
   -v ./disk:/app/disk \
-  jchristn77/less3:v2.2.0
+  jchristn77/less3:v3.0.0
 ```
 
 ### Default Configuration
@@ -317,12 +306,11 @@ docker run --rm -p 8000:8000 \
 
 On the first Docker startup, Less3 detects an empty configuration database and seeds the default `default` access key, `default` secret key, and `default` bucket automatically.
 
-When rebuilt from this source, Less3 can also generate a default container configuration if `/app/system.json` is not mounted, then seed the default data set into an empty database. The current repository compose files still mount `system.json` so the published `v2.2.0` image works cleanly today.
+When rebuilt from this source, Less3 can also generate a default container configuration if `/app/system.json` is not mounted, then seed the default v3 data set into an empty database.
 
 ### Volume Mounts
 The Docker deployment maps the following directories for persistence:
 - `compose.yaml` mounts `./system.json` -> `/app/system.json`
-- `compose.image.yaml` mounts `./system.json` -> `/app/system.json` so the published image follows the same startup path as the local-build compose file
 - Current repo layout: `./db/` -> `/app/db/` and `system.json` points SQLite at `./db/less3.db`
 - `./db/` -> `/app/db/` - SQLite database directory
 - `./logs/` -> `/app/logs/` - Log files

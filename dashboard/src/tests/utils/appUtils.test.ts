@@ -2,9 +2,9 @@ import { getDashboardPathKey, transformToOptions } from "#/utils/appUtils";
 
 describe("appUtils", () => {
   describe("getDashboardPathKey", () => {
-    it("returns dashboard for GUID paths", () => {
-      const guid = "123e4567-e89b-12d3-a456-426614174000";
-      const result = getDashboardPathKey(`/dashboard/${guid}`);
+    it("returns dashboard for Id paths", () => {
+      const id = "123e4567-e89b-12d3-a456-426614174000";
+      const result = getDashboardPathKey(`/dashboard/${id}`);
 
       expect(result).toEqual({ pathKey: "dashboard", patentPathKey: "" });
     });
@@ -17,9 +17,9 @@ describe("appUtils", () => {
   });
 
   describe("transformToOptions", () => {
-    it("maps GUID and Name to option values and labels", () => {
+    it("maps Id and Name to option values and labels", () => {
       const options = transformToOptions([
-        { GUID: "1", name: "First" },
+        { Id: "1", name: "First" },
         { Name: "SecondName" },
       ]);
 
@@ -29,7 +29,7 @@ describe("appUtils", () => {
       ]);
     });
 
-    it("falls back to provided label field when GUID is missing", () => {
+    it("falls back to provided label field when Id is missing", () => {
       const options = transformToOptions(
         [
           { name: "Alpha" },

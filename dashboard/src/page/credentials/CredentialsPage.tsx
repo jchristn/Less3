@@ -13,7 +13,7 @@ import PageContainer from '#/components/base/pageContainer/PageContainer';
 import Less3Flex from '#/components/base/flex/Flex';
 import Less3Dropdown from '#/components/base/dropdown/Dropdown';
 import Less3Text from '#/components/base/typograpghy/Text';
-import GuidDisplay from '#/components/guid-display';
+import IdDisplay from '#/components/id-display';
 import TextWithCopy from '#/components/text-with-copy/TextWithCopy';
 import {
   useGetCredentialsQuery,
@@ -28,7 +28,7 @@ import { formatDate } from '#/utils/dateUtils';
 import { message } from '#/utils/message';
 
 interface CredentialFormValues {
-  UserGUID: string;
+  UserId: string;
   Description: string;
   AccessKey: string;
   SecretKey: string;
@@ -40,7 +40,7 @@ const CredentialsPage: React.FC = () => {
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [isMetadataModalVisible, setIsMetadataModalVisible] = useState(false);
   const [editingCredential, setEditingCredential] = useState<Credential | null>(null);
-  const [viewingCredentialGUID, setViewingCredentialGUID] = useState<string | null>(null);
+  const [viewingCredentialId, setViewingCredentialId] = useState<string | null>(null);
   const [deletingCredential, setDeletingCredential] = useState<Credential | null>(null);
   const [searchText, setSearchText] = useState('');
 
@@ -49,9 +49,9 @@ const CredentialsPage: React.FC = () => {
   const { data: usersData } = useGetUsersQuery();
 
   const { data: credentialMetadata, isLoading: isMetadataLoading } = useGetCredentialByIdQuery(
-    viewingCredentialGUID || '',
+    viewingCredentialId || '',
     {
-      skip: !viewingCredentialGUID,
+      skip: !viewingCredentialId,
     }
   );
 
@@ -59,19 +59,19 @@ const CredentialsPage: React.FC = () => {
   const [updateCredential, { isLoading: isUpdating }] = useUpdateCredentialMutation();
   const [deleteCredential, { isLoading: isDeleting }] = useDeleteCredentialMutation();
 
-  // Create user options for dropdown (show Name, store GUID)
+  // Create user options for dropdown (show Name, store Id)
   const userOptions = useMemo(() => {
     if (!usersData) return [];
     return usersData.map((user) => ({
-      value: user.GUID,
+      value: user.Id,
       label: user.Name,
     }));
   }, [usersData]);
 
-  // Helper to get username from GUID
-  const getUserName = (userGUID: string) => {
-    const user = usersData?.find((u) => u.GUID === userGUID);
-    return user?.Name || userGUID;
+  // Helper to get username from Id
+  const getUserName = (userId: string) => {
+    const user = usersData?.find((u) => u.Id === userId);
+    return user?.Name || userId;
   };
 
   const handleCreate = () => {
@@ -83,7 +83,7 @@ const CredentialsPage: React.FC = () => {
   const handleEdit = (record: Credential) => {
     setEditingCredential(record);
     form.setFieldsValue({
-      UserGUID: record.UserGUID,
+      UserId: record.UserId,
       Description: record.Description,
       AccessKey: record.AccessKey,
       SecretKey: record.SecretKey,
@@ -92,7 +92,7 @@ const CredentialsPage: React.FC = () => {
   };
 
   const handleViewMetadata = (record: Credential) => {
-    setViewingCredentialGUID(record.GUID);
+    setViewingCredentialId(record.Id);
     setIsMetadataModalVisible(true);
   };
 
@@ -105,15 +105,15 @@ const CredentialsPage: React.FC = () => {
     try {
       const values = await form.validateFields();
       const createPayload = {
-        UserGUID: values.UserGUID,
+        UserId: values.UserId,
         Description: values.Description,
         AccessKey: values.AccessKey,
         SecretKey: values.SecretKey,
       };
 
-      if (editingCredential?.GUID) {
+      if (editingCredential?.Id) {
         await updateCredential({
-          GUID: editingCredential.GUID,
+          Id: editingCredential.Id,
           IsBase64: editingCredential.IsBase64,
           ...createPayload,
         }).unwrap();
@@ -133,10 +133,10 @@ const CredentialsPage: React.FC = () => {
   };
 
   const handleDeleteConfirm = async () => {
-    if (!deletingCredential?.GUID) return;
+    if (!deletingCredential?.Id) return;
 
     try {
-      await deleteCredential({ guid: deletingCredential.GUID }).unwrap();
+      await deleteCredential({ id: deletingCredential.Id }).unwrap();
       message.success('Credential deleted successfully');
       setIsDeleteModalVisible(false);
       setDeletingCredential(null);
@@ -148,17 +148,17 @@ const CredentialsPage: React.FC = () => {
 
   const columns: DataTableColumn<Credential>[] = [
     {
-      key: 'GUID',
-      label: 'GUID',
+      key: 'Id',
+      label: 'Id',
       width: '320px',
-      render: (item) => <GuidDisplay guid={item.GUID} />,
+      render: (item) => <IdDisplay id={item.Id} />,
     },
     {
-      key: 'UserGUID',
+      key: 'UserId',
       label: 'User',
       width: '150px',
-      render: (item) => getUserName(item.UserGUID),
-      filterValue: (item) => getUserName(item.UserGUID),
+      render: (item) => getUserName(item.UserId),
+      filterValue: (item) => getUserName(item.UserId),
     },
     {
       key: 'Description',
@@ -221,12 +221,12 @@ const CredentialsPage: React.FC = () => {
     if (!q) return data;
 
     return data.filter((cred) => {
-      const guid = cred.GUID?.toLowerCase() ?? '';
+      const id = cred.Id?.toLowerCase() ?? '';
       const desc = cred.Description?.toLowerCase() ?? '';
       const accessKey = cred.AccessKey?.toLowerCase() ?? '';
-      const userName = getUserName(cred.UserGUID)?.toLowerCase() ?? '';
+      const userName = getUserName(cred.UserId)?.toLowerCase() ?? '';
 
-      return guid.includes(q) || desc.includes(q) || accessKey.includes(q) || userName.includes(q);
+      return id.includes(q) || desc.includes(q) || accessKey.includes(q) || userName.includes(q);
     });
   }, [data, searchText, usersData]); // usersData is used via getUserName
 
@@ -258,7 +258,7 @@ const CredentialsPage: React.FC = () => {
         columns={columns}
         data={filteredData}
         loading={isLoading}
-        rowKey="GUID"
+        rowKey="Id"
         onRowClick={handleEdit}
       />
 
@@ -277,7 +277,7 @@ const CredentialsPage: React.FC = () => {
         centered
       >
         <Form form={form} layout="vertical" autoComplete="off">
-          <Less3FormItem label="User" name="UserGUID" rules={[{ required: true, message: 'Please select a user' }]}>
+          <Less3FormItem label="User" name="UserId" rules={[{ required: true, message: 'Please select a user' }]}>
             <Less3Select
               options={userOptions}
               placeholder="Select user"
@@ -350,14 +350,14 @@ const CredentialsPage: React.FC = () => {
         open={isMetadataModalVisible}
         onCancel={() => {
           setIsMetadataModalVisible(false);
-          setViewingCredentialGUID(null);
+          setViewingCredentialId(null);
         }}
         footer={[
           <Less3Button
             key="close"
             onClick={() => {
               setIsMetadataModalVisible(false);
-              setViewingCredentialGUID(null);
+              setViewingCredentialId(null);
             }}
           >
             Close
@@ -369,11 +369,11 @@ const CredentialsPage: React.FC = () => {
           <div style={{ textAlign: 'center', padding: '20px' }}>Loading metadata...</div>
         ) : credentialMetadata ? (
           <Descriptions bordered column={1} size="small">
-            <Descriptions.Item label="GUID">
-              <GuidDisplay guid={credentialMetadata.GUID} />
+            <Descriptions.Item label="Id">
+              <IdDisplay id={credentialMetadata.Id} />
             </Descriptions.Item>
             <Descriptions.Item label="User">
-              <Less3Text>{getUserName(credentialMetadata.UserGUID)}</Less3Text>
+              <Less3Text>{getUserName(credentialMetadata.UserId)}</Less3Text>
             </Descriptions.Item>
             <Descriptions.Item label="Description">
               <Less3Text>{credentialMetadata.Description}</Less3Text>
@@ -382,7 +382,7 @@ const CredentialsPage: React.FC = () => {
               <TextWithCopy text={credentialMetadata.AccessKey} className="code-font-style" />
             </Descriptions.Item>
             <Descriptions.Item label="Secret Key">
-              <Less3Text>{credentialMetadata.SecretKey}</Less3Text>
+              <Less3Text type="secondary">Hidden</Less3Text>
             </Descriptions.Item>
             <Descriptions.Item label="Is Base64">
               <Less3Text>{credentialMetadata.IsBase64 ? 'Yes' : 'No'}</Less3Text>

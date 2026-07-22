@@ -1,9 +1,9 @@
 import {
   buildSignedS3Headers,
-  clearPreferredS3CredentialGuid,
-  getPreferredS3CredentialGuid,
+  clearPreferredS3CredentialId,
+  getPreferredS3CredentialId,
   selectS3Credential,
-  setPreferredS3CredentialGuid,
+  setPreferredS3CredentialId,
 } from "#/utils/s3Auth";
 
 describe("s3Auth", () => {
@@ -11,7 +11,7 @@ describe("s3Auth", () => {
 
   beforeEach(() => {
     localStorage.clear();
-    clearPreferredS3CredentialGuid();
+    clearPreferredS3CredentialId();
   });
 
   afterEach(() => {
@@ -66,22 +66,22 @@ describe("s3Auth", () => {
     expect(headers["x-amz-date"]).toBe("20260514T123456Z");
   });
 
-  it("selectS3Credential prefers the persisted credential guid", () => {
-    setPreferredS3CredentialGuid("preferred-guid");
+  it("selectS3Credential prefers the persisted credential id", () => {
+    setPreferredS3CredentialId("crd_preferred");
 
     const selected = selectS3Credential([
-      { GUID: "other-guid", AccessKey: "other", SecretKey: "other-secret" },
-      { GUID: "preferred-guid", AccessKey: "preferred", SecretKey: "preferred-secret" },
+      { Id: "crd_other", AccessKey: "other", SecretKey: "other-secret" },
+      { Id: "crd_preferred", AccessKey: "preferred", SecretKey: "preferred-secret" },
     ]);
 
-    expect(getPreferredS3CredentialGuid()).toBe("preferred-guid");
+    expect(getPreferredS3CredentialId()).toBe("crd_preferred");
     expect(selected?.AccessKey).toBe("preferred");
   });
 
   it("selectS3Credential falls back to the default access key", () => {
     const selected = selectS3Credential([
-      { GUID: "one", AccessKey: "one", SecretKey: "one-secret" },
-      { GUID: "default-guid", AccessKey: "default", SecretKey: "default-secret" },
+      { Id: "one", AccessKey: "one", SecretKey: "one-secret" },
+      { Id: "crd_default", AccessKey: "default", SecretKey: "default-secret" },
     ]);
 
     expect(selected?.AccessKey).toBe("default");

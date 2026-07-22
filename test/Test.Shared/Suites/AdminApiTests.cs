@@ -47,9 +47,9 @@ namespace Test.Shared.Suites
         /// </summary>
         public override async Task RunTestsAsync()
         {
-            string userGuid = Guid.NewGuid().ToString();
-            string credGuid = Guid.NewGuid().ToString();
-            string bucketGuid = Guid.NewGuid().ToString();
+            string userId = Test.Shared.TestIds.User();
+            string credentialId = Test.Shared.TestIds.Credential();
+            string bucketId = Test.Shared.TestIds.Bucket();
 
             #region Users
 
@@ -57,7 +57,7 @@ namespace Test.Shared.Suites
             {
                 string json = JsonSerializer.Serialize(new
                 {
-                    GUID = userGuid,
+                    Id = userId,
                     Name = "TestUser",
                     Email = "test@example.com"
                 });
@@ -78,17 +78,17 @@ namespace Test.Shared.Suites
 
             await RunTest("AdminApi_GetUser", async () =>
             {
-                HttpResponseMessage response = await _Server.AdminGetAsync($"users/{userGuid}").ConfigureAwait(false);
+                HttpResponseMessage response = await _Server.AdminGetAsync($"users/{userId}").ConfigureAwait(false);
                 AssertEqual(HttpStatusCode.OK, response.StatusCode);
 
                 string body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 AssertContains(body, "TestUser");
-                AssertContains(body, userGuid);
+                AssertContains(body, userId);
             });
 
             await RunTest("AdminApi_GetUser_NotFound", async () =>
             {
-                HttpResponseMessage response = await _Server.AdminGetAsync($"users/{Guid.NewGuid()}").ConfigureAwait(false);
+                HttpResponseMessage response = await _Server.AdminGetAsync($"users/{Test.Shared.TestIds.User()}").ConfigureAwait(false);
                 AssertEqual(HttpStatusCode.NotFound, response.StatusCode);
             });
 
@@ -96,7 +96,7 @@ namespace Test.Shared.Suites
             {
                 string json = JsonSerializer.Serialize(new
                 {
-                    GUID = Guid.NewGuid().ToString(),
+                    Id = Test.Shared.TestIds.Object(),
                     Name = "DuplicateUser",
                     Email = "test@example.com"
                 });
@@ -109,12 +109,12 @@ namespace Test.Shared.Suites
             {
                 string json = JsonSerializer.Serialize(new
                 {
-                    GUID = userGuid,
+                    Id = userId,
                     Name = "UpdatedUser",
                     Email = "updated@example.com"
                 });
 
-                HttpResponseMessage response = await _Server.AdminPutAsync($"users/{userGuid}", json).ConfigureAwait(false);
+                HttpResponseMessage response = await _Server.AdminPutAsync($"users/{userId}", json).ConfigureAwait(false);
                 AssertEqual(HttpStatusCode.OK, response.StatusCode);
 
                 string body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -130,8 +130,8 @@ namespace Test.Shared.Suites
             {
                 string json = JsonSerializer.Serialize(new
                 {
-                    GUID = credGuid,
-                    UserGUID = userGuid,
+                    Id = credentialId,
+                    UserId = userId,
                     Description = "Test credential",
                     AccessKey = _Server.AccessKey,
                     SecretKey = _Server.SecretKey,
@@ -153,7 +153,7 @@ namespace Test.Shared.Suites
 
             await RunTest("AdminApi_GetCredential", async () =>
             {
-                HttpResponseMessage response = await _Server.AdminGetAsync($"credentials/{credGuid}").ConfigureAwait(false);
+                HttpResponseMessage response = await _Server.AdminGetAsync($"credentials/{credentialId}").ConfigureAwait(false);
                 AssertEqual(HttpStatusCode.OK, response.StatusCode);
             });
 
@@ -161,8 +161,8 @@ namespace Test.Shared.Suites
             {
                 string json = JsonSerializer.Serialize(new
                 {
-                    GUID = Guid.NewGuid().ToString(),
-                    UserGUID = userGuid,
+                    Id = Test.Shared.TestIds.Object(),
+                    UserId = userId,
                     Description = "Duplicate",
                     AccessKey = _Server.AccessKey,
                     SecretKey = "anothersecret",
@@ -177,15 +177,15 @@ namespace Test.Shared.Suites
             {
                 string json = JsonSerializer.Serialize(new
                 {
-                    GUID = credGuid,
-                    UserGUID = userGuid,
+                    Id = credentialId,
+                    UserId = userId,
                     Description = "Updated credential",
                     AccessKey = "updated-access",
                     SecretKey = "updated-secret",
                     IsBase64 = false
                 });
 
-                HttpResponseMessage response = await _Server.AdminPutAsync($"credentials/{credGuid}", json).ConfigureAwait(false);
+                HttpResponseMessage response = await _Server.AdminPutAsync($"credentials/{credentialId}", json).ConfigureAwait(false);
                 AssertEqual(HttpStatusCode.OK, response.StatusCode);
 
                 string body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -201,8 +201,8 @@ namespace Test.Shared.Suites
             {
                 string json = JsonSerializer.Serialize(new
                 {
-                    GUID = bucketGuid,
-                    OwnerGUID = userGuid,
+                    Id = bucketId,
+                    OwnerId = userId,
                     Name = "admin-test-bucket"
                 });
 
@@ -221,7 +221,7 @@ namespace Test.Shared.Suites
 
             await RunTest("AdminApi_GetBucket", async () =>
             {
-                HttpResponseMessage response = await _Server.AdminGetAsync($"buckets/{bucketGuid}").ConfigureAwait(false);
+                HttpResponseMessage response = await _Server.AdminGetAsync($"buckets/{bucketId}").ConfigureAwait(false);
                 AssertEqual(HttpStatusCode.OK, response.StatusCode);
             });
 
@@ -240,8 +240,8 @@ namespace Test.Shared.Suites
             {
                 string json = JsonSerializer.Serialize(new
                 {
-                    GUID = Guid.NewGuid().ToString(),
-                    OwnerGUID = userGuid,
+                    Id = Test.Shared.TestIds.Object(),
+                    OwnerId = userId,
                     Name = "admin-test-bucket"
                 });
 
@@ -275,25 +275,25 @@ namespace Test.Shared.Suites
 
             await RunTest("AdminApi_DeleteBucket", async () =>
             {
-                HttpResponseMessage response = await _Server.AdminDeleteAsync($"buckets/{bucketGuid}?destroy=true").ConfigureAwait(false);
+                HttpResponseMessage response = await _Server.AdminDeleteAsync($"buckets/{bucketId}?destroy=true").ConfigureAwait(false);
                 AssertEqual(HttpStatusCode.NoContent, response.StatusCode);
             });
 
             await RunTest("AdminApi_DeleteBucket_NotFound", async () =>
             {
-                HttpResponseMessage response = await _Server.AdminDeleteAsync($"buckets/{Guid.NewGuid()}").ConfigureAwait(false);
+                HttpResponseMessage response = await _Server.AdminDeleteAsync($"buckets/{Test.Shared.TestIds.Bucket()}").ConfigureAwait(false);
                 AssertEqual(HttpStatusCode.NotFound, response.StatusCode);
             });
 
             await RunTest("AdminApi_DeleteCredential", async () =>
             {
-                HttpResponseMessage response = await _Server.AdminDeleteAsync($"credentials/{credGuid}").ConfigureAwait(false);
+                HttpResponseMessage response = await _Server.AdminDeleteAsync($"credentials/{credentialId}").ConfigureAwait(false);
                 AssertEqual(HttpStatusCode.NoContent, response.StatusCode);
             });
 
             await RunTest("AdminApi_DeleteUser", async () =>
             {
-                HttpResponseMessage response = await _Server.AdminDeleteAsync($"users/{userGuid}").ConfigureAwait(false);
+                HttpResponseMessage response = await _Server.AdminDeleteAsync($"users/{userId}").ConfigureAwait(false);
                 AssertEqual(HttpStatusCode.NoContent, response.StatusCode);
             });
 

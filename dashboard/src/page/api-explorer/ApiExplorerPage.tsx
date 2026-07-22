@@ -23,9 +23,9 @@ import { getPrettyPrintedTextContent } from '#/utils/objectContentUtils';
 import {
   buildS3AuthorizationHeader,
   buildSignedS3Headers,
-  clearPreferredS3CredentialGuid,
-  getPreferredS3CredentialGuid,
-  setPreferredS3CredentialGuid,
+  clearPreferredS3CredentialId,
+  getPreferredS3CredentialId,
+  setPreferredS3CredentialId,
 } from '#/utils/s3Auth';
 import { message } from '#/utils/message';
 
@@ -66,21 +66,21 @@ const S3_OPERATIONS: ApiOperation[] = [
 
 const ADMIN_OPERATIONS: ApiOperation[] = [
   { id: 'admin-list-buckets', group: 'Buckets', label: 'List Buckets', method: 'GET', pathTemplate: '/admin/buckets', params: [] },
-  { id: 'admin-get-bucket', group: 'Buckets', label: 'Get Bucket', method: 'GET', pathTemplate: '/admin/buckets/{guid}', params: [{ name: 'guid', label: 'Bucket GUID', placeholder: 'bucket-guid', required: true }] },
+  { id: 'admin-get-bucket', group: 'Buckets', label: 'Get Bucket', method: 'GET', pathTemplate: '/admin/buckets/{id}', params: [{ name: 'id', label: 'Bucket Id', placeholder: 'bkt_test', required: true }] },
   { id: 'admin-create-bucket', group: 'Buckets', label: 'Create Bucket', method: 'POST', pathTemplate: '/admin/buckets', params: [], hasBody: true, bodyPlaceholder: '{\n  "Name": "my-bucket"\n}' },
-  { id: 'admin-delete-bucket', group: 'Buckets', label: 'Delete Bucket', method: 'DELETE', pathTemplate: '/admin/buckets/{guid}', params: [{ name: 'guid', label: 'Bucket GUID', placeholder: 'bucket-guid', required: true }] },
+  { id: 'admin-delete-bucket', group: 'Buckets', label: 'Delete Bucket', method: 'DELETE', pathTemplate: '/admin/buckets/{id}', params: [{ name: 'id', label: 'Bucket Id', placeholder: 'bkt_test', required: true }] },
   { id: 'admin-list-users', group: 'Users', label: 'List Users', method: 'GET', pathTemplate: '/admin/users', params: [] },
-  { id: 'admin-get-user', group: 'Users', label: 'Get User', method: 'GET', pathTemplate: '/admin/users/{guid}', params: [{ name: 'guid', label: 'User GUID', placeholder: 'user-guid', required: true }] },
+  { id: 'admin-get-user', group: 'Users', label: 'Get User', method: 'GET', pathTemplate: '/admin/users/{id}', params: [{ name: 'id', label: 'User Id', placeholder: 'user-id', required: true }] },
   { id: 'admin-create-user', group: 'Users', label: 'Create User', method: 'POST', pathTemplate: '/admin/users', params: [], hasBody: true, bodyPlaceholder: '{\n  "Name": "username",\n  "Email": "user@example.com"\n}' },
-  { id: 'admin-delete-user', group: 'Users', label: 'Delete User', method: 'DELETE', pathTemplate: '/admin/users/{guid}', params: [{ name: 'guid', label: 'User GUID', placeholder: 'user-guid', required: true }] },
+  { id: 'admin-delete-user', group: 'Users', label: 'Delete User', method: 'DELETE', pathTemplate: '/admin/users/{id}', params: [{ name: 'id', label: 'User Id', placeholder: 'user-id', required: true }] },
   { id: 'admin-list-credentials', group: 'Credentials', label: 'List Credentials', method: 'GET', pathTemplate: '/admin/credentials', params: [] },
-  { id: 'admin-get-credential', group: 'Credentials', label: 'Get Credential', method: 'GET', pathTemplate: '/admin/credentials/{guid}', params: [{ name: 'guid', label: 'Credential GUID', placeholder: 'credential-guid', required: true }] },
-  { id: 'admin-create-credential', group: 'Credentials', label: 'Create Credential', method: 'POST', pathTemplate: '/admin/credentials', params: [], hasBody: true, bodyPlaceholder: '{\n  "UserGUID": "user-guid",\n  "Description": "My key",\n  "AccessKey": "mykey",\n  "SecretKey": "mysecret"\n}' },
-  { id: 'admin-delete-credential', group: 'Credentials', label: 'Delete Credential', method: 'DELETE', pathTemplate: '/admin/credentials/{guid}', params: [{ name: 'guid', label: 'Credential GUID', placeholder: 'credential-guid', required: true }] },
+  { id: 'admin-get-credential', group: 'Credentials', label: 'Get Credential', method: 'GET', pathTemplate: '/admin/credentials/{id}', params: [{ name: 'id', label: 'Credential Id', placeholder: 'credential-id', required: true }] },
+  { id: 'admin-create-credential', group: 'Credentials', label: 'Create Credential', method: 'POST', pathTemplate: '/admin/credentials', params: [], hasBody: true, bodyPlaceholder: '{\n  "UserId": "user-id",\n  "Description": "My key",\n  "AccessKey": "mykey",\n  "SecretKey": "mysecret"\n}' },
+  { id: 'admin-delete-credential', group: 'Credentials', label: 'Delete Credential', method: 'DELETE', pathTemplate: '/admin/credentials/{id}', params: [{ name: 'id', label: 'Credential Id', placeholder: 'credential-id', required: true }] },
   { id: 'admin-list-history', group: 'Request History', label: 'List Request History', method: 'GET', pathTemplate: '/admin/requesthistory', params: [] },
-  { id: 'admin-get-history', group: 'Request History', label: 'Get Request History Entry', method: 'GET', pathTemplate: '/admin/requesthistory/{guid}', params: [{ name: 'guid', label: 'Entry GUID', placeholder: 'entry-guid', required: true }] },
+  { id: 'admin-get-history', group: 'Request History', label: 'Get Request History Entry', method: 'GET', pathTemplate: '/admin/requesthistory/{id}', params: [{ name: 'id', label: 'Entry Id', placeholder: 'entry-id', required: true }] },
   { id: 'admin-get-history-summary', group: 'Request History', label: 'Get Summary', method: 'GET', pathTemplate: '/admin/requesthistory/summary', params: [] },
-  { id: 'admin-delete-history', group: 'Request History', label: 'Delete Request History Entry', method: 'DELETE', pathTemplate: '/admin/requesthistory/{guid}', params: [{ name: 'guid', label: 'Entry GUID', placeholder: 'entry-guid', required: true }] },
+  { id: 'admin-delete-history', group: 'Request History', label: 'Delete Request History Entry', method: 'DELETE', pathTemplate: '/admin/requesthistory/{id}', params: [{ name: 'id', label: 'Entry Id', placeholder: 'entry-id', required: true }] },
 ];
 
 const METHOD_COLORS: Record<string, string> = {
@@ -103,7 +103,7 @@ interface RecentRequest {
   statusCode: number | null;
   timestamp: string;
   body: string;
-  credentialGuid?: string;
+  credentialId?: string;
 }
 
 interface ResponseData {
@@ -187,14 +187,14 @@ const ApiExplorerPage: React.FC = () => {
   const [activeResponseTab, setActiveResponseTab] = useState<string>('body');
   const [isPrettyPrintEnabled, setIsPrettyPrintEnabled] = useState(false);
   const [recentRequests, setRecentRequests] = useState<RecentRequest[]>(() => loadRecentRequests());
-  const [selectedCredentialGuid, setSelectedCredentialGuid] = useState<string>(
-    () => getPreferredS3CredentialGuid() || NO_CREDENTIAL_VALUE
+  const [selectedCredentialId, setSelectedCredentialId] = useState<string>(
+    () => getPreferredS3CredentialId() || NO_CREDENTIAL_VALUE
   );
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const { data: credentialsData } = useGetCredentialsQuery();
-  const { data: selectedCredentialDetails } = useGetCredentialByIdQuery(selectedCredentialGuid, {
-    skip: selectedCredentialGuid === NO_CREDENTIAL_VALUE,
+  const { data: selectedCredentialDetails } = useGetCredentialByIdQuery(selectedCredentialId, {
+    skip: selectedCredentialId === NO_CREDENTIAL_VALUE,
   });
 
   const allOperations = useMemo<ApiOperation[]>(() => [...S3_OPERATIONS, ...ADMIN_OPERATIONS], []);
@@ -218,8 +218,8 @@ const ApiExplorerPage: React.FC = () => {
   const selectedOperationApiType: 's3' | 'admin' = selectedOp ? getOperationApiType(selectedOp.id) : 'admin';
 
   const selectedCredential = useMemo(
-    () => credentialsData?.find((credential) => credential.GUID === selectedCredentialGuid) || null,
-    [credentialsData, selectedCredentialGuid]
+    () => credentialsData?.find((credential) => credential.Id === selectedCredentialId) || null,
+    [credentialsData, selectedCredentialId]
   );
 
   const activeS3Credential = selectedCredentialDetails || selectedCredential;
@@ -230,7 +230,7 @@ const ApiExplorerPage: React.FC = () => {
       ...(
         credentialsData?.map((credential) => ({
           label: `${credential.Description || credential.AccessKey} (${credential.AccessKey})`,
-          value: credential.GUID,
+          value: credential.Id,
         })) || []
       ),
     ],
@@ -262,13 +262,13 @@ const ApiExplorerPage: React.FC = () => {
   }, [paramValues, selectedOp]);
 
   useEffect(() => {
-    if (selectedCredentialGuid === NO_CREDENTIAL_VALUE) {
-      clearPreferredS3CredentialGuid();
+    if (selectedCredentialId === NO_CREDENTIAL_VALUE) {
+      clearPreferredS3CredentialId();
       return;
     }
 
-    setPreferredS3CredentialGuid(selectedCredentialGuid);
-  }, [selectedCredentialGuid]);
+    setPreferredS3CredentialId(selectedCredentialId);
+  }, [selectedCredentialId]);
 
   useEffect(() => {
     setIsPrettyPrintEnabled(false);
@@ -342,7 +342,7 @@ const ApiExplorerPage: React.FC = () => {
         }
 
         fetchHeaders['x-api-key'] = adminApiKey;
-      } else if (selectedCredentialGuid !== NO_CREDENTIAL_VALUE) {
+      } else if (selectedCredentialId !== NO_CREDENTIAL_VALUE) {
         if (!activeS3Credential?.AccessKey || !activeS3Credential?.SecretKey) {
           message.error('Selected S3 credential is unavailable');
           setIsLoading(false);
@@ -403,7 +403,7 @@ const ApiExplorerPage: React.FC = () => {
         statusCode: result.status,
         timestamp: new Date().toISOString(),
         body,
-        credentialGuid: selectedCredentialGuid,
+        credentialId: selectedCredentialId,
       };
 
       const updatedRecent = [recentEntry, ...recentRequests].slice(0, MAX_RECENT_ITEMS);
@@ -433,7 +433,7 @@ const ApiExplorerPage: React.FC = () => {
     handleCancel,
     recentRequests,
     resolvedUrl,
-    selectedCredentialGuid,
+    selectedCredentialId,
     selectedOp,
     selectedOperationApiType,
   ]);
@@ -442,7 +442,7 @@ const ApiExplorerPage: React.FC = () => {
     setOperationFilter(ALL_API_FILTER_VALUE);
     setSelectedOpId(recent.operationId);
     setBody(recent.body || '');
-    setSelectedCredentialGuid(recent.credentialGuid || NO_CREDENTIAL_VALUE);
+    setSelectedCredentialId(recent.credentialId || NO_CREDENTIAL_VALUE);
     setResponse(null);
     setActiveResponseTab('body');
   }, []);
@@ -636,8 +636,8 @@ const ApiExplorerPage: React.FC = () => {
                 </Less3Text>
                 <Less3Select
                   options={credentialOptions}
-                  value={selectedCredentialGuid}
-                  onChange={(value) => setSelectedCredentialGuid(value as string)}
+                  value={selectedCredentialId}
+                  onChange={(value) => setSelectedCredentialId(value as string)}
                   style={{ width: '100%', ...inputStyle }}
                   showSearch
                   filterOption={(input, option) =>

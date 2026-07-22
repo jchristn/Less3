@@ -34,13 +34,13 @@ describe("credentialsSlice", () => {
   });
 
   describe("useGetCredentialByIdQuery", () => {
-    it("should return query hook with guid parameter", () => {
+    it("should return query hook with id parameter", () => {
       const store = createTestStore();
       const wrapper = ({ children }: { children: React.ReactNode }) => (
         <Provider store={store}>{children}</Provider>
       );
 
-      const { result } = renderHook(() => useGetCredentialByIdQuery("test-id", { skip: true }), { wrapper });
+      const { result } = renderHook(() => useGetCredentialByIdQuery("bkt_test", { skip: true }), { wrapper });
       expect(result.current).toBeDefined();
     });
   });

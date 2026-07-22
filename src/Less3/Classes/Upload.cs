@@ -1,4 +1,4 @@
-﻿namespace Less3.Classes
+namespace Less3.Classes
 {
     using System;
     using System.Text.Json.Serialization;
@@ -11,30 +11,29 @@
         #region Public-Members
 
         /// <summary>
-        /// Database identifier.
+        /// Id of the object.
         /// </summary>
-        [JsonIgnore]
-        public int Id { get; set; } = 0;
+        public string Id { get; set; } = Less3.Helpers.IdGenerator.GenerateUploadId();
 
         /// <summary>
-        /// GUID of the object.
+        /// Tenant identifier.
         /// </summary>
-        public string GUID { get; set; } = Guid.NewGuid().ToString();
+        public string TenantId { get; set; } = "default";
 
         /// <summary>
-        /// GUID of the bucket.
+        /// Id of the bucket.
         /// </summary>
-        public string BucketGUID { get; set; } = null;
+        public string BucketId { get; set; } = null;
 
         /// <summary>
-        /// GUID of the owner.
+        /// Id of the owner.
         /// </summary>
-        public string OwnerGUID { get; set; } = null;
+        public string OwnerId { get; set; } = null;
 
         /// <summary>
-        /// GUID of the author.
+        /// Id of the author.
         /// </summary>
-        public string AuthorGUID { get; set; } = null;
+        public string AuthorId { get; set; } = null;
 
         /// <summary>
         /// Object key.

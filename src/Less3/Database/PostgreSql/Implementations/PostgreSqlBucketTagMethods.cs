@@ -4,6 +4,7 @@ namespace Less3.Database.PostgreSql.Implementations
     using System.Collections.Generic;
     using System.Data;
     using Less3.Classes;
+    using Less3.Database.Implementations;
     using Less3.Database.Interfaces;
     using Less3.Database.PostgreSql.Queries;
 
@@ -22,17 +23,17 @@ namespace Less3.Database.PostgreSql.Implementations
             _Driver.ExecuteQuery(BucketTagQueries.InsertQuery(tag), true).Wait();
         }
 
-        public List<BucketTag> GetByBucketGuid(string bucketGuid)
+        public List<BucketTag> GetByBucketId(string bucketId)
         {
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            DataTable result = _Driver.ExecuteQuery(BucketTagQueries.SelectByBucketGuid(bucketGuid)).Result;
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Driver.ExecuteQuery(BucketTagQueries.SelectByBucketId(bucketId)).Result;
             return MapBucketTags(result);
         }
 
-        public void DeleteByBucketGuid(string bucketGuid)
+        public void DeleteByBucketId(string bucketId)
         {
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            _Driver.ExecuteQuery(BucketTagQueries.DeleteByBucketGuid(bucketGuid), true).Wait();
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            _Driver.ExecuteQuery(BucketTagQueries.DeleteByBucketId(bucketId), true).Wait();
         }
 
         private List<BucketTag> MapBucketTags(DataTable dt)
@@ -43,9 +44,9 @@ namespace Less3.Database.PostgreSql.Implementations
             foreach (DataRow row in dt.Rows)
             {
                 BucketTag tag = new BucketTag();
-                tag.Id = Convert.ToInt32(row["id"]);
-                tag.GUID = row["guid"] != DBNull.Value ? row["guid"].ToString() : null;
-                tag.BucketGUID = row["bucketguid"] != DBNull.Value ? row["bucketguid"].ToString() : null;
+                tag.Id = row["id"] != DBNull.Value ? row["id"].ToString() : null;
+                tag.TenantId = ControlPlaneDataMapper.StringValue(row, "tenant_id") ?? "default";
+                tag.BucketId = row["bucket_id"] != DBNull.Value ? row["bucket_id"].ToString() : null;
                 tag.Key = row["key"] != DBNull.Value ? row["key"].ToString() : null;
                 tag.Value = row["value"] != DBNull.Value ? row["value"].ToString() : null;
                 tag.CreatedUtc = Convert.ToDateTime(row["createdutc"]).ToUniversalTime();

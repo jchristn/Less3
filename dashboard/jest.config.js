@@ -14,9 +14,9 @@ const config = {
   moduleNameMapper: {
     "^#/(.*)$": "<rootDir>/src/$1",
     "^antd/es/(.*)$": "<rootDir>/node_modules/antd/lib/$1",
-    uuid: require.resolve("uuid"),
   },
   setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
+  testPathIgnorePatterns: ["<rootDir>/src/tests/e2e/"],
   testEnvironmentOptions: {
     customExportConditions: [""],
   },

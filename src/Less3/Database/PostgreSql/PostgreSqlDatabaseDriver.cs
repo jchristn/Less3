@@ -7,6 +7,7 @@ namespace Less3.Database.PostgreSql
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
+    using Less3.Database.Implementations;
     using Less3.Database.PostgreSql.Implementations;
     using Less3.Database.PostgreSql.Queries;
     using Npgsql;
@@ -52,6 +53,12 @@ namespace Less3.Database.PostgreSql
             Uploads = new PostgreSqlUploadMethods(this);
             UploadParts = new PostgreSqlUploadPartMethods(this);
             RequestHistory = new PostgreSqlRequestHistoryMethods(this);
+            Tenants = new ControlPlaneTenantMethods(this, SqlDialect.PostgreSql);
+            Roles = new ControlPlaneRoleMethods(this, SqlDialect.PostgreSql);
+            Permissions = new ControlPlanePermissionMethods(this, SqlDialect.PostgreSql);
+            RoleAssignments = new ControlPlaneRoleAssignmentMethods(this, SqlDialect.PostgreSql);
+            AuthSessions = new ControlPlaneAuthSessionMethods(this, SqlDialect.PostgreSql);
+            AuthorizationAudit = new ControlPlaneAuthorizationAuditMethods(this, SqlDialect.PostgreSql);
 
             string setupQuery = SetupQueries.CreateTablesAndIndices();
             ExecuteQuery(setupQuery, false).Wait();

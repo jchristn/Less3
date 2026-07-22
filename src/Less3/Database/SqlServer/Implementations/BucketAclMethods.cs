@@ -4,6 +4,7 @@ namespace Less3.Database.SqlServer.Implementations
     using System.Collections.Generic;
     using System.Data;
     using Less3.Classes;
+    using Less3.Database.Implementations;
     using Less3.Database.Interfaces;
     using Less3.Database.SqlServer.Queries;
 
@@ -17,32 +18,32 @@ namespace Less3.Database.SqlServer.Implementations
         }
 
         /// <inheritdoc />
-        public bool ExistsByGroupName(string groupName, string bucketGuid)
+        public bool ExistsByGroupName(string groupName, string bucketId)
         {
             if (String.IsNullOrEmpty(groupName)) throw new ArgumentNullException(nameof(groupName));
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            DataTable result = _Database.ExecuteQuery(BucketAclQueries.ExistsByGroupName(groupName, bucketGuid)).Result;
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Database.ExecuteQuery(BucketAclQueries.ExistsByGroupName(groupName, bucketId)).Result;
             if (result != null && result.Rows.Count > 0)
                 return Convert.ToInt32(result.Rows[0]["cnt"]) > 0;
             return false;
         }
 
         /// <inheritdoc />
-        public bool ExistsByUserGuid(string userGuid, string bucketGuid)
+        public bool ExistsByUserId(string userId, string bucketId)
         {
-            if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            DataTable result = _Database.ExecuteQuery(BucketAclQueries.ExistsByUserGuid(userGuid, bucketGuid)).Result;
+            if (String.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Database.ExecuteQuery(BucketAclQueries.ExistsByUserId(userId, bucketId)).Result;
             if (result != null && result.Rows.Count > 0)
                 return Convert.ToInt32(result.Rows[0]["cnt"]) > 0;
             return false;
         }
 
         /// <inheritdoc />
-        public List<BucketAcl> GetByBucketGuid(string bucketGuid)
+        public List<BucketAcl> GetByBucketId(string bucketId)
         {
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            DataTable result = _Database.ExecuteQuery(BucketAclQueries.SelectByBucketGuid(bucketGuid)).Result;
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Database.ExecuteQuery(BucketAclQueries.SelectByBucketId(bucketId)).Result;
             return MapList(result);
         }
 
@@ -54,26 +55,26 @@ namespace Less3.Database.SqlServer.Implementations
         }
 
         /// <inheritdoc />
-        public void DeleteByBucketGuid(string bucketGuid)
+        public void DeleteByBucketId(string bucketId)
         {
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            _Database.ExecuteQuery(BucketAclQueries.DeleteByBucketGuid(bucketGuid), true).Wait();
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            _Database.ExecuteQuery(BucketAclQueries.DeleteByBucketId(bucketId), true).Wait();
         }
 
         private BucketAcl MapFromRow(DataRow row)
         {
             BucketAcl acl = new BucketAcl();
-            acl.Id = Convert.ToInt32(row["id"]);
-            acl.GUID = row["guid"] != null && row["guid"] != DBNull.Value ? row["guid"].ToString() : null;
+            acl.Id = row["id"] != null && row["id"] != DBNull.Value ? row["id"].ToString() : null;
+            acl.TenantId = ControlPlaneDataMapper.StringValue(row, "tenant_id") ?? "default";
             acl.UserGroup = row["usergroup"] != null && row["usergroup"] != DBNull.Value ? row["usergroup"].ToString() : null;
-            acl.BucketGUID = row["bucketguid"] != null && row["bucketguid"] != DBNull.Value ? row["bucketguid"].ToString() : null;
-            acl.UserGUID = row["userguid"] != null && row["userguid"] != DBNull.Value ? row["userguid"].ToString() : null;
-            acl.IssuedByUserGUID = row["issuedbyuserguid"] != null && row["issuedbyuserguid"] != DBNull.Value ? row["issuedbyuserguid"].ToString() : null;
-            acl.PermitRead = IsBitTrue(row["permitread"]);
-            acl.PermitWrite = IsBitTrue(row["permitwrite"]);
-            acl.PermitReadAcp = IsBitTrue(row["permitreadacp"]);
-            acl.PermitWriteAcp = IsBitTrue(row["permitwriteacp"]);
-            acl.FullControl = IsBitTrue(row["fullcontrol"]);
+            acl.BucketId = row["bucket_id"] != null && row["bucket_id"] != DBNull.Value ? row["bucket_id"].ToString() : null;
+            acl.UserId = row["user_id"] != null && row["user_id"] != DBNull.Value ? row["user_id"].ToString() : null;
+            acl.IssuedByUserId = row["issued_by_user_id"] != null && row["issued_by_user_id"] != DBNull.Value ? row["issued_by_user_id"].ToString() : null;
+            acl.PermitRead = ControlPlaneDataMapper.BoolValue(row, "permitread");
+            acl.PermitWrite = ControlPlaneDataMapper.BoolValue(row, "permitwrite");
+            acl.PermitReadAcp = ControlPlaneDataMapper.BoolValue(row, "permitreadacp");
+            acl.PermitWriteAcp = ControlPlaneDataMapper.BoolValue(row, "permitwriteacp");
+            acl.FullControl = ControlPlaneDataMapper.BoolValue(row, "fullcontrol");
             acl.CreatedUtc = DateTime.Parse(row["createdutc"].ToString());
             return acl;
         }
@@ -89,13 +90,6 @@ namespace Less3.Database.SqlServer.Implementations
                 }
             }
             return list;
-        }
-
-        private bool IsBitTrue(object val)
-        {
-            if (val == null || val == DBNull.Value) return false;
-            string s = val.ToString();
-            return s == "1" || s.Equals("True", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

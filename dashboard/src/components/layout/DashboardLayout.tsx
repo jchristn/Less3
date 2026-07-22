@@ -64,14 +64,15 @@ const DashboardLayout = ({ children }: LayoutWrapperProps) => {
             />
           </Less3Tooltip>
           <ThemeModeSwitch />
-          <Less3Button
-            type="text"
-            icon={<LogoutOutlined />}
-            onClick={handleLogout}
-            className={styles.logoutButton}
-          >
-            Logout
-          </Less3Button>
+          <Less3Tooltip title="Logout" placement="bottom">
+            <Less3Button
+              type="text"
+              icon={<LogoutOutlined />}
+              onClick={handleLogout}
+              className={styles.logoutButton}
+              aria-label="Logout"
+            />
+          </Less3Tooltip>
         </Less3Flex>
       </Header>
       <Layout style={{ marginTop: 65 }}>

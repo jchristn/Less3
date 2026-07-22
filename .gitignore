@@ -187,6 +187,15 @@ ClientBin/
 node_modules/
 orleans.codegen.cs
 
+# Less3 local runtime/test artifacts
+Docker/db/*.db
+Docker/disk/*/
+Docker/logs/*
+!Docker/db/.gitkeep
+!Docker/disk/.gitkeep
+!Docker/logs/.gitkeep
+dashboard/test-results/
+
 # Since there are multiple workflows, uncomment next line to ignore bower_components
 # (https://github.com/github/gitignore/pull/1529#issuecomment-104372622)
 #bower_components/
@@ -254,4 +263,3 @@ __pycache__/
 
 # Cake - Uncomment if you are using it
 # tools/
-

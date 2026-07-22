@@ -34,17 +34,17 @@ describe("bucketsSlice endpoints", () => {
       ok: true,
       status: 200,
       statusText: "OK",
-      json: async () => [{ GUID: "bucket-guid", Name: "one", CreatedUtc: "now" }],
+      json: async () => [{ Id: "bkt_test", Name: "one", CreatedUtc: "now" }],
     }) as any;
 
     const store = makeStore();
     const promise = store.dispatch(bucketsSliceApi.endpoints.getBuckets.initiate());
     const result = await promise.unwrap();
-    expect(result).toEqual([{ GUID: "bucket-guid", Name: "one", CreatedUtc: "now", CreationDate: "now" }]);
+    expect(result).toEqual([{ Id: "bkt_test", Name: "one", CreatedUtc: "now", CreationDate: "now" }]);
     promise.unsubscribe?.();
   });
 
-  it("deleteBucket uses admin bucket guid", async () => {
+  it("deleteBucket uses admin bucket id", async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       status: 204,
@@ -54,12 +54,12 @@ describe("bucketsSlice endpoints", () => {
 
     const store = makeStore();
     const promise = store.dispatch(
-      bucketsSliceApi.endpoints.deleteBucket.initiate({ guid: "bucket-guid", bucketName: "one" })
+      bucketsSliceApi.endpoints.deleteBucket.initiate({ id: "bkt_test", bucketName: "one" })
     );
     const result = await promise.unwrap();
     expect(result).toEqual({ success: true });
     expect(global.fetch).toHaveBeenCalledWith(
-      "http://localhost:8000/admin/buckets/bucket-guid?destroy=true",
+      "http://localhost:8000/admin/buckets/bkt_test?destroy=true",
       expect.objectContaining({
         method: "DELETE",
         headers: expect.objectContaining({
@@ -93,7 +93,7 @@ describe("bucketsSlice endpoints", () => {
         ok: true,
         status: 200,
         statusText: "OK",
-        json: async () => [{ GUID: "cred-guid", AccessKey: "default", SecretKey: "default" }],
+        json: async () => [{ Id: "crd_test", AccessKey: "default", SecretKey: "default" }],
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -106,7 +106,7 @@ describe("bucketsSlice endpoints", () => {
     const store = makeStore();
     const promise = store.dispatch(
       bucketsSliceApi.endpoints.listBucketObjects.initiate({
-        bucketGUID: "g",
+        bucketId: "g",
         prefix: "",
         continuationToken: "",
       } as any)
@@ -145,7 +145,7 @@ describe("bucketsSlice endpoints", () => {
         ok: true,
         status: 200,
         statusText: "OK",
-        json: async () => [{ GUID: "cred-guid", AccessKey: "default", SecretKey: "default" }],
+        json: async () => [{ Id: "crd_test", AccessKey: "default", SecretKey: "default" }],
       })
       .mockResolvedValueOnce({
         ok: false,
@@ -157,7 +157,7 @@ describe("bucketsSlice endpoints", () => {
     const store = makeStore();
     const promise = store.dispatch(
       bucketsSliceApi.endpoints.downloadBucketObject.initiate({
-        bucketGUID: "g",
+        bucketId: "g",
         objectKey: "k",
       } as any)
     );

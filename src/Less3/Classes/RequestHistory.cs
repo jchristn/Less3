@@ -11,15 +11,14 @@ namespace Less3.Classes
         #region Public-Members
 
         /// <summary>
-        /// Database identifier.
+        /// Id of the request history entry.
         /// </summary>
-        [JsonIgnore]
-        public int Id { get; set; } = 0;
+        public string Id { get; set; } = Less3.Helpers.IdGenerator.GenerateRequestHistoryId();
 
         /// <summary>
-        /// GUID of the request history entry.
+        /// Tenant identifier.
         /// </summary>
-        public string GUID { get; set; } = Guid.NewGuid().ToString();
+        public string TenantId { get; set; } = "default";
 
         /// <summary>
         /// HTTP method string (e.g. GET, PUT, DELETE).
@@ -57,9 +56,9 @@ namespace Less3.Classes
         public string RequestType { get; set; } = null;
 
         /// <summary>
-        /// GUID of the authenticated user, or null if unauthenticated.
+        /// Id of the authenticated user, or null if unauthenticated.
         /// </summary>
-        public string UserGUID { get; set; } = null;
+        public string UserId { get; set; } = null;
 
         /// <summary>
         /// Credential access key used for the request, or null if none provided.

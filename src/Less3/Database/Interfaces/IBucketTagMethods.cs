@@ -17,14 +17,14 @@ namespace Less3.Database.Interfaces
         /// <summary>
         /// Retrieve all tags for a bucket.
         /// </summary>
-        /// <param name="bucketGuid">Bucket GUID.</param>
+        /// <param name="bucketId">Bucket Id.</param>
         /// <returns>List of bucket tags.</returns>
-        List<BucketTag> GetByBucketGuid(string bucketGuid);
+        List<BucketTag> GetByBucketId(string bucketId);
 
         /// <summary>
         /// Delete all tags for a bucket.
         /// </summary>
-        /// <param name="bucketGuid">Bucket GUID.</param>
-        void DeleteByBucketGuid(string bucketGuid);
+        /// <param name="bucketId">Bucket Id.</param>
+        void DeleteByBucketId(string bucketId);
     }
 }

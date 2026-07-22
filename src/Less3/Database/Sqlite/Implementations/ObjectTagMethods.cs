@@ -4,6 +4,7 @@ namespace Less3.Database.Sqlite.Implementations
     using System.Collections.Generic;
     using System.Data;
     using Less3.Classes;
+    using Less3.Database.Implementations;
     using Less3.Database.Interfaces;
     using Less3.Database.Sqlite.Queries;
 
@@ -24,29 +25,29 @@ namespace Less3.Database.Sqlite.Implementations
         }
 
         /// <inheritdoc />
-        public List<ObjectTag> GetByObjectGuid(string objectGuid, string bucketGuid)
+        public List<ObjectTag> GetByObjectId(string objectId, string bucketId)
         {
-            if (String.IsNullOrEmpty(objectGuid)) throw new ArgumentNullException(nameof(objectGuid));
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            DataTable result = _Database.ExecuteQuery(ObjectTagQueries.SelectByObjectGuid(objectGuid, bucketGuid)).Result;
+            if (String.IsNullOrEmpty(objectId)) throw new ArgumentNullException(nameof(objectId));
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Database.ExecuteQuery(ObjectTagQueries.SelectByObjectId(objectId, bucketId)).Result;
             return MapList(result);
         }
 
         /// <inheritdoc />
-        public void DeleteByObjectGuid(string objectGuid, string bucketGuid)
+        public void DeleteByObjectId(string objectId, string bucketId)
         {
-            if (String.IsNullOrEmpty(objectGuid)) throw new ArgumentNullException(nameof(objectGuid));
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            _Database.ExecuteQuery(ObjectTagQueries.DeleteByObjectGuid(objectGuid, bucketGuid), true).Wait();
+            if (String.IsNullOrEmpty(objectId)) throw new ArgumentNullException(nameof(objectId));
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            _Database.ExecuteQuery(ObjectTagQueries.DeleteByObjectId(objectId, bucketId), true).Wait();
         }
 
         private ObjectTag MapFromRow(DataRow row)
         {
             ObjectTag tag = new ObjectTag();
-            tag.Id = Convert.ToInt32(row["id"]);
-            tag.GUID = row["guid"] != null && row["guid"] != DBNull.Value ? row["guid"].ToString() : null;
-            tag.BucketGUID = row["bucketguid"] != null && row["bucketguid"] != DBNull.Value ? row["bucketguid"].ToString() : null;
-            tag.ObjectGUID = row["objectguid"] != null && row["objectguid"] != DBNull.Value ? row["objectguid"].ToString() : null;
+            tag.Id = row["id"] != null && row["id"] != DBNull.Value ? row["id"].ToString() : null;
+            tag.TenantId = ControlPlaneDataMapper.StringValue(row, "tenant_id") ?? "default";
+            tag.BucketId = row["bucket_id"] != null && row["bucket_id"] != DBNull.Value ? row["bucket_id"].ToString() : null;
+            tag.ObjectId = row["object_id"] != null && row["object_id"] != DBNull.Value ? row["object_id"].ToString() : null;
             tag.Key = row["key"] != null && row["key"] != DBNull.Value ? row["key"].ToString() : null;
             tag.Value = row["value"] != null && row["value"] != DBNull.Value ? row["value"].ToString() : null;
             tag.CreatedUtc = DateTime.Parse(row["createdutc"].ToString());

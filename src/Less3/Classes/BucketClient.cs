@@ -38,11 +38,19 @@ namespace Less3.Classes
             }
         }
 
-        internal string GUID
+        internal string Id
         {
             get
             {
-                return _Bucket.GUID;
+                return _Bucket.Id;
+            }
+        }
+
+        internal string TenantId
+        {
+            get
+            {
+                return _Bucket.TenantId;
             }
         }
 
@@ -116,8 +124,8 @@ namespace Less3.Classes
         internal bool AddObject(Obj obj, Stream stream)
         {
             if (obj == null) throw new ArgumentNullException(nameof(obj));
-            if (String.IsNullOrEmpty(obj.GUID)) obj.GUID = Guid.NewGuid().ToString();
-            obj.BucketGUID = _Bucket.GUID;
+            if (String.IsNullOrEmpty(obj.Id)) obj.Id = Less3.Helpers.IdGenerator.GenerateObjectId();
+            obj.BucketId = _Bucket.Id;
 
             Obj test = GetObjectLatestMetadata(obj.Key);
             if (test != null)
@@ -154,7 +162,7 @@ namespace Less3.Classes
         internal bool AddObjectMetadata(Obj obj)
         {
             if (obj == null) throw new ArgumentNullException(nameof(obj));
-            obj.BucketGUID = _Bucket.GUID;
+            obj.BucketId = _Bucket.Id;
 
             Obj test = GetObjectLatestMetadata(obj.Key);
             if (test != null)
@@ -229,19 +237,19 @@ namespace Less3.Classes
         internal long GetObjectLatestVersion(string key)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-            return _Database.Objects.GetLatestVersion(key, _Bucket.GUID);
+            return _Database.Objects.GetLatestVersion(key, _Bucket.Id);
         }
 
         internal BucketStatistics GetFullStatistics()
         {
-            BucketStatistics ret = _Database.Objects.GetStatistics(_Bucket.GUID);
+            BucketStatistics ret = _Database.Objects.GetStatistics(_Bucket.Id);
             ret.Name = _Bucket.Name;
             return ret;
         }
 
         internal BucketStatistics GetStatistics(List<Obj> objects)
         {
-            BucketStatistics ret = new BucketStatistics(_Bucket.Name, _Bucket.GUID, 0, 0);
+            BucketStatistics ret = new BucketStatistics(_Bucket.Name, _Bucket.Id, 0, 0);
 
             if (objects != null && objects.Count > 0)
             {
@@ -255,19 +263,19 @@ namespace Less3.Classes
         internal Obj GetObjectLatestMetadata(string key)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-            return _Database.Objects.GetLatestByKey(key, _Bucket.GUID);
+            return _Database.Objects.GetLatestByKey(key, _Bucket.Id);
         }
 
         internal Obj GetObjectVersionMetadata(string key, long version = 1)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-            return _Database.Objects.GetByKeyAndVersion(key, version, _Bucket.GUID);
+            return _Database.Objects.GetByKeyAndVersion(key, version, _Bucket.Id);
         }
 
-        internal Obj GetObjectMetadataByGuid(string guid)
+        internal Obj GetObjectMetadataById(string id)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            return _Database.Objects.GetByGuid(guid, _Bucket.GUID);
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            return _Database.Objects.GetById(id, _Bucket.Id);
         }
 
         internal bool ObjectExists(string key)
@@ -414,7 +422,7 @@ namespace Less3.Classes
                 #region Retrieve-Records
 
                 List<Obj> tempObjects = _Database.Objects.Enumerate(
-                    _Bucket.GUID,
+                    _Bucket.Id,
                     nextStartIndex,
                     maxResults,
                     excludeDeleteMarkers,
@@ -464,7 +472,7 @@ namespace Less3.Classes
                         objects.Add(obj);
                     }
 
-                    nextStartIndex = obj.Id + 1;
+                    nextStartIndex++;
                 }
 
                 if (objects.Count >= maxResults)
@@ -513,7 +521,7 @@ namespace Less3.Classes
             {
                 foreach (BucketTag tag in tags)
                 {
-                    tag.BucketGUID = _Bucket.GUID;
+                    tag.BucketId = _Bucket.Id;
                     _Database.BucketTags.Insert(tag);
                 }
             }
@@ -530,7 +538,7 @@ namespace Less3.Classes
             {
                 foreach (ObjectTag tag in tags)
                 {
-                    tag.BucketGUID = _Bucket.GUID;
+                    tag.BucketId = _Bucket.Id;
                     _Database.ObjectTags.Insert(tag);
                 }
             }
@@ -538,7 +546,7 @@ namespace Less3.Classes
 
         internal List<BucketTag> GetBucketTags()
         {
-            return _Database.BucketTags.GetByBucketGuid(_Bucket.GUID);
+            return _Database.BucketTags.GetByBucketId(_Bucket.Id);
         }
 
         internal List<ObjectTag> GetObjectTags(string key, long version)
@@ -553,18 +561,18 @@ namespace Less3.Classes
                 return null;
             }
 
-            return _Database.ObjectTags.GetByObjectGuid(obj.GUID, _Bucket.GUID);
+            return _Database.ObjectTags.GetByObjectId(obj.Id, _Bucket.Id);
         }
 
-        internal List<ObjectTag> GetObjectTags(string guid)
+        internal List<ObjectTag> GetObjectTags(string id)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            return _Database.ObjectTags.GetByObjectGuid(guid, _Bucket.GUID);
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            return _Database.ObjectTags.GetByObjectId(id, _Bucket.Id);
         }
 
         internal void DeleteBucketTags()
         {
-            _Database.BucketTags.DeleteByBucketGuid(_Bucket.GUID);
+            _Database.BucketTags.DeleteByBucketId(_Bucket.Id);
         }
 
         internal void DeleteObjectVersionTags(string key, long version)
@@ -578,7 +586,7 @@ namespace Less3.Classes
                 return;
             }
 
-            _Database.ObjectTags.DeleteByObjectGuid(obj.GUID, _Bucket.GUID);
+            _Database.ObjectTags.DeleteByObjectId(obj.Id, _Bucket.Id);
         }
 
         internal bool ObjectGroupAclExists(string groupName, string key, long version)
@@ -593,12 +601,12 @@ namespace Less3.Classes
                 return false;
             }
 
-            return _Database.ObjectAcls.ExistsByGroupName(groupName, obj.GUID, _Bucket.GUID);
+            return _Database.ObjectAcls.ExistsByGroupName(groupName, obj.Id, _Bucket.Id);
         }
 
-        internal bool ObjectUserAclExists(string userGuid, string key, long version)
+        internal bool ObjectUserAclExists(string userId, string key, long version)
         {
-            if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
+            if (String.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
             Obj obj = GetObjectVersionMetadata(key, version);
@@ -608,24 +616,24 @@ namespace Less3.Classes
                 return false;
             }
 
-            return _Database.ObjectAcls.ExistsByUserGuid(userGuid, obj.GUID, _Bucket.GUID);
+            return _Database.ObjectAcls.ExistsByUserId(userId, obj.Id, _Bucket.Id);
         }
 
         internal bool BucketGroupAclExists(string groupName)
         {
             if (String.IsNullOrEmpty(groupName)) throw new ArgumentNullException(nameof(groupName));
-            return _Database.BucketAcls.ExistsByGroupName(groupName, _Bucket.GUID);
+            return _Database.BucketAcls.ExistsByGroupName(groupName, _Bucket.Id);
         }
 
-        internal bool BucketUserAclExists(string userGuid)
+        internal bool BucketUserAclExists(string userId)
         {
-            if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
-            return _Database.BucketAcls.ExistsByUserGuid(userGuid, _Bucket.GUID);
+            if (String.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
+            return _Database.BucketAcls.ExistsByUserId(userId, _Bucket.Id);
         }
 
         internal List<BucketAcl> GetBucketAcl()
         {
-            return _Database.BucketAcls.GetByBucketGuid(_Bucket.GUID);
+            return _Database.BucketAcls.GetByBucketId(_Bucket.Id);
         }
 
         internal List<ObjectAcl> GetObjectVersionAcl(string key, long version)
@@ -639,20 +647,20 @@ namespace Less3.Classes
                 return null;
             }
 
-            return _Database.ObjectAcls.GetByObjectGuid(obj.GUID, _Bucket.GUID);
+            return _Database.ObjectAcls.GetByObjectId(obj.Id, _Bucket.Id);
         }
 
-        internal List<ObjectAcl> GetObjectAcl(string guid)
+        internal List<ObjectAcl> GetObjectAcl(string id)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            return _Database.ObjectAcls.GetByObjectGuid(guid, _Bucket.GUID);
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            return _Database.ObjectAcls.GetByObjectId(id, _Bucket.Id);
         }
 
         internal void AddBucketAcl(BucketAcl acl)
         {
             if (acl != null)
             {
-                acl.BucketGUID = _Bucket.GUID;
+                acl.BucketId = _Bucket.Id;
                 _Database.BucketAcls.Insert(acl);
             }
         }
@@ -665,7 +673,7 @@ namespace Less3.Classes
             {
                 foreach (BucketAcl acl in acls)
                 {
-                    acl.BucketGUID = _Bucket.GUID;
+                    acl.BucketId = _Bucket.Id;
                     _Database.BucketAcls.Insert(acl);
                 }
             }
@@ -675,15 +683,15 @@ namespace Less3.Classes
         {
             if (acl != null)
             {
-                Obj obj = GetObjectMetadataByGuid(acl.ObjectGUID);
+                Obj obj = GetObjectMetadataById(acl.ObjectId);
                 if (obj == null)
                 {
-                    _Logging.Debug("SetAcl unable to find object GUID " + acl.ObjectGUID + " in bucket " + _Bucket.Name);
+                    _Logging.Debug("SetAcl unable to find object Id " + acl.ObjectId + " in bucket " + _Bucket.Name);
                     return;
                 }
 
-                acl.BucketGUID = _Bucket.GUID;
-                acl.ObjectGUID = obj.GUID;
+                acl.BucketId = _Bucket.Id;
+                acl.ObjectId = obj.Id;
                 _Database.ObjectAcls.Insert(acl);
             }
         }
@@ -705,8 +713,8 @@ namespace Less3.Classes
             {
                 foreach (ObjectAcl acl in acls)
                 {
-                    acl.BucketGUID = _Bucket.GUID;
-                    acl.ObjectGUID = obj.GUID;
+                    acl.BucketId = _Bucket.Id;
+                    acl.ObjectId = obj.Id;
                     _Database.ObjectAcls.Insert(acl);
                 }
             }
@@ -714,7 +722,7 @@ namespace Less3.Classes
 
         internal void DeleteBucketAcl()
         {
-            _Database.BucketAcls.DeleteByBucketGuid(_Bucket.GUID);
+            _Database.BucketAcls.DeleteByBucketId(_Bucket.Id);
         }
 
         internal void DeleteObjectVersionAcl(string key, long version)
@@ -728,7 +736,7 @@ namespace Less3.Classes
                 return;
             }
 
-            _Database.ObjectAcls.DeleteByObjectGuidAndBucketGuid(obj.GUID, _Bucket.GUID);
+            _Database.ObjectAcls.DeleteByObjectIdAndBucketId(obj.Id, _Bucket.Id);
         }
 
         internal void DeleteObjectAcl(string key)
@@ -742,7 +750,7 @@ namespace Less3.Classes
                 return;
             }
 
-            _Database.ObjectAcls.DeleteByObjectGuidAndBucketGuid(obj.GUID, _Bucket.GUID);
+            _Database.ObjectAcls.DeleteByObjectIdAndBucketId(obj.Id, _Bucket.Id);
         }
 
         #endregion
@@ -759,7 +767,7 @@ namespace Less3.Classes
                     break;
 
                 default:
-                    throw new ArgumentException("Unknown storage driver type '" + _Bucket.StorageType.ToString() + "' in bucket GUID " + _Bucket.GUID + ".");
+                    throw new ArgumentException("Unknown storage driver type '" + _Bucket.StorageType.ToString() + "' in bucket Id " + _Bucket.Id + ".");
             }
         }
 

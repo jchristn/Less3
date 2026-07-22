@@ -17,10 +17,10 @@ namespace Test.Shared.Suites
         #region Private-Members
 
         private Less3TestServer _Server;
-        private string _UserGuid = Guid.NewGuid().ToString();
-        private string _CredGuid = Guid.NewGuid().ToString();
-        private string _BucketGuid = Guid.NewGuid().ToString();
-        private string _BucketName = "s3-object-test-" + Guid.NewGuid().ToString("N").Substring(0, 8);
+        private string _UserId = Test.Shared.TestIds.User();
+        private string _CredentialId = Test.Shared.TestIds.Credential();
+        private string _BucketId = Test.Shared.TestIds.Bucket();
+        private string _BucketName = "s3-object-test-" + Test.Shared.TestIds.Suffix().Substring(0, 8);
 
         #endregion
 
@@ -299,7 +299,7 @@ namespace Test.Shared.Suites
         {
             string userJson = JsonSerializer.Serialize(new
             {
-                GUID = _UserGuid,
+                Id = _UserId,
                 Name = "ObjectTestUser",
                 Email = "objecttest@example.com"
             });
@@ -307,19 +307,21 @@ namespace Test.Shared.Suites
 
             string credJson = JsonSerializer.Serialize(new
             {
-                GUID = _CredGuid,
-                UserGUID = _UserGuid,
+                Id = _CredentialId,
+                UserId = _UserId,
                 Description = "ObjectTest credential",
                 AccessKey = _Server.AccessKey,
                 SecretKey = _Server.SecretKey,
                 IsBase64 = false
             });
             await _Server.AdminPostAsync("credentials", credJson).ConfigureAwait(false);
+            await _Server.GrantTenantAdminAsync("User", _UserId).ConfigureAwait(false);
+            await _Server.GrantTenantAdminAsync("Credential", _CredentialId).ConfigureAwait(false);
 
             string bucketJson = JsonSerializer.Serialize(new
             {
-                GUID = _BucketGuid,
-                OwnerGUID = _UserGuid,
+                Id = _BucketId,
+                OwnerId = _UserId,
                 Name = _BucketName
             });
             await _Server.AdminPostAsync("buckets", bucketJson).ConfigureAwait(false);
@@ -343,9 +345,9 @@ namespace Test.Shared.Suites
                 }
             }
 
-            try { await _Server.AdminDeleteAsync($"buckets/{_BucketGuid}?destroy=true").ConfigureAwait(false); } catch { }
-            try { await _Server.AdminDeleteAsync($"credentials/{_CredGuid}").ConfigureAwait(false); } catch { }
-            try { await _Server.AdminDeleteAsync($"users/{_UserGuid}").ConfigureAwait(false); } catch { }
+            try { await _Server.AdminDeleteAsync($"buckets/{_BucketId}?destroy=true").ConfigureAwait(false); } catch { }
+            try { await _Server.AdminDeleteAsync($"credentials/{_CredentialId}").ConfigureAwait(false); } catch { }
+            try { await _Server.AdminDeleteAsync($"users/{_UserId}").ConfigureAwait(false); } catch { }
         }
 
         private static async Task<string> ReadResponseStringAsync(GetObjectResponse response)

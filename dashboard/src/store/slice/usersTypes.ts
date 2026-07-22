@@ -1,7 +1,7 @@
 // User API types and interfaces
 
 export interface User {
-  GUID: string;
+  Id: string;
   Name: string;
   Email: string;
   CreatedUtc: string;
@@ -12,21 +12,21 @@ export type UserListResponse = User[];
 export type UserResponse = User;
 
 export interface CreateUserRequest {
-  GUID?: string;
+  Id?: string;
   Name: string;
   Email: string;
   [key: string]: any;
 }
 
 export interface UpdateUserRequest {
-  GUID: string;
+  Id: string;
   Name: string;
   Email: string;
   [key: string]: any;
 }
 
 export interface DeleteUserParams {
-  guid: string;
+  id: string;
 }
 
 export interface DeleteUserResponse {

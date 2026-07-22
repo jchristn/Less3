@@ -12,24 +12,24 @@ namespace Less3.Database.Interfaces
         /// Check if a bucket group ACL exists.
         /// </summary>
         /// <param name="groupName">Group name.</param>
-        /// <param name="bucketGuid">Bucket GUID.</param>
+        /// <param name="bucketId">Bucket Id.</param>
         /// <returns>True if the ACL exists.</returns>
-        bool ExistsByGroupName(string groupName, string bucketGuid);
+        bool ExistsByGroupName(string groupName, string bucketId);
 
         /// <summary>
         /// Check if a bucket user ACL exists.
         /// </summary>
-        /// <param name="userGuid">User GUID.</param>
-        /// <param name="bucketGuid">Bucket GUID.</param>
+        /// <param name="userId">User Id.</param>
+        /// <param name="bucketId">Bucket Id.</param>
         /// <returns>True if the ACL exists.</returns>
-        bool ExistsByUserGuid(string userGuid, string bucketGuid);
+        bool ExistsByUserId(string userId, string bucketId);
 
         /// <summary>
         /// Retrieve all ACLs for a bucket.
         /// </summary>
-        /// <param name="bucketGuid">Bucket GUID.</param>
+        /// <param name="bucketId">Bucket Id.</param>
         /// <returns>List of bucket ACLs.</returns>
-        List<BucketAcl> GetByBucketGuid(string bucketGuid);
+        List<BucketAcl> GetByBucketId(string bucketId);
 
         /// <summary>
         /// Insert a new bucket ACL.
@@ -40,7 +40,7 @@ namespace Less3.Database.Interfaces
         /// <summary>
         /// Delete all ACLs for a bucket.
         /// </summary>
-        /// <param name="bucketGuid">Bucket GUID.</param>
-        void DeleteByBucketGuid(string bucketGuid);
+        /// <param name="bucketId">Bucket Id.</param>
+        void DeleteByBucketId(string bucketId);
     }
 }

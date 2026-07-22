@@ -10,6 +10,7 @@ namespace Less3.Database.MySql
     using global::MySql.Data.MySqlClient;
     using SyslogLogging;
 
+    using Less3.Database.Implementations;
     using Less3.Database.MySql.Implementations;
     using Less3.Database.MySql.Queries;
 
@@ -70,6 +71,12 @@ namespace Less3.Database.MySql
             Uploads = new UploadMethods(this);
             UploadParts = new UploadPartMethods(this);
             RequestHistory = new RequestHistoryMethods(this);
+            Tenants = new ControlPlaneTenantMethods(this, SqlDialect.MySql);
+            Roles = new ControlPlaneRoleMethods(this, SqlDialect.MySql);
+            Permissions = new ControlPlanePermissionMethods(this, SqlDialect.MySql);
+            RoleAssignments = new ControlPlaneRoleAssignmentMethods(this, SqlDialect.MySql);
+            AuthSessions = new ControlPlaneAuthSessionMethods(this, SqlDialect.MySql);
+            AuthorizationAudit = new ControlPlaneAuthorizationAuditMethods(this, SqlDialect.MySql);
 
             ExecuteQuery(SetupQueries.CreateTables(), true).Wait();
 

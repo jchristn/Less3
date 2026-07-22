@@ -1,4 +1,4 @@
-﻿namespace Less3.Classes
+namespace Less3.Classes
 {
     using System;
     using System.Text.Json.Serialization;
@@ -11,41 +11,29 @@
         #region Public-Members
 
         /// <summary>
-        /// ID.
+        /// Id.
         /// </summary>
-        [JsonIgnore]
-        public int Id
-        {
-            get
-            {
-                return _Id;
-            }
-            set
-            {
-                if (value < 1) throw new ArgumentOutOfRangeException(nameof(Id));
-                _Id = value;
-            }
-        }
+        public string Id { get; set; } = Less3.Helpers.IdGenerator.GenerateUploadPartId();
 
         /// <summary>
-        /// GUID.
+        /// Tenant identifier.
         /// </summary>
-        public string GUID { get; set; } = Guid.NewGuid().ToString();
+        public string TenantId { get; set; } = "default";
 
         /// <summary>
-        /// Bucket GUID.
+        /// Bucket Id.
         /// </summary>
-        public string BucketGUID { get; set; } = Guid.NewGuid().ToString();
+        public string BucketId { get; set; } = Less3.Helpers.IdGenerator.GenerateBucketId();
 
         /// <summary>
-        /// Owner GUID.
+        /// Owner Id.
         /// </summary>
-        public string OwnerGUID { get; set; } = Guid.NewGuid().ToString();
+        public string OwnerId { get; set; } = Less3.Helpers.IdGenerator.GenerateUserId();
 
         /// <summary>
-        /// Multipart upload GUID.
+        /// Multipart upload Id.
         /// </summary>
-        public string UploadGUID { get; set; } = Guid.NewGuid().ToString();
+        public string UploadId { get; set; } = Less3.Helpers.IdGenerator.GenerateUploadId();
 
         /// <summary>
         /// Part number.
@@ -108,7 +96,6 @@
 
         #region Private-Members
 
-        private int _Id = 0;
         private int _PartNumber = 1;
         private int _PartLength = 0;
 

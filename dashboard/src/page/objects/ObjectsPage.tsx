@@ -131,7 +131,7 @@ const ObjectsPage: React.FC = () => {
     isError: isObjectsError,
     error: objectsError,
     refetch: refetchObjects,
-  } = useListBucketObjectsQuery({ bucketGUID: selectedBucketName || '' }, { skip: !selectedBucketName });
+  } = useListBucketObjectsQuery({ bucketId: selectedBucketName || '' }, { skip: !selectedBucketName });
 
   const [downloadBucketObject] = useLazyDownloadBucketObjectQuery();
   const [deleteBucketObject, { isLoading: isDeleting }] = useDeleteBucketObjectMutation();
@@ -159,7 +159,7 @@ const ObjectsPage: React.FC = () => {
     refetch: refetchObjectTags,
   } = useGetObjectTagsQuery(
     {
-      bucketGUID: selectedBucketName || '',
+      bucketId: selectedBucketName || '',
       objectKey: selectedObject?.Key || '',
     },
     { skip: !shouldFetchObjectTags }
@@ -173,7 +173,7 @@ const ObjectsPage: React.FC = () => {
     refetch: refetchObjectACL,
   } = useGetObjectACLQuery(
     {
-      bucketGUID: selectedBucketName || '',
+      bucketId: selectedBucketName || '',
       objectKey: selectedObject?.Key || '',
     },
     { skip: !shouldFetchObjectACL }
@@ -381,7 +381,7 @@ const ObjectsPage: React.FC = () => {
       const folderKey = currentPrefix + folderName + '/';
 
       await writeBucketObject({
-        bucketGUID: selectedBucketName,
+        bucketId: selectedBucketName,
         objectKey: folderKey,
         content: '',
       }).unwrap();
@@ -421,7 +421,7 @@ const ObjectsPage: React.FC = () => {
 
     try {
       const result = await deleteMultipleObjects({
-        bucketGUID: selectedBucketName,
+        bucketId: selectedBucketName,
         objectKeys: keysToDelete,
       }).unwrap();
 
@@ -490,7 +490,7 @@ const ObjectsPage: React.FC = () => {
       try {
         const objectKey = currentPrefix + file.name;
         await uploadBucketObject({
-          bucketGUID: selectedBucketName,
+          bucketId: selectedBucketName,
           objectKey,
           file,
         }).unwrap();
@@ -530,7 +530,7 @@ const ObjectsPage: React.FC = () => {
 
     try {
       const result = await downloadBucketObject({
-        bucketGUID: selectedBucketName,
+        bucketId: selectedBucketName,
         objectKey: record.Key,
       }).unwrap();
 
@@ -614,7 +614,7 @@ const ObjectsPage: React.FC = () => {
 
     try {
       await deleteBucketObject({
-        bucketGUID: selectedBucketName,
+        bucketId: selectedBucketName,
         objectKey: deletingObject.Key,
       }).unwrap();
 
@@ -651,7 +651,7 @@ const ObjectsPage: React.FC = () => {
 
     try {
       const result = await deleteMultipleObjects({
-        bucketGUID: selectedBucketName,
+        bucketId: selectedBucketName,
         objectKeys: keysToDelete,
       }).unwrap();
 
@@ -720,7 +720,7 @@ const ObjectsPage: React.FC = () => {
       }
 
       await writeObjectTags({
-        bucketGUID: selectedBucketName,
+        bucketId: selectedBucketName,
         objectKey: selectedObject.Key,
         tags,
       }).unwrap();
@@ -754,7 +754,7 @@ const ObjectsPage: React.FC = () => {
 
     try {
       await deleteObjectTags({
-        bucketGUID: selectedBucketName,
+        bucketId: selectedBucketName,
         objectKey: selectedObject.Key,
       }).unwrap();
       message.success('Object tags deleted successfully');
@@ -793,7 +793,7 @@ const ObjectsPage: React.FC = () => {
       ];
 
       await writeObjectACL({
-        bucketGUID: selectedBucketName,
+        bucketId: selectedBucketName,
         objectKey: selectedObject.Key,
         owner,
         grants,
@@ -936,7 +936,7 @@ const ObjectsPage: React.FC = () => {
 
     try {
       const result = await downloadBucketObject({
-        bucketGUID: selectedBucketName,
+        bucketId: selectedBucketName,
         objectKey: record.Key,
       }).unwrap();
 
@@ -969,13 +969,13 @@ const ObjectsPage: React.FC = () => {
 
     try {
       await deleteBucketObject({
-        bucketGUID: selectedBucketName,
+        bucketId: selectedBucketName,
         objectKey: activeContentObject.Key,
       }).unwrap();
       deleteSucceeded = true;
 
       await writeBucketObject({
-        bucketGUID: selectedBucketName,
+        bucketId: selectedBucketName,
         objectKey: activeContentObject.Key,
         content: nextContent,
         contentType: inferTextObjectContentType(activeContentType || activeContentObject.ContentType, activeContentObject.Key),

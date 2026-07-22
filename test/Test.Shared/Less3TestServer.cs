@@ -98,7 +98,7 @@ namespace Test.Shared
             bool omitSystemJson = false)
         {
             _Port = GetRandomPort();
-            _TempDirectory = Path.Combine(Path.GetTempPath(), "less3-test-" + Guid.NewGuid().ToString("N"));
+            _TempDirectory = Path.Combine(Path.GetTempPath(), "less3-test-" + Path.GetRandomFileName().Replace(".", ""));
             _ValidateSignatures = validateSignatures;
             _SimulateContainerEnvironment = simulateContainerEnvironment;
             _OmitSystemJson = omitSystemJson;
@@ -190,13 +190,9 @@ namespace Test.Shared
 
             _Process.OutputDataReceived += (sender, e) =>
             {
-                if (!string.IsNullOrEmpty(e.Data))
-                    Console.WriteLine("[Less3] " + e.Data);
             };
             _Process.ErrorDataReceived += (sender, e) =>
             {
-                if (!string.IsNullOrEmpty(e.Data))
-                    Console.Error.WriteLine("[Less3 ERR] " + e.Data);
             };
 
             _Process.BeginOutputReadLine();
@@ -259,6 +255,109 @@ namespace Test.Shared
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Delete, $"{BaseUrl}/admin/{path}");
             request.Headers.Add("x-api-key", _AdminApiKey);
             return await _HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Sends a GET request to the Less3 REST API.
+        /// </summary>
+        /// <param name="path">The REST API path below /api/v1.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The HTTP response.</returns>
+        public async Task<HttpResponseMessage> RestGetAsync(string path, CancellationToken cancellationToken = default)
+        {
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"{BaseUrl}/api/v1/{path}");
+            request.Headers.Add("x-api-key", _AdminApiKey);
+            return await _HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Sends a POST request to the Less3 REST API.
+        /// </summary>
+        /// <param name="path">The REST API path below /api/v1.</param>
+        /// <param name="jsonBody">The JSON request body.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The HTTP response.</returns>
+        public async Task<HttpResponseMessage> RestPostAsync(string path, string jsonBody, CancellationToken cancellationToken = default)
+        {
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/api/v1/{path}");
+            request.Headers.Add("x-api-key", _AdminApiKey);
+            request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+            return await _HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Sends an unauthenticated POST request to the Less3 REST API.
+        /// </summary>
+        /// <param name="path">The REST API path below /api/v1.</param>
+        /// <param name="jsonBody">The JSON request body.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The HTTP response.</returns>
+        public async Task<HttpResponseMessage> RestPostUnauthenticatedAsync(string path, string jsonBody, CancellationToken cancellationToken = default)
+        {
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/api/v1/{path}");
+            request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+            return await _HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Sends a PUT request to the Less3 REST API.
+        /// </summary>
+        /// <param name="path">The REST API path below /api/v1.</param>
+        /// <param name="jsonBody">The JSON request body.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The HTTP response.</returns>
+        public async Task<HttpResponseMessage> RestPutAsync(string path, string jsonBody, CancellationToken cancellationToken = default)
+        {
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Put, $"{BaseUrl}/api/v1/{path}");
+            request.Headers.Add("x-api-key", _AdminApiKey);
+            request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+            return await _HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Sends a DELETE request to the Less3 REST API.
+        /// </summary>
+        /// <param name="path">The REST API path below /api/v1.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The HTTP response.</returns>
+        public async Task<HttpResponseMessage> RestDeleteAsync(string path, CancellationToken cancellationToken = default)
+        {
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Delete, $"{BaseUrl}/api/v1/{path}");
+            request.Headers.Add("x-api-key", _AdminApiKey);
+            return await _HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Grants the built-in tenant administrator role to a test principal in a tenant.
+        /// </summary>
+        /// <param name="principalType">Principal type, such as User or Credential.</param>
+        /// <param name="principalId">Principal identifier.</param>
+        /// <param name="tenantId">Tenant identifier.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public async Task GrantTenantAdminAsync(
+            string principalType,
+            string principalId,
+            string tenantId = "default",
+            CancellationToken cancellationToken = default)
+        {
+            string json = JsonSerializer.Serialize(new
+            {
+                Id = TestIds.Assignment(),
+                TenantId = tenantId,
+                RoleId = "rol_builtin_tenantadmin",
+                PrincipalType = principalType,
+                PrincipalId = principalId,
+                ResourceType = "Tenant",
+                ResourceId = tenantId,
+                Active = true
+            });
+
+            HttpResponseMessage response = await RestPostAsync("roleassignments?tenantId=" + tenantId, json, cancellationToken).ConfigureAwait(false);
+            if (response.StatusCode != HttpStatusCode.Created)
+            {
+                throw new InvalidOperationException("Failed to grant tenant admin to " + principalType + " " + principalId + "; status " + response.StatusCode + ".");
+            }
         }
 
         /// <summary>

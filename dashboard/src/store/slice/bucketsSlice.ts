@@ -107,13 +107,13 @@ const buildQueryString = (params: GetBucketsParams): string => {
   return queryParams.toString();
 };
 
-const getBucketCacheId = (bucket: Pick<Bucket, 'GUID' | 'Name'> | string): string =>
-  typeof bucket === 'string' ? bucket : bucket.GUID || bucket.Name;
+const getBucketCacheId = (bucket: Pick<Bucket, 'Id' | 'Name'> | string): string =>
+  typeof bucket === 'string' ? bucket : bucket.Id || bucket.Name;
 
 const normalizeBucket = (bucket: any): Bucket => ({
   ...bucket,
   Name: bucket?.Name || '',
-  GUID: bucket?.GUID,
+  Id: bucket?.Id,
   CreatedUtc: bucket?.CreatedUtc || bucket?.CreationDate || '',
   CreationDate: bucket?.CreationDate || bucket?.CreatedUtc || '',
 });
@@ -148,7 +148,7 @@ const readS3ErrorMessage = async (response: Response, fallbackMessage: string): 
   return `${fallbackMessage}: ${response.statusText || response.status}`;
 };
 
-const getBucketTags = (bucket: Pick<Bucket, 'GUID' | 'Name'> | string) => [
+const getBucketTags = (bucket: Pick<Bucket, 'Id' | 'Name'> | string) => [
   { type: BucketsSliceTags.BUCKETS as const, id: getBucketCacheId(bucket) },
   { type: BucketsSliceTags.BUCKETS, id: 'LIST' },
 ];
@@ -182,8 +182,8 @@ const fetchAdminCredentials = async (): Promise<S3CredentialLike[]> => {
   return Array.isArray(responseData) ? responseData : [];
 };
 
-const fetchCredentialByGuid = async (guid: string): Promise<S3CredentialLike | null> => {
-  const response = await fetch(buildApiUrl(`admin/credentials/${guid}`), {
+const fetchCredentialById = async (id: string): Promise<S3CredentialLike | null> => {
+  const response = await fetch(buildApiUrl(`admin/credentials/${id}`), {
     method: 'GET',
     headers: buildAdminApiHeaders(),
     cache: 'no-store',
@@ -208,11 +208,11 @@ const resolveS3Credential = async (): Promise<S3CredentialLike | null> => {
     return selectedCredential;
   }
 
-  if (!selectedCredential.GUID) {
+  if (!selectedCredential.Id) {
     return null;
   }
 
-  return fetchCredentialByGuid(selectedCredential.GUID);
+  return fetchCredentialById(selectedCredential.Id);
 };
 
 const buildS3RequestHeaders = async (
@@ -309,9 +309,9 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     }),
 
     getBucketById: build.query<BucketResponse, string>({
-      query: (guid: string) => ({ url: buildApiUrl(`admin/buckets/${guid}`), method: 'GET' }),
+      query: (id: string) => ({ url: buildApiUrl(`admin/buckets/${id}`), method: 'GET' }),
       transformResponse: (response: any): Bucket => normalizeBucket(response),
-      providesTags: (_result: Bucket | undefined, _error: unknown, guid: string) => getBucketTags(guid),
+      providesTags: (_result: Bucket | undefined, _error: unknown, id: string) => getBucketTags(id),
     }),
 
     createBucket: build.mutation<BucketResponse, CreateBucketRequest>({
@@ -353,9 +353,9 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     }),
 
     deleteBucket: build.mutation<DeleteBucketResponse, DeleteBucketParams>({
-      async queryFn({ guid }) {
+      async queryFn({ id }) {
         try {
-          const response = await fetch(buildApiUrl(`admin/buckets/${guid}?destroy=true`), {
+          const response = await fetch(buildApiUrl(`admin/buckets/${id}?destroy=true`), {
             method: 'DELETE',
             headers: buildAdminApiHeaders(),
           });
@@ -386,15 +386,15 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
       invalidatesTags: (
         _result: DeleteBucketResponse | undefined,
         _error: unknown,
-        { guid }: DeleteBucketParams
-      ) => getBucketTags(guid),
+        { id }: DeleteBucketParams
+      ) => getBucketTags(id),
     }),
 
     listBucketObjects: build.query<ListBucketResult, ListBucketObjectsParams>({
-      async queryFn({ bucketGUID }) {
+      async queryFn({ bucketId }) {
         try {
           const baseUrl = getBaseUrl();
-          const url = `${baseUrl}/${bucketGUID}/`;
+          const url = `${baseUrl}/${bucketId}/`;
           const response = await fetchS3(url, {
             method: 'GET',
             cache: 'no-store',
@@ -425,10 +425,10 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     }),
 
     downloadBucketObject: build.query<DownloadBucketObjectResponse, DownloadBucketObjectParams>({
-      async queryFn({ bucketGUID, objectKey }) {
+      async queryFn({ bucketId, objectKey }) {
         try {
           const baseUrl = getBaseUrl();
-          const url = `${baseUrl}/${bucketGUID}/${objectKey}`;
+          const url = `${baseUrl}/${bucketId}/${objectKey}`;
           const response = await fetchS3(url, {
             method: 'GET',
             cache: 'no-store',
@@ -464,10 +464,10 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     }),
 
     writeBucketObject: build.mutation<WriteBucketObjectResponse, WriteBucketObjectParams>({
-      async queryFn({ bucketGUID, objectKey, content, contentType }) {
+      async queryFn({ bucketId, objectKey, content, contentType }) {
         try {
           const baseUrl = getBaseUrl();
-          const url = `${baseUrl}/${bucketGUID}/${objectKey}`;
+          const url = `${baseUrl}/${bucketId}/${objectKey}`;
           const response = await fetchS3(url, {
             method: 'PUT',
             headers: {
@@ -502,10 +502,10 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     }),
 
     uploadBucketObject: build.mutation<UploadBucketObjectResponse, UploadBucketObjectParams>({
-      async queryFn({ bucketGUID, objectKey, file }) {
+      async queryFn({ bucketId, objectKey, file }) {
         try {
           const baseUrl = getBaseUrl();
-          const url = `${baseUrl}/${bucketGUID}/${objectKey}`;
+          const url = `${baseUrl}/${bucketId}/${objectKey}`;
           const response = await fetchS3(url, {
             method: 'PUT',
             headers: {
@@ -540,10 +540,10 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     }),
 
     deleteBucketObject: build.mutation<DeleteBucketObjectResponse, DeleteBucketObjectParams>({
-      async queryFn({ bucketGUID, objectKey }) {
+      async queryFn({ bucketId, objectKey }) {
         try {
           const baseUrl = getBaseUrl();
-          const url = `${baseUrl}/${bucketGUID}/${objectKey}`;
+          const url = `${baseUrl}/${bucketId}/${objectKey}`;
           const response = await fetchS3(url, {
             method: 'DELETE',
           });
@@ -575,9 +575,9 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
 
     deleteMultipleObjects: build.mutation<
       { deleted: string[]; errors: Array<{ key: string; error: string }> },
-      { bucketGUID: string; objectKeys: string[] }
+      { bucketId: string; objectKeys: string[] }
     >({
-      async queryFn({ bucketGUID, objectKeys }) {
+      async queryFn({ bucketId, objectKeys }) {
         try {
           const baseUrl = getBaseUrl();
 
@@ -585,7 +585,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
           const objectsXml = objectKeys.map((key) => `<Object><Key>${key}</Key></Object>`).join('');
           const xmlBody = `<?xml version="1.0" encoding="UTF-8"?><Delete><Quiet>false</Quiet>${objectsXml}</Delete>`;
 
-          const url = `${baseUrl}/${bucketGUID}?delete`;
+          const url = `${baseUrl}/${bucketId}?delete`;
           const response = await fetchS3(url, {
             method: 'POST',
             headers: {
@@ -774,11 +774,11 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     }),
 
     writeObjectTags: build.mutation<WriteObjectTagsResponse, WriteObjectTagsParams>({
-      async queryFn({ bucketGUID, objectKey, tags }) {
+      async queryFn({ bucketId, objectKey, tags }) {
         try {
           const baseUrl = getBaseUrl();
           const xmlBody = generateBucketTaggingXml(tags);
-          const url = `${baseUrl}/${bucketGUID}/${objectKey}?tagging`;
+          const url = `${baseUrl}/${bucketId}/${objectKey}?tagging`;
           const response = await fetchS3(url, {
             method: 'PUT',
             headers: {
@@ -813,10 +813,10 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     }),
 
     getObjectTags: build.query<GetObjectTagsResponse, GetObjectTagsParams>({
-      async queryFn({ bucketGUID, objectKey }) {
+      async queryFn({ bucketId, objectKey }) {
         try {
           const baseUrl = getBaseUrl();
-          const url = `${baseUrl}/${bucketGUID}/${objectKey}?tagging`;
+          const url = `${baseUrl}/${bucketId}/${objectKey}?tagging`;
           const response = await fetchS3(url, {
             method: 'GET',
             cache: 'no-store',
@@ -859,10 +859,10 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     }),
 
     deleteObjectTags: build.mutation<DeleteObjectTagsResponse, DeleteObjectTagsParams>({
-      async queryFn({ bucketGUID, objectKey }) {
+      async queryFn({ bucketId, objectKey }) {
         try {
           const baseUrl = getBaseUrl();
-          const url = `${baseUrl}/${bucketGUID}/${objectKey}?tagging`;
+          const url = `${baseUrl}/${bucketId}/${objectKey}?tagging`;
           const response = await fetchS3(url, {
             method: 'DELETE',
           });
@@ -970,11 +970,11 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     }),
 
     writeObjectACL: build.mutation<WriteObjectACLResponse, WriteObjectACLParams>({
-      async queryFn({ bucketGUID, objectKey, owner, grants }) {
+      async queryFn({ bucketId, objectKey, owner, grants }) {
         try {
           const baseUrl = getBaseUrl();
           const xmlBody = generateBucketACLXml(owner, grants);
-          const url = `${baseUrl}/${bucketGUID}/${objectKey}?acl`;
+          const url = `${baseUrl}/${bucketId}/${objectKey}?acl`;
           const response = await fetchS3(url, {
             method: 'PUT',
             headers: {
@@ -1009,10 +1009,10 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
     }),
 
     getObjectACL: build.query<GetObjectACLResponse, GetObjectACLParams>({
-      async queryFn({ bucketGUID, objectKey }) {
+      async queryFn({ bucketId, objectKey }) {
         try {
           const baseUrl = getBaseUrl();
-          const url = `${baseUrl}/${bucketGUID}/${objectKey}?acl`;
+          const url = `${baseUrl}/${bucketId}/${objectKey}?acl`;
           const response = await fetchS3(url, {
             method: 'GET',
             cache: 'no-store',

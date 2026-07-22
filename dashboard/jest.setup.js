@@ -72,18 +72,20 @@ global.TransformStream = class {
   }
 };
 
-jest.mock("react-password-checklist", () => () => (
-  <div>PasswordChecklistMock</div>
-));
+jest.mock("react-password-checklist", () => function PasswordChecklistMock() {
+  return <div>PasswordChecklistMock</div>;
+});
 
 jest.mock("jsoneditor-react", () => ({
-  JsonEditor: ({ value, onChange }) => (
-    <input
-      data-testid="json-editor-textarea"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-    />
-  ),
+  JsonEditor: function JsonEditorMock({ value, onChange }) {
+    return (
+      <input
+        data-testid="json-editor-textarea"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    );
+  },
 }));
 
 // Handle unhandled promise rejections for form validation errors

@@ -1,9 +1,11 @@
-﻿namespace Less3.Api.Admin
+namespace Less3.Api.Admin
 {
     using System;
     using System.Collections.Generic;
     using System.Globalization;
+    using System.IO;
     using System.Linq;
+    using System.Reflection;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -12,6 +14,9 @@
     using SyslogLogging;
 
     using Less3.Classes;
+    using Less3.Requests;
+    using Less3.Responses;
+    using Less3.Helpers;
     using Less3.Settings;
 
     /// <summary>
@@ -76,6 +81,36 @@
                 await GetCredentials(ctx);
                 return;
             }
+            else if (ctx.Http.Request.Url.Elements[1].Equals("tenants"))
+            {
+                await GetTenants(ctx);
+                return;
+            }
+            else if (ctx.Http.Request.Url.Elements[1].Equals("roles"))
+            {
+                await GetRoles(ctx);
+                return;
+            }
+            else if (ctx.Http.Request.Url.Elements[1].Equals("permissions"))
+            {
+                await GetPermissions(ctx);
+                return;
+            }
+            else if (ctx.Http.Request.Url.Elements[1].Equals("roleassignments"))
+            {
+                await GetRoleAssignments(ctx);
+                return;
+            }
+            else if (ctx.Http.Request.Url.Elements[1].Equals("authsessions"))
+            {
+                await GetAuthSessions(ctx);
+                return;
+            }
+            else if (ctx.Http.Request.Url.Elements[1].Equals("authorizationaudit"))
+            {
+                await GetAuthorizationAudit(ctx);
+                return;
+            }
             else if (ctx.Http.Request.Url.Elements[1].Equals("requesthistory"))
             {
                 await GetRequestHistory(ctx);
@@ -84,6 +119,11 @@
             else if (ctx.Http.Request.Url.Elements[1].Equals("stats"))
             {
                 await GetDashboardStatistics(ctx);
+                return;
+            }
+            else if (ctx.Http.Request.Url.Elements[1].Equals("health"))
+            {
+                await GetHealth(ctx);
                 return;
             }
 
@@ -98,7 +138,7 @@
         {
             if (ctx.Http.Request.Url.Elements.Length >= 3)
             {
-                Bucket bucket = _Buckets.GetByGuid(ctx.Http.Request.Url.Elements[2]);
+                Bucket bucket = _Buckets.GetById(ctx.Http.Request.Url.Elements[2]);
                 if (bucket == null)
                 {
                     ctx.Response.StatusCode = 404;
@@ -128,7 +168,7 @@
         {
             if (ctx.Http.Request.Url.Elements.Length >= 3)
             {
-                User user = _Config.GetUserByGuid(ctx.Http.Request.Url.Elements[2]);
+                User user = _Config.GetUserById(ctx.Http.Request.Url.Elements[2]);
                 if (user == null)
                 {
                     ctx.Response.StatusCode = 404;
@@ -158,7 +198,7 @@
         {
             if (ctx.Http.Request.Url.Elements.Length >= 3)
             {
-                Credential cred = _Config.GetCredentialByGuid(ctx.Http.Request.Url.Elements[2]);
+                Credential cred = _Config.GetCredentialById(ctx.Http.Request.Url.Elements[2]);
                 if (cred == null)
                 {
                     ctx.Response.StatusCode = 404;
@@ -184,6 +224,151 @@
             }
         }
 
+        private async Task GetTenants(S3Context ctx)
+        {
+            if (ctx.Http.Request.Url.Elements.Length >= 3)
+            {
+                string id = ctx.Http.Request.Url.Elements[2];
+                if (ctx.Http.Request.Url.Elements.Length >= 4 && ctx.Http.Request.Url.Elements[3].Equals("exists"))
+                {
+                    await SendExists(ctx, _Config.TenantExists(id)).ConfigureAwait(false);
+                    return;
+                }
+
+                Tenant tenant = _Config.GetTenantById(id);
+                if (tenant == null)
+                {
+                    await SendNotFound(ctx).ConfigureAwait(false);
+                    return;
+                }
+
+                await SendJson(ctx, tenant).ConfigureAwait(false);
+                return;
+            }
+
+            await SendJson(ctx, _Config.GetTenants()).ConfigureAwait(false);
+        }
+
+        private async Task GetRoles(S3Context ctx)
+        {
+            string tenantId = GetTenantId(ctx);
+
+            if (ctx.Http.Request.Url.Elements.Length >= 3)
+            {
+                string id = ctx.Http.Request.Url.Elements[2];
+                if (ctx.Http.Request.Url.Elements.Length >= 4 && ctx.Http.Request.Url.Elements[3].Equals("exists"))
+                {
+                    await SendExists(ctx, _Config.RoleExists(tenantId, id)).ConfigureAwait(false);
+                    return;
+                }
+
+                Role role = _Config.GetRoleById(tenantId, id);
+                if (role == null)
+                {
+                    await SendNotFound(ctx).ConfigureAwait(false);
+                    return;
+                }
+
+                await SendJson(ctx, role).ConfigureAwait(false);
+                return;
+            }
+
+            await SendJson(ctx, _Config.GetRoles(tenantId)).ConfigureAwait(false);
+        }
+
+        private async Task GetPermissions(S3Context ctx)
+        {
+            string tenantId = GetTenantId(ctx);
+
+            if (ctx.Http.Request.Url.Elements.Length >= 3)
+            {
+                string id = ctx.Http.Request.Url.Elements[2];
+                if (ctx.Http.Request.Url.Elements.Length >= 4 && ctx.Http.Request.Url.Elements[3].Equals("exists"))
+                {
+                    await SendExists(ctx, _Config.PermissionExists(tenantId, id)).ConfigureAwait(false);
+                    return;
+                }
+
+                Permission permission = _Config.GetPermissionById(tenantId, id);
+                if (permission == null)
+                {
+                    await SendNotFound(ctx).ConfigureAwait(false);
+                    return;
+                }
+
+                await SendJson(ctx, permission).ConfigureAwait(false);
+                return;
+            }
+
+            await SendJson(ctx, _Config.GetPermissions(tenantId)).ConfigureAwait(false);
+        }
+
+        private async Task GetRoleAssignments(S3Context ctx)
+        {
+            string tenantId = GetTenantId(ctx);
+
+            if (ctx.Http.Request.Url.Elements.Length >= 3)
+            {
+                RoleAssignment assignment = _Config.GetRoleAssignmentById(tenantId, ctx.Http.Request.Url.Elements[2]);
+                if (assignment == null)
+                {
+                    await SendNotFound(ctx).ConfigureAwait(false);
+                    return;
+                }
+
+                await SendJson(ctx, assignment).ConfigureAwait(false);
+                return;
+            }
+
+            EnumerationQuery query = QueryFromRequest(ctx);
+            query.TenantId = tenantId;
+            await SendJson(ctx, _Config.EnumerateRoleAssignments(query).Items).ConfigureAwait(false);
+        }
+
+        private async Task GetAuthSessions(S3Context ctx)
+        {
+            string tenantId = GetTenantId(ctx);
+
+            if (ctx.Http.Request.Url.Elements.Length >= 3)
+            {
+                AuthSession session = _Config.GetAuthSessionById(tenantId, ctx.Http.Request.Url.Elements[2]);
+                if (session == null)
+                {
+                    await SendNotFound(ctx).ConfigureAwait(false);
+                    return;
+                }
+
+                await SendJson(ctx, session).ConfigureAwait(false);
+                return;
+            }
+
+            EnumerationQuery query = QueryFromRequest(ctx);
+            query.TenantId = tenantId;
+            await SendJson(ctx, _Config.EnumerateAuthSessions(query).Items).ConfigureAwait(false);
+        }
+
+        private async Task GetAuthorizationAudit(S3Context ctx)
+        {
+            string tenantId = GetTenantId(ctx);
+
+            if (ctx.Http.Request.Url.Elements.Length >= 3)
+            {
+                AuthorizationAudit audit = _Config.GetAuthorizationAuditById(tenantId, ctx.Http.Request.Url.Elements[2]);
+                if (audit == null)
+                {
+                    await SendNotFound(ctx).ConfigureAwait(false);
+                    return;
+                }
+
+                await SendJson(ctx, audit).ConfigureAwait(false);
+                return;
+            }
+
+            EnumerationQuery query = QueryFromRequest(ctx);
+            query.TenantId = tenantId;
+            await SendJson(ctx, _Config.EnumerateAuthorizationAudit(query).Items).ConfigureAwait(false);
+        }
+
         private async Task GetRequestHistory(S3Context ctx)
         {
             if (ctx.Http.Request.Url.Elements.Length >= 3)
@@ -194,7 +379,7 @@
                     return;
                 }
 
-                RequestHistory entry = _Config.GetRequestHistoryByGuid(ctx.Http.Request.Url.Elements[2]);
+                RequestHistory entry = _Config.GetRequestHistoryById(ctx.Http.Request.Url.Elements[2]);
                 if (entry == null)
                 {
                     ctx.Response.StatusCode = 404;
@@ -326,8 +511,8 @@
 
                 foreach (Bucket bucket in buckets)
                 {
-                    BucketStatistics stats = new BucketStatistics(bucket.Name, bucket.GUID, 0, 0);
-                    BucketClient client = _Buckets.GetClient(bucket.Name);
+                    BucketStatistics stats = new BucketStatistics(bucket.Name, bucket.Id, 0, 0);
+                    BucketClient client = _Buckets.GetClient(bucket.TenantId, bucket.Name);
 
                     if (client != null)
                     {
@@ -345,6 +530,148 @@
             ctx.Response.StatusCode = 200;
             ctx.Response.ContentType = "application/json";
             await ctx.Response.Send(SerializationHelper.SerializeJson(result, true));
+        }
+
+        private async Task GetHealth(S3Context ctx)
+        {
+            AdminHealthStatus result = new AdminHealthStatus();
+            result.ServerVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
+            result.UptimeSeconds = GetUptimeSeconds();
+            result.DatabaseType = _Settings.Database.Type.ToString();
+            result.StoragePath = _Settings.Storage.DiskDirectory;
+            result.TempPath = _Settings.Storage.TempDirectory;
+            result.StoragePathWritable = IsWritableDirectory(result.StoragePath);
+            result.FreeDiskBytes = GetFreeDiskBytes(result.StoragePath);
+            result.TempUploadCount = GetFileCount(result.TempPath);
+            result.GeneratedUtc = DateTime.UtcNow;
+
+            try
+            {
+                _Config.GetBuckets();
+                result.DatabaseReachable = true;
+            }
+            catch
+            {
+                result.DatabaseReachable = false;
+            }
+
+            ctx.Response.StatusCode = result.DatabaseReachable && result.StoragePathWritable ? 200 : 503;
+            ctx.Response.ContentType = "application/json";
+            await ctx.Response.Send(SerializationHelper.SerializeJson(result, true));
+        }
+
+        private static long GetUptimeSeconds()
+        {
+            try
+            {
+                return Convert.ToInt64((DateTime.UtcNow - System.Diagnostics.Process.GetCurrentProcess().StartTime.ToUniversalTime()).TotalSeconds);
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        private static bool IsWritableDirectory(string path)
+        {
+            if (String.IsNullOrEmpty(path)) return false;
+
+            try
+            {
+                Directory.CreateDirectory(path);
+                string probe = Path.Combine(path, ".less3-health-" + IdGenerator.GenerateRequestHistoryId() + ".tmp");
+                File.WriteAllText(probe, "ok");
+                File.Delete(probe);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static long GetFreeDiskBytes(string path)
+        {
+            if (String.IsNullOrEmpty(path)) return 0;
+
+            try
+            {
+                DirectoryInfo directory = new DirectoryInfo(Path.GetFullPath(path));
+                DriveInfo drive = new DriveInfo(directory.Root.FullName);
+                return drive.AvailableFreeSpace;
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        private static int GetFileCount(string path)
+        {
+            if (String.IsNullOrEmpty(path) || !Directory.Exists(path)) return 0;
+
+            try
+            {
+                return Directory.GetFiles(path, "*", SearchOption.AllDirectories).Length;
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        private static string GetTenantId(S3Context ctx)
+        {
+            string tenantId = GetQueryValue(ctx, "tenantId");
+            if (String.IsNullOrEmpty(tenantId)) tenantId = "default";
+            return tenantId;
+        }
+
+        private static string GetQueryValue(S3Context ctx, string name)
+        {
+            if (ctx.Http.Request.Query.Elements == null) return null;
+            if (!ctx.Http.Request.Query.Elements.AllKeys.Contains(name)) return null;
+            return ctx.Http.Request.Query.Elements[name];
+        }
+
+        private static EnumerationQuery QueryFromRequest(S3Context ctx)
+        {
+            EnumerationQuery query = new EnumerationQuery();
+
+            string limit = GetQueryValue(ctx, "limit");
+            if (!String.IsNullOrEmpty(limit) && Int32.TryParse(limit, out int parsedLimit)) query.Limit = parsedLimit;
+
+            string offset = GetQueryValue(ctx, "offset");
+            if (!String.IsNullOrEmpty(offset) && Int32.TryParse(offset, out int parsedOffset)) query.Offset = parsedOffset;
+
+            string sortField = GetQueryValue(ctx, "sortField");
+            if (!String.IsNullOrEmpty(sortField)) query.SortField = sortField;
+
+            string sortDirection = GetQueryValue(ctx, "sortDirection");
+            if (!String.IsNullOrEmpty(sortDirection)) query.SortDirection = sortDirection;
+
+            return query;
+        }
+
+        private static async Task SendJson(S3Context ctx, object obj)
+        {
+            ctx.Response.StatusCode = 200;
+            ctx.Response.ContentType = "application/json";
+            await ctx.Response.Send(SerializationHelper.SerializeJson(obj, true)).ConfigureAwait(false);
+        }
+
+        private static async Task SendExists(S3Context ctx, bool exists)
+        {
+            ctx.Response.StatusCode = 200;
+            ctx.Response.ContentType = "application/json";
+            await ctx.Response.Send(SerializationHelper.SerializeJson(new ExistsResponse(exists), true)).ConfigureAwait(false);
+        }
+
+        private static async Task SendNotFound(S3Context ctx)
+        {
+            ctx.Response.StatusCode = 404;
+            ctx.Response.ContentType = "text/plain";
+            await ctx.Response.Send().ConfigureAwait(false);
         }
 
         #endregion

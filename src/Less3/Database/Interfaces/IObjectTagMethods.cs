@@ -15,18 +15,18 @@ namespace Less3.Database.Interfaces
         void Insert(ObjectTag tag);
 
         /// <summary>
-        /// Retrieve tags for an object by object GUID and bucket GUID.
+        /// Retrieve tags for an object by object Id and bucket Id.
         /// </summary>
-        /// <param name="objectGuid">Object GUID.</param>
-        /// <param name="bucketGuid">Bucket GUID.</param>
+        /// <param name="objectId">Object Id.</param>
+        /// <param name="bucketId">Bucket Id.</param>
         /// <returns>List of object tags.</returns>
-        List<ObjectTag> GetByObjectGuid(string objectGuid, string bucketGuid);
+        List<ObjectTag> GetByObjectId(string objectId, string bucketId);
 
         /// <summary>
-        /// Delete all tags for an object by object GUID and bucket GUID.
+        /// Delete all tags for an object by object Id and bucket Id.
         /// </summary>
-        /// <param name="objectGuid">Object GUID.</param>
-        /// <param name="bucketGuid">Bucket GUID.</param>
-        void DeleteByObjectGuid(string objectGuid, string bucketGuid);
+        /// <param name="objectId">Object Id.</param>
+        /// <param name="bucketId">Bucket Id.</param>
+        void DeleteByObjectId(string objectId, string bucketId);
     }
 }

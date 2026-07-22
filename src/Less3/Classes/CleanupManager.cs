@@ -149,14 +149,14 @@ namespace Less3.Classes
                     {
                         try
                         {
-                            _Logging.Debug("CleanupManager cleaning up expired upload " + upload.GUID + " for key " + upload.Key);
+                            _Logging.Debug("CleanupManager cleaning up expired upload " + upload.Id + " for key " + upload.Key);
 
-                            List<UploadPart> parts = _Config.GetUploadPartsByUploadGuid(upload.GUID);
+                            List<UploadPart> parts = _Config.GetUploadPartsByUploadId(upload.TenantId, upload.Id);
                             if (parts != null && parts.Count > 0)
                             {
                                 foreach (UploadPart part in parts)
                                 {
-                                    string partFile = GetPartFilePath(upload.BucketGUID, upload.GUID, part.PartNumber);
+                                    string partFile = GetPartFilePath(upload.BucketId, upload.Id, part.PartNumber);
                                     if (File.Exists(partFile))
                                     {
                                         File.Delete(partFile);
@@ -165,15 +165,15 @@ namespace Less3.Classes
                                 }
                             }
 
-                            _Config.DeleteUploadParts(upload.GUID);
-                            _Config.DeleteUpload(upload.GUID);
+                            _Config.DeleteUploadParts(upload.TenantId, upload.Id);
+                            _Config.DeleteUpload(upload.TenantId, upload.Id);
 
                             cleanedCount++;
-                            _Logging.Info("CleanupManager cleaned up expired upload " + upload.GUID);
+                            _Logging.Info("CleanupManager cleaned up expired upload " + upload.Id);
                         }
                         catch (Exception e)
                         {
-                            _Logging.Exception(e, "CleanupManager", "CleanupExpiredUploads processing upload " + upload.GUID);
+                            _Logging.Exception(e, "CleanupManager", "CleanupExpiredUploads processing upload " + upload.Id);
                         }
                     }
                 }
@@ -207,10 +207,10 @@ namespace Less3.Classes
             }
         }
 
-        private string GetPartFilePath(string bucketGuid, string uploadGuid, int partNumber)
+        private string GetPartFilePath(string bucketId, string uploadId, int partNumber)
         {
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            if (String.IsNullOrEmpty(uploadGuid)) throw new ArgumentNullException(nameof(uploadGuid));
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            if (String.IsNullOrEmpty(uploadId)) throw new ArgumentNullException(nameof(uploadId));
             if (partNumber < 1) throw new ArgumentOutOfRangeException(nameof(partNumber));
 
             string tempDir = _Settings.Storage.TempDirectory;
@@ -219,7 +219,7 @@ namespace Less3.Classes
                 tempDir += "/";
             }
 
-            return tempDir + bucketGuid + "-upload-" + uploadGuid + "-part-" + partNumber;
+            return tempDir + bucketId + "-upload-" + uploadId + "-part-" + partNumber;
         }
 
         #endregion

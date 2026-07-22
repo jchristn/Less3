@@ -29,5 +29,26 @@
             internal static string AclGrantWriteAcp = "X-Amz-Grant-Write-Acp";
             internal static string AclGrantFullControl = "X-Amz-Grant-Full-Control";
         }
+
+        internal static class IdPrefixes
+        {
+            internal static string Tenant = "ten_";
+            internal static string User = "usr_";
+            internal static string Credential = "crd_";
+            internal static string Bucket = "bkt_";
+            internal static string Object = "obj_";
+            internal static string Upload = "upl_";
+            internal static string UploadPart = "prt_";
+            internal static string BucketTag = "btg_";
+            internal static string ObjectTag = "otg_";
+            internal static string BucketAcl = "bac_";
+            internal static string ObjectAcl = "oac_";
+            internal static string Role = "rol_";
+            internal static string Permission = "per_";
+            internal static string Assignment = "asn_";
+            internal static string Session = "ses_";
+            internal static string AuthorizationAudit = "aud_";
+            internal static string RequestHistory = "req_";
+        }
     }
 }

@@ -19,7 +19,7 @@ jest.mock("next/navigation", () => ({
 
 jest.mock("#/store/slice/bucketsSlice", () => ({
   useGetBucketsQuery: () => ({
-    data: [{ Name: "test-bucket", GUID: "bucket-guid" }],
+    data: [{ Name: "test-bucket", Id: "bkt_test" }],
     isLoading: false,
   }),
   useListBucketObjectsQuery: () => ({

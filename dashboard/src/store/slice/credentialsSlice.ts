@@ -39,8 +39,8 @@ const buildQueryString = (params: GetCredentialsParams): string => {
   return queryParams.toString();
 };
 
-const getCredentialTags = (guid: string) => [
-  { type: CredentialsSliceTags.CREDENTIALS as const, id: guid },
+const getCredentialTags = (id: string) => [
+  { type: CredentialsSliceTags.CREDENTIALS as const, id: id },
   { type: CredentialsSliceTags.CREDENTIALS, id: 'LIST' },
 ];
 
@@ -58,16 +58,16 @@ const credentialsSliceInstance = enhancedSdk.injectEndpoints({
       providesTags: (result: Credential[] | undefined) =>
         result
           ? [
-              ...result.map(({ GUID }: Credential) => ({ type: CredentialsSliceTags.CREDENTIALS as const, id: GUID })),
+              ...result.map(({ Id }: Credential) => ({ type: CredentialsSliceTags.CREDENTIALS as const, id: Id })),
               { type: CredentialsSliceTags.CREDENTIALS, id: 'LIST' },
             ]
           : [{ type: CredentialsSliceTags.CREDENTIALS, id: 'LIST' }],
     }),
 
     getCredentialById: build.query<CredentialResponse, string>({
-      query: (guid: string) => ({ url: buildApiUrl(`admin/credentials/${guid}`), method: 'GET' }),
+      query: (id: string) => ({ url: buildApiUrl(`admin/credentials/${id}`), method: 'GET' }),
       transformResponse: (response: any): Credential => response,
-      providesTags: (_result: Credential | undefined, _error: unknown, guid: string) => getCredentialTags(guid),
+      providesTags: (_result: Credential | undefined, _error: unknown, id: string) => getCredentialTags(id),
     }),
 
     createCredential: build.mutation<CredentialResponse, CreateCredentialRequest>({
@@ -77,30 +77,30 @@ const credentialsSliceInstance = enhancedSdk.injectEndpoints({
     }),
 
     updateCredential: build.mutation<CredentialResponse, UpdateCredentialRequest>({
-      query: ({ GUID, ...body }: UpdateCredentialRequest) => ({
-        url: buildApiUrl(`admin/credentials/${GUID}`),
+      query: ({ Id, ...body }: UpdateCredentialRequest) => ({
+        url: buildApiUrl(`admin/credentials/${Id}`),
         method: 'PUT',
         body: {
-          GUID,
+          Id,
           ...body,
         },
       }),
       transformResponse: (response: any): Credential => response,
-      invalidatesTags: (_result: Credential | undefined, _error: unknown, { GUID }: UpdateCredentialRequest) =>
-        getCredentialTags(GUID),
+      invalidatesTags: (_result: Credential | undefined, _error: unknown, { Id }: UpdateCredentialRequest) =>
+        getCredentialTags(Id),
     }),
 
     deleteCredential: build.mutation<DeleteCredentialResponse, DeleteCredentialParams>({
-      query: ({ guid }: DeleteCredentialParams) => ({
-        url: buildApiUrl(`admin/credentials/${guid}`),
+      query: ({ id }: DeleteCredentialParams) => ({
+        url: buildApiUrl(`admin/credentials/${id}`),
         method: 'DELETE',
       }),
       transformResponse: (): DeleteCredentialResponse => ({ success: true }),
       invalidatesTags: (
         _result: DeleteCredentialResponse | undefined,
         _error: unknown,
-        { guid }: DeleteCredentialParams
-      ) => getCredentialTags(guid),
+        { id }: DeleteCredentialParams
+      ) => getCredentialTags(id),
     }),
   }),
 });

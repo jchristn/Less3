@@ -79,7 +79,9 @@ describe("LoginPage", () => {
         endpoint: "http://test.com",
         apiKey: "super-secret",
       });
-      expect(persistDashboardSession).toHaveBeenCalledWith("http://test.com", "super-secret");
+      expect(persistDashboardSession).toHaveBeenCalledWith("http://test.com", "super-secret", {
+        rememberAdminKey: true,
+      });
       expect(mockPush).toHaveBeenCalledWith("/dashboard");
     });
   });

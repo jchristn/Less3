@@ -24,8 +24,8 @@ jest.mock("next/navigation", () => ({
 jest.mock("#/store/slice/bucketsSlice", () => ({
   useGetBucketsQuery: () => ({
     data: [
-      { Name: "test-bucket", GUID: "bucket-guid", CreatedUtc: "2024-01-01", StorageType: "Disk" },
-      { Name: "test-bucket-2", GUID: "bucket-guid-2", CreatedUtc: "2024-01-02", StorageType: "Disk" },
+      { Name: "test-bucket", Id: "bkt_test", CreatedUtc: "2024-01-01", StorageType: "Disk" },
+      { Name: "test-bucket-2", Id: "bkt_test-2", CreatedUtc: "2024-01-02", StorageType: "Disk" },
     ],
     isLoading: false,
     error: null,
@@ -65,8 +65,8 @@ jest.mock("#/store/slice/dashboardStatsSlice", () => ({
       TotalBytes: 3072,
       GeneratedUtc: "2026-05-15T12:00:00.000Z",
       Buckets: [
-        { Name: "test-bucket", GUID: "bucket-guid", Objects: 3, Bytes: 1024 },
-        { Name: "test-bucket-2", GUID: "bucket-guid-2", Objects: 4, Bytes: 2048 },
+        { Name: "test-bucket", Id: "bkt_test", Objects: 3, Bytes: 1024 },
+        { Name: "test-bucket-2", Id: "bkt_test-2", Objects: 4, Bytes: 2048 },
       ],
     },
     isLoading: false,
@@ -193,7 +193,7 @@ describe("BucketsPage", () => {
         const confirmButton = await screen.findByText("Delete", { timeout: 3000 });
         await userEvent.click(confirmButton);
         await waitFor(() => {
-          expect(mockDeleteBucket).toHaveBeenCalledWith({ guid: "bucket-guid", bucketName: "test-bucket" });
+          expect(mockDeleteBucket).toHaveBeenCalledWith({ id: "bkt_test", bucketName: "test-bucket" });
         }, { timeout: 3000 });
       }
     }, 10000);

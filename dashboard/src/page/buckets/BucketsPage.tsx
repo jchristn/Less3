@@ -24,7 +24,7 @@ import PageContainer from '#/components/base/pageContainer/PageContainer';
 import Less3Flex from '#/components/base/flex/Flex';
 import Less3Dropdown from '#/components/base/dropdown/Dropdown';
 import Less3Text from '#/components/base/typograpghy/Text';
-import GuidDisplay from '#/components/guid-display';
+import IdDisplay from '#/components/id-display';
 import JsonViewerModal from '#/components/json-viewer-modal/JsonViewerModal';
 import {
   useGetBucketsQuery,
@@ -383,13 +383,13 @@ const BucketsPage: React.FC = () => {
   };
 
   const handleDeleteConfirm = async () => {
-    if (!deletingBucket?.Name || !deletingBucket?.GUID) {
-      message.error('Bucket GUID not available');
+    if (!deletingBucket?.Name || !deletingBucket?.Id) {
+      message.error('Bucket Id not available');
       return;
     }
 
     try {
-      await deleteBucket({ guid: deletingBucket.GUID, bucketName: deletingBucket.Name }).unwrap();
+      await deleteBucket({ id: deletingBucket.Id, bucketName: deletingBucket.Name }).unwrap();
       message.success('Bucket deleted successfully');
       setIsDeleteModalVisible(false);
       setDeletingBucket(null);
@@ -552,8 +552,8 @@ const BucketsPage: React.FC = () => {
       (dashboardStats?.Buckets || []).flatMap((bucketStats) => {
         const entries: Array<[string, typeof bucketStats]> = [];
 
-        if (bucketStats.GUID) {
-          entries.push([bucketStats.GUID, bucketStats]);
+        if (bucketStats.Id) {
+          entries.push([bucketStats.Id, bucketStats]);
         }
 
         if (bucketStats.Name) {
@@ -565,7 +565,7 @@ const BucketsPage: React.FC = () => {
     );
 
     const bucketsWithStats = data.map((bucket) => {
-      const bucketStats = bucketStatsMap.get(bucket.GUID || '') || bucketStatsMap.get(bucket.Name);
+      const bucketStats = bucketStatsMap.get(bucket.Id || '') || bucketStatsMap.get(bucket.Name);
 
       return {
         ...bucket,
@@ -654,9 +654,9 @@ const BucketsPage: React.FC = () => {
             <tbody>
               {[
                 { label: 'Name', value: viewingBucket.Name },
-                { label: 'GUID', value: viewingBucket.GUID || '' },
+                { label: 'Id', value: viewingBucket.Id || '' },
                 { label: 'Date Created', value: formatDate(viewingBucket.CreationDate || viewingBucket.CreatedUtc || '') },
-                { label: 'Owner GUID', value: viewingBucket.OwnerGUID || 'Not set' },
+                { label: 'Owner Id', value: viewingBucket.OwnerId || 'Not set' },
                 { label: 'Region', value: viewingBucket.RegionString || 'us-west-1' },
                 { label: 'Storage Type', value: String(viewingBucket.StorageType || 'Disk') },
                 { label: 'Objects Directory', value: viewingBucket.DiskDirectory || 'Not set' },
@@ -671,8 +671,8 @@ const BucketsPage: React.FC = () => {
                     </Less3Text>
                   </td>
                   <td style={{ padding: '8px 0', verticalAlign: 'top' }}>
-                    {item.label === 'GUID' ? (
-                      <GuidDisplay guid={item.value} />
+                    {item.label === 'Id' ? (
+                      <IdDisplay id={item.value} />
                     ) : (
                       <Less3Text style={{ wordBreak: 'break-all' }}>{item.value}</Less3Text>
                     )}

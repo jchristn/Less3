@@ -34,12 +34,12 @@ namespace Test.Xunit
         [Fact]
         public async Task GetObject_WithoutUserMetadata_DoesNotFail()
         {
-            string userGuid = Guid.NewGuid().ToString();
-            string credentialGuid = Guid.NewGuid().ToString();
-            string bucketGuid = Guid.NewGuid().ToString();
-            string bucketName = "metadata-regression-" + Guid.NewGuid().ToString("N").Substring(0, 8);
-            string accessKey = "meta-" + Guid.NewGuid().ToString("N").Substring(0, 12);
-            string secretKey = "secret-" + Guid.NewGuid().ToString("N");
+            string userId = Test.Shared.TestIds.User();
+            string credentialId = Test.Shared.TestIds.Credential();
+            string bucketId = Test.Shared.TestIds.Bucket();
+            string bucketName = "metadata-regression-" + Test.Shared.TestIds.Suffix().Substring(0, 8);
+            string accessKey = "meta-" + Test.Shared.TestIds.Suffix().Substring(0, 8);
+            string secretKey = "secret-" + Test.Shared.TestIds.Suffix();
 
             IAmazonS3 s3Client = _Fixture.Server.CreateS3Client(accessKey, secretKey);
 
@@ -47,7 +47,7 @@ namespace Test.Xunit
             {
                 string userJson = JsonSerializer.Serialize(new
                 {
-                    GUID = userGuid,
+                    Id = userId,
                     Name = "MetadataRegressionUser",
                     Email = "metadata-regression@example.com"
                 });
@@ -55,8 +55,8 @@ namespace Test.Xunit
 
                 string credentialJson = JsonSerializer.Serialize(new
                 {
-                    GUID = credentialGuid,
-                    UserGUID = userGuid,
+                    Id = credentialId,
+                    UserId = userId,
                     Description = "Metadata regression credential",
                     AccessKey = accessKey,
                     SecretKey = secretKey,
@@ -66,8 +66,8 @@ namespace Test.Xunit
 
                 string bucketJson = JsonSerializer.Serialize(new
                 {
-                    GUID = bucketGuid,
-                    OwnerGUID = userGuid,
+                    Id = bucketId,
+                    OwnerId = userId,
                     Name = bucketName
                 });
                 await _Fixture.Server.AdminPostAsync("buckets", bucketJson);
@@ -106,9 +106,9 @@ namespace Test.Xunit
             {
                 s3Client.Dispose();
 
-                try { await _Fixture.Server.AdminDeleteAsync($"buckets/{bucketGuid}?destroy=true"); } catch { }
-                try { await _Fixture.Server.AdminDeleteAsync($"credentials/{credentialGuid}"); } catch { }
-                try { await _Fixture.Server.AdminDeleteAsync($"users/{userGuid}"); } catch { }
+                try { await _Fixture.Server.AdminDeleteAsync($"buckets/{bucketId}?destroy=true"); } catch { }
+                try { await _Fixture.Server.AdminDeleteAsync($"credentials/{credentialId}"); } catch { }
+                try { await _Fixture.Server.AdminDeleteAsync($"users/{userId}"); } catch { }
             }
         }
     }

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import CredentialsPage from "#/page/credentials/CredentialsPage";
 import { renderWithRedux } from "../store/utils";
@@ -21,8 +21,8 @@ jest.mock("#/store/slice/credentialsSlice", () => ({
   useGetCredentialsQuery: () => ({
     data: [
       {
-        GUID: "1",
-        UserGUID: "user1",
+        Id: "1",
+        UserId: "user1",
         Description: "Test Credential",
         AccessKey: "AK123",
         SecretKey: "SK123",
@@ -35,8 +35,8 @@ jest.mock("#/store/slice/credentialsSlice", () => ({
   }),
   useGetCredentialByIdQuery: () => ({
     data: {
-      GUID: "1",
-      UserGUID: "user1",
+      Id: "1",
+      UserId: "user1",
       Description: "Test Credential",
       AccessKey: "AK123",
     },
@@ -49,7 +49,7 @@ jest.mock("#/store/slice/credentialsSlice", () => ({
 
 jest.mock("#/store/slice/usersSlice", () => ({
   useGetUsersQuery: () => ({
-    data: [{ GUID: "user1", Name: "Test User" }],
+    data: [{ Id: "user1", Name: "Test User" }],
     isLoading: false,
   }),
 }));
@@ -121,9 +121,9 @@ describe("CredentialsPage", () => {
         const accessKeyInput = modal.querySelector('input[id="AccessKey"]') as HTMLInputElement;
         const secretKeyInput = modal.querySelector('input[id="SecretKey"]') as HTMLInputElement;
         if (accessKeyInput && secretKeyInput) {
-          // Fill form fields - UserGUID is a select, might be complex to test
+          // Fill form fields - UserId is a select, might be complex to test
           // For now, just verify the modal opened and form fields are present
-          // Form submission requires UserGUID which is a select, so we'll just verify modal renders
+          // Form submission requires UserId which is a select, so we'll just verify modal renders
           expect(accessKeyInput).toBeInTheDocument();
           expect(secretKeyInput).toBeInTheDocument();
           expect(modal).toBeInTheDocument();
@@ -152,8 +152,8 @@ describe("CredentialsPage", () => {
 
       await waitFor(() => {
         expect(mockUpdateCredential).toHaveBeenCalledWith({
-          GUID: "1",
-          UserGUID: "user1",
+          Id: "1",
+          UserId: "user1",
           Description: "Updated Credential",
           AccessKey: "AK123",
           SecretKey: "SK123",
@@ -164,12 +164,12 @@ describe("CredentialsPage", () => {
 
     it("should delete credential when delete is clicked", async () => {
       renderWithRedux(<CredentialsPage />);
-      // Wait for table to render - check for GUID or Description from mock data
+      // Wait for table to render - check for Id or Description from mock data
       await waitFor(() => {
-        const guid = screen.queryByText("1");
+        const id = screen.queryByText("1");
         const description = screen.queryByText("Test Credential");
         const accessKey = screen.queryByText("AK123");
-        expect(guid || description || accessKey).toBeInTheDocument();
+        expect(id || description || accessKey).toBeInTheDocument();
       }, { timeout: 3000 });
       // Find the more button
       const moreButtons = screen.getAllByRole("button");
@@ -192,21 +192,19 @@ describe("CredentialsPage", () => {
 
     it("should view credential metadata", async () => {
       renderWithRedux(<CredentialsPage />);
-      await waitFor(() => {
+      const moreButton = await waitFor(() => {
         const moreButtons = screen.getAllByRole("button");
-        return moreButtons.find((btn) => btn.querySelector(".anticon-more"));
-      }, { timeout: 3000 }).then(async (moreButton) => {
-        if (moreButton) {
-          await userEvent.click(moreButton);
-          await waitFor(async () => {
-            const viewMetadataButton = await screen.findByText("View Metadata", { timeout: 2000 });
-            await userEvent.click(viewMetadataButton);
-          });
-          await waitFor(() => {
-            const metadataTexts = screen.getAllByText(/Metadata/i);
-            expect(metadataTexts.length).toBeGreaterThan(0);
-          });
-        }
+        const button = moreButtons.find((btn) => btn.querySelector(".anticon-more"));
+        expect(button).toBeDefined();
+        return button as HTMLButtonElement;
+      }, { timeout: 3000 });
+
+      fireEvent.click(moreButton);
+      fireEvent.click(await screen.findByText("View Metadata", { timeout: 3000 }));
+
+      await waitFor(() => {
+        const metadataTexts = screen.getAllByText(/Metadata/i);
+        expect(metadataTexts.length).toBeGreaterThan(0);
       });
     });
   });

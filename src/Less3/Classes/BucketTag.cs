@@ -1,4 +1,4 @@
-﻿namespace Less3.Classes
+namespace Less3.Classes
 {
     using System;
     using System.Text.Json.Serialization;
@@ -11,20 +11,19 @@
         #region Public-Members
 
         /// <summary>
-        /// Database identifier.
+        /// Id.
         /// </summary>
-        [JsonIgnore]
-        public int Id { get; set; } = 0;
+        public string Id { get; set; } = Less3.Helpers.IdGenerator.GenerateBucketTagId();
 
         /// <summary>
-        /// GUID.
+        /// Tenant identifier.
         /// </summary>
-        public string GUID { get; set; } = Guid.NewGuid().ToString();
+        public string TenantId { get; set; } = "default";
 
         /// <summary>
-        /// GUID of the bucket.
+        /// Id of the bucket.
         /// </summary>
-        public string BucketGUID { get; set; } = null;
+        public string BucketId { get; set; } = null;
 
         /// <summary>
         /// Key.
@@ -60,15 +59,15 @@
         /// <summary>
         /// Instantiate.
         /// </summary>
-        /// <param name="bucketGuid">Bucket GUID.</param>
+        /// <param name="bucketId">Bucket Id.</param>
         /// <param name="key">Key.</param>
         /// <param name="val">Value.</param>
-        public BucketTag(string bucketGuid, string key, string val)
+        public BucketTag(string bucketId, string key, string val)
         {
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            BucketGUID = bucketGuid;
+            BucketId = bucketId;
             Key = key;
             Value = val;
         }
@@ -76,18 +75,18 @@
         /// <summary>
         /// Instantiate.
         /// </summary>
-        /// <param name="guid">GUID.</param>
-        /// <param name="bucketGuid">Bucket GUID.</param>
+        /// <param name="id">Id.</param>
+        /// <param name="bucketId">Bucket Id.</param>
         /// <param name="key">Key.</param>
         /// <param name="val">Value.</param>
-        public BucketTag(string guid, string bucketGuid, string key, string val)
+        public BucketTag(string id, string bucketId, string key, string val)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            GUID = guid;
-            BucketGUID = bucketGuid;
+            Id = id;
+            BucketId = bucketId;
             Key = key;
             Value = val;
         }

@@ -35,7 +35,7 @@ const WriteObjectModal: React.FC<WriteObjectModalProps> = ({ bucket, open, onCan
       const values = await form.validateFields();
       const objectKey = currentPrefix + values.filename;
       await writeBucketObject({
-        bucketGUID: bucket.Name,
+        bucketId: bucket.Name,
         objectKey,
         content: values.content,
       }).unwrap();

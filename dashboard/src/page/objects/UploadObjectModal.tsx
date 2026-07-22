@@ -59,7 +59,7 @@ const UploadObjectModal: React.FC<UploadObjectModalProps> = ({
 
       try {
         await uploadBucketObject({
-          bucketGUID: bucketName,
+          bucketId: bucketName,
           objectKey: `${currentPrefix}${originFile.name}`,
           file: originFile,
         }).unwrap();

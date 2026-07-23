@@ -1,4 +1,3 @@
-/* eslint-disable max-lines-per-function */
 'use client';
 import React, { useState, useMemo } from 'react';
 import {
@@ -260,18 +259,11 @@ const DashboardPage: React.FC = () => {
           </Less3Text>
           <Less3Flex gap={16} wrap="wrap">
             <QuickActionCard
-              title="Create a Bucket"
-              description="Set up a new storage bucket"
-              icon={<DatabaseOutlined />}
-              color="#22AF79"
-              onClick={() => router.push('/admin/buckets')}
-            />
-            <QuickActionCard
-              title="Manage Objects"
-              description="Browse and manage stored objects"
-              icon={<FolderOutlined />}
-              color="#1890ff"
-              onClick={() => router.push('/admin/objects')}
+              title="Manage Tenants"
+              description="Configure tenant boundaries"
+              icon={<BankOutlined />}
+              color="#13c2c2"
+              onClick={() => router.push('/admin/tenants')}
             />
             <QuickActionCard
               title="Manage Users"
@@ -288,18 +280,25 @@ const DashboardPage: React.FC = () => {
               onClick={() => router.push('/admin/credentials')}
             />
             <QuickActionCard
-              title="Manage Tenants"
-              description="Configure tenant boundaries"
-              icon={<BankOutlined />}
-              color="#13c2c2"
-              onClick={() => router.push('/admin/tenants')}
-            />
-            <QuickActionCard
               title="Manage Roles"
               description="Configure RBAC roles"
               icon={<SafetyCertificateOutlined />}
               color="#eb2f96"
               onClick={() => router.push('/admin/roles')}
+            />
+            <QuickActionCard
+              title="Create a Bucket"
+              description="Set up a new storage bucket"
+              icon={<DatabaseOutlined />}
+              color="#22AF79"
+              onClick={() => router.push('/admin/buckets')}
+            />
+            <QuickActionCard
+              title="Manage Objects"
+              description="Browse and manage stored objects"
+              icon={<FolderOutlined />}
+              color="#1890ff"
+              onClick={() => router.push('/admin/objects')}
             />
           </Less3Flex>
         </div>

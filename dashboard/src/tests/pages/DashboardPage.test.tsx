@@ -102,6 +102,23 @@ describe('DashboardPage', () => {
       expect(quickActions.compareDocumentPosition(requestSummary) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 
+    it('renders quick actions in the expected operational order', () => {
+      renderWithRedux(<DashboardPage />);
+
+      const titles = [
+        'Manage Tenants',
+        'Manage Users',
+        'Manage Credentials',
+        'Manage Roles',
+        'Create a Bucket',
+        'Manage Objects',
+      ].map((title) => screen.getByText(title));
+
+      for (let index = 0; index < titles.length - 1; index++) {
+        expect(titles[index].compareDocumentPosition(titles[index + 1]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      }
+    });
+
     it('renders the request summary controls', () => {
       renderWithRedux(<DashboardPage />);
 

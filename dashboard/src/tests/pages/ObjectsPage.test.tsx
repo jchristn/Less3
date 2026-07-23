@@ -193,10 +193,10 @@ describe("ObjectsPage", () => {
       await userEvent.click(await screen.findByText("View Details", { selector: ".ant-dropdown-menu-title-content" }));
 
       expect(await screen.findByText("Object Details - test-file.txt")).toBeInTheDocument();
-      expect(screen.getByText("Tenant Id")).toBeInTheDocument();
-      expect(screen.getByText("Bucket Id")).toBeInTheDocument();
+      expect(screen.getByText("Tenant ID")).toBeInTheDocument();
+      expect(screen.getByText("Bucket ID")).toBeInTheDocument();
       expect(screen.getAllByText("Key").length).toBeGreaterThan(0);
-      expect(screen.getByText("Version Id")).toBeInTheDocument();
+      expect(screen.getByText("Version ID")).toBeInTheDocument();
       expect(screen.getAllByText("objv_current").length).toBeGreaterThan(0);
       expect(screen.getByText("Download URL")).toBeInTheDocument();
     }, 20000);

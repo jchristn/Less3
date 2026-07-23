@@ -1,4 +1,3 @@
-/* eslint-disable max-lines-per-function */
 'use client';
 import React, { useMemo } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
@@ -95,10 +94,10 @@ const BucketDetailPage: React.FC = () => {
           <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse' }}>
             <tbody>
               {[
-                { label: 'Id', value: bucket?.Id || routeId, id: true },
+                { label: 'ID', value: bucket?.Id || routeId, id: true },
                 { label: 'Name', value: bucketName },
-                { label: 'Tenant Id', value: bucket?.TenantId || 'default', id: true },
-                { label: 'Owner Id', value: bucket?.OwnerId || 'Not set', id: Boolean(bucket?.OwnerId) },
+                { label: 'Tenant ID', value: bucket?.TenantId || 'default', id: true },
+                { label: 'Owner ID', value: bucket?.OwnerId || 'Not set', id: Boolean(bucket?.OwnerId) },
                 { label: 'Created', value: formatDate(bucket?.CreationDate || bucket?.CreatedUtc || '') },
                 { label: 'Region', value: bucket?.RegionString || 'us-west-1' },
                 { label: 'Storage Type', value: String(bucket?.StorageType || 'Disk') },

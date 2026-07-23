@@ -1,4 +1,3 @@
-/* eslint-disable max-lines-per-function */
 'use client';
 import React, { useMemo, useState } from 'react';
 import { Form, Descriptions, MenuProps, Checkbox } from 'antd';
@@ -304,9 +303,9 @@ const UsersPage: React.FC = () => {
       >
         <Form form={form} layout="vertical" autoComplete="off">
           <Less3FormItem
-            label="Tenant Id"
+            label="Tenant ID"
             name="TenantId"
-            rules={[{ required: true, message: 'Please enter tenant Id' }]}
+            rules={[{ required: true, message: 'Please enter tenant ID' }]}
           >
             <Less3Input placeholder="default" />
           </Less3FormItem>
@@ -399,13 +398,13 @@ const UsersPage: React.FC = () => {
           <div style={{ textAlign: 'center', padding: '20px' }}>Loading metadata...</div>
         ) : userMetadata ? (
           <Descriptions bordered column={1} size="small">
-            <Descriptions.Item label="Id">
+            <Descriptions.Item label="ID">
               <IdDisplay id={userMetadata.Id} />
             </Descriptions.Item>
             <Descriptions.Item label="Name">
               <Less3Text>{userMetadata.Name}</Less3Text>
             </Descriptions.Item>
-            <Descriptions.Item label="Tenant Id">
+            <Descriptions.Item label="Tenant ID">
               <IdDisplay id={userMetadata.TenantId || 'default'} />
             </Descriptions.Item>
             <Descriptions.Item label="Email">

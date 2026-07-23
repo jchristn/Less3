@@ -1744,8 +1744,8 @@ const ObjectsPage: React.FC = () => {
 
                 return [
                   { label: 'Bucket', value: selectedBucketName || 'Not set' },
-                  { label: 'Bucket Id', value: selectedBucket?.Id || 'Not set', id: Boolean(selectedBucket?.Id) },
-                  { label: 'Tenant Id', value: selectedBucket?.TenantId || 'default', id: true },
+                  { label: 'Bucket ID', value: selectedBucket?.Id || 'Not set', id: Boolean(selectedBucket?.Id) },
+                  { label: 'Tenant ID', value: selectedBucket?.TenantId || 'default', id: true },
                   { label: 'Key', value: viewingObject.Key, copyable: true, mono: true },
                   { label: 'Name', value: getDisplayName(viewingObject.Key) || viewingObject.Key },
                   { label: 'Type', value: isFolderObject ? 'Folder' : 'Object' },
@@ -1754,9 +1754,9 @@ const ObjectsPage: React.FC = () => {
                   { label: 'Last Modified', value: viewingObject.LastModified ? formatDate(viewingObject.LastModified) : 'Not set' },
                   { label: 'ETag', value: viewingObject.ETag || 'Not set' },
                   { label: 'Storage Class', value: viewingObject.StorageClass || 'Not set' },
-                  { label: 'Version Id', value: versionId || 'Not set', id: Boolean(versionId) },
+                  { label: 'Version ID', value: versionId || 'Not set', id: Boolean(versionId) },
                   { label: 'Delete Marker', value: isDeleteMarkerObject(viewingObject) ? 'Yes' : 'No' },
-                  { label: 'Owner Id', value: viewingObject.Owner?.ID || 'Not set', id: Boolean(viewingObject.Owner?.ID) },
+                  { label: 'Owner ID', value: viewingObject.Owner?.ID || 'Not set', id: Boolean(viewingObject.Owner?.ID) },
                   { label: 'Owner Display Name', value: viewingObject.Owner?.DisplayName || 'Not set' },
                   { label: 'Download URL', value: downloadUrl, copyable: Boolean(downloadUrl), mono: true, hidden: !downloadUrl },
                 ];

@@ -1,6 +1,5 @@
-/* eslint-disable max-lines-per-function */
 'use client';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Form, Descriptions, MenuProps, Tag } from 'antd';
 import { PlusOutlined, SearchOutlined, MoreOutlined, ReloadOutlined } from '@ant-design/icons';
 import DataTable, { DataTableColumn } from '#/components/DataTable';
@@ -74,10 +73,10 @@ const CredentialsPage: React.FC = () => {
   }, [usersData]);
 
   // Helper to get username from Id
-  const getUserName = (userId: string) => {
+  const getUserName = useCallback((userId: string) => {
     const user = usersData?.find((u) => u.Id === userId);
     return user?.Name || userId;
-  };
+  }, [usersData]);
 
   const handleCreate = () => {
     setEditingCredential(null);
@@ -309,7 +308,7 @@ const CredentialsPage: React.FC = () => {
 
       return id.includes(q) || desc.includes(q) || accessKey.includes(q) || userName.includes(q);
     });
-  }, [data, searchText, usersData]); // usersData is used via getUserName
+  }, [data, getUserName, searchText]);
 
   return (
     <PageContainer
@@ -443,16 +442,16 @@ const CredentialsPage: React.FC = () => {
           <div style={{ textAlign: 'center', padding: '20px' }}>Loading metadata...</div>
         ) : credentialMetadata ? (
           <Descriptions bordered column={1} size="small">
-            <Descriptions.Item label="Id">
+            <Descriptions.Item label="ID">
               <IdDisplay id={credentialMetadata.Id} />
             </Descriptions.Item>
             <Descriptions.Item label="User">
               <Less3Text>{getUserName(credentialMetadata.UserId)}</Less3Text>
             </Descriptions.Item>
-            <Descriptions.Item label="User Id">
+            <Descriptions.Item label="User ID">
               <IdDisplay id={credentialMetadata.UserId} />
             </Descriptions.Item>
-            <Descriptions.Item label="Tenant Id">
+            <Descriptions.Item label="Tenant ID">
               <IdDisplay id={credentialMetadata.TenantId || 'default'} />
             </Descriptions.Item>
             <Descriptions.Item label="Description">

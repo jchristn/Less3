@@ -1,4 +1,3 @@
-/* eslint-disable max-lines-per-function */
 'use client';
 import React, { useMemo, useState, useEffect } from 'react';
 import { Form, MenuProps } from 'antd';
@@ -676,10 +675,10 @@ const BucketsPage: React.FC = () => {
             <tbody>
               {[
                 { label: 'Name', value: viewingBucket.Name },
-                { label: 'Id', value: viewingBucket.Id || '', id: true },
-                { label: 'Tenant Id', value: viewingBucket.TenantId || 'default', id: true },
+                { label: 'ID', value: viewingBucket.Id || '', id: true },
+                { label: 'Tenant ID', value: viewingBucket.TenantId || 'default', id: true },
                 { label: 'Date Created', value: formatDate(viewingBucket.CreationDate || viewingBucket.CreatedUtc || '') },
-                { label: 'Owner Id', value: viewingBucket.OwnerId || 'Not set', id: Boolean(viewingBucket.OwnerId) },
+                { label: 'Owner ID', value: viewingBucket.OwnerId || 'Not set', id: Boolean(viewingBucket.OwnerId) },
                 { label: 'Region', value: viewingBucket.RegionString || 'us-west-1' },
                 { label: 'Storage Type', value: String(viewingBucket.StorageType || 'Disk') },
                 { label: 'Objects Directory', value: viewingBucket.DiskDirectory || 'Not set' },

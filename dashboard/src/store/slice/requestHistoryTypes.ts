@@ -2,6 +2,7 @@
 
 export interface RequestHistoryEntry {
   Id: string;
+  TenantId?: string;
   HttpMethod: string;
   RequestUrl: string;
   SourceIp: string;
@@ -10,7 +11,11 @@ export interface RequestHistoryEntry {
   DurationMs: number;
   RequestType: string;
   UserId: string;
+  CredentialId?: string;
   AccessKey: string;
+  BucketId?: string;
+  BucketName?: string;
+  Bucket?: string;
   RequestContentType: string;
   RequestBodyLength: number;
   ResponseContentType: string;

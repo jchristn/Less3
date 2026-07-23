@@ -1,4 +1,3 @@
-/* eslint-disable max-lines-per-function */
 'use client';
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { MenuProps } from 'antd';
@@ -55,6 +54,7 @@ const STATUS_FAMILY_OPTIONS = [
 ];
 
 const SAVED_FILTERS_KEY = 'less3_request_history_saved_filters';
+const SYSTEM_REQUEST_PATH_SEGMENTS = new Set(['admin', 'api', 'swagger', 'openapi', 'health', 'assets', '_next']);
 
 const METHOD_COLORS: Record<string, string> = {
   GET: '#22AF79',
@@ -73,6 +73,75 @@ const getStatusColor = (code: number): string => {
 };
 
 const formatDurationMs = (value: number): string => `${value.toFixed(2)}ms`;
+
+const normalizeIdentityValue = (value: unknown): string => (typeof value === 'string' ? value.trim() : '');
+
+const decodePathSegment = (value: string): string => {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+};
+
+const getRequestBucketFromUrl = (requestUrl: string): string => {
+  const rawUrl = normalizeIdentityValue(requestUrl);
+  if (!rawUrl) return '';
+
+  try {
+    const parsedUrl = new URL(rawUrl, 'http://less3.local');
+    const queryBucket = normalizeIdentityValue(parsedUrl.searchParams.get('bucketId'))
+      || normalizeIdentityValue(parsedUrl.searchParams.get('bucketName'))
+      || normalizeIdentityValue(parsedUrl.searchParams.get('bucket'));
+
+    if (queryBucket) {
+      return queryBucket;
+    }
+
+    const segments = parsedUrl.pathname.split('/').map(decodePathSegment).filter(Boolean);
+    const firstSegment = segments[0]?.toLowerCase();
+    const isControlPlanePath = firstSegment === 'admin' || firstSegment === 'api';
+    const bucketRouteIndex = isControlPlanePath
+      ? segments.findIndex((segment) => ['bucket', 'buckets'].includes(segment.toLowerCase()))
+      : -1;
+
+    if (bucketRouteIndex >= 0 && segments[bucketRouteIndex + 1]) {
+      return segments[bucketRouteIndex + 1];
+    }
+
+    if (!segments[0] || SYSTEM_REQUEST_PATH_SEGMENTS.has(firstSegment)) {
+      return '';
+    }
+
+    return segments[0];
+  } catch {
+    const firstSegment = rawUrl.split('?')[0].split('/').filter(Boolean)[0];
+    return firstSegment && !SYSTEM_REQUEST_PATH_SEGMENTS.has(firstSegment.toLowerCase())
+      ? decodePathSegment(firstSegment)
+      : '';
+  }
+};
+
+const getEntryTenantId = (entry: RequestHistoryEntry): string => normalizeIdentityValue(entry.TenantId) || 'default';
+const getEntryUserId = (entry: RequestHistoryEntry): string => normalizeIdentityValue(entry.UserId);
+const getEntryCredentialIdentifier = (entry: RequestHistoryEntry): string =>
+  normalizeIdentityValue(entry.CredentialId) || normalizeIdentityValue(entry.AccessKey);
+
+const getEntryBucketIdentifier = (entry: RequestHistoryEntry): string =>
+  normalizeIdentityValue(entry.BucketId)
+  || normalizeIdentityValue(entry.BucketName)
+  || normalizeIdentityValue(entry.Bucket)
+  || normalizeIdentityValue(entry.bucketId)
+  || normalizeIdentityValue(entry.bucketName)
+  || normalizeIdentityValue(entry.bucket)
+  || getRequestBucketFromUrl(entry.RequestUrl);
+
+const buildIdentityFilterOptions = (label: string, values: string[]) => [
+  { label: `All ${label}`, value: '' },
+  ...Array.from(new Set(values.map(normalizeIdentityValue).filter(Boolean)))
+    .sort((a, b) => a.localeCompare(b))
+    .map((value) => ({ label: value, value })),
+];
 
 const createCurlCommand = (entry: RequestHistoryEntry): string => {
   const method = entry.HttpMethod || 'GET';
@@ -171,6 +240,10 @@ const RequestHistoryPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [statusFamilyFilter, setStatusFamilyFilter] = useState<string>('');
   const [sourceIpFilter, setSourceIpFilter] = useState<string>('');
+  const [tenantFilter, setTenantFilter] = useState<string>('');
+  const [userFilter, setUserFilter] = useState<string>('');
+  const [credentialFilter, setCredentialFilter] = useState<string>('');
+  const [bucketFilter, setBucketFilter] = useState<string>('');
   const [slowRequestMs, setSlowRequestMs] = useState<string>('');
   const [failedOnly, setFailedOnly] = useState(false);
   const [groupedView, setGroupedView] = useState(false);
@@ -207,6 +280,10 @@ const RequestHistoryPage: React.FC = () => {
       setStatusFilter(typeof parsed.statusFilter === 'string' ? parsed.statusFilter : '');
       setStatusFamilyFilter(typeof parsed.statusFamilyFilter === 'string' ? parsed.statusFamilyFilter : '');
       setSourceIpFilter(typeof parsed.sourceIpFilter === 'string' ? parsed.sourceIpFilter : '');
+      setTenantFilter(typeof parsed.tenantFilter === 'string' ? parsed.tenantFilter : '');
+      setUserFilter(typeof parsed.userFilter === 'string' ? parsed.userFilter : '');
+      setCredentialFilter(typeof parsed.credentialFilter === 'string' ? parsed.credentialFilter : '');
+      setBucketFilter(typeof parsed.bucketFilter === 'string' ? parsed.bucketFilter : '');
       setSlowRequestMs(typeof parsed.slowRequestMs === 'string' ? parsed.slowRequestMs : '');
       setFailedOnly(Boolean(parsed.failedOnly));
       setGroupedView(Boolean(parsed.groupedView));
@@ -253,6 +330,10 @@ const RequestHistoryPage: React.FC = () => {
       statusFilter,
       statusFamilyFilter,
       sourceIpFilter,
+      tenantFilter,
+      userFilter,
+      credentialFilter,
+      bucketFilter,
       slowRequestMs,
       failedOnly,
       groupedView,
@@ -265,7 +346,39 @@ const RequestHistoryPage: React.FC = () => {
     } catch {
       message.error('Failed to save filters');
     }
-  }, [failedOnly, groupedView, methodFilter, slowRequestMs, sourceIpFilter, statusFamilyFilter, statusFilter]);
+  }, [
+    bucketFilter,
+    credentialFilter,
+    failedOnly,
+    groupedView,
+    methodFilter,
+    slowRequestMs,
+    sourceIpFilter,
+    statusFamilyFilter,
+    statusFilter,
+    tenantFilter,
+    userFilter,
+  ]);
+
+  const tenantOptions = useMemo(
+    () => buildIdentityFilterOptions('Tenants', (data || []).map(getEntryTenantId)),
+    [data]
+  );
+
+  const userOptions = useMemo(
+    () => buildIdentityFilterOptions('Users', (data || []).map(getEntryUserId)),
+    [data]
+  );
+
+  const credentialOptions = useMemo(
+    () => buildIdentityFilterOptions('Credentials', (data || []).map(getEntryCredentialIdentifier)),
+    [data]
+  );
+
+  const bucketOptions = useMemo(
+    () => buildIdentityFilterOptions('Buckets', (data || []).map(getEntryBucketIdentifier)),
+    [data]
+  );
 
   const filteredData = useMemo(() => {
     if (!data) return [];
@@ -292,6 +405,22 @@ const RequestHistoryPage: React.FC = () => {
       result = result.filter((entry) => (entry.SourceIp || '').toLowerCase().includes(ipStr));
     }
 
+    if (tenantFilter) {
+      result = result.filter((entry) => getEntryTenantId(entry) === tenantFilter);
+    }
+
+    if (userFilter) {
+      result = result.filter((entry) => getEntryUserId(entry) === userFilter);
+    }
+
+    if (credentialFilter) {
+      result = result.filter((entry) => getEntryCredentialIdentifier(entry) === credentialFilter);
+    }
+
+    if (bucketFilter) {
+      result = result.filter((entry) => getEntryBucketIdentifier(entry) === bucketFilter);
+    }
+
     if (failedOnly) {
       result = result.filter((entry) => !entry.Success || entry.StatusCode >= 400);
     }
@@ -304,7 +433,19 @@ const RequestHistoryPage: React.FC = () => {
     }
 
     return result;
-  }, [data, failedOnly, methodFilter, slowRequestMs, sourceIpFilter, statusFamilyFilter, statusFilter]);
+  }, [
+    bucketFilter,
+    credentialFilter,
+    data,
+    failedOnly,
+    methodFilter,
+    slowRequestMs,
+    sourceIpFilter,
+    statusFamilyFilter,
+    statusFilter,
+    tenantFilter,
+    userFilter,
+  ]);
 
   const groupedRows = useMemo(() => {
     const groups = new Map<string, { Key: string; Count: number; Failures: number; AverageMs: number; TotalMs: number }>();
@@ -332,10 +473,12 @@ const RequestHistoryPage: React.FC = () => {
 
   const handleExportCsv = useCallback(() => {
     const header = [
-      'Id',
+      'ID',
       'CreatedUtc',
+      'TenantId',
       'HttpMethod',
       'RequestUrl',
+      'Bucket',
       'StatusCode',
       'Success',
       'DurationMs',
@@ -348,8 +491,10 @@ const RequestHistoryPage: React.FC = () => {
     const rows = filteredData.map((entry) => [
       entry.Id,
       entry.CreatedUtc,
+      getEntryTenantId(entry),
       entry.HttpMethod,
       entry.RequestUrl,
+      getEntryBucketIdentifier(entry),
       entry.StatusCode,
       entry.Success,
       entry.DurationMs,
@@ -382,6 +527,37 @@ const RequestHistoryPage: React.FC = () => {
       filterValue: (item) => formatDate(item.CreatedUtc),
     },
     {
+      key: 'TenantId',
+      label: 'Tenant ID',
+      width: '180px',
+      render: (item) => <IdDisplay id={getEntryTenantId(item)} />,
+      filterValue: getEntryTenantId,
+    },
+    {
+      key: 'UserId',
+      label: 'User ID',
+      width: '220px',
+      render: (item) => {
+        const userId = getEntryUserId(item);
+        return userId ? <IdDisplay id={userId} /> : <Less3Text type="secondary">Not set</Less3Text>;
+      },
+      filterValue: getEntryUserId,
+    },
+    {
+      key: 'AccessKey',
+      label: 'Credential',
+      width: '180px',
+      render: (item) => {
+        const credential = getEntryCredentialIdentifier(item);
+        return credential ? (
+          <TextWithCopy text={credential} className="code-font-style" />
+        ) : (
+          <Less3Text type="secondary">Not set</Less3Text>
+        );
+      },
+      filterValue: getEntryCredentialIdentifier,
+    },
+    {
       key: 'HttpMethod',
       label: 'Method',
       width: '90px',
@@ -412,6 +588,20 @@ const RequestHistoryPage: React.FC = () => {
         <span style={{ wordBreak: 'break-all', fontSize: 12 }}>{item.RequestUrl}</span>
       ),
       filterValue: (item) => item.RequestUrl || '',
+    },
+    {
+      key: 'Bucket',
+      label: 'Bucket',
+      width: '180px',
+      render: (item) => {
+        const bucket = getEntryBucketIdentifier(item);
+        return bucket ? (
+          <TextWithCopy text={bucket} className="code-font-style" />
+        ) : (
+          <Less3Text type="secondary">Not set</Less3Text>
+        );
+      },
+      filterValue: getEntryBucketIdentifier,
     },
     {
       key: 'StatusCode',
@@ -536,13 +726,14 @@ const RequestHistoryPage: React.FC = () => {
         onRefresh={refetchSummary}
       />
 
-      <Less3Flex gap={10} align="center" style={{ marginBottom: 16 }}>
+      <Less3Flex gap={10} align="center" wrap="wrap" style={{ marginBottom: 16 }}>
         <Less3Select
           options={METHOD_OPTIONS}
           value={methodFilter}
           onChange={(value) => setMethodFilter(value as string)}
           style={{ width: 150 }}
           placeholder="HTTP Method"
+          aria-label="HTTP method filter"
         />
         <Less3Select
           options={STATUS_FAMILY_OPTIONS}
@@ -550,6 +741,43 @@ const RequestHistoryPage: React.FC = () => {
           onChange={(value) => setStatusFamilyFilter(value as string)}
           style={{ width: 140 }}
           placeholder="Status Family"
+          aria-label="Status family filter"
+        />
+        <Less3Select
+          options={tenantOptions}
+          value={tenantFilter}
+          onChange={(value) => setTenantFilter(value as string)}
+          style={{ width: 180 }}
+          placeholder="Tenant"
+          aria-label="Tenant filter"
+          showSearch
+        />
+        <Less3Select
+          options={userOptions}
+          value={userFilter}
+          onChange={(value) => setUserFilter(value as string)}
+          style={{ width: 180 }}
+          placeholder="User"
+          aria-label="User filter"
+          showSearch
+        />
+        <Less3Select
+          options={credentialOptions}
+          value={credentialFilter}
+          onChange={(value) => setCredentialFilter(value as string)}
+          style={{ width: 180 }}
+          placeholder="Credential"
+          aria-label="Credential filter"
+          showSearch
+        />
+        <Less3Select
+          options={bucketOptions}
+          value={bucketFilter}
+          onChange={(value) => setBucketFilter(value as string)}
+          style={{ width: 180 }}
+          placeholder="Bucket"
+          aria-label="Bucket filter"
+          showSearch
         />
         <Less3Input
           placeholder="Status Code"
@@ -683,15 +911,26 @@ const RequestHistoryPage: React.FC = () => {
                       id: true,
                     },
                     {
+                      label: 'Tenant ID',
+                      value: getEntryTenantId(selectedEntry),
+                      id: true,
+                    },
+                    {
                       label: 'User ID',
                       value: selectedEntry.UserId || 'Not set',
                       id: Boolean(selectedEntry.UserId),
                     },
                     {
-                      label: 'Access Key',
-                      value: selectedEntry.AccessKey || 'Not set',
-                      copyable: Boolean(selectedEntry.AccessKey),
-                      mono: Boolean(selectedEntry.AccessKey),
+                      label: 'Credential',
+                      value: getEntryCredentialIdentifier(selectedEntry) || 'Not set',
+                      copyable: Boolean(getEntryCredentialIdentifier(selectedEntry)),
+                      mono: Boolean(getEntryCredentialIdentifier(selectedEntry)),
+                    },
+                    {
+                      label: 'Bucket',
+                      value: getEntryBucketIdentifier(selectedEntry) || 'Not set',
+                      copyable: Boolean(getEntryBucketIdentifier(selectedEntry)),
+                      mono: Boolean(getEntryBucketIdentifier(selectedEntry)),
                     },
                     {
                       label: 'Route',
@@ -773,11 +1012,13 @@ const RequestHistoryPage: React.FC = () => {
                 BodyLength: selectedEntry.ResponseBodyLength,
               }, null, 2)} />
               <DetailBlock title="Authentication" value={JSON.stringify({
+                TenantId: getEntryTenantId(selectedEntry),
                 UserId: selectedEntry.UserId || null,
-                AccessKey: selectedEntry.AccessKey || null,
+                Credential: getEntryCredentialIdentifier(selectedEntry) || null,
               }, null, 2)} />
               <DetailBlock title="Metadata" value={JSON.stringify({
-                Id: selectedEntry.Id,
+                ID: selectedEntry.Id,
+                Bucket: getEntryBucketIdentifier(selectedEntry) || null,
                 CreatedUtc: selectedEntry.CreatedUtc,
                 SourceIp: selectedEntry.SourceIp,
               }, null, 2)} />

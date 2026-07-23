@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import RequestHistoryPage from '#/page/request-history/RequestHistoryPage';
 import { renderWithRedux } from '../store/utils';
 
@@ -11,8 +12,10 @@ jest.mock('#/store/slice/requestHistorySlice', () => ({
     data: [
       {
         Id: 'entry-1',
+        TenantId: 'tenant-a',
         HttpMethod: 'POST',
         RequestUrl: '/bucket/object',
+        BucketName: 'content-bucket',
         SourceIp: '127.0.0.1',
         StatusCode: 200,
         Success: true,
@@ -30,8 +33,10 @@ jest.mock('#/store/slice/requestHistorySlice', () => ({
       },
       {
         Id: 'entry-2',
+        TenantId: 'tenant-b',
         HttpMethod: 'POST',
         RequestUrl: '/bucket/slow',
+        BucketName: 'ops-bucket',
         SourceIp: '10.0.0.5',
         StatusCode: 503,
         Success: false,
@@ -95,6 +100,8 @@ describe('RequestHistoryPage', () => {
 
     expect(dialog).toBeInTheDocument();
     expect(within(dialog).getByText('Entry ID')).toBeInTheDocument();
+    expect(within(dialog).getByText('Tenant ID')).toBeInTheDocument();
+    expect(within(dialog).getByText('Bucket')).toBeInTheDocument();
     expect(within(dialog).getByText('Route')).toBeInTheDocument();
     expect(within(dialog).getByText('Source IP')).toBeInTheDocument();
     expect(within(dialog).getByText('Status')).toBeInTheDocument();
@@ -120,6 +127,43 @@ describe('RequestHistoryPage', () => {
     });
 
     expect(screen.getAllByRole('button', { name: 'Show Raw' })).toHaveLength(2);
+  }, 15000);
+
+  const selectFilterOption = async (ariaLabel: string, optionText: string) => {
+    await userEvent.click(screen.getByLabelText(ariaLabel));
+
+    const options = await screen.findAllByText(optionText);
+    const option = options.find((element) => element.closest('.ant-select-item-option'));
+
+    expect(option).toBeDefined();
+    await userEvent.click(option as HTMLElement);
+  };
+
+  it('filters request history by tenant, user, credential, and bucket', async () => {
+    renderWithRedux(<RequestHistoryPage />, false, undefined, true);
+
+    await selectFilterOption('Bucket filter', 'ops-bucket');
+
+    expect(screen.getByText('/bucket/slow')).toBeInTheDocument();
+    expect(screen.queryByText('/bucket/object')).not.toBeInTheDocument();
+
+    await selectFilterOption('User filter', 'user-1');
+    expect(screen.getByText('No data available')).toBeInTheDocument();
+
+    await selectFilterOption('User filter', 'user-2');
+    expect(screen.getByText('/bucket/slow')).toBeInTheDocument();
+
+    await selectFilterOption('Credential filter', 'AK123');
+    expect(screen.getByText('No data available')).toBeInTheDocument();
+
+    await selectFilterOption('Credential filter', 'AK456');
+    expect(screen.getByText('/bucket/slow')).toBeInTheDocument();
+
+    await selectFilterOption('Tenant filter', 'tenant-a');
+    expect(screen.getByText('No data available')).toBeInTheDocument();
+
+    await selectFilterOption('Tenant filter', 'tenant-b');
+    expect(screen.getByText('/bucket/slow')).toBeInTheDocument();
   }, 15000);
 
   it('filters, groups, saves, exports, and copies request history entries', async () => {

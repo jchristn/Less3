@@ -7,6 +7,8 @@ namespace Less3.Api.Admin
     using System.Linq;
     using System.Reflection;
     using System.Text;
+    using System.Text.Json;
+    using System.Text.Json.Nodes;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -391,6 +393,8 @@ namespace Less3.Api.Admin
 
         private async Task GetRequestHistory(S3Context ctx)
         {
+            string tenantId = GetTenantId(ctx);
+
             if (ctx.Http.Request.Url.Elements.Length >= 3)
             {
                 if (ctx.Http.Request.Url.Elements[2].Equals("summary"))
@@ -400,7 +404,7 @@ namespace Less3.Api.Admin
                 }
 
                 RequestHistory entry = _Config.GetRequestHistoryById(ctx.Http.Request.Url.Elements[2]);
-                if (entry == null)
+                if (entry == null || !String.Equals(entry.TenantId, tenantId, StringComparison.Ordinal))
                 {
                     ctx.Response.StatusCode = 404;
                     ctx.Response.ContentType = "text/plain";
@@ -417,7 +421,9 @@ namespace Less3.Api.Admin
             }
             else
             {
-                List<RequestHistory> entries = _Config.GetRequestHistories();
+                EnumerationQuery query = QueryFromRequest(ctx);
+                query.TenantId = tenantId;
+                List<RequestHistory> entries = _Config.EnumerateRequestHistories(query).Items;
                 ctx.Response.StatusCode = 200;
                 ctx.Response.ContentType = "application/json";
                 await ctx.Response.Send(SerializationHelper.SerializeJson(entries, true));
@@ -478,8 +484,6 @@ namespace Less3.Api.Admin
                     break;
             }
 
-            List<RequestHistory> entries = _Config.GetRequestHistoriesInRange(startUtc, endUtc);
-
             RequestHistorySummaryResult result = new RequestHistorySummaryResult();
             result.StartUtc = startUtc;
             result.EndUtc = endUtc;
@@ -494,26 +498,31 @@ namespace Less3.Api.Admin
                 RequestHistorySummaryBucket bucket = new RequestHistorySummaryBucket();
                 bucket.TimestampUtc = bucketStart;
 
-                if (entries != null)
-                {
-                    foreach (RequestHistory entry in entries)
-                    {
-                        if (entry.CreatedUtc >= bucketStart && entry.CreatedUtc < bucketEnd)
-                        {
-                            if (entry.Success)
-                                bucket.SuccessCount++;
-                            else
-                                bucket.FailureCount++;
-                        }
-                    }
-                }
-
-                result.TotalSuccess += bucket.SuccessCount;
-                result.TotalFailure += bucket.FailureCount;
                 result.Data.Add(bucket);
 
                 bucketStart = bucketEnd;
             }
+
+            string tenantId = GetTenantId(ctx);
+            ForEachRequestHistory(tenantId, startUtc, endUtc, delegate (RequestHistory entry)
+            {
+                if (entry.CreatedUtc < startUtc || entry.CreatedUtc >= endUtc) return;
+
+                int index = (int)((entry.CreatedUtc - startUtc).TotalSeconds / intervalSeconds);
+                if (index < 0 || index >= result.Data.Count) return;
+
+                RequestHistorySummaryBucket bucket = result.Data[index];
+                if (entry.Success)
+                {
+                    bucket.SuccessCount++;
+                    result.TotalSuccess++;
+                }
+                else
+                {
+                    bucket.FailureCount++;
+                    result.TotalFailure++;
+                }
+            });
 
             ctx.Response.StatusCode = 200;
             ctx.Response.ContentType = "application/json";
@@ -650,56 +659,66 @@ namespace Less3.Api.Admin
             }
 
             string tenantId = GetTenantId(ctx);
-            List<RequestHistory> entries = _Config.GetRequestHistoriesInRange(startUtc, endUtc)
-                .Where(e => e.TenantId != null && e.TenantId.Equals(tenantId, StringComparison.Ordinal))
-                .ToList();
 
             RequestReportingResult result = new RequestReportingResult();
             result.TenantId = tenantId;
             result.StartUtc = startUtc;
             result.EndUtc = endUtc;
-            result.RequestCount = entries.Count;
-            result.SuccessCount = entries.Count(e => e.Success);
-            result.FailureCount = entries.Count(e => !e.Success);
+
+            List<long> latencies = new List<long>();
+            Dictionary<string, long> failedRequestTypes = new Dictionary<string, long>(StringComparer.Ordinal);
+            Dictionary<string, long> accessKeys = new Dictionary<string, long>(StringComparer.Ordinal);
+            Dictionary<string, long> bucketRequestCounts = new Dictionary<string, long>(StringComparer.Ordinal);
+
+            ForEachRequestHistory(tenantId, startUtc, endUtc, delegate (RequestHistory entry)
+            {
+                result.RequestCount++;
+                if (entry.Success)
+                    result.SuccessCount++;
+                else
+                    result.FailureCount++;
+
+                if (entry.DurationMs >= 0) latencies.Add(entry.DurationMs);
+
+                if (!entry.Success && !String.IsNullOrEmpty(entry.RequestType))
+                    Increment(failedRequestTypes, entry.RequestType);
+
+                if (!String.IsNullOrEmpty(entry.AccessKey))
+                    Increment(accessKeys, entry.AccessKey);
+
+                string bucketName = ExtractBucketName(entry.RequestUrl);
+                if (!String.IsNullOrEmpty(bucketName))
+                    Increment(bucketRequestCounts, bucketName);
+            });
+
             result.FailureRate = result.RequestCount == 0 ? 0 : (double)result.FailureCount / result.RequestCount;
 
             double minutes = Math.Max(1, (endUtc - startUtc).TotalMinutes);
             result.RequestsPerMinute = result.RequestCount / minutes;
 
-            List<long> latencies = entries
-                .Select(e => e.DurationMs)
-                .Where(d => d >= 0)
-                .OrderBy(d => d)
-                .ToList();
+            latencies.Sort();
             result.P50LatencyMs = Percentile(latencies, 0.50);
             result.P95LatencyMs = Percentile(latencies, 0.95);
 
-            result.TopFailedRequestTypes = entries
-                .Where(e => !e.Success && !String.IsNullOrEmpty(e.RequestType))
-                .GroupBy(e => e.RequestType)
-                .OrderByDescending(g => g.Count())
-                .ThenBy(g => g.Key)
+            result.TopFailedRequestTypes = failedRequestTypes
+                .OrderByDescending(kvp => kvp.Value)
+                .ThenBy(kvp => kvp.Key)
                 .Take(10)
-                .Select(g => new RequestReportingTopItem { Name = g.Key, Count = g.Count() })
+                .Select(kvp => new RequestReportingTopItem { Name = kvp.Key, Count = kvp.Value })
                 .ToList();
 
-            result.TopAccessKeys = entries
-                .Where(e => !String.IsNullOrEmpty(e.AccessKey))
-                .GroupBy(e => e.AccessKey)
-                .OrderByDescending(g => g.Count())
-                .ThenBy(g => g.Key)
+            result.TopAccessKeys = accessKeys
+                .OrderByDescending(kvp => kvp.Value)
+                .ThenBy(kvp => kvp.Key)
                 .Take(10)
-                .Select(g => new RequestReportingTopItem { Name = g.Key, Count = g.Count() })
+                .Select(kvp => new RequestReportingTopItem { Name = kvp.Key, Count = kvp.Value })
                 .ToList();
 
-            result.TopBucketsByRequestCount = entries
-                .Select(e => ExtractBucketName(e.RequestUrl))
-                .Where(name => !String.IsNullOrEmpty(name))
-                .GroupBy(name => name)
-                .OrderByDescending(g => g.Count())
-                .ThenBy(g => g.Key)
+            result.TopBucketsByRequestCount = bucketRequestCounts
+                .OrderByDescending(kvp => kvp.Value)
+                .ThenBy(kvp => kvp.Key)
                 .Take(10)
-                .Select(g => new RequestReportingTopItem { Name = g.Key, Count = g.Count() })
+                .Select(kvp => new RequestReportingTopItem { Name = kvp.Key, Count = kvp.Value })
                 .ToList();
 
             foreach (Bucket bucket in _Config.GetBuckets(tenantId))
@@ -736,15 +755,9 @@ namespace Less3.Api.Admin
             status.RequestHistoryRetentionDays = _Settings.RequestHistoryRetentionDays;
             status.CleanupIntervalMs = _Cleanup.CleanupIntervalMs;
             status.LastCleanupRunUtc = _Cleanup.LastCleanupRunUtc;
-            status.RuntimeEditableSettings.Add("RequestHistoryRetentionDays");
-            status.RuntimeEditableSettings.Add("CleanupIntervalMs");
-            status.RestartRequiredSettings.Add("Webserver.Hostname");
-            status.RestartRequiredSettings.Add("Webserver.Port");
-            status.RestartRequiredSettings.Add("Database");
-            status.RestartRequiredSettings.Add("Storage.DiskDirectory");
-            status.RestartRequiredSettings.Add("Storage.TempDirectory");
-            status.RestartRequiredSettings.Add("BaseDomain");
-            status.Configuration = RedactedConfigurationSummary();
+            status.RuntimeEditableSettings.AddRange(MaintenanceSettingsMetadata.RuntimeEditableSettings());
+            status.RestartRequiredSettings.AddRange(MaintenanceSettingsMetadata.RestartRequiredSettings());
+            status.Configuration = EditableConfigurationSnapshot();
             status.GeneratedUtc = DateTime.UtcNow;
             return status;
         }
@@ -763,67 +776,97 @@ namespace Less3.Api.Admin
             };
         }
 
-        private Dictionary<string, object> RedactedConfigurationSummary()
+        private Dictionary<string, object> EditableConfigurationSnapshot()
         {
-            Dictionary<string, object> database = new Dictionary<string, object>
-            {
-                { "Type", _Settings.Database.Type.ToString() },
-                { "Filename", _Settings.Database.Filename },
-                { "Hostname", _Settings.Database.Hostname },
-                { "Port", _Settings.Database.Port },
-                { "Username", _Settings.Database.Username },
-                { "Password", "[redacted]" },
-                { "Instance", _Settings.Database.Instance },
-                { "DatabaseName", _Settings.Database.DatabaseName },
-                { "RequireEncryption", _Settings.Database.RequireEncryption },
-                { "LogQueries", _Settings.Database.LogQueries },
-                { "RequiresRestart", true }
-            };
+            string json = SerializationHelper.SerializeJson(_Settings, true);
+            JsonNode node = JsonNode.Parse(json);
+            JsonObject obj = node as JsonObject ?? new JsonObject();
+            RedactJsonPath(obj, "AdminApiKey");
+            RedactJsonPath(obj, "Database", "Password");
+            RedactJsonPath(obj, "Webserver", "Ssl", "PfxCertificatePassword");
+            return JsonObjectToDictionary(obj);
+        }
 
-            Dictionary<string, object> webserver = new Dictionary<string, object>
-            {
-                { "Hostname", _Settings.Webserver.Hostname },
-                { "Port", _Settings.Webserver.Port },
-                { "RequiresRestart", true }
-            };
+        private static void RedactJsonPath(JsonObject obj, params string[] path)
+        {
+            if (obj == null || path == null || path.Length < 1) return;
 
-            Dictionary<string, object> storage = new Dictionary<string, object>
+            JsonObject current = obj;
+            for (int i = 0; i < path.Length - 1; i++)
             {
-                { "TempDirectory", _Settings.Storage.TempDirectory },
-                { "StorageType", _Settings.Storage.StorageType.ToString() },
-                { "DiskDirectory", _Settings.Storage.DiskDirectory },
-                { "RequiresRestart", true }
-            };
+                if (!current.TryGetPropertyValue(path[i], out JsonNode child)) return;
+                current = child as JsonObject;
+                if (current == null) return;
+            }
 
-            Dictionary<string, object> logging = new Dictionary<string, object>
+            if (current.ContainsKey(path[path.Length - 1]))
             {
-                { "SyslogServerIp", _Settings.Logging.SyslogServerIp },
-                { "SyslogServerPort", _Settings.Logging.SyslogServerPort },
-                { "MinimumLevel", _Settings.Logging.MinimumLevel.ToString() },
-                { "LogHttpRequests", _Settings.Logging.LogHttpRequests },
-                { "LogS3Requests", _Settings.Logging.LogS3Requests },
-                { "LogExceptions", _Settings.Logging.LogExceptions },
-                { "LogSignatureValidation", _Settings.Logging.LogSignatureValidation },
-                { "ConsoleLogging", _Settings.Logging.ConsoleLogging },
-                { "DiskLogging", _Settings.Logging.DiskLogging },
-                { "DiskDirectory", _Settings.Logging.DiskDirectory }
-            };
+                current[path[path.Length - 1]] = MaintenanceSettingsMetadata.RedactedValue;
+            }
+        }
 
-            return new Dictionary<string, object>
+        private static Dictionary<string, object> JsonObjectToDictionary(JsonObject obj)
+        {
+            Dictionary<string, object> ret = new Dictionary<string, object>();
+            foreach (KeyValuePair<string, JsonNode> curr in obj)
             {
-                { "EnableConsole", _Settings.EnableConsole },
-                { "ValidateSignatures", _Settings.ValidateSignatures },
-                { "BaseDomain", _Settings.BaseDomain },
-                { "HeaderApiKey", _Settings.HeaderApiKey },
-                { "AdminApiKey", "[redacted]" },
-                { "RegionString", _Settings.RegionString },
-                { "RequestHistoryRetentionDays", _Settings.RequestHistoryRetentionDays },
-                { "CleanupIntervalMs", _Settings.CleanupIntervalMs },
-                { "Database", database },
-                { "Webserver", webserver },
-                { "Storage", storage },
-                { "Logging", logging }
-            };
+                ret[curr.Key] = JsonNodeToObject(curr.Value);
+            }
+
+            return ret;
+        }
+
+        private static object JsonNodeToObject(JsonNode node)
+        {
+            if (node == null) return null;
+            if (node is JsonObject obj) return JsonObjectToDictionary(obj);
+            if (node is JsonArray array)
+            {
+                List<object> ret = new List<object>();
+                foreach (JsonNode curr in array)
+                {
+                    ret.Add(JsonNodeToObject(curr));
+                }
+
+                return ret;
+            }
+
+            JsonValue value = node.AsValue();
+            if (value.TryGetValue<JsonElement>(out JsonElement element))
+            {
+                return JsonElementToObject(element);
+            }
+
+            if (value.TryGetValue<string>(out string stringValue)) return stringValue;
+            if (value.TryGetValue<int>(out int intValue)) return intValue;
+            if (value.TryGetValue<long>(out long longValue)) return longValue;
+            if (value.TryGetValue<decimal>(out decimal decimalValue)) return decimalValue;
+            if (value.TryGetValue<double>(out double doubleValue)) return doubleValue;
+            if (value.TryGetValue<bool>(out bool boolValue)) return boolValue;
+            return value.ToJsonString();
+        }
+
+        private static object JsonElementToObject(JsonElement element)
+        {
+            switch (element.ValueKind)
+            {
+                case JsonValueKind.String:
+                    return element.GetString();
+                case JsonValueKind.Number:
+                    if (element.TryGetInt32(out int intValue)) return intValue;
+                    if (element.TryGetInt64(out long longValue)) return longValue;
+                    if (element.TryGetDecimal(out decimal decimalValue)) return decimalValue;
+                    return element.GetDouble();
+                case JsonValueKind.True:
+                    return true;
+                case JsonValueKind.False:
+                    return false;
+                case JsonValueKind.Null:
+                case JsonValueKind.Undefined:
+                    return null;
+                default:
+                    return element.GetRawText();
+            }
         }
 
         private EffectivePermissionResult BuildEffectivePermission(
@@ -1022,6 +1065,37 @@ namespace Less3.Api.Admin
             }
         }
 
+        private void ForEachRequestHistory(string tenantId, DateTime startUtc, DateTime endUtc, Action<RequestHistory> action)
+        {
+            if (action == null) throw new ArgumentNullException(nameof(action));
+
+            const int pageSize = 1000;
+            int offset = 0;
+
+            while (true)
+            {
+                EnumerationQuery query = new EnumerationQuery();
+                query.TenantId = tenantId;
+                query.StartUtc = startUtc;
+                query.EndUtc = endUtc;
+                query.Limit = pageSize;
+                query.Offset = offset;
+                query.SortField = "createdUtc";
+                query.SortDirection = "asc";
+
+                EnumerationResult<RequestHistory> page = _Config.EnumerateRequestHistories(query);
+                if (page == null || page.Items == null || page.Items.Count < 1) break;
+
+                foreach (RequestHistory entry in page.Items)
+                {
+                    action(entry);
+                }
+
+                if (!page.HasMore) break;
+                offset += page.Items.Count;
+            }
+        }
+
         private static DateTime ParseUtc(string value, DateTime fallback)
         {
             if (String.IsNullOrEmpty(value)) return fallback;
@@ -1050,6 +1124,17 @@ namespace Less3.Api.Admin
 
             double weight = index - lower;
             return sortedValues[lower] + ((sortedValues[upper] - sortedValues[lower]) * weight);
+        }
+
+        private static void Increment(Dictionary<string, long> values, string key)
+        {
+            if (values == null) throw new ArgumentNullException(nameof(values));
+            if (String.IsNullOrEmpty(key)) return;
+
+            if (values.ContainsKey(key))
+                values[key]++;
+            else
+                values[key] = 1;
         }
 
         private static string ExtractBucketName(string requestUrl)

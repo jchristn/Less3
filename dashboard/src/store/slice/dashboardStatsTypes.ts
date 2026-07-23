@@ -64,6 +64,7 @@ export interface MaintenanceStatusResponse {
 }
 
 export interface MaintenanceSettingsRequest {
+  Configuration?: Record<string, any>;
   RequestHistoryRetentionDays?: number;
   CleanupIntervalMs?: number;
   OlderThanUtc?: string;
@@ -77,5 +78,7 @@ export interface MaintenanceActionResult {
   ObjectRowCount: number;
   MissingBlobFileCount: number;
   MissingBlobFiles: string[];
+  RuntimeAppliedSettings: string[];
+  RestartRequiredSettings: string[];
   GeneratedUtc: string;
 }

@@ -99,6 +99,20 @@ describe("CredentialsPage", () => {
       renderWithRedux(<CredentialsPage />);
       expect(screen.getByPlaceholderText("Search credentials...")).toBeInTheDocument();
     });
+
+    it("should truncate the description column instead of wrapping", () => {
+      renderWithRedux(<CredentialsPage />);
+
+      const description = screen.getByText("Test Credential");
+
+      expect(description).toHaveStyle({
+        display: "block",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+      });
+      expect(description).toHaveAttribute("title", "Test Credential");
+    });
   });
 
   describe("User Interactions", () => {

@@ -50,6 +50,7 @@ const PermissionsPage: React.FC = () => (
         placeholder: 'Select resource',
         defaultValue: 'Bucket',
         options: [
+          { label: 'All', value: 'All' },
           { label: 'Tenant', value: 'Tenant' },
           { label: 'Bucket', value: 'Bucket' },
           { label: 'Object', value: 'Object' },
@@ -63,6 +64,7 @@ const PermissionsPage: React.FC = () => (
         placeholder: 'Select action',
         defaultValue: 'Read',
         options: [
+          { label: 'All', value: 'All' },
           { label: 'Read', value: 'Read' },
           { label: 'Create', value: 'Create' },
           { label: 'Update', value: 'Update' },

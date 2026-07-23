@@ -1,6 +1,5 @@
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query/react';
 import sdkSlice, { ApiBaseQueryArgs } from '#/store/rtk/rtkSdkInstance';
-import { buildApiUrl } from '#/services/sdk.service';
 import type {
   User,
   UserListResponse,
@@ -49,7 +48,7 @@ const usersSliceInstance = enhancedSdk.injectEndpoints({
   endpoints: (build: EndpointBuilder<BaseQueryFn<ApiBaseQueryArgs, unknown, unknown>, UsersSliceTags, 'sdk'>) => ({
     getUsers: build.query<UserListResponse, void>({
       query: () => ({
-        url: buildApiUrl('admin/users'),
+        url: 'admin/users',
         method: 'GET',
       }),
       transformResponse: (response: any): User[] => (Array.isArray(response) ? response : []),
@@ -63,20 +62,20 @@ const usersSliceInstance = enhancedSdk.injectEndpoints({
     }),
 
     getUserById: build.query<UserResponse, string>({
-      query: (id: string) => ({ url: buildApiUrl(`admin/users/${id}`), method: 'GET' }),
+      query: (id: string) => ({ url: `admin/users/${id}`, method: 'GET' }),
       transformResponse: (response: any): User => response,
       providesTags: (_result: User | undefined, _error: unknown, id: string) => getUserTags(id),
     }),
 
     createUser: build.mutation<UserResponse, CreateUserRequest>({
-      query: (body: CreateUserRequest) => ({ url: buildApiUrl('admin/users'), method: 'POST', body }),
+      query: (body: CreateUserRequest) => ({ url: 'admin/users', method: 'POST', body }),
       transformResponse: (response: any): User => response,
       invalidatesTags: [{ type: UsersSliceTags.USERS, id: 'LIST' }],
     }),
 
     updateUser: build.mutation<UserResponse, UpdateUserRequest>({
       query: ({ Id, ...body }: UpdateUserRequest) => ({
-        url: buildApiUrl(`admin/users/${Id}`),
+        url: `admin/users/${Id}`,
         method: 'PUT',
         body: {
           Id,
@@ -90,7 +89,7 @@ const usersSliceInstance = enhancedSdk.injectEndpoints({
 
     deleteUser: build.mutation<DeleteUserResponse, DeleteUserParams>({
       query: ({ id }: DeleteUserParams) => ({
-        url: buildApiUrl(`admin/users/${id}`),
+        url: `admin/users/${id}`,
         method: 'DELETE',
       }),
       transformResponse: (): DeleteUserResponse => ({ success: true }),

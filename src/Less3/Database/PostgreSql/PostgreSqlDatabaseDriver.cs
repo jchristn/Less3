@@ -23,6 +23,7 @@ namespace Less3.Database.PostgreSql
 
         private DatabaseSettings _Settings;
         private LoggingModule _Logging;
+        private string _Header = "[PostgreSqlDatabaseDriver] ";
         private string _ConnectionString;
         private int _MaxStatementLength = 4194304;
 
@@ -39,6 +40,7 @@ namespace Less3.Database.PostgreSql
         {
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _Logging = logging ?? throw new ArgumentNullException(nameof(logging));
+            Dialect = SqlDialect.PostgreSql;
 
             _ConnectionString = BuildConnectionString(_Settings);
 
@@ -59,6 +61,8 @@ namespace Less3.Database.PostgreSql
             RoleAssignments = new ControlPlaneRoleAssignmentMethods(this, SqlDialect.PostgreSql);
             AuthSessions = new ControlPlaneAuthSessionMethods(this, SqlDialect.PostgreSql);
             AuthorizationAudit = new ControlPlaneAuthorizationAuditMethods(this, SqlDialect.PostgreSql);
+
+            PostgreSqlLegacyV2Migrator.RunIfNeeded(_ConnectionString, _Logging, _Header);
 
             string setupQuery = SetupQueries.CreateTablesAndIndices();
             ExecuteQuery(setupQuery, false).Wait();

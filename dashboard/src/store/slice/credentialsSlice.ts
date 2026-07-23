@@ -1,6 +1,5 @@
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query/react';
 import sdkSlice, { ApiBaseQueryArgs } from '#/store/rtk/rtkSdkInstance';
-import { buildApiUrl } from '#/services/sdk.service';
 import type {
   Credential,
   CredentialListResponse,
@@ -53,7 +52,7 @@ const credentialsSliceInstance = enhancedSdk.injectEndpoints({
   ) => ({
     getCredentials: build.query<CredentialListResponse, void>({
       query: () => ({
-        url: buildApiUrl('admin/credentials'),
+        url: 'admin/credentials',
         method: 'GET',
       }),
       transformResponse: (response: any): Credential[] => (Array.isArray(response) ? response : []),
@@ -67,20 +66,20 @@ const credentialsSliceInstance = enhancedSdk.injectEndpoints({
     }),
 
     getCredentialById: build.query<CredentialResponse, string>({
-      query: (id: string) => ({ url: buildApiUrl(`admin/credentials/${id}`), method: 'GET' }),
+      query: (id: string) => ({ url: `admin/credentials/${id}`, method: 'GET' }),
       transformResponse: (response: any): Credential => response,
       providesTags: (_result: Credential | undefined, _error: unknown, id: string) => getCredentialTags(id),
     }),
 
     createCredential: build.mutation<CredentialResponse, CreateCredentialRequest>({
-      query: (body: CreateCredentialRequest) => ({ url: buildApiUrl('admin/credentials'), method: 'POST', body }),
+      query: (body: CreateCredentialRequest) => ({ url: 'admin/credentials', method: 'POST', body }),
       transformResponse: (response: any): Credential => response,
       invalidatesTags: [{ type: CredentialsSliceTags.CREDENTIALS, id: 'LIST' }],
     }),
 
     updateCredential: build.mutation<CredentialResponse, UpdateCredentialRequest>({
       query: ({ Id, ...body }: UpdateCredentialRequest) => ({
-        url: buildApiUrl(`admin/credentials/${Id}`),
+        url: `admin/credentials/${Id}`,
         method: 'PUT',
         body: {
           Id,
@@ -94,7 +93,7 @@ const credentialsSliceInstance = enhancedSdk.injectEndpoints({
 
     rotateCredential: build.mutation<CredentialResponse, CredentialActionParams>({
       query: ({ id }: CredentialActionParams) => ({
-        url: buildApiUrl(`admin/credentials/${id}/rotate`),
+        url: `admin/credentials/${id}/rotate`,
         method: 'POST',
         body: {},
       }),
@@ -105,7 +104,7 @@ const credentialsSliceInstance = enhancedSdk.injectEndpoints({
 
     disableCredential: build.mutation<CredentialResponse, CredentialActionParams>({
       query: ({ id }: CredentialActionParams) => ({
-        url: buildApiUrl(`admin/credentials/${id}/disable`),
+        url: `admin/credentials/${id}/disable`,
         method: 'POST',
         body: {},
       }),
@@ -116,7 +115,7 @@ const credentialsSliceInstance = enhancedSdk.injectEndpoints({
 
     deleteCredential: build.mutation<DeleteCredentialResponse, DeleteCredentialParams>({
       query: ({ id }: DeleteCredentialParams) => ({
-        url: buildApiUrl(`admin/credentials/${id}`),
+        url: `admin/credentials/${id}`,
         method: 'DELETE',
       }),
       transformResponse: (): DeleteCredentialResponse => ({ success: true }),

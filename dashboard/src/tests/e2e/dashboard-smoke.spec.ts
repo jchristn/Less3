@@ -1,6 +1,6 @@
 import { expect, Page, test } from '@playwright/test';
 
-const API_ENDPOINT = 'http://localhost:8000';
+const API_ENDPOINT = 'http://127.0.0.1:8000';
 const ADMIN_KEY = 'less3admin';
 
 const emptyArray = JSON.stringify([]);

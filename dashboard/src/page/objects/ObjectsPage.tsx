@@ -32,6 +32,7 @@ import Less3Text from '#/components/base/typograpghy/Text';
 import CopyToClipboard from '#/components/copy-to-clipboard/CopyToClipboard';
 import IdDisplay from '#/components/id-display';
 import JsonViewerModal from '#/components/json-viewer-modal/JsonViewerModal';
+import TextWithCopy from '#/components/text-with-copy/TextWithCopy';
 import {
   useGetBucketsQuery,
   useListBucketObjectsQuery,
@@ -49,7 +50,7 @@ import {
 } from '#/store/slice/bucketsSlice';
 import { type BucketObject, type BucketTag, type ACLOwner, type ACLGrant, type ACLGrantee } from '#/utils/xmlUtils';
 import { formatDate } from '#/utils/dateUtils';
-import { getBaseUrl } from '#/services/sdk.service';
+import { buildS3Url } from '#/services/backendApi.service';
 import WriteObjectModal from '../buckets/WriteObjectModal';
 import { Less3Theme } from '#/theme/theme';
 import { useAppContext } from '#/hooks/appHooks';
@@ -103,11 +104,12 @@ const ObjectsPage: React.FC = () => {
   const [isWriteACLModalVisible, setIsWriteACLModalVisible] = useState(false);
   const [isViewACLModalVisible, setIsViewACLModalVisible] = useState(false);
   const [selectedObject, setSelectedObject] = useState<BucketObject | null>(null);
+  const [viewingObject, setViewingObject] = useState<BucketObject | null>(null);
+  const [isObjectDetailsModalVisible, setIsObjectDetailsModalVisible] = useState(false);
   const [activeContentObject, setActiveContentObject] = useState<BucketObject | null>(null);
   const [activeContentType, setActiveContentType] = useState<string>('');
   const [objectContent, setObjectContent] = useState('');
   const [isObjectContentModalVisible, setIsObjectContentModalVisible] = useState(false);
-  const [objectContentModalMode, setObjectContentModalMode] = useState<'view' | 'edit' | null>(null);
   const [isObjectContentLoading, setIsObjectContentLoading] = useState(false);
   const [isSavingObjectContent, setIsSavingObjectContent] = useState(false);
   const [isUploadObjectModalVisible, setIsUploadObjectModalVisible] = useState(false);
@@ -690,7 +692,6 @@ const ObjectsPage: React.FC = () => {
 
   const closeObjectContentModal = () => {
     setIsObjectContentModalVisible(false);
-    setObjectContentModalMode(null);
     setActiveContentObject(null);
     setActiveContentType('');
     setObjectContent('');
@@ -706,6 +707,16 @@ const ObjectsPage: React.FC = () => {
   const handleDeleteObject = (record: BucketObject) => {
     setDeletingObject(record);
     setIsDeleteModalVisible(true);
+  };
+
+  const handleViewObjectDetails = (record: BucketObject) => {
+    setViewingObject(record);
+    setIsObjectDetailsModalVisible(true);
+  };
+
+  const closeObjectDetailsModal = () => {
+    setIsObjectDetailsModalVisible(false);
+    setViewingObject(null);
   };
 
   const handleDeleteConfirm = async () => {
@@ -1023,7 +1034,18 @@ const ObjectsPage: React.FC = () => {
     return `${(size / (1024 * 1024 * 1024)).toFixed(2)} GB`;
   };
 
-  const loadObjectContents = async (record: BucketObject, mode: 'view' | 'edit') => {
+  const getObjectVersionId = (item: BucketObject | null): string =>
+    item
+      ? (item as BucketObject & { VersionId?: string; Version?: string }).VersionId
+        || (item as BucketObject & { VersionId?: string; Version?: string }).Version
+        || ''
+      : '';
+
+  const isDeleteMarkerObject = (item: BucketObject): boolean =>
+    Boolean((item as BucketObject & { IsDeleteMarker?: boolean; DeleteMarker?: boolean }).IsDeleteMarker)
+    || Boolean((item as BucketObject & { IsDeleteMarker?: boolean; DeleteMarker?: boolean }).DeleteMarker);
+
+  const loadObjectContents = async (record: BucketObject) => {
     if (!selectedBucketName) {
       message.error('Bucket information not available');
       return;
@@ -1032,7 +1054,6 @@ const ObjectsPage: React.FC = () => {
     setActiveContentObject(record);
     setActiveContentType(record.ContentType || inferTextObjectContentType(record.ContentType, record.Key));
     setObjectContent('');
-    setObjectContentModalMode(mode);
     setIsObjectContentModalVisible(true);
     setIsObjectContentLoading(true);
 
@@ -1052,12 +1073,8 @@ const ObjectsPage: React.FC = () => {
     }
   };
 
-  const handleViewObjectContents = (record: BucketObject) => {
-    void loadObjectContents(record, 'view');
-  };
-
-  const handleEditObjectContents = (record: BucketObject) => {
-    void loadObjectContents(record, 'edit');
+  const handleObjectContents = (record: BucketObject) => {
+    void loadObjectContents(record);
   };
 
   const handleSaveObjectContents = async (nextContent: string) => {
@@ -1109,11 +1126,27 @@ const ObjectsPage: React.FC = () => {
     }
 
     if (isTextObject(item)) {
-      handleEditObjectContents(item);
+      handleObjectContents(item);
       return;
     }
 
     openObjectJsonModal(`Object JSON - ${item.Key}`, item);
+  };
+
+  type ObjectActionClickInfo = Parameters<NonNullable<MenuProps['onClick']>>[0];
+
+  const stopObjectActionClick = (info: ObjectActionClickInfo) => {
+    info.domEvent.stopPropagation();
+  };
+
+  const runObjectAction = (info: ObjectActionClickInfo, action: () => void) => {
+    stopObjectActionClick(info);
+    setOpenDropdownKey(null);
+    action();
+  };
+
+  const createObjectAction = (action: () => void): NonNullable<MenuProps['onClick']> => {
+    return (info) => runObjectAction(info, action);
   };
 
   const columns: DataTableColumn<BucketObject>[] = [
@@ -1196,8 +1229,7 @@ const ObjectsPage: React.FC = () => {
           );
         }
 
-        const baseUrl = getBaseUrl();
-        const downloadUrl = `${baseUrl}/${selectedBucketName}/${key}`;
+        const downloadUrl = buildS3Url(`/${selectedBucketName}/${key}`);
 
         return (
           <Less3Flex align="center" gap={8}>
@@ -1283,43 +1315,37 @@ const ObjectsPage: React.FC = () => {
 
         const folderMenuItems: MenuProps['items'] = [
           {
+            key: 'view-details',
+            label: 'View Details',
+            onClick: createObjectAction(() => handleViewObjectDetails(item)),
+          },
+          {
             key: 'open-folder',
             label: 'Open Folder',
-            onClick: () => {
-              setOpenDropdownKey(null);
-              navigateToFolder(item.Key);
-            },
+            onClick: createObjectAction(() => navigateToFolder(item.Key)),
           },
           { type: 'divider' },
           {
             key: 'delete-folder',
             label: 'Delete Folder',
             danger: true,
-            onClick: () => {
-              setOpenDropdownKey(null);
-              handleDeleteFolder(item.Key);
-            },
+            onClick: createObjectAction(() => handleDeleteFolder(item.Key)),
           },
         ];
 
         const fileMenuItems: MenuProps['items'] = [
+          {
+            key: 'view-details',
+            label: 'View Details',
+            onClick: createObjectAction(() => handleViewObjectDetails(item)),
+          },
+          { type: 'divider' },
           ...(isTextItem
             ? [
                 {
-                  key: 'view-contents',
-                  label: 'View Contents',
-                  onClick: () => {
-                    setOpenDropdownKey(null);
-                    handleViewObjectContents(item);
-                  },
-                },
-                {
-                  key: 'edit-contents',
-                  label: 'Edit Contents',
-                  onClick: () => {
-                    setOpenDropdownKey(null);
-                    handleEditObjectContents(item);
-                  },
+                  key: 'contents',
+                  label: 'Contents',
+                  onClick: createObjectAction(() => handleObjectContents(item)),
                 },
                 { type: 'divider' as const },
               ]
@@ -1327,80 +1353,57 @@ const ObjectsPage: React.FC = () => {
           {
             key: 'write-tags',
             label: 'Write Tags',
-            onClick: () => {
-              setOpenDropdownKey(null);
-              handleWriteObjectTags(item);
-            },
+            onClick: createObjectAction(() => handleWriteObjectTags(item)),
           },
           {
             key: 'read-tags',
             label: 'Read Tags',
-            onClick: () => {
-              setOpenDropdownKey(null);
-              handleViewObjectTags(item);
-            },
+            onClick: createObjectAction(() => handleViewObjectTags(item)),
           },
           {
             key: 'delete-tags',
             label: 'Delete Tags',
-            onClick: () => {
-              setOpenDropdownKey(null);
-              handleDeleteObjectTags(item);
-            },
+            onClick: createObjectAction(() => handleDeleteObjectTags(item)),
           },
           { type: 'divider' },
           {
             key: 'write-acl',
             label: 'Write ACL',
-            onClick: () => {
-              setOpenDropdownKey(null);
-              handleWriteObjectACL(item);
-            },
+            onClick: createObjectAction(() => handleWriteObjectACL(item)),
           },
           {
             key: 'read-acl',
             label: 'Read ACL',
-            onClick: () => {
-              setOpenDropdownKey(null);
-              handleViewObjectACL(item);
-            },
+            onClick: createObjectAction(() => handleViewObjectACL(item)),
           },
           { type: 'divider' },
           {
             key: 'download',
             label: 'Download Object',
-            onClick: () => {
-              setOpenDropdownKey(null);
-              handleDownloadObject(item);
-            },
+            onClick: createObjectAction(() => {
+              void handleDownloadObject(item);
+            }),
             disabled: downloadingObjectKey === item.Key,
           },
           {
             key: 'copy-version',
             icon: <CopyOutlined />,
             label: 'Copy Version',
-            onClick: () => {
-              setOpenDropdownKey(null);
-              handleCopyVersion(item);
-            },
+            onClick: createObjectAction(() => handleCopyVersion(item)),
           },
           {
             key: 'restore-version',
             icon: <RollbackOutlined />,
             label: 'Restore Version',
-            onClick: () => {
-              setOpenDropdownKey(null);
+            onClick: createObjectAction(() => {
               void handleRestoreVersion(item);
-            },
+            }),
             disabled: isRestoringVersion,
           },
           {
             key: 'delete',
             label: 'Delete Object',
-            onClick: () => {
-              setOpenDropdownKey(null);
-              handleDeleteObject(item);
-            },
+            onClick: createObjectAction(() => handleDeleteObject(item)),
           },
         ];
 
@@ -1408,7 +1411,7 @@ const ObjectsPage: React.FC = () => {
 
         return (
           <Less3Dropdown
-            menu={{ items: menuItems }}
+            menu={{ items: menuItems, onClick: stopObjectActionClick }}
             trigger={['click']}
             open={isOpen}
             onOpenChange={(open) => {
@@ -1678,7 +1681,6 @@ const ObjectsPage: React.FC = () => {
 
       <ObjectContentModal
         open={isObjectContentModalVisible}
-        mode={objectContentModalMode || 'view'}
         objectKey={activeContentObject?.Key || ''}
         contentType={activeContentType}
         content={objectContent}
@@ -1687,6 +1689,101 @@ const ObjectsPage: React.FC = () => {
         onClose={closeObjectContentModal}
         onSave={handleSaveObjectContents}
       />
+
+      <Less3Modal
+        title={`Object Details - ${viewingObject ? getDisplayName(viewingObject.Key) || viewingObject.Key : ''}`}
+        open={isObjectDetailsModalVisible}
+        onCancel={closeObjectDetailsModal}
+        footer={[
+          viewingObject && isFolder(viewingObject.Key) ? (
+            <Less3Button
+              key="open-folder"
+              onClick={() => {
+                navigateToFolder(viewingObject.Key);
+                closeObjectDetailsModal();
+              }}
+            >
+              Open Folder
+            </Less3Button>
+          ) : null,
+          viewingObject && !isFolder(viewingObject.Key) && isTextObject(viewingObject) ? (
+            <Less3Button
+              key="contents"
+              onClick={() => {
+                const object = viewingObject;
+                closeObjectDetailsModal();
+                handleObjectContents(object);
+              }}
+            >
+              Contents
+            </Less3Button>
+          ) : null,
+          <Less3Button key="close" onClick={closeObjectDetailsModal}>
+            Close
+          </Less3Button>,
+        ].filter(Boolean)}
+        width={760}
+        centered
+        keyboard={true}
+      >
+        {viewingObject ? (
+          <table
+            style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              tableLayout: 'fixed',
+            }}
+          >
+            <tbody>
+              {(() => {
+                const versionId = getObjectVersionId(viewingObject);
+                const isFolderObject = isFolder(viewingObject.Key);
+                const downloadUrl = selectedBucketName && !isFolderObject
+                  ? buildS3Url(`/${selectedBucketName}/${viewingObject.Key}`)
+                  : '';
+
+                return [
+                  { label: 'Bucket', value: selectedBucketName || 'Not set' },
+                  { label: 'Bucket Id', value: selectedBucket?.Id || 'Not set', id: Boolean(selectedBucket?.Id) },
+                  { label: 'Tenant Id', value: selectedBucket?.TenantId || 'default', id: true },
+                  { label: 'Key', value: viewingObject.Key, copyable: true, mono: true },
+                  { label: 'Name', value: getDisplayName(viewingObject.Key) || viewingObject.Key },
+                  { label: 'Type', value: isFolderObject ? 'Folder' : 'Object' },
+                  { label: 'Content Type', value: viewingObject.ContentType || (isFolderObject ? 'folder' : 'Not set') },
+                  { label: 'Size', value: formatSize(viewingObject.Size || 0) },
+                  { label: 'Last Modified', value: viewingObject.LastModified ? formatDate(viewingObject.LastModified) : 'Not set' },
+                  { label: 'ETag', value: viewingObject.ETag || 'Not set' },
+                  { label: 'Storage Class', value: viewingObject.StorageClass || 'Not set' },
+                  { label: 'Version Id', value: versionId || 'Not set', id: Boolean(versionId) },
+                  { label: 'Delete Marker', value: isDeleteMarkerObject(viewingObject) ? 'Yes' : 'No' },
+                  { label: 'Owner Id', value: viewingObject.Owner?.ID || 'Not set', id: Boolean(viewingObject.Owner?.ID) },
+                  { label: 'Owner Display Name', value: viewingObject.Owner?.DisplayName || 'Not set' },
+                  { label: 'Download URL', value: downloadUrl, copyable: Boolean(downloadUrl), mono: true, hidden: !downloadUrl },
+                ];
+              })().filter((item) => !item.hidden).map((item) => (
+                <tr key={item.label}>
+                  <td style={{ width: 150, padding: '8px 12px 8px 0', verticalAlign: 'top' }}>
+                    <Less3Text type="secondary" fontSize={12}>
+                      {item.label}
+                    </Less3Text>
+                  </td>
+                  <td style={{ padding: '8px 0', verticalAlign: 'top' }}>
+                    {item.id ? (
+                      <IdDisplay id={item.value} />
+                    ) : item.copyable ? (
+                      <TextWithCopy text={item.value} className={item.mono ? 'code-font-style' : undefined} />
+                    ) : (
+                      <Less3Text style={{ wordBreak: 'break-all' }}>{item.value}</Less3Text>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '20px' }}>No object details available</div>
+        )}
+      </Less3Modal>
 
       <Less3Modal
         title="Delete Object"
@@ -2072,7 +2169,10 @@ const ObjectsPage: React.FC = () => {
             <div>
               <Less3Text strong>Owner</Less3Text>
               <Less3Flex vertical gap={8} style={{ marginTop: '8px', paddingLeft: '16px' }}>
-                <Less3Text>ID: {objectACLData.acl.Owner.ID}</Less3Text>
+                <Less3Flex align="center" gap={8}>
+                  <Less3Text>ID:</Less3Text>
+                  <IdDisplay id={objectACLData.acl.Owner.ID} />
+                </Less3Flex>
                 <Less3Text>Display Name: {objectACLData.acl.Owner.DisplayName}</Less3Text>
               </Less3Flex>
             </div>
@@ -2089,7 +2189,7 @@ const ObjectsPage: React.FC = () => {
                         {
                           key: 'granteeId',
                           label: 'Grantee ID',
-                          render: (item: ACLGrant) => item.Grantee?.ID,
+                          render: (item: ACLGrant) => item.Grantee?.ID ? <IdDisplay id={item.Grantee.ID} /> : '',
                           filterValue: (item: ACLGrant) => item.Grantee?.ID || '',
                         },
                         {

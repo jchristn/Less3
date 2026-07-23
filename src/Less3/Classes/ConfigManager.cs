@@ -2,9 +2,11 @@ namespace Less3.Classes
 {
     using System;
     using System.Collections.Generic;
+    using System.Data;
     using System.Linq;
 
     using Less3.Database;
+    using Less3.Database.Implementations;
     using Less3.Requests;
     using Less3.Responses;
     using Less3.Settings;
@@ -345,6 +347,34 @@ namespace Less3.Classes
             return _Database.Users.GetAll(tenantId);
         }
 
+        internal EnumerationResult<User> EnumerateUsers(EnumerationQuery query)
+        {
+            if (query == null) query = new EnumerationQuery();
+            List<string> predicates = TenantPredicates(query.TenantId);
+            predicates.Add(StringFilter(query, "id", "id", false));
+            predicates.Add(StringFilter(query, "name", "name", false));
+            predicates.Add(StringFilter(query, "email", "email", false));
+            predicates.Add(BoolFilter(query, "active", "active"));
+            predicates.Add(BoolFilter(query, "isAdmin", "isadmin"));
+            predicates.Add(BoolFilter(query, "isTenantAdmin", "istenantadmin"));
+
+            return EnumerateTable(
+                query,
+                "users",
+                CombinePredicates(predicates),
+                new Dictionary<string, string>
+                {
+                    { "id", "id" },
+                    { "tenantId", "tenant_id" },
+                    { "name", "name" },
+                    { "email", "email" },
+                    { "active", "active" },
+                    { "createdUtc", "createdutc" }
+                },
+                "id",
+                ControlPlaneDataMapper.User);
+        }
+
         internal bool UserIdExists(string id)
         {
             if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
@@ -493,6 +523,36 @@ namespace Less3.Classes
             return _Database.Credentials.GetAll(tenantId);
         }
 
+        internal EnumerationResult<Credential> EnumerateCredentials(EnumerationQuery query)
+        {
+            if (query == null) query = new EnumerationQuery();
+            List<string> predicates = TenantPredicates(query.TenantId);
+            predicates.Add(StringFilter(query, "id", "id", false));
+            predicates.Add(StringFilter(query, "userId", "user_id", false));
+            predicates.Add(StringFilter(query, "accessKey", "accesskey", false));
+            predicates.Add(StringFilter(query, "description", "description", false));
+            predicates.Add(BoolFilter(query, "active", "active"));
+
+            return EnumerateTable(
+                query,
+                "credentials",
+                CombinePredicates(predicates),
+                new Dictionary<string, string>
+                {
+                    { "id", "id" },
+                    { "tenantId", "tenant_id" },
+                    { "userId", "user_id" },
+                    { "accessKey", "accesskey" },
+                    { "description", "description" },
+                    { "active", "active" },
+                    { "lastUsedUtc", "lastusedutc" },
+                    { "lastFailedUtc", "lastfailedutc" },
+                    { "createdUtc", "createdutc" }
+                },
+                "id",
+                ControlPlaneDataMapper.Credential);
+        }
+
         internal bool CredentialIdExists(string id)
         {
             if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
@@ -605,6 +665,35 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
             return _Database.Buckets.GetAll(tenantId);
+        }
+
+        internal EnumerationResult<Bucket> EnumerateBuckets(EnumerationQuery query)
+        {
+            if (query == null) query = new EnumerationQuery();
+            List<string> predicates = TenantPredicates(query.TenantId);
+            predicates.Add(StringFilter(query, "id", "id", false));
+            predicates.Add(StringFilter(query, "name", "name", false));
+            predicates.Add(StringFilter(query, "ownerId", "owner_id", false));
+            predicates.Add(StringFilter(query, "region", "regionstring", false));
+            predicates.Add(BoolFilter(query, "enableVersioning", "enableversioning"));
+            predicates.Add(BoolFilter(query, "enablePublicRead", "enablepublicread"));
+            predicates.Add(BoolFilter(query, "enablePublicWrite", "enablepublicwrite"));
+
+            return EnumerateTable(
+                query,
+                "buckets",
+                CombinePredicates(predicates),
+                new Dictionary<string, string>
+                {
+                    { "id", "id" },
+                    { "tenantId", "tenant_id" },
+                    { "ownerId", "owner_id" },
+                    { "name", "name" },
+                    { "region", "regionstring" },
+                    { "createdUtc", "createdutc" }
+                },
+                "id",
+                ControlPlaneDataMapper.Bucket);
         }
 
         internal bool BucketExists(string name)
@@ -763,6 +852,48 @@ namespace Less3.Classes
                 .ToList();
         }
 
+        internal EnumerationResult<Obj> EnumerateObjects(EnumerationQuery query, string bucketId)
+        {
+            if (query == null) query = new EnumerationQuery();
+            List<string> predicates = TenantPredicates(query.TenantId);
+
+            if (!String.IsNullOrEmpty(bucketId))
+            {
+                predicates.Add("bucket_id = " + ControlPlaneSql.StringLiteral(bucketId));
+            }
+
+            predicates.Add(StringFilter(query, "id", "id", false));
+            predicates.Add(StringFilter(query, "objectId", "id", false));
+            predicates.Add(StringFilter(query, "bucketId", "bucket_id", false));
+            predicates.Add(StringFilter(query, "ownerId", "owner_id", false));
+            predicates.Add(StringFilter(query, "authorId", "author_id", false));
+            predicates.Add(PrefixFilter(query, "prefix", SqlColumn("key")));
+            predicates.Add(StringFilter(query, "key", SqlColumn("key"), false));
+            predicates.Add(StringFilter(query, "contentType", "contenttype", false));
+            predicates.Add(BoolFilter(query, "isFolder", "isfolder"));
+            predicates.Add(BoolFilter(query, "deleteMarker", "deletemarker"));
+
+            return EnumerateTable(
+                query,
+                "objects",
+                CombinePredicates(predicates),
+                new Dictionary<string, string>
+                {
+                    { "id", "id" },
+                    { "tenantId", "tenant_id" },
+                    { "bucketId", "bucket_id" },
+                    { "ownerId", "owner_id" },
+                    { "authorId", "author_id" },
+                    { "key", SqlColumn("key") },
+                    { "contentLength", "contentlength" },
+                    { "createdUtc", "createdutc" },
+                    { "lastUpdateUtc", "lastupdateutc" },
+                    { "lastAccessUtc", "lastaccessutc" }
+                },
+                "id",
+                ControlPlaneDataMapper.Obj);
+        }
+
         internal Obj GetObjectById(string tenantId, string bucketId, string id)
         {
             if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
@@ -836,6 +967,30 @@ namespace Less3.Classes
             return tags.OrderBy(t => t.Id).ToList();
         }
 
+        internal EnumerationResult<BucketTag> EnumerateBucketTags(EnumerationQuery query, string bucketId)
+        {
+            if (query == null) query = new EnumerationQuery();
+            List<string> predicates = TenantPredicates(query.TenantId);
+
+            if (!String.IsNullOrEmpty(bucketId))
+            {
+                predicates.Add("bucket_id = " + ControlPlaneSql.StringLiteral(bucketId));
+            }
+
+            predicates.Add(StringFilter(query, "id", "id", false));
+            predicates.Add(StringFilter(query, "bucketId", "bucket_id", false));
+            predicates.Add(StringFilter(query, "key", SqlColumn("key"), false));
+            predicates.Add(StringFilter(query, "value", SqlColumn("value"), false));
+
+            return EnumerateTable(
+                query,
+                "buckettags",
+                CombinePredicates(predicates),
+                TagSortFields(),
+                "id",
+                ControlPlaneDataMapper.BucketTag);
+        }
+
         internal BucketTag GetBucketTagById(string tenantId, string id)
         {
             if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
@@ -906,6 +1061,45 @@ namespace Less3.Classes
             return tags.OrderBy(t => t.Id).ToList();
         }
 
+        internal EnumerationResult<ObjectTag> EnumerateObjectTags(EnumerationQuery query, string bucketId, string objectId)
+        {
+            if (query == null) query = new EnumerationQuery();
+            List<string> predicates = TenantPredicates(query.TenantId);
+
+            if (!String.IsNullOrEmpty(bucketId))
+            {
+                predicates.Add("bucket_id = " + ControlPlaneSql.StringLiteral(bucketId));
+            }
+
+            if (!String.IsNullOrEmpty(objectId))
+            {
+                predicates.Add("object_id = " + ControlPlaneSql.StringLiteral(objectId));
+            }
+
+            predicates.Add(StringFilter(query, "id", "id", false));
+            predicates.Add(StringFilter(query, "bucketId", "bucket_id", false));
+            predicates.Add(StringFilter(query, "objectId", "object_id", false));
+            predicates.Add(StringFilter(query, "key", SqlColumn("key"), false));
+            predicates.Add(StringFilter(query, "value", SqlColumn("value"), false));
+
+            return EnumerateTable(
+                query,
+                "objecttags",
+                CombinePredicates(predicates),
+                new Dictionary<string, string>
+                {
+                    { "id", "id" },
+                    { "tenantId", "tenant_id" },
+                    { "bucketId", "bucket_id" },
+                    { "objectId", "object_id" },
+                    { "key", SqlColumn("key") },
+                    { "value", SqlColumn("value") },
+                    { "createdUtc", "createdutc" }
+                },
+                "id",
+                ControlPlaneDataMapper.ObjectTag);
+        }
+
         internal ObjectTag GetObjectTagById(string tenantId, string id)
         {
             if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
@@ -963,6 +1157,34 @@ namespace Less3.Classes
             }
 
             return acls.OrderBy(a => a.Id).ToList();
+        }
+
+        internal EnumerationResult<BucketAcl> EnumerateBucketAcls(EnumerationQuery query, string bucketId)
+        {
+            if (query == null) query = new EnumerationQuery();
+            List<string> predicates = TenantPredicates(query.TenantId);
+
+            if (!String.IsNullOrEmpty(bucketId))
+            {
+                predicates.Add("bucket_id = " + ControlPlaneSql.StringLiteral(bucketId));
+            }
+
+            predicates.Add(StringFilter(query, "id", "id", false));
+            predicates.Add(StringFilter(query, "bucketId", "bucket_id", false));
+            predicates.Add(StringFilter(query, "userId", "user_id", false));
+            predicates.Add(StringFilter(query, "userGroup", "usergroup", false));
+            predicates.Add(StringFilter(query, "issuedByUserId", "issued_by_user_id", false));
+            predicates.Add(BoolFilter(query, "permitRead", "permitread"));
+            predicates.Add(BoolFilter(query, "permitWrite", "permitwrite"));
+            predicates.Add(BoolFilter(query, "fullControl", "fullcontrol"));
+
+            return EnumerateTable(
+                query,
+                "bucketacls",
+                CombinePredicates(predicates),
+                AclSortFields(false),
+                "id",
+                ControlPlaneDataMapper.BucketAcl);
         }
 
         internal BucketAcl GetBucketAclById(string tenantId, string id)
@@ -1026,6 +1248,40 @@ namespace Less3.Classes
             }
 
             return acls.OrderBy(a => a.Id).ToList();
+        }
+
+        internal EnumerationResult<ObjectAcl> EnumerateObjectAcls(EnumerationQuery query, string bucketId, string objectId)
+        {
+            if (query == null) query = new EnumerationQuery();
+            List<string> predicates = TenantPredicates(query.TenantId);
+
+            if (!String.IsNullOrEmpty(bucketId))
+            {
+                predicates.Add("bucket_id = " + ControlPlaneSql.StringLiteral(bucketId));
+            }
+
+            if (!String.IsNullOrEmpty(objectId))
+            {
+                predicates.Add("object_id = " + ControlPlaneSql.StringLiteral(objectId));
+            }
+
+            predicates.Add(StringFilter(query, "id", "id", false));
+            predicates.Add(StringFilter(query, "bucketId", "bucket_id", false));
+            predicates.Add(StringFilter(query, "objectId", "object_id", false));
+            predicates.Add(StringFilter(query, "userId", "user_id", false));
+            predicates.Add(StringFilter(query, "userGroup", "usergroup", false));
+            predicates.Add(StringFilter(query, "issuedByUserId", "issued_by_user_id", false));
+            predicates.Add(BoolFilter(query, "permitRead", "permitread"));
+            predicates.Add(BoolFilter(query, "permitWrite", "permitwrite"));
+            predicates.Add(BoolFilter(query, "fullControl", "fullcontrol"));
+
+            return EnumerateTable(
+                query,
+                "objectacls",
+                CombinePredicates(predicates),
+                AclSortFields(true),
+                "id",
+                ControlPlaneDataMapper.ObjectAcl);
         }
 
         internal ObjectAcl GetObjectAclById(string tenantId, string id)
@@ -1112,6 +1368,43 @@ namespace Less3.Classes
             if (String.IsNullOrEmpty(tenantId)) return new List<Less3.Classes.Upload>();
             if (String.IsNullOrEmpty(bucketId)) return new List<Less3.Classes.Upload>();
             return _Database.Uploads.GetByBucketId(tenantId, bucketId);
+        }
+
+        internal EnumerationResult<Less3.Classes.Upload> EnumerateUploads(EnumerationQuery query, string bucketId)
+        {
+            if (query == null) query = new EnumerationQuery();
+            List<string> predicates = TenantPredicates(query.TenantId);
+
+            if (!String.IsNullOrEmpty(bucketId))
+            {
+                predicates.Add("bucket_id = " + ControlPlaneSql.StringLiteral(bucketId));
+            }
+
+            predicates.Add(StringFilter(query, "id", "id", false));
+            predicates.Add(StringFilter(query, "bucketId", "bucket_id", false));
+            predicates.Add(StringFilter(query, "ownerId", "owner_id", false));
+            predicates.Add(StringFilter(query, "authorId", "author_id", false));
+            predicates.Add(PrefixFilter(query, "prefix", SqlColumn("key")));
+            predicates.Add(StringFilter(query, "key", SqlColumn("key"), false));
+
+            return EnumerateTable(
+                query,
+                "uploads",
+                CombinePredicates(predicates),
+                new Dictionary<string, string>
+                {
+                    { "id", "id" },
+                    { "tenantId", "tenant_id" },
+                    { "bucketId", "bucket_id" },
+                    { "ownerId", "owner_id" },
+                    { "authorId", "author_id" },
+                    { "key", SqlColumn("key") },
+                    { "createdUtc", "createdutc" },
+                    { "lastAccessUtc", "lastaccessutc" },
+                    { "expirationUtc", "expirationutc" }
+                },
+                "id",
+                ControlPlaneDataMapper.Upload);
         }
 
         internal void AddUpload(Less3.Classes.Upload upload)
@@ -1212,9 +1505,219 @@ namespace Less3.Classes
             _Database.RequestHistory.DeleteOlderThan(cutoff);
         }
 
+        internal int CountRequestHistoriesOlderThan(DateTime cutoff)
+        {
+            DataTable countTable = _Database.ExecuteQuery(
+                ControlPlaneSql.CountString(
+                    "requesthistory",
+                    "createdutc < " + ControlPlaneSql.DateLiteral(cutoff)),
+                false).GetAwaiter().GetResult();
+
+            long count = ControlPlaneDataMapper.Count(countTable);
+            if (count > Int32.MaxValue) return Int32.MaxValue;
+            return (int)count;
+        }
+
         internal List<RequestHistory> GetRequestHistoriesInRange(DateTime startUtc, DateTime endUtc)
         {
             return _Database.RequestHistory.GetInRange(startUtc, endUtc);
+        }
+
+        internal EnumerationResult<RequestHistory> EnumerateRequestHistories(EnumerationQuery query)
+        {
+            if (query == null) query = new EnumerationQuery();
+            List<string> predicates = TenantPredicates(query.TenantId);
+
+            if (query.StartUtc.HasValue)
+            {
+                predicates.Add("createdutc >= " + ControlPlaneSql.DateLiteral(query.StartUtc.Value));
+            }
+
+            if (query.EndUtc.HasValue)
+            {
+                predicates.Add("createdutc <= " + ControlPlaneSql.DateLiteral(query.EndUtc.Value));
+            }
+
+            predicates.Add(StringFilter(query, "id", "id", false));
+            predicates.Add(StringFilter(query, "method", "httpmethod", true));
+            predicates.Add(StringFilter(query, "sourceIp", "sourceip", true));
+            predicates.Add(StringFilter(query, "requestType", "requesttype", true));
+            predicates.Add(StringFilter(query, "userId", "user_id", false));
+            predicates.Add(StringFilter(query, "accessKey", "accesskey", false));
+            predicates.Add(IntFilter(query, "status", "statuscode"));
+            predicates.Add(BoolFilter(query, "success", "success"));
+
+            return EnumerateTable(
+                query,
+                "requesthistory",
+                CombinePredicates(predicates),
+                new Dictionary<string, string>
+                {
+                    { "id", "id" },
+                    { "tenantId", "tenant_id" },
+                    { "method", "httpmethod" },
+                    { "status", "statuscode" },
+                    { "success", "success" },
+                    { "durationMs", "durationms" },
+                    { "requestType", "requesttype" },
+                    { "userId", "user_id" },
+                    { "accessKey", "accesskey" },
+                    { "createdUtc", "createdutc" }
+                },
+                "createdutc",
+                ControlPlaneDataMapper.RequestHistory);
+        }
+
+        #endregion
+
+        #region Private-Enumeration-Methods
+
+        private EnumerationResult<T> EnumerateTable<T>(
+            EnumerationQuery query,
+            string table,
+            string where,
+            Dictionary<string, string> allowedSortFields,
+            string defaultSortColumn,
+            Func<DataRow, T> mapper)
+        {
+            if (query == null) query = new EnumerationQuery();
+            if (mapper == null) throw new ArgumentNullException(nameof(mapper));
+
+            DataTable countTable = _Database.ExecuteQuery(
+                ControlPlaneSql.CountString(table, where),
+                false).GetAwaiter().GetResult();
+
+            DataTable dataTable = _Database.ExecuteQuery(
+                ControlPlaneSql.QueryString(query, table, where, allowedSortFields, defaultSortColumn, _Database.Dialect),
+                false).GetAwaiter().GetResult();
+
+            List<T> items = ControlPlaneDataMapper.List(dataTable, mapper);
+            long total = ControlPlaneDataMapper.Count(countTable);
+
+            EnumerationResult<T> result = new EnumerationResult<T>();
+            result.Items = items;
+            result.Total = total;
+            result.Limit = query.Limit;
+            result.Offset = query.Offset;
+            result.HasMore = query.Offset + items.Count < total;
+            if (result.HasMore) result.NextContinuationToken = (query.Offset + items.Count).ToString();
+            return result;
+        }
+
+        private List<string> TenantPredicates(string tenantId)
+        {
+            List<string> predicates = new List<string>();
+            if (!String.IsNullOrEmpty(tenantId))
+            {
+                predicates.Add("tenant_id = " + ControlPlaneSql.StringLiteral(tenantId));
+            }
+            return predicates;
+        }
+
+        private string CombinePredicates(IEnumerable<string> predicates)
+        {
+            if (predicates == null) return null;
+            List<string> filtered = predicates
+                .Where(p => !String.IsNullOrWhiteSpace(p))
+                .ToList();
+            if (filtered.Count < 1) return null;
+            return String.Join(" AND ", filtered);
+        }
+
+        private string StringFilter(EnumerationQuery query, string filterName, string column, bool ignoreCase)
+        {
+            string value = FilterValue(query, filterName);
+            if (String.IsNullOrEmpty(value)) return null;
+
+            string literal = ControlPlaneSql.StringLiteral(value);
+            if (ignoreCase)
+            {
+                return "LOWER(" + column + ") = LOWER(" + literal + ")";
+            }
+
+            return column + " = " + literal;
+        }
+
+        private string PrefixFilter(EnumerationQuery query, string filterName, string column)
+        {
+            string value = FilterValue(query, filterName);
+            if (String.IsNullOrEmpty(value)) return null;
+            string escaped = EscapeLike(value) + "%";
+            return column + " LIKE " + ControlPlaneSql.StringLiteral(escaped) + " ESCAPE '\\'";
+        }
+
+        private string BoolFilter(EnumerationQuery query, string filterName, string column)
+        {
+            string value = FilterValue(query, filterName);
+            if (String.IsNullOrEmpty(value)) return null;
+            if (!Boolean.TryParse(value, out bool parsed)) return null;
+            return column + " = " + ControlPlaneSql.BoolLiteral(parsed, _Database.Dialect);
+        }
+
+        private string IntFilter(EnumerationQuery query, string filterName, string column)
+        {
+            string value = FilterValue(query, filterName);
+            if (String.IsNullOrEmpty(value)) return null;
+            if (!Int32.TryParse(value, out int parsed)) return null;
+            return column + " = " + parsed;
+        }
+
+        private static string FilterValue(EnumerationQuery query, string filterName)
+        {
+            if (query == null || query.Filters == null) return null;
+            if (!query.Filters.ContainsKey(filterName)) return null;
+            return query.Filters[filterName];
+        }
+
+        private static string EscapeLike(string value)
+        {
+            if (value == null) return null;
+            return value
+                .Replace("\\", "\\\\")
+                .Replace("%", "\\%")
+                .Replace("_", "\\_");
+        }
+
+        private string SqlColumn(string column)
+        {
+            if (_Database.Dialect == SqlDialect.SqlServer
+                && (String.Equals(column, "key", StringComparison.OrdinalIgnoreCase)
+                    || String.Equals(column, "value", StringComparison.OrdinalIgnoreCase)))
+            {
+                return "[" + column + "]";
+            }
+
+            return column;
+        }
+
+        private Dictionary<string, string> TagSortFields()
+        {
+            return new Dictionary<string, string>
+            {
+                { "id", "id" },
+                { "tenantId", "tenant_id" },
+                { "bucketId", "bucket_id" },
+                { "key", SqlColumn("key") },
+                { "value", SqlColumn("value") },
+                { "createdUtc", "createdutc" }
+            };
+        }
+
+        private Dictionary<string, string> AclSortFields(bool includeObject)
+        {
+            Dictionary<string, string> fields = new Dictionary<string, string>
+            {
+                { "id", "id" },
+                { "tenantId", "tenant_id" },
+                { "bucketId", "bucket_id" },
+                { "userId", "user_id" },
+                { "userGroup", "usergroup" },
+                { "issuedByUserId", "issued_by_user_id" },
+                { "createdUtc", "createdutc" }
+            };
+
+            if (includeObject) fields["objectId"] = "object_id";
+            return fields;
         }
 
         #endregion

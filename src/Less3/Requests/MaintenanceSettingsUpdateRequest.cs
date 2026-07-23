@@ -1,12 +1,18 @@
 namespace Less3.Requests
 {
     using System;
+    using Less3.Settings;
 
     /// <summary>
-    /// Runtime maintenance settings update request.
+    /// Maintenance settings update request.
     /// </summary>
     public class MaintenanceSettingsUpdateRequest
     {
+        /// <summary>
+        /// Full server configuration to persist to system.json.
+        /// </summary>
+        public SettingsBase Configuration { get; set; } = null;
+
         /// <summary>
         /// Request history retention in days.
         /// </summary>

@@ -104,7 +104,8 @@ describe('ApiExplorerPage', () => {
     await userEvent.click(await screen.findByText('[Buckets] GET - Get Bucket'));
 
     await userEvent.click(screen.getAllByRole('combobox')[3]);
-    await userEvent.click(await screen.findByText('test-bucket (bkt_test)'));
+    expect((await screen.findAllByText('bkt_test')).length).toBeGreaterThan(0);
+    await userEvent.click(await screen.findByText('test-bucket'));
 
     await waitFor(() => {
       expect(screen.getByText(/\/api\/v1\/buckets\/bkt_test/)).toBeInTheDocument();

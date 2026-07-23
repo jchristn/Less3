@@ -54,6 +54,16 @@ namespace Less3.Classes
         public DateTime? CutoffUtc { get; set; } = null;
 
         /// <summary>
+        /// Settings paths applied at runtime.
+        /// </summary>
+        public List<string> RuntimeAppliedSettings { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Settings paths persisted but requiring restart before taking effect.
+        /// </summary>
+        public List<string> RestartRequiredSettings { get; set; } = new List<string>();
+
+        /// <summary>
         /// UTC timestamp when the action completed.
         /// </summary>
         public DateTime GeneratedUtc { get; set; } = DateTime.UtcNow;

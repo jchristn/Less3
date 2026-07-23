@@ -24,7 +24,7 @@ describe("s3Auth", () => {
   it("buildSignedS3Headers creates SigV4 headers", async () => {
     const headers = await buildSignedS3Headers({
       method: "GET",
-      url: "http://localhost:8000/default/?tagging",
+      url: "http://127.0.0.1:8000/default/?tagging",
       accessKey: "default",
       secretKey: "default",
       timestamp: new Date("2026-05-14T12:34:56.000Z"),

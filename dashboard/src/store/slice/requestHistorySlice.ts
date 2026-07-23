@@ -1,6 +1,5 @@
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query/react';
 import sdkSlice, { ApiBaseQueryArgs } from '#/store/rtk/rtkSdkInstance';
-import { buildApiUrl } from '#/services/sdk.service';
 import type {
   RequestHistoryEntry,
   RequestHistoryListResponse,
@@ -42,7 +41,7 @@ const requestHistorySliceInstance = enhancedSdk.injectEndpoints({
   ) => ({
     getRequestHistory: build.query<RequestHistoryListResponse, void>({
       query: () => ({
-        url: buildApiUrl('admin/requesthistory'),
+        url: 'admin/requesthistory',
         method: 'GET',
       }),
       transformResponse: (response: any): RequestHistoryEntry[] => (Array.isArray(response) ? response : []),
@@ -59,7 +58,7 @@ const requestHistorySliceInstance = enhancedSdk.injectEndpoints({
     }),
 
     getRequestHistoryById: build.query<RequestHistoryResponse, string>({
-      query: (id: string) => ({ url: buildApiUrl(`admin/requesthistory/${id}`), method: 'GET' }),
+      query: (id: string) => ({ url: `admin/requesthistory/${id}`, method: 'GET' }),
       transformResponse: (response: any): RequestHistoryEntry => response,
       providesTags: (_result: RequestHistoryEntry | undefined, _error: unknown, id: string) =>
         getRequestHistoryTags(id),
@@ -67,9 +66,7 @@ const requestHistorySliceInstance = enhancedSdk.injectEndpoints({
 
     getRequestHistorySummary: build.query<RequestHistorySummaryResult, RequestHistorySummaryParams>({
       query: ({ startUtc, endUtc, interval }: RequestHistorySummaryParams) => ({
-        url: buildApiUrl(
-          `admin/requesthistory/summary?startUtc=${encodeURIComponent(startUtc)}&endUtc=${encodeURIComponent(endUtc)}&interval=${encodeURIComponent(interval)}`
-        ),
+        url: `admin/requesthistory/summary?startUtc=${encodeURIComponent(startUtc)}&endUtc=${encodeURIComponent(endUtc)}&interval=${encodeURIComponent(interval)}`,
         method: 'GET',
       }),
       transformResponse: (response: any): RequestHistorySummaryResult => response,
@@ -79,7 +76,7 @@ const requestHistorySliceInstance = enhancedSdk.injectEndpoints({
 
     deleteRequestHistory: build.mutation<DeleteRequestHistoryResponse, DeleteRequestHistoryParams>({
       query: ({ id }: DeleteRequestHistoryParams) => ({
-        url: buildApiUrl(`admin/requesthistory/${id}`),
+        url: `admin/requesthistory/${id}`,
         method: 'DELETE',
       }),
       transformResponse: (): DeleteRequestHistoryResponse => ({ success: true }),

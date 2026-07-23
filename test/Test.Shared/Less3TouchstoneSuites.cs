@@ -8,6 +8,7 @@ namespace Test.Shared
     using System.Reflection;
     using System.Text;
     using System.Text.Json;
+    using System.Text.Json.Nodes;
     using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
@@ -15,6 +16,7 @@ namespace Test.Shared
     using Amazon.S3.Model;
     using Amazon.S3.Util;
     using Less3.Helpers;
+    using Test.Shared.Suites;
     using Touchstone.Core;
 
     /// <summary>
@@ -50,6 +52,7 @@ namespace Test.Shared
                     ProviderMatrixSuite(),
                     SecurityAndAuditSuite(),
                     ConcurrencyAndReliabilitySuite(),
+                    PerformanceRegressionSuite(),
                     DockerAndBootstrapSuite()
                 };
             }
@@ -273,8 +276,8 @@ namespace Test.Shared
                     Active("Tenants", "Tenant_InactiveBlocksCredentialAuth", "Inactive tenants reject S3 credential auth", InactiveTenantBlocksLoginAndS3CredentialAuthAsync),
                     Active("Tenants", "TenantIsolation_UserCannotReadOtherTenantTenantRecord", "Tenant session RBAC blocks unauthorized tenant reads", RestBearerSessionEnforcesRbacPermitAndDenyAsync),
                     Active("Tenants", "TenantIsolation_UserCannotEnumerateOtherTenantResources", "Tenant credentials cannot enumerate another tenant's buckets", S3ListBucketsReturnsOnlyCredentialTenantBucketsAsync),
-                    Planned("Tenants", "TenantIsolation_SystemAdminCanEnumerateAcrossTenantsWhenRequested", "System-admin cross-tenant enumeration needs exact active assertion."),
-                    Planned("Tenants", "TenantIsolation_TenantAdminCannotEscalateToSystemAdmin", "Tenant-admin escalation guard needs exact active assertion."),
+                    Active("Tenants", "TenantIsolation_SystemAdminCanEnumerateAcrossTenantsWhenRequested", "System admin API key can intentionally inspect multiple tenants", SecurityRestAdminApiKeyCanManageAcrossTenantsAsync),
+                    Active("Tenants", "TenantIsolation_TenantAdminCannotEscalateToSystemAdmin", "Tenant-scoped sessions cannot override tenant scope with query or body TenantId", SecurityRestTenantIdSpoofingDeniedAsync),
                     Active("Tenants", "Tenant_DefaultSeedExistsOnFirstBoot", "First boot seeds default tenant", FirstBootSeedsDefaultTenantAndRbacRestSurfaceAsync),
                     Planned("Tenants", "Tenant_DefaultSeedIsIdempotentAcrossRestarts", "Seed idempotency across restart needs persistent fixture coverage.")
                 });
@@ -373,13 +376,13 @@ namespace Test.Shared
                     Active("Rbac", "Rbac_AssignRoleToCredential", "RBAC role assignment to credential works", S3SameBucketNameDifferentTenantsAsync),
                     Planned("Rbac", "Rbac_AssignPermissionToRole", "Direct permission-to-role update needs exact active assertion."),
                     Active("Rbac", "Rbac_AssignmentCanBeScopedToTenant", "RBAC assignments can be scoped to tenants", RestBearerSessionEnforcesRbacPermitAndDenyAsync),
-                    Planned("Rbac", "Rbac_AssignmentCanBeScopedToBucket", "Bucket-scoped RBAC assignment needs exact active assertion."),
-                    Planned("Rbac", "Rbac_AssignmentCanBeScopedToObjectPrefix", "Object-prefix scoped RBAC assignment needs exact active assertion."),
+                    Active("Rbac", "Rbac_AssignmentCanBeScopedToBucket", "RBAC object-scope assignments permit only the assigned object", SecurityS3ObjectScopedRbacPermitsOnlyAssignedObjectAsync),
+                    Active("Rbac", "Rbac_AssignmentCanBeScopedToObjectPrefix", "RBAC object-scope assignments deny unassigned objects and bucket enumeration", SecurityS3ObjectScopedRbacPermitsOnlyAssignedObjectAsync),
                     Active("Rbac", "Rbac_ExplicitDenyOverridesPermit", "RBAC explicit deny overrides permit", RestBearerSessionEnforcesRbacPermitAndDenyAsync),
                     Active("Rbac", "Rbac_SystemAdminBypassWorksOnlyForSystemAdmin", "Admin session bypass permits only administrator principals", RbacAdminBypassAuditAndEffectivePermissionsAsync),
-                    Planned("Rbac", "Rbac_TenantAdminLimitedToTenant", "Tenant-admin boundary needs exact active assertion."),
-                    Planned("Rbac", "Rbac_AuditorReadOnly", "Auditor read-only role behavior needs exact active assertion."),
-                    Planned("Rbac", "Rbac_OperatorCanOperateButCannotManageSecurity", "Operator role boundary needs exact active assertion."),
+                    Active("Rbac", "Rbac_TenantAdminLimitedToTenant", "Tenant admin REST sessions cannot access another tenant by query or body TenantId", SecurityRestTenantIdSpoofingDeniedAsync),
+                    Active("Rbac", "Rbac_AuditorReadOnly", "Tenant member read permission does not grant write access", SecurityRestNoRoleAndTenantMemberRbacBoundariesAsync),
+                    Active("Rbac", "Rbac_OperatorCanOperateButCannotManageSecurity", "Resource-scoped REST RBAC grants only the assigned resource", SecurityRestResourceScopedRbacPermitsOnlyAssignedResourceAsync),
                     Active("Rbac", "Rbac_CustomRolePermissionSetControlsAccess", "Custom role permissions control REST access", RestBearerSessionEnforcesRbacPermitAndDenyAsync),
                     Active("Rbac", "Rbac_AuthorizationFailureAudited", "RBAC authorization failures are audited", RestBearerSessionEnforcesRbacPermitAndDenyAsync),
                     Active("Rbac", "Rbac_SensitiveAdminOperationAudited", "Sensitive admin mutations are written to authorization audit", RbacAdminBypassAuditAndEffectivePermissionsAsync),
@@ -590,7 +593,7 @@ namespace Test.Shared
                     Active("Less3RestApi", "Rest_Enumeration_LimitOffsetSort", "Less3 REST enumeration accepts limit/offset/sort", Less3RestTenantCrudEnumerateAndExistsAsync),
                     Planned("Less3RestApi", "Rest_Enumeration_ContinuationToken", "REST continuation-token enumeration needs product behavior."),
                     Active("Less3RestApi", "Rest_Enumeration_FilterEcho", "Less3 REST request-history enumeration applies filters", RequestHistoryCapturesS3TenantCredentialAndFiltersAsync),
-                    Active("Less3RestApi", "Rest_Enumeration_TenantScopeEnforced", "Less3 REST tenant scoping is enforced by session RBAC", RestBearerSessionEnforcesRbacPermitAndDenyAsync),
+                    Active("Less3RestApi", "Rest_Enumeration_TenantScopeEnforced", "Less3 REST tenant scoping is enforced by session RBAC", SecurityRestTenantIdSpoofingDeniedAsync),
                     Planned("Less3RestApi", "Rest_CancellationToken_PropagatesToDatabase", "Cancellation token propagation needs instrumented database coverage."),
                     Active("Less3RestApi", "Rest_InvalidJsonReturns400", "Less3 REST rejects invalid JSON", Less3RestErrorShapesAsync),
                     Active("Less3RestApi", "Rest_InvalidIdReturns404", "Less3 REST returns 404 for missing ids", Less3RestErrorShapesAsync),
@@ -744,6 +747,13 @@ namespace Test.Shared
                     Planned("SecurityAndAudit", "Security_PathTraversalMultipartTempCannotEscapeTempRoot", "Path traversal multipart temp security test pending."),
                     Planned("SecurityAndAudit", "Security_InvalidTenantIdCannotInjectSql", "SQL injection guard coverage pending provider-level assertions."),
                     Planned("SecurityAndAudit", "Security_InvalidSortFieldCannotInjectSql", "SQL injection guard coverage pending provider-level assertions."),
+                    Active("SecurityAndAudit", "Security_S3TenantCredentialsOnlySeeOwnBucketsAndObjects", "S3 access keys resolve to one tenant and cannot see other tenant buckets or objects", SecurityS3TenantCredentialsOnlySeeOwnBucketsAndObjectsAsync),
+                    Active("SecurityAndAudit", "Security_S3NoRoleCredentialDenied", "S3 credentials without RBAC permissions cannot list, create, read, write, or delete", SecurityS3NoRoleCredentialDeniedServiceBucketAndObjectAccessAsync),
+                    Active("SecurityAndAudit", "Security_S3ObjectScopedRbac", "S3 object-scoped RBAC grants only the assigned object", SecurityS3ObjectScopedRbacPermitsOnlyAssignedObjectAsync),
+                    Active("SecurityAndAudit", "Security_RestNoRoleAndTenantMemberBoundaries", "REST no-role and tenant-member sessions enforce least privilege", SecurityRestNoRoleAndTenantMemberRbacBoundariesAsync),
+                    Active("SecurityAndAudit", "Security_RestResourceScopedRbac", "REST resource-scoped RBAC grants only the assigned resource", SecurityRestResourceScopedRbacPermitsOnlyAssignedResourceAsync),
+                    Active("SecurityAndAudit", "Security_RestTenantIdQuerySpoofingDenied", "REST bearer sessions cannot override tenant scope through query TenantId", SecurityRestTenantIdQuerySpoofingDeniedAsync),
+                    Active("SecurityAndAudit", "Security_RestTenantIdBodySpoofingDenied", "REST bearer sessions cannot override tenant scope through body TenantId", SecurityRestTenantIdBodySpoofingDeniedAsync),
                     Active("SecurityAndAudit", "Security_AuditRecordsSensitiveAdminMutations", "Sensitive admin mutations are audited", RbacAdminBypassAuditAndEffectivePermissionsAsync),
                     Active("SecurityAndAudit", "Security_AuditRecordsDeniedRequests", "Denied RBAC requests are audited", RestBearerSessionEnforcesRbacPermitAndDenyAsync),
                     Active("SecurityAndAudit", "Security_AuditTenantScopeEnforced", "Authorization audit is tenant scoped", AuthorizationAuditRestReadEnumerateDeleteExistsAsync)
@@ -770,6 +780,21 @@ namespace Test.Shared
                 "Reliability_DatabaseTransientFailureReturnsExpectedError",
                 "Reliability_LargeObjectDoesNotBufferEntireResponseInMemory",
                 "Reliability_CancellationStopsLongEnumeration");
+        }
+
+        private static TestSuiteDescriptor PerformanceRegressionSuite()
+        {
+            return new TestSuiteDescriptor(
+                suiteId: "PerformanceRegression",
+                displayName: "Performance Regression Coverage",
+                cases: new List<TestCaseDescriptor>
+                {
+                    Active(
+                        "PerformanceRegression",
+                        "Performance_SharedLiveServerSuite",
+                        "Live server validates bounded REST enumeration, synthetic request history, S3 paging, and concurrent bucket creation",
+                        PerformanceSharedLiveServerSuiteAsync)
+                });
         }
 
         private static TestSuiteDescriptor DockerAndBootstrapSuite()
@@ -927,6 +952,15 @@ namespace Test.Shared
             EnsureContains(openApiBody, "/admin/reports/requests", "openapi body");
             EnsureContains(openApiBody, "/admin/maintenance/status", "openapi body");
             EnsureContains(openApiBody, "/admin/effectivepermissions", "openapi body");
+
+            HttpResponseMessage swagger = await server.HttpClient.GetAsync(server.BaseUrl + "/swagger", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, swagger.StatusCode, "swagger UI");
+            string swaggerBody = await swagger.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureContains(swaggerBody, "SwaggerUIBundle", "swagger UI body");
+            EnsureContains(swaggerBody, "/openapi.json", "swagger UI body");
+
+            HttpResponseMessage swaggerIndex = await server.HttpClient.GetAsync(server.BaseUrl + "/swagger/index.html", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, swaggerIndex.StatusCode, "swagger UI index");
         }
 
         private static async Task AdminBootstrapCredentialAndS3ListBucketsAsync(CancellationToken cancellationToken)
@@ -1360,22 +1394,19 @@ namespace Test.Shared
             HttpResponseMessage badLoginResponse = await server.RestPostUnauthenticatedAsync("authsessions/login", badLoginJson, cancellationToken).ConfigureAwait(false);
             EnsureStatus(HttpStatusCode.Unauthorized, badLoginResponse.StatusCode, "REST invalid session login");
 
-            HttpResponseMessage historyResponse = await server.RestPostAsync("requesthistory/enumerate?tenantId=default", JsonSerializer.Serialize(new
-            {
-                TenantId = "default",
-                Limit = 100,
-                Offset = 0,
-                Filters = new Dictionary<string, string>
-                {
-                    { "method", "POST" }
-                }
-            }), cancellationToken).ConfigureAwait(false);
-            EnsureStatus(HttpStatusCode.OK, historyResponse.StatusCode, "REST request history secret redaction");
-            string historyBody = await historyResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            string historyBody = await WaitForRequestHistoryAsync(
+                server,
+                body => body.Contains("authsessions/login", StringComparison.OrdinalIgnoreCase)
+                    && body.Contains("[redacted]", StringComparison.Ordinal),
+                "REST request history secret redaction",
+                cancellationToken).ConfigureAwait(false);
+
             EnsureContains(historyBody, "[redacted]", "REST request history secret redaction");
             EnsureNotContains(historyBody, token, "REST request history session token redaction");
             EnsureNotContains(historyBody, "\"Password\": \"password\"", "REST request history password redaction");
             EnsureNotContains(historyBody, "\"Password\": \"wrong-password\"", "REST request history invalid password redaction");
+            EnsureNotContains(historyBody, "\\\"Password\\\":\\\"password\\\"", "REST request history compact password redaction");
+            EnsureNotContains(historyBody, "\\\"Password\\\":\\\"wrong-password\\\"", "REST request history compact invalid password redaction");
         }
 
         private static async Task S3RejectsUnknownAccessKeyAsync(CancellationToken cancellationToken)
@@ -3246,15 +3277,42 @@ namespace Test.Shared
             EnsureContains(statusBody, "\"RequestHistoryRetentionDays\": 30", "maintenance status retention");
             EnsureContains(statusBody, "\"RuntimeEditableSettings\"", "maintenance status runtime settings");
             EnsureContains(statusBody, "\"RestartRequiredSettings\"", "maintenance status restart settings");
+            EnsureContains(statusBody, "\"Configuration\"", "maintenance status configuration");
+            EnsureContains(statusBody, "\"Webserver\"", "maintenance status webserver configuration");
+            EnsureContains(statusBody, "\"Debug\"", "maintenance status debug configuration");
             EnsureContains(statusBody, "\"AdminApiKey\": \"[redacted]\"", "maintenance status redacted admin key");
             EnsureNotContains(statusBody, server.AdminApiKey, "maintenance status redacts actual admin key");
 
+            JsonObject statusJson = JsonNode.Parse(statusBody)?.AsObject()
+                ?? throw new InvalidOperationException("Maintenance status response was not a JSON object.");
+            JsonObject configuration = statusJson["Configuration"]?.AsObject()
+                ?? throw new InvalidOperationException("Maintenance status response did not include a configuration object.");
+            configuration["RequestHistoryRetentionDays"] = 7;
+            configuration["CleanupIntervalMs"] = 60000;
+            configuration["RegionString"] = "us-east-2";
+            configuration["AdminApiKey"] = "[redacted]";
+            JsonObject debugConfiguration = configuration["Debug"]?.AsObject()
+                ?? throw new InvalidOperationException("Maintenance configuration did not include debug settings.");
+            debugConfiguration["Authentication"] = true;
+            JsonObject loggingConfiguration = configuration["Logging"]?.AsObject()
+                ?? throw new InvalidOperationException("Maintenance configuration did not include logging settings.");
+            loggingConfiguration["LogHttpRequests"] = true;
+
             HttpResponseMessage settingsUpdate = await server.AdminPostAsync("maintenance/settings", JsonSerializer.Serialize(new
             {
-                RequestHistoryRetentionDays = 7,
-                CleanupIntervalMs = 60000
+                Configuration = configuration
             }), cancellationToken).ConfigureAwait(false);
             EnsureStatus(HttpStatusCode.OK, settingsUpdate.StatusCode, "maintenance update settings");
+            string settingsUpdateBody = await settingsUpdate.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureContains(settingsUpdateBody, "\"RuntimeAppliedSettings\"", "maintenance update runtime applied settings");
+            EnsureContains(settingsUpdateBody, "\"RestartRequiredSettings\"", "maintenance update restart required settings");
+
+            string persistedSettings = File.ReadAllText(Path.Combine(server.TempDirectory, "system.json"));
+            EnsureContains(persistedSettings, "\"RegionString\": \"us-east-2\"", "maintenance persisted region");
+            EnsureContains(persistedSettings, "\"Authentication\": true", "maintenance persisted debug authentication");
+            EnsureContains(persistedSettings, "\"LogHttpRequests\": true", "maintenance persisted HTTP request logging");
+            EnsureContains(persistedSettings, "\"AdminApiKey\": \"" + server.AdminApiKey + "\"", "maintenance preserved admin key");
+            EnsureNotContains(persistedSettings, "\"AdminApiKey\": \"[redacted]\"", "maintenance did not persist redacted admin key placeholder");
 
             HttpResponseMessage healthResponse = await server.AdminGetAsync("health", cancellationToken).ConfigureAwait(false);
             EnsureStatus(HttpStatusCode.OK, healthResponse.StatusCode, "maintenance health after settings update");
@@ -3416,7 +3474,7 @@ namespace Test.Shared
             await server.StartAsync(cancellationToken).ConfigureAwait(false);
 
             using IAmazonS3 client = server.CreateS3Client("default", "default");
-            foreach (string name in new string[] { "api", "admin", "openapi.json", "favicon.ico", "robots.txt" })
+            foreach (string name in new string[] { "api", "admin", "openapi.json", "favicon.ico", "robots.txt", "swagger" })
             {
                 await EnsureS3FailureAsync(
                     () => client.PutBucketAsync(new PutBucketRequest
@@ -5531,6 +5589,37 @@ namespace Test.Shared
             }
         }
 
+        private static async Task<string> WaitForRequestHistoryAsync(
+            Less3TestServer server,
+            Func<string, bool> predicate,
+            string operation,
+            CancellationToken cancellationToken)
+        {
+            string historyBody = null;
+
+            for (int attempt = 0; attempt < 20; attempt++)
+            {
+                HttpResponseMessage historyResponse = await server.RestPostAsync("requesthistory/enumerate?tenantId=default", JsonSerializer.Serialize(new
+                {
+                    TenantId = "default",
+                    Limit = 500,
+                    Offset = 0,
+                    Filters = new Dictionary<string, string>
+                    {
+                        { "method", "POST" }
+                    }
+                }), cancellationToken).ConfigureAwait(false);
+
+                EnsureStatus(HttpStatusCode.OK, historyResponse.StatusCode, operation);
+                historyBody = await historyResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                if (predicate(historyBody)) return historyBody;
+
+                await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+            }
+
+            throw new InvalidOperationException(operation + " did not observe expected request history content.");
+        }
+
         private static void EnsureStringEqual(string expected, string actual, string operation)
         {
             if (!String.Equals(expected, actual, StringComparison.Ordinal))
@@ -5614,6 +5703,96 @@ namespace Test.Shared
             EnsureContains(redacted, "/api/v1/buckets/bkt_test", "log sanitizer path");
             EnsureContains(redacted, "200", "log sanitizer status");
             return Task.CompletedTask;
+        }
+
+        private static Task SecurityS3TenantCredentialsOnlySeeOwnBucketsAndObjectsAsync(CancellationToken cancellationToken)
+        {
+            return RunSecurityBoundaryCaseAsync(
+                SecurityBoundaryTestCases.S3TenantCredentialsOnlySeeOwnBucketsAndObjectsAsync,
+                cancellationToken);
+        }
+
+        private static Task SecurityS3NoRoleCredentialDeniedServiceBucketAndObjectAccessAsync(CancellationToken cancellationToken)
+        {
+            return RunSecurityBoundaryCaseAsync(
+                SecurityBoundaryTestCases.S3NoRoleCredentialDeniedServiceBucketAndObjectAccessAsync,
+                cancellationToken);
+        }
+
+        private static Task SecurityS3ObjectScopedRbacPermitsOnlyAssignedObjectAsync(CancellationToken cancellationToken)
+        {
+            return RunSecurityBoundaryCaseAsync(
+                SecurityBoundaryTestCases.S3ObjectScopedRbacPermitsOnlyAssignedObjectAsync,
+                cancellationToken);
+        }
+
+        private static Task SecurityRestNoRoleAndTenantMemberRbacBoundariesAsync(CancellationToken cancellationToken)
+        {
+            return RunSecurityBoundaryCaseAsync(
+                SecurityBoundaryTestCases.RestNoRoleAndTenantMemberRbacBoundariesAsync,
+                cancellationToken);
+        }
+
+        private static Task SecurityRestResourceScopedRbacPermitsOnlyAssignedResourceAsync(CancellationToken cancellationToken)
+        {
+            return RunSecurityBoundaryCaseAsync(
+                SecurityBoundaryTestCases.RestResourceScopedRbacPermitsOnlyAssignedResourceAsync,
+                cancellationToken);
+        }
+
+        private static Task SecurityRestTenantIdQuerySpoofingDeniedAsync(CancellationToken cancellationToken)
+        {
+            return RunSecurityBoundaryCaseAsync(
+                SecurityBoundaryTestCases.RestTenantIdQuerySpoofingDeniedAsync,
+                cancellationToken);
+        }
+
+        private static Task SecurityRestTenantIdBodySpoofingDeniedAsync(CancellationToken cancellationToken)
+        {
+            return RunSecurityBoundaryCaseAsync(
+                SecurityBoundaryTestCases.RestTenantIdBodySpoofingDeniedAsync,
+                cancellationToken);
+        }
+
+        private static async Task SecurityRestTenantIdSpoofingDeniedAsync(CancellationToken cancellationToken)
+        {
+            using Less3TestServer server = new Less3TestServer();
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
+            await SecurityBoundaryTestCases.RestTenantIdQuerySpoofingDeniedAsync(server, cancellationToken).ConfigureAwait(false);
+            await SecurityBoundaryTestCases.RestTenantIdBodySpoofingDeniedAsync(server, cancellationToken).ConfigureAwait(false);
+        }
+
+        private static Task SecurityRestAdminApiKeyCanManageAcrossTenantsAsync(CancellationToken cancellationToken)
+        {
+            return RunSecurityBoundaryCaseAsync(
+                SecurityBoundaryTestCases.RestAdminApiKeyCanManageAcrossTenantsAsync,
+                cancellationToken);
+        }
+
+        private static async Task PerformanceSharedLiveServerSuiteAsync(CancellationToken cancellationToken)
+        {
+            using Less3TestServer server = new Less3TestServer();
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
+
+            PerformanceRegressionTests suite = new PerformanceRegressionTests(server);
+            List<TestResult> results = await suite.RunAsync().ConfigureAwait(false);
+            List<TestResult> failures = results.Where(result => !result.Passed).ToList();
+            if (failures.Count > 0)
+            {
+                string message = String.Join(
+                    Environment.NewLine,
+                    failures.Select(failure => failure.Name + ": " + failure.Message));
+                throw new InvalidOperationException(message);
+            }
+        }
+
+        private static async Task RunSecurityBoundaryCaseAsync(
+            Func<Less3TestServer, CancellationToken, Task> testCase,
+            CancellationToken cancellationToken)
+        {
+            using Less3TestServer server = new Less3TestServer();
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
+            await testCase(server, cancellationToken).ConfigureAwait(false);
         }
 
         private static string ExtractString(string json, string propertyName, string operation)

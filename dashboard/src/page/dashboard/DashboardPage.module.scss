@@ -1,0 +1,69 @@
+.kpiGrid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
+@media (min-width: 1280px) {
+  .kpiGrid {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .kpiGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+@media (max-width: 430px) {
+  .kpiGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kpiCard {
+  height: 100%;
+  min-width: 0;
+}
+
+.kpiCard :global(.ant-card-body) {
+  height: 100%;
+  padding: 12px;
+}
+
+.kpiCardContent {
+  height: 100%;
+  min-width: 0;
+}
+
+.kpiIcon {
+  align-items: center;
+  border-radius: 8px;
+  display: flex;
+  flex: 0 0 36px;
+  font-size: 18px;
+  height: 36px;
+  justify-content: center;
+  width: 36px;
+}
+
+.kpiText {
+  flex: 1;
+  min-width: 0;
+}
+
+.kpiLabel {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.kpiValue {
+  display: block;
+  line-height: 1.15;
+  white-space: nowrap;
+}

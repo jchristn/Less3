@@ -186,14 +186,34 @@ const CredentialsPage: React.FC = () => {
     {
       key: 'UserId',
       label: 'User',
-      width: '150px',
-      render: (item) => getUserName(item.UserId),
-      filterValue: (item) => getUserName(item.UserId),
+      width: '300px',
+      render: (item) => (
+        <Less3Flex vertical gap={4}>
+          <Less3Text>{getUserName(item.UserId)}</Less3Text>
+          <IdDisplay id={item.UserId} />
+        </Less3Flex>
+      ),
+      filterValue: (item) => `${getUserName(item.UserId)} ${item.UserId}`,
     },
     {
       key: 'Description',
       label: 'Description',
       width: '200px',
+      render: (item) => (
+        <Less3Text
+          title={item.Description}
+          style={{
+            display: 'block',
+            maxWidth: 200,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {item.Description}
+        </Less3Text>
+      ),
+      filterValue: (item) => item.Description,
     },
     {
       key: 'AccessKey',
@@ -428,6 +448,12 @@ const CredentialsPage: React.FC = () => {
             </Descriptions.Item>
             <Descriptions.Item label="User">
               <Less3Text>{getUserName(credentialMetadata.UserId)}</Less3Text>
+            </Descriptions.Item>
+            <Descriptions.Item label="User Id">
+              <IdDisplay id={credentialMetadata.UserId} />
+            </Descriptions.Item>
+            <Descriptions.Item label="Tenant Id">
+              <IdDisplay id={credentialMetadata.TenantId || 'default'} />
             </Descriptions.Item>
             <Descriptions.Item label="Description">
               <Less3Text>{credentialMetadata.Description}</Less3Text>

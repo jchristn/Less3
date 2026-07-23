@@ -65,15 +65,21 @@ REM -------------------------------------------------------------------------
 REM Clear object storage
 REM -------------------------------------------------------------------------
 echo [3/5] Clearing object storage...
-if exist "%DOCKER_DIR%disk" rd /s /q "%DOCKER_DIR%disk" 2>nul && mkdir "%DOCKER_DIR%disk" 2>nul
+if exist "%DOCKER_DIR%disk" rd /s /q "%DOCKER_DIR%disk" 2>nul
+if not exist "%DOCKER_DIR%disk" mkdir "%DOCKER_DIR%disk" 2>nul
+if not exist "%DOCKER_DIR%temp" mkdir "%DOCKER_DIR%temp" 2>nul
 del /q "%DOCKER_DIR%temp\*" 2>nul
+type nul > "%DOCKER_DIR%disk\.gitkeep"
+type nul > "%DOCKER_DIR%temp\.gitkeep"
 echo         Cleared object storage and temp files
 
 REM -------------------------------------------------------------------------
 REM Clear logs
 REM -------------------------------------------------------------------------
 echo [4/5] Clearing logs...
+if not exist "%DOCKER_DIR%logs" mkdir "%DOCKER_DIR%logs" 2>nul
 del /q "%DOCKER_DIR%logs\*" 2>nul
+type nul > "%DOCKER_DIR%logs\.gitkeep"
 echo         Cleared log files
 
 REM -------------------------------------------------------------------------

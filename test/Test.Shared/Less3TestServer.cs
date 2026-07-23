@@ -480,7 +480,7 @@ namespace Test.Shared
                 },
                 Webserver = new
                 {
-                    Hostname = "localhost",
+                    Hostname = "127.0.0.1",
                     Port = _Port
                 },
                 Storage = new

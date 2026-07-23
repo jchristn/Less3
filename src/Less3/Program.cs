@@ -17,6 +17,7 @@ namespace Less3
     using System.Reflection;
     using System.Runtime.Loader;
     using System.Text;
+    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using Less3.Database;
@@ -433,6 +434,29 @@ namespace Less3
             return html;
         }
 
+        private static string SwaggerUiPage()
+        {
+            return "<!doctype html>" + Environment.NewLine +
+                "<html lang=\"en\">" + Environment.NewLine +
+                "  <head>" + Environment.NewLine +
+                "    <meta charset=\"utf-8\" />" + Environment.NewLine +
+                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />" + Environment.NewLine +
+                "    <title>Less3 API Reference</title>" + Environment.NewLine +
+                "    <link rel=\"stylesheet\" href=\"https://unpkg.com/swagger-ui-dist@5/swagger-ui.css\" />" + Environment.NewLine +
+                "    <style>body{margin:0;background:#fff}.swagger-ui .topbar{display:none}</style>" + Environment.NewLine +
+                "  </head>" + Environment.NewLine +
+                "  <body>" + Environment.NewLine +
+                "    <div id=\"swagger-ui\"></div>" + Environment.NewLine +
+                "    <script src=\"https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js\"></script>" + Environment.NewLine +
+                "    <script>" + Environment.NewLine +
+                "      window.onload = function() {" + Environment.NewLine +
+                "        SwaggerUIBundle({ url: '/openapi.json', dom_id: '#swagger-ui', deepLinking: true });" + Environment.NewLine +
+                "      };" + Environment.NewLine +
+                "    </script>" + Environment.NewLine +
+                "  </body>" + Environment.NewLine +
+                "</html>";
+        }
+
         private static async Task PreflightRoute(HttpContextBase ctx)
         {
             NameValueCollection responseHeaders = new NameValueCollection(StringComparer.InvariantCultureIgnoreCase);
@@ -508,7 +532,20 @@ namespace Less3
             #endregion
 
             #region Misc-URLs
-              
+
+            if (ctx.Http.Request.Method == WatsonWebserver.Core.HttpMethod.GET
+                && ctx.Http.Request.Url.Elements.Length >= 1
+                && ctx.Http.Request.Url.Elements[0].Equals("swagger", StringComparison.OrdinalIgnoreCase)
+                && (ctx.Http.Request.Url.Elements.Length == 1
+                    || (ctx.Http.Request.Url.Elements.Length == 2
+                        && ctx.Http.Request.Url.Elements[1].Equals("index.html", StringComparison.OrdinalIgnoreCase))))
+            {
+                ctx.Response.ContentType = "text/html";
+                ctx.Response.StatusCode = 200;
+                await ctx.Response.Send(SwaggerUiPage());
+                return true;
+            }
+
             if (ctx.Http.Request.Method == WatsonWebserver.Core.HttpMethod.GET
                 && ctx.Http.Request.Url.Elements.Length == 1)
             { 
@@ -856,6 +893,11 @@ namespace Less3
             string operation = RestOperation(ctx);
             string resourceId = RestResourceId(ctx);
 
+            if (!RestRequestedTenantIsAllowed(ctx, requestContext, resourceType, operation, resourceId, out reason))
+            {
+                return false;
+            }
+
             return _Auth.Authorize(requestContext, resourceType, operation, resourceId, out reason);
         }
 
@@ -972,6 +1014,104 @@ namespace Less3
             if (normalized.Equals("requesthistory") || normalized.Equals("requesthistories")) return "RequestHistory";
 
             return resourceType;
+        }
+
+        private static bool RestRequestedTenantIsAllowed(
+            S3Context ctx,
+            RequestContext requestContext,
+            string resourceType,
+            string operation,
+            string resourceId,
+            out string reason)
+        {
+            reason = null;
+            if (requestContext == null)
+            {
+                reason = "Request context is missing.";
+                return false;
+            }
+
+            if (requestContext.IsAdmin) return true;
+
+            if (String.Equals(resourceType, "Tenant", StringComparison.OrdinalIgnoreCase)
+                && String.Equals(operation, "Enumerate", StringComparison.OrdinalIgnoreCase))
+            {
+                reason = "Tenant enumeration requires a global administrator.";
+                return false;
+            }
+
+            foreach (string requestedTenantId in RestRequestedTenantIds(ctx, resourceType, resourceId))
+            {
+                if (String.IsNullOrEmpty(requestedTenantId)) continue;
+                if (String.Equals(requestedTenantId, requestContext.TenantId, StringComparison.Ordinal)) continue;
+
+                reason = "Requested tenant resource is outside the authenticated tenant.";
+                return false;
+            }
+
+            return true;
+        }
+
+        private static IEnumerable<string> RestRequestedTenantIds(S3Context ctx, string resourceType, string resourceId)
+        {
+            string queryTenantId = QueryValue(ctx, "tenantId");
+            if (!String.IsNullOrEmpty(queryTenantId)) yield return queryTenantId;
+
+            string bodyTenantId = BodyStringProperty(ctx, "TenantId");
+            if (!String.IsNullOrEmpty(bodyTenantId)) yield return bodyTenantId;
+
+            if (String.Equals(resourceType, "Tenant", StringComparison.OrdinalIgnoreCase))
+            {
+                string bodyId = BodyStringProperty(ctx, "Id");
+                if (!String.IsNullOrEmpty(bodyId)) yield return bodyId;
+            }
+
+            if (String.Equals(resourceType, "Tenant", StringComparison.OrdinalIgnoreCase)
+                && !String.IsNullOrEmpty(resourceId))
+            {
+                yield return resourceId;
+            }
+        }
+
+        private static string QueryValue(S3Context ctx, string name)
+        {
+            if (ctx?.Http?.Request?.Query?.Elements == null) return null;
+
+            foreach (string key in ctx.Http.Request.Query.Elements.AllKeys)
+            {
+                if (key != null && key.Equals(name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return ctx.Http.Request.Query.Elements[key];
+                }
+            }
+
+            return null;
+        }
+
+        private static string BodyStringProperty(S3Context ctx, string propertyName)
+        {
+            string body = ctx?.Request?.DataAsString;
+            if (String.IsNullOrWhiteSpace(body)) return null;
+
+            try
+            {
+                using JsonDocument document = JsonDocument.Parse(body);
+                if (document.RootElement.ValueKind != JsonValueKind.Object) return null;
+
+                foreach (JsonProperty property in document.RootElement.EnumerateObject())
+                {
+                    if (property.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase)
+                        && property.Value.ValueKind == JsonValueKind.String)
+                    {
+                        return property.Value.GetString();
+                    }
+                }
+            }
+            catch
+            {
+            }
+
+            return null;
         }
 
         private static string RestOperation(S3Context ctx)

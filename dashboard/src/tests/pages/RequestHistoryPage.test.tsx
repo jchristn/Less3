@@ -146,7 +146,15 @@ describe('RequestHistoryPage', () => {
     fireEvent.click(await screen.findByText('Copy as cURL'));
 
     await waitFor(() => {
-      expect(navigator.clipboard.writeText).toHaveBeenCalledWith(expect.stringContaining("curl -X POST '/bucket/slow'"));
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+        expect.stringContaining('curl -X POST "http://127.0.0.1:8000/bucket/slow"')
+      );
     });
+
+    const copiedCommand = (navigator.clipboard.writeText as jest.Mock).mock.calls[0][0] as string;
+    expect(copiedCommand).toContain('-H "Content-Type: application/json"');
+    expect(copiedCommand).toContain('--data-raw "{\\"retry\\":true}"');
+    expect(copiedCommand).not.toContain("'http://127.0.0.1:8000/bucket/slow'");
+    expect(copiedCommand).not.toContain('\\\n');
   }, 15000);
 });

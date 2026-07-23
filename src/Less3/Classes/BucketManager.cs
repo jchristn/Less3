@@ -1,12 +1,14 @@
 namespace Less3.Classes
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
 
     using Less3.Database;
     using Less3.Settings;
+    using Padlocks;
     using SyslogLogging;
 
     /// <summary>
@@ -25,8 +27,8 @@ namespace Less3.Classes
         private ConfigManager _Config;
         private DatabaseDriverBase _Database;
 
-        private readonly object _BucketsLock = new object();
-        private List<BucketClient> _Buckets = new List<BucketClient>();
+        private readonly ConcurrentDictionary<string, BucketClient> _Buckets = new ConcurrentDictionary<string, BucketClient>();
+        private readonly Padlock<string> _BucketLocks = new Padlock<string>();
 
         #endregion
 
@@ -49,26 +51,25 @@ namespace Less3.Classes
         internal bool Add(Bucket bucket)
         {
             if (bucket == null) throw new ArgumentNullException(nameof(bucket));
-            if (BucketNameValidator.IsInvalid(bucket.Name))
-            {
-                _Logging.Warn("BucketManager Add invalid bucket name " + bucket.Name);
-                return false;
-            }
+            string key = ClientKey(bucket.TenantId, bucket.Name);
 
-            bool success = _Config.AddBucket(bucket);
-            if (success)
+            using (_BucketLocks.Lock(key))
             {
-                BucketClient client = new BucketClient(_Settings, _Logging, bucket, _Database);
-
-                lock (_BucketsLock)
+                if (BucketNameValidator.IsInvalid(bucket.Name))
                 {
-                    _Buckets.Add(client);
+                    _Logging.Warn("BucketManager Add invalid bucket name " + bucket.Name);
+                    return false;
                 }
 
-                InitializeBucket(bucket);
-            }
+                bool success = _Config.AddBucket(bucket);
+                if (success)
+                {
+                    BucketClient client = new BucketClient(_Settings, _Logging, bucket, _Database);
+                    _Buckets[key] = client;
+                }
 
-            return success;
+                return success;
+            }
         }
 
         internal bool Remove(Bucket bucket, bool destroy)
@@ -76,24 +77,24 @@ namespace Less3.Classes
             if (bucket == null) throw new ArgumentNullException(nameof(bucket));
 
             bool removed = false;
+            BucketClient client = null;
+            string key = ClientKey(bucket.TenantId, bucket.Name);
 
-            if (_Config.BucketExists(bucket.TenantId, bucket.Name))
+            using (_BucketLocks.Lock(key))
             {
-                BucketClient client = GetClient(bucket.TenantId, bucket.Name);
-                if (client != null)
+                if (_Config.BucketExists(bucket.TenantId, bucket.Name))
                 {
-                    lock (_BucketsLock)
-                    {
-                        List<BucketClient> clients = _Buckets.Where(b => !b.Id.Equals(bucket.Id)).ToList();
-                        _Buckets = new List<BucketClient>(clients);
-                        client.Dispose();
-                        client = null;
-                    }
+                    _Buckets.TryRemove(key, out client);
+
+                    removed = true;
+
+                    _Config.DeleteBucket(bucket.Id);
                 }
+            }
 
-                removed = true;
-
-                _Config.DeleteBucket(bucket.Id);
+            if (client != null)
+            {
+                client.Dispose();
             }
 
             if (removed)
@@ -142,12 +143,7 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(bucketName)) throw new ArgumentNullException(nameof(bucketName));
 
-            lock (_BucketsLock)
-            {
-                bool exists = _Buckets.Exists(b => b.Name.Equals(bucketName));
-                if (!exists) return null;
-                return _Buckets.First(b => b.Name.Equals(bucketName));
-            }
+            return _Buckets.Values.FirstOrDefault(b => b.Name.Equals(bucketName));
         }
 
         internal BucketClient GetClient(string tenantId, string bucketName)
@@ -155,12 +151,8 @@ namespace Less3.Classes
             if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
             if (String.IsNullOrEmpty(bucketName)) throw new ArgumentNullException(nameof(bucketName));
 
-            lock (_BucketsLock)
-            {
-                bool exists = _Buckets.Exists(b => b.TenantId.Equals(tenantId) && b.Name.Equals(bucketName));
-                if (!exists) return null;
-                return _Buckets.First(b => b.TenantId.Equals(tenantId) && b.Name.Equals(bucketName));
-            }
+            _Buckets.TryGetValue(ClientKey(tenantId, bucketName), out BucketClient client);
+            return client;
         }
 
         internal List<Bucket> GetUserBuckets(string userId)
@@ -195,11 +187,21 @@ namespace Less3.Classes
 
         private void InitializeBucket(Bucket bucket)
         {
-            lock (_BucketsLock)
+            string key = ClientKey(bucket.TenantId, bucket.Name);
+
+            using (_BucketLocks.Lock(key))
             {
                 BucketClient client = new BucketClient(_Settings, _Logging, bucket, _Database);
-                _Buckets.Add(client);
+                if (!_Buckets.TryAdd(key, client))
+                {
+                    client.Dispose();
+                }
             }
+        }
+
+        private static string ClientKey(string tenantId, string bucketName)
+        {
+            return (tenantId ?? "default") + ":" + bucketName;
         }
 
         private bool Destroy(Bucket bucket)

@@ -1,6 +1,5 @@
 namespace Less3.Api.S3
 {
-    using Azure;
     using Less3.Classes;
     using Less3.Helpers;
     using Less3.Settings;

@@ -34,7 +34,7 @@ namespace Less3.Classes
         public List<string> RestartRequiredSettings { get; set; } = new List<string>();
 
         /// <summary>
-        /// Redacted configuration summary.
+        /// Redacted editable configuration snapshot.
         /// </summary>
         public Dictionary<string, object> Configuration { get; set; } = new Dictionary<string, object>();
 

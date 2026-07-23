@@ -269,13 +269,7 @@ namespace Less3.Classes
 
         private int DeleteRequestHistoryOlderThan(DateTime cutoffUtc)
         {
-            List<RequestHistory> entries = _Config.GetRequestHistories();
-            int count = 0;
-            if (entries != null)
-            {
-                count = entries.Count(e => e.CreatedUtc < cutoffUtc);
-            }
-
+            int count = _Config.CountRequestHistoriesOlderThan(cutoffUtc);
             _Config.DeleteRequestHistoriesOlderThan(cutoffUtc);
             return count;
         }

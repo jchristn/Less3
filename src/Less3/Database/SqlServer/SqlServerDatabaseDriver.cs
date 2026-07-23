@@ -44,6 +44,7 @@ namespace Less3.Database.SqlServer
         {
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _Logging = logging ?? throw new ArgumentNullException(nameof(logging));
+            Dialect = SqlDialect.SqlServer;
 
             if (String.IsNullOrEmpty(_Settings.Hostname))
                 throw new ArgumentException("Database hostname must be specified in settings.");
@@ -94,6 +95,8 @@ namespace Less3.Database.SqlServer
             RoleAssignments = new ControlPlaneRoleAssignmentMethods(this, SqlDialect.SqlServer);
             AuthSessions = new ControlPlaneAuthSessionMethods(this, SqlDialect.SqlServer);
             AuthorizationAudit = new ControlPlaneAuthorizationAuditMethods(this, SqlDialect.SqlServer);
+
+            SqlServerLegacyV2Migrator.RunIfNeeded(_ConnectionString, _Logging, _Header);
 
             ExecuteQuery(SetupQueries.CreateTablesAndIndices(), true).Wait();
 

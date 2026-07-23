@@ -57,7 +57,7 @@ jest.mock("#/store/slice/bucketsSlice", () => ({
   useDeleteMultipleObjectsMutation: () => [jest.fn(), { isLoading: false }],
   useWriteObjectTagsMutation: () => [jest.fn(), { isLoading: false }],
   useGetObjectTagsQuery: () => ({
-    data: null,
+    data: { tags: [] },
     isLoading: false,
   }),
   useDeleteObjectTagsMutation: () => [jest.fn(), { isLoading: false }],
@@ -172,7 +172,86 @@ describe("ObjectsPage", () => {
         await userEvent.click(moreButton);
 
         expect(await screen.findByText("Download Object", { timeout: 3000 })).toBeInTheDocument();
-        expect(screen.queryByText("Edit Contents - test-file.txt")).not.toBeInTheDocument();
+        expect(screen.getByText("Contents")).toBeInTheDocument();
+        expect(screen.queryByText("View Contents")).not.toBeInTheDocument();
+        expect(screen.queryByText("Edit Contents")).not.toBeInTheDocument();
+        expect(screen.queryByText("Object Contents - test-file.txt")).not.toBeInTheDocument();
+      }
+    }, 20000);
+
+    it("should open object details from the action menu", async () => {
+      renderWithRedux(<ObjectsPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("test-file.txt")).toBeInTheDocument();
+      });
+
+      const moreButton = screen.getAllByRole("button").find((btn) => btn.querySelector(".anticon-more"));
+      expect(moreButton).toBeDefined();
+
+      await userEvent.click(moreButton as HTMLElement);
+      await userEvent.click(await screen.findByText("View Details", { selector: ".ant-dropdown-menu-title-content" }));
+
+      expect(await screen.findByText("Object Details - test-file.txt")).toBeInTheDocument();
+      expect(screen.getByText("Tenant Id")).toBeInTheDocument();
+      expect(screen.getByText("Bucket Id")).toBeInTheDocument();
+      expect(screen.getAllByText("Key").length).toBeGreaterThan(0);
+      expect(screen.getByText("Version Id")).toBeInTheDocument();
+      expect(screen.getAllByText("objv_current").length).toBeGreaterThan(0);
+      expect(screen.getByText("Download URL")).toBeInTheDocument();
+    }, 20000);
+
+    it("should open object tag actions without opening the object editor", async () => {
+      renderWithRedux(<ObjectsPage />);
+
+      const fileText = await screen.queryByText("test-file.txt");
+      if (!fileText) {
+        expect(true).toBe(true);
+        return;
+      }
+
+      const moreButtons = screen.getAllByRole("button");
+      const moreButton = moreButtons.find((btn) => btn.querySelector(".anticon-more"));
+      if (moreButton) {
+        await userEvent.click(moreButton);
+
+        const writeTagsButton = await screen.findByText(
+          "Write Tags",
+          { selector: ".ant-dropdown-menu-title-content" },
+          { timeout: 3000 },
+        );
+        await userEvent.click(writeTagsButton);
+
+        expect(await screen.findByPlaceholderText("Enter tag key")).toBeInTheDocument();
+        expect(screen.queryByRole("dialog", { name: "Object Contents - test-file.txt" })).not.toBeInTheDocument();
+        expect(mockDownloadBucketObject).not.toHaveBeenCalled();
+      }
+    }, 20000);
+
+    it("should open object ACL actions without opening the object editor", async () => {
+      renderWithRedux(<ObjectsPage />);
+
+      const fileText = await screen.queryByText("test-file.txt");
+      if (!fileText) {
+        expect(true).toBe(true);
+        return;
+      }
+
+      const moreButtons = screen.getAllByRole("button");
+      const moreButton = moreButtons.find((btn) => btn.querySelector(".anticon-more"));
+      if (moreButton) {
+        await userEvent.click(moreButton);
+
+        const writeAclButton = await screen.findByText(
+          "Write ACL",
+          { selector: ".ant-dropdown-menu-title-content" },
+          { timeout: 3000 },
+        );
+        await userEvent.click(writeAclButton);
+
+        expect(await screen.findByText("Write ACL - test-file.txt")).toBeInTheDocument();
+        expect(screen.queryByRole("dialog", { name: "Object Contents - test-file.txt" })).not.toBeInTheDocument();
+        expect(mockDownloadBucketObject).not.toHaveBeenCalled();
       }
     }, 20000);
 

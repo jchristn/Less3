@@ -676,9 +676,10 @@ const BucketsPage: React.FC = () => {
             <tbody>
               {[
                 { label: 'Name', value: viewingBucket.Name },
-                { label: 'Id', value: viewingBucket.Id || '' },
+                { label: 'Id', value: viewingBucket.Id || '', id: true },
+                { label: 'Tenant Id', value: viewingBucket.TenantId || 'default', id: true },
                 { label: 'Date Created', value: formatDate(viewingBucket.CreationDate || viewingBucket.CreatedUtc || '') },
-                { label: 'Owner Id', value: viewingBucket.OwnerId || 'Not set' },
+                { label: 'Owner Id', value: viewingBucket.OwnerId || 'Not set', id: Boolean(viewingBucket.OwnerId) },
                 { label: 'Region', value: viewingBucket.RegionString || 'us-west-1' },
                 { label: 'Storage Type', value: String(viewingBucket.StorageType || 'Disk') },
                 { label: 'Objects Directory', value: viewingBucket.DiskDirectory || 'Not set' },
@@ -693,7 +694,7 @@ const BucketsPage: React.FC = () => {
                     </Less3Text>
                   </td>
                   <td style={{ padding: '8px 0', verticalAlign: 'top' }}>
-                    {item.label === 'Id' ? (
+                    {item.id ? (
                       <IdDisplay id={item.value} />
                     ) : (
                       <Less3Text style={{ wordBreak: 'break-all' }}>{item.value}</Less3Text>
@@ -1002,7 +1003,10 @@ const BucketsPage: React.FC = () => {
             <div>
               <Less3Text strong>Owner</Less3Text>
               <Less3Flex vertical gap={8} style={{ marginTop: '8px', paddingLeft: '16px' }}>
-                <Less3Text>ID: {bucketACLData.acl.Owner.ID}</Less3Text>
+                <Less3Flex align="center" gap={8}>
+                  <Less3Text>ID:</Less3Text>
+                  <IdDisplay id={bucketACLData.acl.Owner.ID} />
+                </Less3Flex>
                 <Less3Text>Display Name: {bucketACLData.acl.Owner.DisplayName}</Less3Text>
               </Less3Flex>
             </div>
@@ -1019,7 +1023,7 @@ const BucketsPage: React.FC = () => {
                         {
                           key: 'granteeId',
                           label: 'Grantee ID',
-                          render: (item: ACLGrant) => item.Grantee?.ID,
+                          render: (item: ACLGrant) => item.Grantee?.ID ? <IdDisplay id={item.Grantee.ID} /> : '',
                           filterValue: (item: ACLGrant) => item.Grantee?.ID || '',
                         },
                         {

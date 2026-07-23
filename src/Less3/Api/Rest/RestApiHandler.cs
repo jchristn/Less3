@@ -280,31 +280,33 @@ namespace Less3.Api.Rest
                     await SendJson(ctx, _Config.EnumerateAuthorizationAudit(query), 200).ConfigureAwait(false);
                     return;
                 case "users":
-                    await SendJson(ctx, BuildResult(_Config.GetUsers(query.TenantId), query), 200).ConfigureAwait(false);
+                    await SendJson(ctx, _Config.EnumerateUsers(query), 200).ConfigureAwait(false);
                     return;
                 case "credentials":
-                    await SendJson(ctx, BuildResult(CredentialResponseSanitizer.ForResponse(_Config.GetCredentials(query.TenantId), false), query), 200).ConfigureAwait(false);
+                    EnumerationResult<Credential> credentialResult = _Config.EnumerateCredentials(query);
+                    credentialResult.Items = CredentialResponseSanitizer.ForResponse(credentialResult.Items, false);
+                    await SendJson(ctx, credentialResult, 200).ConfigureAwait(false);
                     return;
                 case "buckets":
-                    await SendJson(ctx, BuildResult(_Config.GetBuckets(query.TenantId), query), 200).ConfigureAwait(false);
+                    await SendJson(ctx, _Config.EnumerateBuckets(query), 200).ConfigureAwait(false);
                     return;
                 case "objects":
-                    await SendJson(ctx, BuildResult(_Config.GetObjects(query.TenantId, GetBucketId(ctx), query), query), 200).ConfigureAwait(false);
+                    await SendJson(ctx, _Config.EnumerateObjects(query, GetBucketId(ctx)), 200).ConfigureAwait(false);
                     return;
                 case "buckettags":
-                    await SendJson(ctx, BuildResult(_Config.GetBucketTags(query.TenantId, GetBucketId(ctx), query), query), 200).ConfigureAwait(false);
+                    await SendJson(ctx, _Config.EnumerateBucketTags(query, GetBucketId(ctx)), 200).ConfigureAwait(false);
                     return;
                 case "objecttags":
-                    await SendJson(ctx, BuildResult(_Config.GetObjectTags(query.TenantId, GetBucketId(ctx), GetObjectId(ctx), query), query), 200).ConfigureAwait(false);
+                    await SendJson(ctx, _Config.EnumerateObjectTags(query, GetBucketId(ctx), GetObjectId(ctx)), 200).ConfigureAwait(false);
                     return;
                 case "bucketacls":
-                    await SendJson(ctx, BuildResult(_Config.GetBucketAcls(query.TenantId, GetBucketId(ctx), query), query), 200).ConfigureAwait(false);
+                    await SendJson(ctx, _Config.EnumerateBucketAcls(query, GetBucketId(ctx)), 200).ConfigureAwait(false);
                     return;
                 case "objectacls":
-                    await SendJson(ctx, BuildResult(_Config.GetObjectAcls(query.TenantId, GetBucketId(ctx), GetObjectId(ctx), query), query), 200).ConfigureAwait(false);
+                    await SendJson(ctx, _Config.EnumerateObjectAcls(query, GetBucketId(ctx), GetObjectId(ctx)), 200).ConfigureAwait(false);
                     return;
                 case "requesthistory":
-                    await SendJson(ctx, BuildResult(FilterRequestHistory(_Config.GetRequestHistories(), query), query), 200).ConfigureAwait(false);
+                    await SendJson(ctx, _Config.EnumerateRequestHistories(query), 200).ConfigureAwait(false);
                     return;
             }
 
@@ -368,6 +370,8 @@ namespace Less3.Api.Rest
                     return CreateAuthSession(ctx);
                 case "authorizationaudit":
                     return CreateAuthorizationAudit(ctx);
+                case "requesthistory":
+                    return CreateRequestHistory(ctx);
                 case "users":
                     return CreateUser(ctx);
                 case "credentials":
@@ -568,6 +572,15 @@ namespace Less3.Api.Rest
             if (String.IsNullOrEmpty(audit.TenantId)) audit.TenantId = GetTenantId(ctx);
             if (!_Config.AddAuthorizationAudit(audit)) return null;
             return audit;
+        }
+
+        private RequestHistory CreateRequestHistory(S3Context ctx)
+        {
+            RequestHistory entry = Deserialize<RequestHistory>(ctx);
+            if (entry == null) return null;
+            if (String.IsNullOrEmpty(entry.TenantId)) entry.TenantId = GetTenantId(ctx);
+            _Config.AddRequestHistory(entry);
+            return entry;
         }
 
         private User CreateUser(S3Context ctx)

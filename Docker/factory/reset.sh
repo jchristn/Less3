@@ -64,15 +64,19 @@ echo "        Restored db/less3.db"
 # Clear object storage
 # -------------------------------------------------------------------------
 echo "[3/5] Clearing object storage..."
+mkdir -p "$DOCKER_DIR/disk" "$DOCKER_DIR/temp"
 rm -rf "$DOCKER_DIR/disk/"*
 rm -rf "$DOCKER_DIR/temp/"*
+touch "$DOCKER_DIR/disk/.gitkeep" "$DOCKER_DIR/temp/.gitkeep"
 echo "        Cleared object storage and temp files"
 
 # -------------------------------------------------------------------------
 # Clear logs
 # -------------------------------------------------------------------------
 echo "[4/5] Clearing logs..."
+mkdir -p "$DOCKER_DIR/logs"
 rm -f "$DOCKER_DIR/logs/"*
+touch "$DOCKER_DIR/logs/.gitkeep"
 echo "        Cleared log files"
 
 # -------------------------------------------------------------------------

@@ -46,6 +46,7 @@ namespace Less3.Database.Sqlite
         {
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _Logging = logging ?? throw new ArgumentNullException(nameof(logging));
+            Dialect = SqlDialect.Sqlite;
 
             if (String.IsNullOrEmpty(_Settings.Filename))
                 throw new ArgumentException("Database filename must be specified in settings.");
@@ -77,6 +78,8 @@ namespace Less3.Database.Sqlite
             ExecuteQuery("PRAGMA page_size=4096;").Wait();
             ExecuteQuery("PRAGMA mmap_size=2147483648;").Wait();
             ExecuteQuery("PRAGMA wal_autocheckpoint=1000;").Wait();
+
+            SqliteLegacyV2Migrator.RunIfNeeded(_ConnectionString, _Logging, _Header);
 
             ExecuteQuery(SetupQueries.CreateTablesAndIndices(), true).Wait();
 

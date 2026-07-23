@@ -5,6 +5,7 @@ namespace Less3.Database
     using System.Data;
     using System.Threading;
     using System.Threading.Tasks;
+    using Less3.Database.Implementations;
     using Less3.Database.Interfaces;
 
     /// <summary>
@@ -13,6 +14,11 @@ namespace Less3.Database
     public abstract class DatabaseDriverBase
     {
         #region Public-Members
+
+        /// <summary>
+        /// SQL dialect used by the concrete database driver.
+        /// </summary>
+        internal SqlDialect Dialect { get; private protected set; } = SqlDialect.Sqlite;
 
         /// <summary>
         /// Tenant methods.

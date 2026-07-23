@@ -1,12 +1,18 @@
-import { getApiEndpoint } from "#/services/sdk.service";
-import sdkSlice, { ApiBaseQueryArgs } from "#/store/rtk/rtkSdkInstance";
+import { adminRequest } from "#/services/backendApi.service";
+import sdkSlice, { ApiBaseQueryArgs, dynamicBaseQuery } from "#/store/rtk/rtkSdkInstance";
 
-jest.mock("#/services/sdk.service");
+jest.mock("#/services/backendApi.service", () => ({
+  adminRequest: jest.fn(),
+  toRtkQueryError: jest.fn((error: unknown, fallbackMessage: string) => ({
+    status: "FETCH_ERROR",
+    data: error instanceof Error ? error.message : fallbackMessage,
+  })),
+}));
 
 describe("rtkSdkInstance", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (getApiEndpoint as jest.Mock).mockReturnValue("http://test.com");
+    (adminRequest as jest.Mock).mockResolvedValue({});
   });
 
   describe("dynamicBaseQuery", () => {
@@ -42,10 +48,15 @@ describe("rtkSdkInstance", () => {
       expect(args.body).not.toBeInstanceOf(FormData);
     });
 
-    it("should use getApiEndpoint for base URL", () => {
-      expect(getApiEndpoint).toBeDefined();
-      const endpoint = getApiEndpoint();
-      expect(typeof endpoint).toBe("string");
+    it("should use the shared backend request helper for base queries", async () => {
+      await dynamicBaseQuery({ url: "/test", method: "GET" }, {} as any, {} as any);
+
+      expect(adminRequest).toHaveBeenCalledWith("/test", {
+        method: "GET",
+        headers: undefined,
+        body: undefined,
+        cache: undefined,
+      });
     });
   });
 

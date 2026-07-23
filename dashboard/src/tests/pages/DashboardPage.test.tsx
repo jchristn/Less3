@@ -94,6 +94,14 @@ describe('DashboardPage', () => {
       expect(screen.getByText('Manage Objects')).toBeInTheDocument();
     });
 
+    it('renders quick actions above the request summary', () => {
+      renderWithRedux(<DashboardPage />);
+
+      const quickActions = screen.getByText('Quick Actions');
+      const requestSummary = screen.getByText('Request Summary');
+      expect(quickActions.compareDocumentPosition(requestSummary) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
     it('renders the request summary controls', () => {
       renderWithRedux(<DashboardPage />);
 
@@ -111,6 +119,14 @@ describe('DashboardPage', () => {
       const { container } = renderWithRedux(<DashboardPage />);
 
       expect(container.querySelector('.anticon-database')).toBeInTheDocument();
+    });
+
+    it('renders the KPI cards in a single eight-card grid', () => {
+      const { container } = renderWithRedux(<DashboardPage />);
+
+      const kpiGrid = container.querySelector('.kpiGrid');
+      expect(kpiGrid).toBeInTheDocument();
+      expect(kpiGrid?.children).toHaveLength(8);
     });
   });
 

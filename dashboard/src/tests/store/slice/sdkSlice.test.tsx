@@ -3,9 +3,12 @@ import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import { useValidateConnectivityMutation } from "#/store/slice/sdkSlice";
 import resettableRootReducer, { apiMiddleWares } from "#/store/rootReducer";
-import { buildApiUrl } from "#/services/sdk.service";
+import { adminFetch } from "#/services/backendApi.service";
 
-jest.mock("#/services/sdk.service");
+jest.mock("#/services/backendApi.service", () => ({
+  adminFetch: jest.fn(),
+  readResponseText: jest.fn((response: Response) => response.text().then((text) => text.trim())),
+}));
 
 const createTestStore = () => {
   return configureStore({
@@ -17,13 +20,9 @@ const createTestStore = () => {
   });
 };
 
-// Mock fetch globally
-global.fetch = jest.fn();
-
 describe("sdkSlice", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (buildApiUrl as jest.Mock).mockReturnValue("http://test.com/admin/users");
   });
 
   describe("useValidateConnectivityMutation", () => {
@@ -40,7 +39,7 @@ describe("sdkSlice", () => {
     });
 
     it("should handle successful connectivity validation", async () => {
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
+      (adminFetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
         headers: {
           get: (name: string) => (name === "content-type" ? "application/json" : null),
@@ -64,11 +63,18 @@ describe("sdkSlice", () => {
         expect(result.current[1].isLoading).toBe(false);
       });
 
-      expect(global.fetch).toHaveBeenCalled();
+      expect(adminFetch).toHaveBeenCalledWith("admin/users", {
+        endpoint: undefined,
+        apiKey: undefined,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        cache: "no-store",
+      });
     });
 
     it("should reject HTML responses", async () => {
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
+      (adminFetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
         headers: {
           get: (name: string) => (name === "content-type" ? "text/html" : null),
@@ -93,7 +99,7 @@ describe("sdkSlice", () => {
     });
 
     it("should surface the invalid API key message on 401", async () => {
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
+      (adminFetch as jest.Mock).mockResolvedValueOnce({
         ok: false,
         status: 401,
         statusText: "Unauthorized",

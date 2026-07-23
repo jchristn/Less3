@@ -189,6 +189,8 @@ orleans.codegen.cs
 
 # Less3 local runtime/test artifacts
 Docker/db/*.db
+Docker/db/*.db-shm
+Docker/db/*.db-wal
 Docker/disk/*/
 Docker/logs/*
 !Docker/db/.gitkeep

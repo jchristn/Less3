@@ -1,58 +1,33 @@
-import { createApi, fetchBaseQuery, BaseQueryFn, BaseQueryApi } from '@reduxjs/toolkit/query/react';
+import { createApi, BaseQueryFn } from '@reduxjs/toolkit/query/react';
 import { keepUnusedDataFor } from '#/constants/config';
-import { getAdminApiKey, getApiEndpoint } from '#/services/sdk.service';
+import { adminRequest, toRtkQueryError } from '#/services/backendApi.service';
 
 export interface ApiBaseQueryArgs {
   url: string;
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
   body?: any;
   headers?: Record<string, string>;
+  cache?: RequestCache;
 }
 
-// Custom base query that dynamically gets the API endpoint
+// Standard dashboard base query. All Less3 backend calls flow through backendApi.service.
 export const dynamicBaseQuery: BaseQueryFn<ApiBaseQueryArgs, unknown, unknown> = async (
-  args: ApiBaseQueryArgs,
-  api: unknown,
-  extraOptions: unknown
+  args: ApiBaseQueryArgs
 ) => {
-  const baseUrl = getApiEndpoint();
+  try {
+    const data = await adminRequest<unknown>(args.url, {
+      method: args.method || 'GET',
+      headers: args.headers,
+      body: args.body,
+      cache: args.cache,
+    });
 
-  // Use fetchBaseQuery with dynamic baseUrl
-  const fetchBaseQueryInstance = fetchBaseQuery({
-    baseUrl: baseUrl,
-    prepareHeaders: (headers: Headers) => {
-      headers.set('Content-Type', 'application/json');
-
-      const adminApiKey = getAdminApiKey();
-      if (adminApiKey) {
-        headers.set('x-api-key', adminApiKey);
-      }
-
-      return headers;
-    },
-  });
-
-  // If body is FormData, remove Content-Type header to let browser set it
-  if (args.body instanceof FormData) {
-    const modifiedArgs = {
-      ...args,
-      headers: {
-        ...args.headers,
-        // Don't set Content-Type for FormData
-      },
+    return { data };
+  } catch (error) {
+    return {
+      error: toRtkQueryError(error, 'Backend request failed'),
     };
-    return fetchBaseQueryInstance(
-      modifiedArgs as ApiBaseQueryArgs,
-      api as BaseQueryApi,
-      extraOptions as BaseQueryFn<ApiBaseQueryArgs, unknown, unknown>
-    );
   }
-
-  return fetchBaseQueryInstance(
-    args as ApiBaseQueryArgs,
-    api as BaseQueryApi,
-    extraOptions as BaseQueryFn<ApiBaseQueryArgs, unknown, unknown>
-  );
 };
 
 const sdkSlice = createApi({

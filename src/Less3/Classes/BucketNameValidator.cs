@@ -15,7 +15,8 @@ namespace Less3.Classes
             "api",
             "favicon.ico",
             "openapi.json",
-            "robots.txt"
+            "robots.txt",
+            "swagger"
         };
 
         /// <summary>

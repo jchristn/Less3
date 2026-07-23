@@ -23,6 +23,7 @@ import SummaryChart, { getQuickRange } from '#/page/request-history/SummaryChart
 import { useGetAdminHealthQuery, useGetDashboardStatsQuery, useGetRequestReportQuery } from '#/store/slice/dashboardStatsSlice';
 import { useGetCredentialsQuery } from '#/store/slice/credentialsSlice';
 import { useGetRequestHistorySummaryQuery } from '#/store/slice/requestHistorySlice';
+import styles from './DashboardPage.module.scss';
 
 interface QuickActionCardProps {
   title: string;
@@ -64,26 +65,20 @@ const NodeStatusItem: React.FC<NodeStatusItemProps> = ({ label, value, healthy }
 );
 
 const KpiCard: React.FC<KpiCardProps> = ({ label, value, icon, color }) => (
-  <Less3Card style={{ flex: '1 1 220px', minWidth: 220 }}>
-    <Less3Flex align="center" gap={14}>
+  <Less3Card className={styles.kpiCard}>
+    <Less3Flex className={styles.kpiCardContent} align="center" gap={10}>
       <div
+        className={styles.kpiIcon}
         style={{
-          width: 44,
-          height: 44,
-          borderRadius: 8,
           background: color + '14',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
           color: color,
-          fontSize: 20,
         }}
       >
         {icon}
       </div>
-      <Less3Flex vertical gap={2}>
-        <Less3Text type="secondary" fontSize={12}>{label}</Less3Text>
-        <Less3Text weight={700} fontSize={24}>
+      <Less3Flex className={styles.kpiText} vertical gap={2}>
+        <Less3Text className={styles.kpiLabel} type="secondary" fontSize={12}>{label}</Less3Text>
+        <Less3Text className={styles.kpiValue} weight={700} fontSize={22}>
           {value}
         </Less3Text>
       </Less3Flex>
@@ -174,7 +169,7 @@ const DashboardPage: React.FC = () => {
   return (
     <PageContainer pageTitle="Home">
       <Less3Flex vertical gap={24}>
-        <Less3Flex gap={16} wrap="wrap">
+        <div className={styles.kpiGrid}>
           <KpiCard label="Tenants" value="1" icon={<BankOutlined />} color="#13c2c2" />
           <KpiCard
             label="Total Buckets"
@@ -218,7 +213,7 @@ const DashboardPage: React.FC = () => {
             icon={<ThunderboltOutlined />}
             color="#2f54eb"
           />
-        </Less3Flex>
+        </div>
 
         <div
           style={{
@@ -258,14 +253,6 @@ const DashboardPage: React.FC = () => {
             />
           </Less3Flex>
         </div>
-
-        <SummaryChart
-          summary={summary || null}
-          timeRange={timeRange}
-          onTimeRangeChange={setTimeRange}
-          loading={summaryLoading}
-          onRefresh={refetchSummary}
-        />
 
         <div>
           <Less3Text weight={600} fontSize={16} style={{ marginBottom: 12, display: 'block' }}>
@@ -316,6 +303,14 @@ const DashboardPage: React.FC = () => {
             />
           </Less3Flex>
         </div>
+
+        <SummaryChart
+          summary={summary || null}
+          timeRange={timeRange}
+          onTimeRangeChange={setTimeRange}
+          loading={summaryLoading}
+          onRefresh={refetchSummary}
+        />
       </Less3Flex>
     </PageContainer>
   );

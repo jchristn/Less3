@@ -12,7 +12,8 @@ import Less3Input from '#/components/base/input/Input';
 import Less3Modal from '#/components/base/modal/Modal';
 import PageContainer from '#/components/base/pageContainer/PageContainer';
 import Less3Select from '#/components/base/select/Select';
-import { buildAdminApiHeaders, buildApiUrl } from '#/services/sdk.service';
+import IdDisplay from '#/components/id-display';
+import { adminRequest } from '#/services/backendApi.service';
 import { message } from '#/utils/message';
 
 export interface RbacAdminColumn {
@@ -48,11 +49,7 @@ interface RbacAdminPageProps {
 const appendQueryString = (path: string, queryString?: string): string =>
   queryString ? `${path}?${queryString}` : path;
 
-const readJson = async (response: Response): Promise<any> => {
-  const text = await response.text();
-  if (!text.trim()) return null;
-  return JSON.parse(text);
-};
+const isIdentifierColumn = (key: string): boolean => /(^ID$|ID$|Id$)/.test(key);
 
 const RbacAdminPage: React.FC<RbacAdminPageProps> = ({
   pageTitle,
@@ -81,17 +78,9 @@ const RbacAdminPage: React.FC<RbacAdminPageProps> = ({
     setIsLoading(true);
 
     try {
-      const response = await fetch(buildApiUrl(collectionPath), {
-        method: 'GET',
-        headers: buildAdminApiHeaders(),
+      const data = await adminRequest<any>(collectionPath, {
         cache: 'no-store',
       });
-
-      if (!response.ok) {
-        throw new Error(`Failed to load ${pageTitle.toLowerCase()}: ${response.status}`);
-      }
-
-      const data = await readJson(response);
       const items = Array.isArray(data) ? data : data?.Items || [];
       setRows(items.map(mapItemToRecord));
     } catch (error: any) {
@@ -112,6 +101,10 @@ const RbacAdminPage: React.FC<RbacAdminPageProps> = ({
         key: column.key,
         label: column.label,
         width: column.width,
+        render: (item: RbacRecord) => {
+          const value = item[column.key] || '';
+          return isIdentifierColumn(column.key) && value ? <IdDisplay id={value} /> : value;
+        },
       })),
       {
         key: 'actions',
@@ -183,19 +176,10 @@ const RbacAdminPage: React.FC<RbacAdminPageProps> = ({
       : collectionPath;
 
     try {
-      const response = await fetch(buildApiUrl(itemPath), {
+      const responseData = await adminRequest<any>(itemPath, {
         method,
-        headers: buildAdminApiHeaders({
-          'Content-Type': 'application/json',
-        }),
-        body: JSON.stringify(payload),
+        body: payload,
       });
-
-      if (!response.ok) {
-        throw new Error(`Failed to save ${pageTitle.slice(0, -1).toLowerCase()}: ${response.status}`);
-      }
-
-      const responseData = await readJson(response);
       const nextRow = mapItemToRecord(responseData || payload);
 
       setRows((currentRows) =>
@@ -215,14 +199,9 @@ const RbacAdminPage: React.FC<RbacAdminPageProps> = ({
 
     try {
       const itemPath = appendQueryString(`admin/${resourcePath}/${deletingRow.ID}`, queryString);
-      const response = await fetch(buildApiUrl(itemPath), {
+      await adminRequest(itemPath, {
         method: 'DELETE',
-        headers: buildAdminApiHeaders(),
       });
-
-      if (!response.ok) {
-        throw new Error(`Failed to delete ${pageTitle.slice(0, -1).toLowerCase()}: ${response.status}`);
-      }
 
       setRows((currentRows) => currentRows.filter((row) => row.ID !== deletingRow.ID));
       setIsDeleteModalVisible(false);
@@ -307,7 +286,15 @@ const RbacAdminPage: React.FC<RbacAdminPageProps> = ({
         centered
       >
         <p>
-          Delete <strong>{deletingRow?.Name ?? deletingRow?.ID}</strong>?
+          Delete{' '}
+          {deletingRow?.Name ? (
+            <strong>{deletingRow.Name}</strong>
+          ) : deletingRow?.ID ? (
+            <IdDisplay id={deletingRow.ID} />
+          ) : (
+            <strong>this item</strong>
+          )}
+          ?
         </p>
       </Less3Modal>
     </PageContainer>

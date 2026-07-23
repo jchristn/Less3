@@ -1,5 +1,5 @@
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query/react';
-import { buildAdminApiHeaders, buildApiUrl } from '#/services/sdk.service';
+import { adminRequest, toRtkQueryError } from '#/services/backendApi.service';
 import sdkSlice, { ApiBaseQueryArgs } from '#/store/rtk/rtkSdkInstance';
 import type {
   AdminHealthStatusResponse,
@@ -27,6 +27,22 @@ const enhancedSdk = sdkSlice.enhanceEndpoints({
   addTagTypes: [DashboardStatsSliceTags.DASHBOARD_STATS],
 });
 
+const adminQuery = async <T,>(path: string, fallbackMessage: string, body?: Record<string, unknown>) => {
+  try {
+    const data = await adminRequest<T>(path, {
+      method: body ? 'POST' : 'GET',
+      body,
+      cache: 'no-store',
+    });
+
+    return { data };
+  } catch (error) {
+    return {
+      error: toRtkQueryError(error, fallbackMessage),
+    };
+  }
+};
+
 const dashboardStatsSliceInstance = enhancedSdk.injectEndpoints({
   overrideExisting: true,
   endpoints: (
@@ -34,202 +50,49 @@ const dashboardStatsSliceInstance = enhancedSdk.injectEndpoints({
   ) => ({
     getDashboardStats: build.query<DashboardStatsResponse, void>({
       async queryFn() {
-        try {
-          const response = await fetch(buildApiUrl('admin/stats'), {
-            method: 'GET',
-            headers: buildAdminApiHeaders(),
-            cache: 'no-store',
-          });
-
-          if (!response.ok) {
-            const responseText = (await response.text()).trim();
-            return {
-              error: {
-                status: response.status,
-                data: responseText || `Failed to fetch dashboard stats: ${response.status}`,
-              },
-            };
-          }
-
-          return {
-            data: await response.json() as DashboardStatsResponse,
-          };
-        } catch (error: any) {
-          return {
-            error: {
-              status: 'FETCH_ERROR',
-              data: error?.message || 'Failed to fetch dashboard stats',
-            },
-          };
-        }
+        return adminQuery<DashboardStatsResponse>('admin/stats', 'Failed to fetch dashboard stats');
       },
       providesTags: [{ type: DashboardStatsSliceTags.DASHBOARD_STATS, id: 'SUMMARY' }],
     }),
     getAdminHealth: build.query<AdminHealthStatusResponse, void>({
       async queryFn() {
-        try {
-          const response = await fetch(buildApiUrl('admin/health'), {
-            method: 'GET',
-            headers: buildAdminApiHeaders(),
-            cache: 'no-store',
-          });
-
-          if (!response.ok) {
-            const responseText = (await response.text()).trim();
-            return {
-              error: {
-                status: response.status,
-                data: responseText || `Failed to fetch admin health: ${response.status}`,
-              },
-            };
-          }
-
-          return {
-            data: await response.json() as AdminHealthStatusResponse,
-          };
-        } catch (error: any) {
-          return {
-            error: {
-              status: 'FETCH_ERROR',
-              data: error?.message || 'Failed to fetch admin health',
-            },
-          };
-        }
+        return adminQuery<AdminHealthStatusResponse>('admin/health', 'Failed to fetch admin health');
       },
       providesTags: [{ type: DashboardStatsSliceTags.DASHBOARD_STATS, id: 'HEALTH' }],
     }),
     getRequestReport: build.query<RequestReportResponse, { startUtc: string; endUtc: string; tenantId?: string }>({
       async queryFn({ startUtc, endUtc, tenantId = 'default' }) {
-        try {
-          const query = new URLSearchParams({ tenantId, startUtc, endUtc });
-          const response = await fetch(buildApiUrl(`admin/reports/requests?${query.toString()}`), {
-            method: 'GET',
-            headers: buildAdminApiHeaders(),
-            cache: 'no-store',
-          });
-
-          if (!response.ok) {
-            const responseText = (await response.text()).trim();
-            return {
-              error: {
-                status: response.status,
-                data: responseText || `Failed to fetch request report: ${response.status}`,
-              },
-            };
-          }
-
-          return {
-            data: await response.json() as RequestReportResponse,
-          };
-        } catch (error: any) {
-          return {
-            error: {
-              status: 'FETCH_ERROR',
-              data: error?.message || 'Failed to fetch request report',
-            },
-          };
-        }
+        const query = new URLSearchParams({ tenantId, startUtc, endUtc });
+        return adminQuery<RequestReportResponse>(
+          `admin/reports/requests?${query.toString()}`,
+          'Failed to fetch request report'
+        );
       },
       providesTags: [{ type: DashboardStatsSliceTags.DASHBOARD_STATS, id: 'REPORT' }],
     }),
     getMaintenanceStatus: build.query<MaintenanceStatusResponse, void>({
       async queryFn() {
-        try {
-          const response = await fetch(buildApiUrl('admin/maintenance/status'), {
-            method: 'GET',
-            headers: buildAdminApiHeaders(),
-            cache: 'no-store',
-          });
-
-          if (!response.ok) {
-            const responseText = (await response.text()).trim();
-            return {
-              error: {
-                status: response.status,
-                data: responseText || `Failed to fetch maintenance status: ${response.status}`,
-              },
-            };
-          }
-
-          return {
-            data: await response.json() as MaintenanceStatusResponse,
-          };
-        } catch (error: any) {
-          return {
-            error: {
-              status: 'FETCH_ERROR',
-              data: error?.message || 'Failed to fetch maintenance status',
-            },
-          };
-        }
+        return adminQuery<MaintenanceStatusResponse>('admin/maintenance/status', 'Failed to fetch maintenance status');
       },
       providesTags: [{ type: DashboardStatsSliceTags.DASHBOARD_STATS, id: 'MAINTENANCE' }],
     }),
     updateMaintenanceSettings: build.mutation<MaintenanceActionResult, MaintenanceSettingsRequest>({
       async queryFn(body) {
-        try {
-          const response = await fetch(buildApiUrl('admin/maintenance/settings'), {
-            method: 'POST',
-            headers: buildAdminApiHeaders(),
-            body: JSON.stringify(body),
-            cache: 'no-store',
-          });
-
-          if (!response.ok) {
-            const responseText = (await response.text()).trim();
-            return {
-              error: {
-                status: response.status,
-                data: responseText || `Failed to update maintenance settings: ${response.status}`,
-              },
-            };
-          }
-
-          return {
-            data: await response.json() as MaintenanceActionResult,
-          };
-        } catch (error: any) {
-          return {
-            error: {
-              status: 'FETCH_ERROR',
-              data: error?.message || 'Failed to update maintenance settings',
-            },
-          };
-        }
+        return adminQuery<MaintenanceActionResult>(
+          'admin/maintenance/settings',
+          'Failed to update maintenance settings',
+          body as unknown as Record<string, unknown>
+        );
       },
       invalidatesTags: [{ type: DashboardStatsSliceTags.DASHBOARD_STATS, id: 'MAINTENANCE' }, { type: DashboardStatsSliceTags.DASHBOARD_STATS, id: 'HEALTH' }],
     }),
     runMaintenanceAction: build.mutation<MaintenanceActionResult, { action: string; body?: MaintenanceSettingsRequest }>({
       async queryFn({ action, body = {} }) {
-        try {
-          const response = await fetch(buildApiUrl(`admin/maintenance/${action}`), {
-            method: 'POST',
-            headers: buildAdminApiHeaders(),
-            body: JSON.stringify(body),
-            cache: 'no-store',
-          });
-
-          if (!response.ok) {
-            const responseText = (await response.text()).trim();
-            return {
-              error: {
-                status: response.status,
-                data: responseText || `Failed to run maintenance action: ${response.status}`,
-              },
-            };
-          }
-
-          return {
-            data: await response.json() as MaintenanceActionResult,
-          };
-        } catch (error: any) {
-          return {
-            error: {
-              status: 'FETCH_ERROR',
-              data: error?.message || 'Failed to run maintenance action',
-            },
-          };
-        }
+        return adminQuery<MaintenanceActionResult>(
+          `admin/maintenance/${action}`,
+          'Failed to run maintenance action',
+          body as unknown as Record<string, unknown>
+        );
       },
       invalidatesTags: [
         { type: DashboardStatsSliceTags.DASHBOARD_STATS, id: 'MAINTENANCE' },

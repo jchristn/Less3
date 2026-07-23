@@ -35,7 +35,7 @@ describe("withConnectivityValidation", () => {
     localStorage.setItem(localStorageKeys.less3APIUrl, `http://test-${Date.now()}.com`);
     localStorage.setItem(localStorageKeys.adminApiKey, "less3admin");
     mockGetInitialApiEndpoint.mockImplementation(
-      () => localStorage.getItem(localStorageKeys.less3APIUrl) || "http://localhost:8000"
+      () => localStorage.getItem(localStorageKeys.less3APIUrl) || "http://127.0.0.1:8000"
     );
     mockGetInitialAdminApiKey.mockImplementation(
       () => localStorage.getItem(localStorageKeys.adminApiKey) || ""

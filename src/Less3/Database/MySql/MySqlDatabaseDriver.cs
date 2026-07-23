@@ -44,6 +44,7 @@ namespace Less3.Database.MySql
         {
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _Logging = logging ?? throw new ArgumentNullException(nameof(logging));
+            Dialect = SqlDialect.MySql;
 
             if (String.IsNullOrEmpty(_Settings.Hostname))
                 throw new ArgumentException("Database hostname must be specified in settings.");
@@ -77,6 +78,8 @@ namespace Less3.Database.MySql
             RoleAssignments = new ControlPlaneRoleAssignmentMethods(this, SqlDialect.MySql);
             AuthSessions = new ControlPlaneAuthSessionMethods(this, SqlDialect.MySql);
             AuthorizationAudit = new ControlPlaneAuthorizationAuditMethods(this, SqlDialect.MySql);
+
+            MySqlLegacyV2Migrator.RunIfNeeded(_ConnectionString, _Logging, _Header);
 
             ExecuteQuery(SetupQueries.CreateTables(), true).Wait();
 

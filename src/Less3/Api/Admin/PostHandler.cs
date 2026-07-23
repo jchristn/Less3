@@ -552,24 +552,98 @@ namespace Less3.Api.Admin
                     return;
                 }
 
+                try
+                {
+                    MaintenanceActionResult result = ApplyMaintenanceSettings(request);
+                    AdminMutationAuditor.Record(_Config, _Logging, ctx, GetTenantId(ctx), "Maintenance", null, "UpdateSettings");
+                    await SendJson(ctx, result).ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    _Logging.Warn("Unable to update maintenance settings: " + e.Message);
+                    await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest).ConfigureAwait(false);
+                }
+
+                return;
+            }
+
+            await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest).ConfigureAwait(false);
+        }
+
+        private MaintenanceActionResult ApplyMaintenanceSettings(MaintenanceSettingsUpdateRequest request)
+        {
+            MaintenanceActionResult result = new MaintenanceActionResult();
+            result.Action = "update-settings";
+
+            if (request.Configuration != null)
+            {
+                PreserveRedactedSecrets(request.Configuration);
+                ApplyConfiguration(request.Configuration);
+                result.RuntimeAppliedSettings.AddRange(MaintenanceSettingsMetadata.RuntimeEditableSettings());
+                result.RestartRequiredSettings.AddRange(MaintenanceSettingsMetadata.RestartRequiredSettings());
+            }
+            else
+            {
                 if (request.RequestHistoryRetentionDays.HasValue)
                 {
                     _Settings.RequestHistoryRetentionDays = request.RequestHistoryRetentionDays.Value;
+                    result.RuntimeAppliedSettings.Add("RequestHistoryRetentionDays");
                 }
 
                 if (request.CleanupIntervalMs.HasValue)
                 {
                     _Cleanup.CleanupIntervalMs = request.CleanupIntervalMs.Value;
+                    result.RuntimeAppliedSettings.Add("CleanupIntervalMs");
                 }
-
-                MaintenanceActionResult result = new MaintenanceActionResult();
-                result.Action = "update-runtime-settings";
-                AdminMutationAuditor.Record(_Config, _Logging, ctx, GetTenantId(ctx), "Maintenance", null, "UpdateSettings");
-                await SendJson(ctx, result).ConfigureAwait(false);
-                return;
             }
 
-            await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest).ConfigureAwait(false);
+            PersistSettingsFile();
+            result.GeneratedUtc = DateTime.UtcNow;
+            return result;
+        }
+
+        private void ApplyConfiguration(SettingsBase configuration)
+        {
+            _Settings.EnableConsole = configuration.EnableConsole;
+            _Settings.ValidateSignatures = configuration.ValidateSignatures;
+            _Settings.BaseDomain = configuration.BaseDomain;
+            _Settings.HeaderApiKey = configuration.HeaderApiKey;
+            _Settings.AdminApiKey = configuration.AdminApiKey;
+            _Settings.RegionString = configuration.RegionString;
+            _Settings.RequestHistoryRetentionDays = configuration.RequestHistoryRetentionDays;
+            _Cleanup.CleanupIntervalMs = configuration.CleanupIntervalMs;
+            _Settings.Database = configuration.Database;
+            _Settings.Webserver = configuration.Webserver;
+            _Settings.Storage = configuration.Storage;
+            _Settings.Logging = configuration.Logging;
+            _Settings.Debug = configuration.Debug;
+        }
+
+        private void PreserveRedactedSecrets(SettingsBase configuration)
+        {
+            if (configuration == null) return;
+
+            if (String.Equals(configuration.AdminApiKey, MaintenanceSettingsMetadata.RedactedValue, StringComparison.Ordinal))
+            {
+                configuration.AdminApiKey = _Settings.AdminApiKey;
+            }
+
+            if (configuration.Database != null
+                && String.Equals(configuration.Database.Password, MaintenanceSettingsMetadata.RedactedValue, StringComparison.Ordinal))
+            {
+                configuration.Database.Password = _Settings.Database.Password;
+            }
+
+            if (configuration.Webserver?.Ssl != null
+                && String.Equals(configuration.Webserver.Ssl.PfxCertificatePassword, MaintenanceSettingsMetadata.RedactedValue, StringComparison.Ordinal))
+            {
+                configuration.Webserver.Ssl.PfxCertificatePassword = _Settings.Webserver.Ssl.PfxCertificatePassword;
+            }
+        }
+
+        private void PersistSettingsFile()
+        {
+            File.WriteAllText("./system.json", SerializationHelper.SerializeJson(_Settings, true), Encoding.UTF8);
         }
 
         private MaintenanceActionResult VerifyObjectRows(string tenantId)

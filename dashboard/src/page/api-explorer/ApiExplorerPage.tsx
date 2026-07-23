@@ -20,7 +20,13 @@ import Less3Select from '#/components/base/select/Select';
 import Less3Tabs from '#/components/base/tabs/Tabs';
 import Less3Text from '#/components/base/typograpghy/Text';
 import CopyToClipboard from '#/components/copy-to-clipboard/CopyToClipboard';
-import { getAdminApiKey, getApiEndpoint } from '#/services/sdk.service';
+import IdDisplay from '#/components/id-display';
+import {
+  buildAdminRequestHeaders,
+  buildBackendUrl,
+  rawBackendFetch,
+} from '#/services/backendApi.service';
+import { getApiEndpoint } from '#/services/sdk.service';
 import { useGetBucketsQuery } from '#/store/slice/bucketsSlice';
 import { useGetCredentialByIdQuery, useGetCredentialsQuery } from '#/store/slice/credentialsSlice';
 import { useGetUsersQuery } from '#/store/slice/usersSlice';
@@ -32,6 +38,7 @@ import {
   getPreferredS3CredentialId,
   setPreferredS3CredentialId,
 } from '#/utils/s3Auth';
+import { buildPortableCurlCommand } from '#/utils/curlUtils';
 import { message } from '#/utils/message';
 
 interface OperationParam {
@@ -121,6 +128,13 @@ const SAVED_COLLECTIONS_KEY = 'less3_api_explorer_collections';
 const EXPLORER_ENVIRONMENT_KEY = 'less3_api_explorer_environment';
 const MAX_RECENT_ITEMS = 12;
 const NO_CREDENTIAL_VALUE = '__none__';
+
+const renderOptionLabel = (label: string, id?: string): React.ReactNode => (
+  <Less3Flex vertical gap={2} style={{ minWidth: 0 }}>
+    <Less3Text>{label}</Less3Text>
+    {id ? <IdDisplay id={id} /> : null}
+  </Less3Flex>
+);
 
 interface RecentRequest {
   operationId: string;
@@ -301,7 +315,7 @@ const ApiExplorerPage: React.FC = () => {
       { label: 'No credential', value: NO_CREDENTIAL_VALUE },
       ...(
         credentialsData?.map((credential) => ({
-          label: `${credential.Description || credential.AccessKey} (${credential.AccessKey})`,
+          label: renderOptionLabel(`${credential.Description || credential.AccessKey} (${credential.AccessKey})`, credential.Id),
           value: credential.Id,
         })) || []
       ),
@@ -311,7 +325,7 @@ const ApiExplorerPage: React.FC = () => {
 
   const bucketIdOptions = useMemo(
     () => bucketsData?.map((bucket) => ({
-      label: `${bucket.Name}${bucket.Id ? ` (${bucket.Id})` : ''}`,
+      label: renderOptionLabel(bucket.Name, bucket.Id),
       value: bucket.Id || bucket.Name,
     })) || [],
     [bucketsData]
@@ -327,7 +341,7 @@ const ApiExplorerPage: React.FC = () => {
 
   const userOptions = useMemo(
     () => usersData?.map((user) => ({
-      label: `${user.Email || user.Name} (${user.Id})`,
+      label: renderOptionLabel(user.Email || user.Name, user.Id),
       value: user.Id,
     })) || [],
     [usersData]
@@ -335,7 +349,7 @@ const ApiExplorerPage: React.FC = () => {
 
   const resourceCredentialOptions = useMemo(
     () => credentialsData?.map((credential) => ({
-      label: `${credential.Description || credential.AccessKey} (${credential.Id})`,
+      label: renderOptionLabel(credential.Description || credential.AccessKey, credential.Id),
       value: credential.Id,
     })) || [],
     [credentialsData]
@@ -354,7 +368,6 @@ const ApiExplorerPage: React.FC = () => {
       return '';
     }
 
-    const baseUrl = getApiEndpoint().replace(/\/$/, '');
     let path = selectedOp.pathTemplate;
 
     for (const param of selectedOp.params) {
@@ -362,7 +375,7 @@ const ApiExplorerPage: React.FC = () => {
       path = path.replace(`{${param.name}}`, encodeURIComponent(value));
     }
 
-    return baseUrl + path;
+    return buildBackendUrl(path);
   }, [paramValues, selectedOp]);
 
   const hasMissingRequiredParams = useMemo(() => {
@@ -445,15 +458,19 @@ const ApiExplorerPage: React.FC = () => {
       const fetchHeaders: Record<string, string> = {};
 
       if (selectedOperationApiType === 'admin' || selectedOperationApiType === 'rest') {
-        const adminApiKey = getAdminApiKey();
-        if (!adminApiKey) {
+        const adminHeaders = buildAdminRequestHeaders();
+        const hasAdminApiKey = Object.keys(adminHeaders).some(
+          (key) => key.toLowerCase() === 'x-api-key' && adminHeaders[key]
+        );
+
+        if (!hasAdminApiKey) {
           message.error('No admin API key is saved. Sign in again to use admin or REST requests.');
           setIsLoading(false);
           abortControllerRef.current = null;
           return;
         }
 
-        fetchHeaders['x-api-key'] = adminApiKey;
+        Object.assign(fetchHeaders, adminHeaders);
       } else if (selectedCredentialId !== NO_CREDENTIAL_VALUE) {
         if (!activeS3Credential?.AccessKey || !activeS3Credential?.SecretKey) {
           message.error('Selected S3 credential is unavailable');
@@ -488,7 +505,7 @@ const ApiExplorerPage: React.FC = () => {
         requestOptions.body = body;
       }
 
-      const result = await fetch(resolvedUrl, requestOptions);
+      const result = await rawBackendFetch(resolvedUrl, requestOptions);
       const responseBody = await result.text().catch(() => '');
       const responseHeaders: Record<string, string> = {};
 
@@ -642,26 +659,26 @@ const ApiExplorerPage: React.FC = () => {
       return '';
     }
 
-    let curl = `curl -X ${selectedOp.method}`;
+    const headers: Record<string, string> = {};
 
     if (selectedOperationApiType === 'admin' || selectedOperationApiType === 'rest') {
-      curl += ` \\\n  -H 'x-api-key: <saved-admin-api-key>'`;
+      headers['x-api-key'] = '<saved-admin-api-key>';
     }
 
     if (selectedOperationApiType === 's3' && activeS3Credential?.AccessKey) {
-      curl += ` \\\n  -H 'Authorization: ${buildS3AuthorizationHeader(activeS3Credential.AccessKey)}'`;
+      headers.Authorization = buildS3AuthorizationHeader(activeS3Credential.AccessKey);
     }
 
     if (selectedOp.hasBody) {
-      curl += ` \\\n  -H 'Content-Type: application/json'`;
+      headers['Content-Type'] = 'application/json';
     }
 
-    if (body.trim() && selectedOp.hasBody) {
-      curl += ` \\\n  -d '${body}'`;
-    }
-
-    curl += ` \\\n  '${resolvedUrl}'`;
-    return curl;
+    return buildPortableCurlCommand({
+      method: selectedOp.method,
+      url: resolvedUrl,
+      headers,
+      body: body.trim() && selectedOp.hasBody ? body : undefined,
+    });
   }, [activeS3Credential, body, resolvedUrl, selectedOp, selectedOperationApiType]);
 
   const responseHeadersJsonText = useMemo(() => {

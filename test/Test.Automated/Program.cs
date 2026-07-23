@@ -4,7 +4,6 @@ namespace Test.Automated
     using System.Linq;
     using System.Threading.Tasks;
     using Test.Shared;
-    using Test.Shared.Suites;
     using Touchstone.Cli;
 
     /// <summary>
@@ -47,11 +46,10 @@ namespace Test.Automated
         {
             TestRunner runner = new TestRunner("Less3 Automated Tests");
 
-            // Unit test suites (no server required)
-            runner.AddSuite(new ModelTests());
-            runner.AddSuite(new SettingsTests());
-            runner.AddSuite(new StorageTests());
-            runner.AddSuite(new S3ServerRegressionTests());
+            foreach (SharedTestSuiteDescriptor suite in SharedTestSuiteCatalog.StandaloneSuites)
+            {
+                runner.AddSuite(suite.Create());
+            }
 
             // Integration test suites (require running Less3 server)
             Less3TestServer server = new Less3TestServer();
@@ -68,16 +66,10 @@ namespace Test.Automated
                 Console.WriteLine($"Less3 test server ready at {server.BaseUrl}");
                 Console.ResetColor();
 
-                runner.AddSuite(new AdminApiTests(server));
-                runner.AddSuite(new BucketApiTests(server));
-                runner.AddSuite(new BucketAdvancedApiTests(server));
-                runner.AddSuite(new ObjectApiTests(server));
-                runner.AddSuite(new ObjectAdvancedApiTests(server));
-                runner.AddSuite(new MultipartApiTests(server));
-                runner.AddSuite(new S3ProtocolComplianceTests(server));
-                runner.AddSuite(new DockerBootstrapTests());
-                runner.AddSuite(new ContainerAutoconfigTests());
-                runner.AddSuite(new SignatureValidationApiTests());
+                foreach (SharedTestSuiteDescriptor suite in SharedTestSuiteCatalog.IntegrationSuites)
+                {
+                    runner.AddSuite(suite.Create(server));
+                }
 
                 int exitCode = await runner.RunAllAsync().ConfigureAwait(false);
                 return exitCode;

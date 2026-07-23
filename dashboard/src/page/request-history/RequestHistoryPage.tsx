@@ -22,6 +22,8 @@ import PageContainer from '#/components/base/pageContainer/PageContainer';
 import Less3Flex from '#/components/base/flex/Flex';
 import Less3Dropdown from '#/components/base/dropdown/Dropdown';
 import Less3Text from '#/components/base/typograpghy/Text';
+import IdDisplay from '#/components/id-display';
+import TextWithCopy from '#/components/text-with-copy/TextWithCopy';
 import {
   useGetRequestHistoryQuery,
   useGetRequestHistorySummaryQuery,
@@ -29,6 +31,8 @@ import {
   RequestHistoryEntry,
 } from '#/store/slice/requestHistorySlice';
 import { formatDate } from '#/utils/dateUtils';
+import { buildBackendUrl } from '#/services/backendApi.service';
+import { buildPortableCurlCommand } from '#/utils/curlUtils';
 import { getPrettyPrintedTextContent } from '#/utils/objectContentUtils';
 import { message } from '#/utils/message';
 import SummaryChart, { getQuickRange } from './SummaryChart';
@@ -72,18 +76,16 @@ const formatDurationMs = (value: number): string => `${value.toFixed(2)}ms`;
 
 const createCurlCommand = (entry: RequestHistoryEntry): string => {
   const method = entry.HttpMethod || 'GET';
-  const url = entry.RequestUrl || '/';
-  let command = `curl -X ${method} '${url}'`;
+  const url = buildBackendUrl(entry.RequestUrl || '/');
 
-  if (entry.RequestContentType) {
-    command += ` \\\n  -H 'Content-Type: ${entry.RequestContentType}'`;
-  }
-
-  if (entry.RequestBody) {
-    command += ` \\\n  -d '${entry.RequestBody.replace(/'/g, "'\\''")}'`;
-  }
-
-  return command;
+  return buildPortableCurlCommand({
+    method,
+    url,
+    headers: {
+      'Content-Type': entry.RequestContentType,
+    },
+    body: entry.RequestBody,
+  });
 };
 
 const csvEscape = (value: unknown): string => `"${String(value ?? '').replace(/"/g, '""')}"`;
@@ -678,8 +680,18 @@ const RequestHistoryPage: React.FC = () => {
                     {
                       label: 'Entry ID',
                       value: selectedEntry.Id,
-                      copyable: true,
-                      mono: true,
+                      id: true,
+                    },
+                    {
+                      label: 'User ID',
+                      value: selectedEntry.UserId || 'Not set',
+                      id: Boolean(selectedEntry.UserId),
+                    },
+                    {
+                      label: 'Access Key',
+                      value: selectedEntry.AccessKey || 'Not set',
+                      copyable: Boolean(selectedEntry.AccessKey),
+                      mono: Boolean(selectedEntry.AccessKey),
                     },
                     {
                       label: 'Route',
@@ -701,6 +713,7 @@ const RequestHistoryPage: React.FC = () => {
                   ].map((item: {
                     label: string;
                     value: string;
+                    id?: boolean;
                     copyable?: boolean;
                     mono?: boolean;
                     accentColor?: string;
@@ -718,7 +731,11 @@ const RequestHistoryPage: React.FC = () => {
                         </Less3Text>
                       </td>
                       <td style={{ padding: '8px 0', verticalAlign: 'top' }}>
-                        <Less3Flex align="center" gap={8} style={{ flexWrap: 'wrap' }}>
+                        {item.id ? (
+                          <IdDisplay id={item.value} />
+                        ) : item.copyable ? (
+                          <TextWithCopy text={item.value} className={item.mono ? 'code-font-style' : undefined} />
+                        ) : (
                           <Less3Text
                             weight={600}
                             fontSize={13}
@@ -732,14 +749,7 @@ const RequestHistoryPage: React.FC = () => {
                           >
                             {item.value}
                           </Less3Text>
-                          {item.copyable && (
-                            <CopyToClipboard
-                              text={item.value}
-                              tooltip={`Copy ${item.label}`}
-                              ariaLabel={`Copy ${item.label}`}
-                            />
-                          )}
-                        </Less3Flex>
+                        )}
                       </td>
                     </tr>
                   ))}

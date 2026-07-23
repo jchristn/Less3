@@ -23,7 +23,7 @@ describe("Text", () => {
     it("should render with color prop", () => {
       render(<Text color="red">Red Text</Text>);
       const text = screen.getByText("Red Text");
-      expect(text).toHaveStyle({ color: "red" });
+      expect(text).toHaveStyle({ color: "rgb(255, 0, 0)" });
     });
 
     it("should combine multiple style props", () => {
@@ -33,8 +33,7 @@ describe("Text", () => {
         </Text>
       );
       const text = screen.getByText("Styled Text");
-      expect(text).toHaveStyle({ fontWeight: 600, fontSize: 20, color: "blue" });
+      expect(text).toHaveStyle({ fontWeight: "600", fontSize: "20px", color: "rgb(0, 0, 255)" });
     });
   });
 });
-

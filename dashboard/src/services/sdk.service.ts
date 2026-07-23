@@ -64,14 +64,10 @@ const getStoredApiEndpoint = (): string | null => {
   return storedEndpoint;
 };
 
-const getBrowserAwareDefaultApiEndpoint = (): string => {
-  if (typeof window === 'undefined') {
-    return apiEndpointURL;
-  }
-
+export const getBrowserAwareDefaultApiEndpointForHostname = (hostname?: string | null): string => {
   try {
     const configuredUrl = new URL(apiEndpointURL);
-    const browserHostname = window.location.hostname?.trim();
+    const browserHostname = hostname?.trim();
 
     if (!browserHostname) {
       return apiEndpointURL;
@@ -86,6 +82,14 @@ const getBrowserAwareDefaultApiEndpoint = (): string => {
   } catch {
     return apiEndpointURL;
   }
+};
+
+const getBrowserAwareDefaultApiEndpoint = (): string => {
+  if (typeof window === 'undefined') {
+    return apiEndpointURL;
+  }
+
+  return getBrowserAwareDefaultApiEndpointForHostname(window.location.hostname);
 };
 
 export const getInitialApiEndpoint = (): string => getStoredApiEndpoint() || getBrowserAwareDefaultApiEndpoint();

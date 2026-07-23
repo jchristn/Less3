@@ -65,8 +65,7 @@ describe("FallBack", () => {
 
     it("should render with custom style", () => {
       const { container } = render(<FallBack style={{ color: "red" }} />);
-      expect(container.firstChild).toHaveStyle({ color: "red" });
+      expect(container.firstChild).toHaveStyle({ color: "rgb(255, 0, 0)" });
     });
   });
 });
-

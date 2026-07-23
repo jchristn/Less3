@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`DashboardPage Snapshots matches the default render 1`] = `
 <div
@@ -848,7 +848,7 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
                       style="gap: 14px;"
                     >
                       <div
-                        style="width: 44px; height: 44px; border-radius: 8px; background: rgba(19, 194, 194, 0.078); display: flex; align-items: center; justify-content: center; color: rgb(19, 194, 194); font-size: 20px;"
+                        style="width: 44px; height: 44px; border-radius: 8px; background: rgba(19, 194, 194, 0.08); display: flex; align-items: center; justify-content: center; color: rgb(19, 194, 194); font-size: 20px;"
                       >
                         <span
                           aria-label="bank"
@@ -902,7 +902,7 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
                       style="gap: 14px;"
                     >
                       <div
-                        style="width: 44px; height: 44px; border-radius: 8px; background: rgba(34, 175, 121, 0.078); display: flex; align-items: center; justify-content: center; color: rgb(34, 175, 121); font-size: 20px;"
+                        style="width: 44px; height: 44px; border-radius: 8px; background: rgba(34, 175, 121, 0.08); display: flex; align-items: center; justify-content: center; color: rgb(34, 175, 121); font-size: 20px;"
                       >
                         <span
                           aria-label="database"
@@ -956,7 +956,7 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
                       style="gap: 14px;"
                     >
                       <div
-                        style="width: 44px; height: 44px; border-radius: 8px; background: rgba(250, 140, 22, 0.078); display: flex; align-items: center; justify-content: center; color: rgb(250, 140, 22); font-size: 20px;"
+                        style="width: 44px; height: 44px; border-radius: 8px; background: rgba(250, 140, 22, 0.08); display: flex; align-items: center; justify-content: center; color: rgb(250, 140, 22); font-size: 20px;"
                       >
                         <span
                           aria-label="folder"
@@ -1010,7 +1010,7 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
                       style="gap: 14px;"
                     >
                       <div
-                        style="width: 44px; height: 44px; border-radius: 8px; background: rgba(24, 144, 255, 0.078); display: flex; align-items: center; justify-content: center; color: rgb(24, 144, 255); font-size: 20px;"
+                        style="width: 44px; height: 44px; border-radius: 8px; background: rgba(24, 144, 255, 0.08); display: flex; align-items: center; justify-content: center; color: rgb(24, 144, 255); font-size: 20px;"
                       >
                         <span
                           aria-label="hdd"
@@ -1064,7 +1064,7 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
                       style="gap: 14px;"
                     >
                       <div
-                        style="width: 44px; height: 44px; border-radius: 8px; background: rgba(114, 46, 209, 0.078); display: flex; align-items: center; justify-content: center; color: rgb(114, 46, 209); font-size: 20px;"
+                        style="width: 44px; height: 44px; border-radius: 8px; background: rgba(114, 46, 209, 0.08); display: flex; align-items: center; justify-content: center; color: rgb(114, 46, 209); font-size: 20px;"
                       >
                         <span
                           aria-label="key"
@@ -1118,7 +1118,7 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
                       style="gap: 14px;"
                     >
                       <div
-                        style="width: 44px; height: 44px; border-radius: 8px; background: rgba(235, 47, 150, 0.078); display: flex; align-items: center; justify-content: center; color: rgb(235, 47, 150); font-size: 20px;"
+                        style="width: 44px; height: 44px; border-radius: 8px; background: rgba(235, 47, 150, 0.08); display: flex; align-items: center; justify-content: center; color: rgb(235, 47, 150); font-size: 20px;"
                       >
                         <span
                           aria-label="thunderbolt"
@@ -1172,7 +1172,7 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
                       style="gap: 14px;"
                     >
                       <div
-                        style="width: 44px; height: 44px; border-radius: 8px; background: rgba(245, 34, 45, 0.078); display: flex; align-items: center; justify-content: center; color: rgb(245, 34, 45); font-size: 20px;"
+                        style="width: 44px; height: 44px; border-radius: 8px; background: rgba(245, 34, 45, 0.08); display: flex; align-items: center; justify-content: center; color: rgb(245, 34, 45); font-size: 20px;"
                       >
                         <span
                           aria-label="warning"
@@ -1226,7 +1226,7 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
                       style="gap: 14px;"
                     >
                       <div
-                        style="width: 44px; height: 44px; border-radius: 8px; background: rgba(47, 84, 235, 0.078); display: flex; align-items: center; justify-content: center; color: rgb(47, 84, 235); font-size: 20px;"
+                        style="width: 44px; height: 44px; border-radius: 8px; background: rgba(47, 84, 235, 0.08); display: flex; align-items: center; justify-content: center; color: rgb(47, 84, 235); font-size: 20px;"
                       >
                         <span
                           aria-label="thunderbolt"
@@ -1270,7 +1270,7 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
                 </div>
               </div>
               <div
-                style="border-radius: 8px; padding: 16px;"
+                style="background: var(--ant-color-bg-container); border: 1px solid var(--color-separator); border-radius: 8px; padding: 16px;"
               >
                 <div
                   class="ant-flex css-dev-only-do-not-override-mncuj7 ant-flex-wrap-wrap ant-flex-align-center"
@@ -1509,7 +1509,7 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
                         style="gap: 16px;"
                       >
                         <div
-                          style="width: 48px; height: 48px; border-radius: 12px; background: rgba(34, 175, 121, 0.078); display: flex; align-items: center; justify-content: center; font-size: 22px; color: rgb(34, 175, 121);"
+                          style="width: 48px; height: 48px; border-radius: 12px; background: rgba(34, 175, 121, 0.08); display: flex; align-items: center; justify-content: center; font-size: 22px; color: rgb(34, 175, 121);"
                         >
                           <span
                             aria-label="database"
@@ -1543,7 +1543,7 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
                           </span>
                           <span
                             class="ant-typography css-dev-only-do-not-override-mncuj7"
-                            style="font-size: 13px;"
+                            style="font-size: 13px; color: var(--ant-color-text-secondary);"
                           >
                             Set up a new storage bucket
                           </span>
@@ -1563,7 +1563,7 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
                         style="gap: 16px;"
                       >
                         <div
-                          style="width: 48px; height: 48px; border-radius: 12px; background: rgba(24, 144, 255, 0.078); display: flex; align-items: center; justify-content: center; font-size: 22px; color: rgb(24, 144, 255);"
+                          style="width: 48px; height: 48px; border-radius: 12px; background: rgba(24, 144, 255, 0.08); display: flex; align-items: center; justify-content: center; font-size: 22px; color: rgb(24, 144, 255);"
                         >
                           <span
                             aria-label="folder"
@@ -1597,7 +1597,7 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
                           </span>
                           <span
                             class="ant-typography css-dev-only-do-not-override-mncuj7"
-                            style="font-size: 13px;"
+                            style="font-size: 13px; color: var(--ant-color-text-secondary);"
                           >
                             Browse and manage stored objects
                           </span>
@@ -1617,7 +1617,7 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
                         style="gap: 16px;"
                       >
                         <div
-                          style="width: 48px; height: 48px; border-radius: 12px; background: rgba(250, 140, 22, 0.078); display: flex; align-items: center; justify-content: center; font-size: 22px; color: rgb(250, 140, 22);"
+                          style="width: 48px; height: 48px; border-radius: 12px; background: rgba(250, 140, 22, 0.08); display: flex; align-items: center; justify-content: center; font-size: 22px; color: rgb(250, 140, 22);"
                         >
                           <span
                             aria-label="user"
@@ -1651,7 +1651,7 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
                           </span>
                           <span
                             class="ant-typography css-dev-only-do-not-override-mncuj7"
-                            style="font-size: 13px;"
+                            style="font-size: 13px; color: var(--ant-color-text-secondary);"
                           >
                             View and manage user accounts
                           </span>
@@ -1671,7 +1671,7 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
                         style="gap: 16px;"
                       >
                         <div
-                          style="width: 48px; height: 48px; border-radius: 12px; background: rgba(114, 46, 209, 0.078); display: flex; align-items: center; justify-content: center; font-size: 22px; color: rgb(114, 46, 209);"
+                          style="width: 48px; height: 48px; border-radius: 12px; background: rgba(114, 46, 209, 0.08); display: flex; align-items: center; justify-content: center; font-size: 22px; color: rgb(114, 46, 209);"
                         >
                           <span
                             aria-label="key"
@@ -1705,7 +1705,7 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
                           </span>
                           <span
                             class="ant-typography css-dev-only-do-not-override-mncuj7"
-                            style="font-size: 13px;"
+                            style="font-size: 13px; color: var(--ant-color-text-secondary);"
                           >
                             Configure access keys and secrets
                           </span>
@@ -1725,7 +1725,7 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
                         style="gap: 16px;"
                       >
                         <div
-                          style="width: 48px; height: 48px; border-radius: 12px; background: rgba(19, 194, 194, 0.078); display: flex; align-items: center; justify-content: center; font-size: 22px; color: rgb(19, 194, 194);"
+                          style="width: 48px; height: 48px; border-radius: 12px; background: rgba(19, 194, 194, 0.08); display: flex; align-items: center; justify-content: center; font-size: 22px; color: rgb(19, 194, 194);"
                         >
                           <span
                             aria-label="bank"
@@ -1759,7 +1759,7 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
                           </span>
                           <span
                             class="ant-typography css-dev-only-do-not-override-mncuj7"
-                            style="font-size: 13px;"
+                            style="font-size: 13px; color: var(--ant-color-text-secondary);"
                           >
                             Configure tenant boundaries
                           </span>
@@ -1779,7 +1779,7 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
                         style="gap: 16px;"
                       >
                         <div
-                          style="width: 48px; height: 48px; border-radius: 12px; background: rgba(235, 47, 150, 0.078); display: flex; align-items: center; justify-content: center; font-size: 22px; color: rgb(235, 47, 150);"
+                          style="width: 48px; height: 48px; border-radius: 12px; background: rgba(235, 47, 150, 0.08); display: flex; align-items: center; justify-content: center; font-size: 22px; color: rgb(235, 47, 150);"
                         >
                           <span
                             aria-label="safety-certificate"
@@ -1813,7 +1813,7 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
                           </span>
                           <span
                             class="ant-typography css-dev-only-do-not-override-mncuj7"
-                            style="font-size: 13px;"
+                            style="font-size: 13px; color: var(--ant-color-text-secondary);"
                           >
                             Configure RBAC roles
                           </span>

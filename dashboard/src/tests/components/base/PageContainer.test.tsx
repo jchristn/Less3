@@ -73,8 +73,7 @@ describe("PageContainer", () => {
         </PageContainer>
       );
       const content = container.querySelector(".ant-layout-content");
-      expect(content).toHaveStyle({ backgroundColor: "red" });
+      expect(content).toHaveStyle({ backgroundColor: "rgb(255, 0, 0)" });
     });
   });
 });
-

@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`ObjectsPage Snapshots should match default render 1`] = `
 <div
@@ -869,7 +869,7 @@ exports[`ObjectsPage Snapshots should match default render 1`] = `
                 <span
                   aria-hidden="true"
                   class="ant-select-arrow"
-                  style="user-select: none;"
+                  style="user-select: none; -webkit-user-select: none;"
                   unselectable="on"
                 >
                   <span
@@ -895,7 +895,7 @@ exports[`ObjectsPage Snapshots should match default render 1`] = `
                 <span
                   aria-hidden="true"
                   class="ant-select-clear"
-                  style="user-select: none;"
+                  style="user-select: none; -webkit-user-select: none;"
                   unselectable="on"
                 >
                   <span
@@ -1220,7 +1220,7 @@ exports[`ObjectsPage Snapshots should match default render 1`] = `
                       <span
                         aria-hidden="true"
                         class="ant-select-arrow"
-                        style="user-select: none;"
+                        style="user-select: none; -webkit-user-select: none;"
                         unselectable="on"
                       >
                         <span
@@ -1621,7 +1621,7 @@ exports[`ObjectsPage Snapshots should match default render 1`] = `
                                 aria-label="file"
                                 class="anticon anticon-file"
                                 role="img"
-                                style="font-size: 16px;"
+                                style="color: var(--ant-color-text-secondary); font-size: 16px;"
                               >
                                 <svg
                                   aria-hidden="true"

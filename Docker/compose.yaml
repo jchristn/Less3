@@ -8,9 +8,7 @@ services:
 
   less3:
     container_name: 'less3'
-    build:
-      context: ../src
-      dockerfile: Less3/Dockerfile
+    image: 'jchristn77/less3:v3.0.0'
     ports:
       - "8000:8000"
     stdin_open: true

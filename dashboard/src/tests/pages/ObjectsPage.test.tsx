@@ -201,6 +201,16 @@ describe("ObjectsPage", () => {
       expect(screen.getByText("Download URL")).toBeInTheDocument();
     }, 20000);
 
+    it("should open object details when an object row is clicked", async () => {
+      renderWithRedux(<ObjectsPage />);
+
+      await userEvent.click(await screen.findByText("test-file.txt"));
+
+      expect(await screen.findByText("Object Details - test-file.txt")).toBeInTheDocument();
+      expect(screen.getByText("Tenant ID")).toBeInTheDocument();
+      expect(screen.queryByRole("dialog", { name: "Object Contents - test-file.txt" })).not.toBeInTheDocument();
+    }, 20000);
+
     it("should open object tag actions without opening the object editor", async () => {
       renderWithRedux(<ObjectsPage />);
 

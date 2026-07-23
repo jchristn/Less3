@@ -1120,17 +1120,7 @@ const ObjectsPage: React.FC = () => {
       return;
     }
 
-    if (isFolder(item.Key)) {
-      openObjectJsonModal(`Folder JSON - ${item.Key}`, item);
-      return;
-    }
-
-    if (isTextObject(item)) {
-      handleObjectContents(item);
-      return;
-    }
-
-    openObjectJsonModal(`Object JSON - ${item.Key}`, item);
+    handleViewObjectDetails(item);
   };
 
   type ObjectActionClickInfo = Parameters<NonNullable<MenuProps['onClick']>>[0];

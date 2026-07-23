@@ -1,5 +1,5 @@
 import { renderWithRedux } from '../store/utils';
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ApiExplorerPage from '#/page/api-explorer/ApiExplorerPage';
 
@@ -58,6 +58,32 @@ describe('ApiExplorerPage', () => {
 
   afterEach(() => {
     global.fetch = originalFetch;
+  });
+
+  it('renders request, response, and recent requests in a single-column order without environment controls', () => {
+    localStorage.setItem('less3_api_explorer_recent', JSON.stringify([
+      {
+        operationId: 's3-list-buckets',
+        method: 'GET',
+        url: 'http://127.0.0.1:8000/',
+        apiType: 's3',
+        statusCode: 200,
+        timestamp: '2026-05-15T12:00:00.000Z',
+        body: '',
+        credentialId: '__none__',
+      },
+    ]));
+
+    renderWithRedux(<ApiExplorerPage />, false, undefined, true);
+
+    const cardTitles = Array.from(document.querySelectorAll('.ant-card-head-title')).map((element) =>
+      element.textContent?.replace(/\s+/g, ' ').trim()
+    );
+
+    expect(cardTitles.slice(0, 3)).toEqual(['Request', 'Response', 'Recent Requests']);
+    expect(cardTitles).not.toContain('Environment');
+    expect(screen.queryByRole('button', { name: /Export Environment/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Import Environment/i })).not.toBeInTheDocument();
   });
 
   it('shows an always-available credential picker with a no credential option', async () => {
@@ -138,7 +164,7 @@ describe('ApiExplorerPage', () => {
     expect(screen.getByRole('button', { name: 'Show Raw' })).toBeInTheDocument();
   });
 
-  it('saves collections and round-trips explorer environment data', async () => {
+  it('saves collections', async () => {
     renderWithRedux(<ApiExplorerPage />, false, undefined, true);
 
     await userEvent.click(screen.getByRole('button', { name: /Save/i }));
@@ -146,22 +172,6 @@ describe('ApiExplorerPage', () => {
     expect(localStorage.getItem('less3_api_explorer_collections')).toContain('s3-list-buckets');
     expect(screen.getByText('Saved Collections')).toBeInTheDocument();
     expect(screen.getByText('List Buckets')).toBeInTheDocument();
-
-    await userEvent.click(screen.getByRole('button', { name: /Export Environment/i }));
-
-    const environmentEditor = screen.getByRole('textbox') as HTMLTextAreaElement;
-    expect(environmentEditor.value).toContain('"operationId": "s3-list-buckets"');
-
-    fireEvent.change(environmentEditor, {
-      target: {
-        value: '{"operationId":"rest-list-tenants","selectedCredentialId":"cred-1","paramValues":{}}',
-      },
-    });
-    await userEvent.click(screen.getByRole('button', { name: /Import Environment/i }));
-
-    await waitFor(() => {
-      expect(localStorage.getItem('less3_api_explorer_environment')).toContain('rest-list-tenants');
-    });
   }, 15000);
 
   it('disables send when required parameters are missing', async () => {

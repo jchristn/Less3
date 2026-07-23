@@ -1,4 +1,3 @@
-/* eslint-disable max-lines-per-function */
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -9,7 +8,6 @@ import {
   LoadingOutlined,
   SaveOutlined,
   DeleteOutlined,
-  DownloadOutlined,
 } from '@ant-design/icons';
 import Less3Button from '#/components/base/button/Button';
 import Less3Card from '#/components/base/card/Card';
@@ -26,7 +24,6 @@ import {
   buildBackendUrl,
   rawBackendFetch,
 } from '#/services/backendApi.service';
-import { getApiEndpoint } from '#/services/sdk.service';
 import { useGetBucketsQuery } from '#/store/slice/bucketsSlice';
 import { useGetCredentialByIdQuery, useGetCredentialsQuery } from '#/store/slice/credentialsSlice';
 import { useGetUsersQuery } from '#/store/slice/usersSlice';
@@ -125,7 +122,6 @@ const METHOD_COLORS: Record<string, string> = {
 
 const RECENT_REQUESTS_KEY = 'less3_api_explorer_recent';
 const SAVED_COLLECTIONS_KEY = 'less3_api_explorer_collections';
-const EXPLORER_ENVIRONMENT_KEY = 'less3_api_explorer_environment';
 const MAX_RECENT_ITEMS = 12;
 const NO_CREDENTIAL_VALUE = '__none__';
 
@@ -249,14 +245,6 @@ const saveSavedCollections = (items: SavedCollectionItem[]): void => {
   }
 };
 
-const loadEnvironmentText = (): string => {
-  try {
-    return localStorage.getItem(EXPLORER_ENVIRONMENT_KEY) || '';
-  } catch {
-    return '';
-  }
-};
-
 const ALL_API_FILTER_VALUE = 'all';
 
 const ApiExplorerPage: React.FC = () => {
@@ -270,7 +258,6 @@ const ApiExplorerPage: React.FC = () => {
   const [isPrettyPrintEnabled, setIsPrettyPrintEnabled] = useState(false);
   const [recentRequests, setRecentRequests] = useState<RecentRequest[]>(() => loadRecentRequests());
   const [savedCollections, setSavedCollections] = useState<SavedCollectionItem[]>(() => loadSavedCollections());
-  const [environmentText, setEnvironmentText] = useState<string>(() => loadEnvironmentText());
   const [selectedCredentialId, setSelectedCredentialId] = useState<string>(
     () => getPreferredS3CredentialId() || NO_CREDENTIAL_VALUE
   );
@@ -611,37 +598,6 @@ const ApiExplorerPage: React.FC = () => {
     saveSavedCollections(nextItems);
   }, [savedCollections]);
 
-  const handleExportEnvironment = useCallback(() => {
-    const environment = JSON.stringify({
-      endpoint: getApiEndpoint(),
-      selectedCredentialId,
-      paramValues,
-      operationId: selectedOpId,
-    }, null, 2);
-    setEnvironmentText(environment);
-    try {
-      localStorage.setItem(EXPLORER_ENVIRONMENT_KEY, environment);
-    } catch {
-      // Ignore storage failures.
-    }
-  }, [paramValues, selectedCredentialId, selectedOpId]);
-
-  const handleImportEnvironment = useCallback(() => {
-    try {
-      const parsed = JSON.parse(environmentText);
-      if (typeof parsed.operationId === 'string') setSelectedOpId(parsed.operationId);
-      if (typeof parsed.selectedCredentialId === 'string') setSelectedCredentialId(parsed.selectedCredentialId);
-      if (parsed.paramValues && typeof parsed.paramValues === 'object') {
-        setParamValues(parsed.paramValues as Record<string, string>);
-      }
-
-      localStorage.setItem(EXPLORER_ENVIRONMENT_KEY, environmentText);
-      message.success('Environment imported');
-    } catch {
-      message.error('Environment JSON is invalid');
-    }
-  }, [environmentText]);
-
   const formatResponseSize = (bytes: number): string => {
     if (bytes < 1024) {
       return `${bytes} B`;
@@ -820,9 +776,8 @@ const ApiExplorerPage: React.FC = () => {
 
   return (
     <PageContainer pageTitle="API Explorer">
-      <Less3Flex gap={16} style={{ flexWrap: 'wrap' }}>
-        <div style={{ flex: 1, minWidth: 400 }}>
-          <Less3Card title="Request" style={{ marginBottom: 16 }}>
+      <Less3Flex vertical gap={16}>
+          <Less3Card title="Request">
             <Less3Flex vertical gap={14}>
               <div>
                 <Less3Text fontSize={12} weight={500} style={{ display: 'block', marginBottom: 4 }}>Operation Filter</Less3Text>
@@ -1004,76 +959,41 @@ const ApiExplorerPage: React.FC = () => {
             </Less3Flex>
           </Less3Card>
 
-          <Less3Card title="Environment" size="small" style={{ marginBottom: 16 }}>
-            <Less3Flex vertical gap={8}>
-              <textarea
-                value={environmentText}
-                onChange={(event) => setEnvironmentText(event.target.value)}
-                rows={4}
-                style={{
-                  width: '100%',
-                  fontFamily: "'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Consolas', monospace",
-                  fontSize: 12,
-                  padding: 10,
-                  borderRadius: 6,
-                  border: '1px solid var(--color-separator)',
-                  background: 'var(--ant-color-bg-container)',
-                  color: 'var(--ant-color-text)',
-                  boxSizing: 'border-box',
-                }}
-              />
-              <Less3Flex gap={8}>
-                <Less3Button icon={<DownloadOutlined />} onClick={handleExportEnvironment}>
-                  Export Environment
-                </Less3Button>
-                <Less3Button onClick={handleImportEnvironment}>
-                  Import Environment
-                </Less3Button>
-              </Less3Flex>
-            </Less3Flex>
-          </Less3Card>
-
-          {savedCollections.length > 0 && (
-            <Less3Card title="Saved Collections" size="small" style={{ marginBottom: 16 }}>
-              <Less3Flex vertical gap={4}>
-                {savedCollections.map((item) => (
-                  <div
-                    key={item.id}
+          <Less3Card title="Response">
+            {response ? (
+              <Less3Flex vertical gap={12}>
+                <Less3Flex gap={12} align="center">
+                  <span
                     style={{
-                      padding: '6px 10px',
+                      display: 'inline-block',
+                      padding: '3px 10px',
                       borderRadius: 4,
-                      border: '1px solid var(--color-separator)',
                       fontSize: 12,
+                      fontWeight: 600,
+                      color: '#fff',
+                      background: getStatusColor(response.status),
                     }}
                   >
-                    <Less3Flex gap={8} align="center">
-                      <button
-                        type="button"
-                        onClick={() => handleLoadCollectionItem(item)}
-                        style={{
-                          flex: 1,
-                          border: 0,
-                          background: 'transparent',
-                          color: 'var(--ant-color-text)',
-                          textAlign: 'left',
-                          cursor: 'pointer',
-                          padding: 0,
-                        }}
-                      >
-                        {item.name}
-                      </button>
-                      <Less3Button
-                        type="text"
-                        size="small"
-                        icon={<DeleteOutlined />}
-                        onClick={() => handleDeleteCollectionItem(item.id)}
-                      />
-                    </Less3Flex>
-                  </div>
-                ))}
+                    {response.status} {response.statusText}
+                  </span>
+                  <Less3Text type="secondary" fontSize={12}>{response.durationMs} ms</Less3Text>
+                  <Less3Text type="secondary" fontSize={12}>{formatResponseSize(response.size)}</Less3Text>
+                </Less3Flex>
+                <Less3Tabs
+                  activeKey={activeResponseTab}
+                  onChange={setActiveResponseTab}
+                  items={responseTabs}
+                  size="small"
+                />
               </Less3Flex>
-            </Less3Card>
-          )}
+            ) : (
+              <div style={{ textAlign: 'center', padding: '60px 0' }}>
+                <Less3Text type="secondary">
+                  {isLoading ? 'Sending request...' : 'Send a request to see the response'}
+                </Less3Text>
+              </div>
+            )}
+          </Less3Card>
 
           {recentRequests.length > 0 && (
             <Less3Card
@@ -1141,45 +1061,48 @@ const ApiExplorerPage: React.FC = () => {
               </Less3Flex>
             </Less3Card>
           )}
-        </div>
 
-        <div style={{ flex: 1, minWidth: 400 }}>
-          <Less3Card title="Response" style={{ marginBottom: 16 }}>
-            {response ? (
-              <Less3Flex vertical gap={12}>
-                <Less3Flex gap={12} align="center">
-                  <span
+          {savedCollections.length > 0 && (
+            <Less3Card title="Saved Collections" size="small">
+              <Less3Flex vertical gap={4}>
+                {savedCollections.map((item) => (
+                  <div
+                    key={item.id}
                     style={{
-                      display: 'inline-block',
-                      padding: '3px 10px',
+                      padding: '6px 10px',
                       borderRadius: 4,
+                      border: '1px solid var(--color-separator)',
                       fontSize: 12,
-                      fontWeight: 600,
-                      color: '#fff',
-                      background: getStatusColor(response.status),
                     }}
                   >
-                    {response.status} {response.statusText}
-                  </span>
-                  <Less3Text type="secondary" fontSize={12}>{response.durationMs} ms</Less3Text>
-                  <Less3Text type="secondary" fontSize={12}>{formatResponseSize(response.size)}</Less3Text>
-                </Less3Flex>
-                <Less3Tabs
-                  activeKey={activeResponseTab}
-                  onChange={setActiveResponseTab}
-                  items={responseTabs}
-                  size="small"
-                />
+                    <Less3Flex gap={8} align="center">
+                      <button
+                        type="button"
+                        onClick={() => handleLoadCollectionItem(item)}
+                        style={{
+                          flex: 1,
+                          border: 0,
+                          background: 'transparent',
+                          color: 'var(--ant-color-text)',
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                          padding: 0,
+                        }}
+                      >
+                        {item.name}
+                      </button>
+                      <Less3Button
+                        type="text"
+                        size="small"
+                        icon={<DeleteOutlined />}
+                        onClick={() => handleDeleteCollectionItem(item.id)}
+                      />
+                    </Less3Flex>
+                  </div>
+                ))}
               </Less3Flex>
-            ) : (
-              <div style={{ textAlign: 'center', padding: '60px 0' }}>
-                <Less3Text type="secondary">
-                  {isLoading ? 'Sending request...' : 'Send a request to see the response'}
-                </Less3Text>
-              </div>
-            )}
-          </Less3Card>
-        </div>
+            </Less3Card>
+          )}
       </Less3Flex>
     </PageContainer>
   );

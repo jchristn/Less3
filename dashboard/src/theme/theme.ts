@@ -28,7 +28,7 @@ export const primaryTheme: ThemeConfig = {
   },
   components: {
     Message: {
-      fontSize: 30,
+      fontSize: 14,
     },
     Tabs: {
       cardBg: '#F2F2F2',
@@ -92,7 +92,7 @@ export const darkTheme: ThemeConfig = {
   },
   components: {
     Message: {
-      fontSize: 30,
+      fontSize: 14,
     },
     Tabs: {
       cardBg: '#F2F2F2',

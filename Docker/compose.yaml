@@ -28,7 +28,7 @@ services:
 
   #
   # Less3 UI (Dashboard)
-  # See https://hub.docker.com/r/jchristn/less3-ui
+  # See https://hub.docker.com/r/jchristn77/less3-ui
   #
 
   less3-ui:

@@ -1,7 +1,8 @@
 {
   "info": {
-    "name": "Less3 Local",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "name": "Less3",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "# Less3 Postman Collection\n\nThis collection is organized into two top-level folders:\n\n- REST: Less3 management, dashboard, administrative, RBAC, reporting, maintenance, and OpenAPI routes.\n- S3: S3-compatible data-plane routes signed with AWS Signature Version 4.\n\nBefore running requests, review the collection variables. For a local Docker/default setup, the defaults are usually enough: baseUrl is http://localhost:8000, adminApiKey is less3admin, tenantId is default, and the S3 access/secret keys are default/default.\n\nREST requests use the x-api-key header by default. To test session-based authorization, run REST > Auth Sessions > Login with User Password or Login with Credential, then replace x-api-key with x-less3-session-token: {{sessionToken}} on the request you want to test.\n\nS3 requests inherit AWS Signature Version 4 auth from the S3 folder. Set s3AccessKey, s3SecretKey, awsRegion, bucketName, and objectKey before running those requests against a non-default server.\n\nCreate/read/update/delete requests use sample IDs in variables such as newBucketId, roleId, permissionId, and requestHistoryId. Update those values if a prior run already created the same record or if you want to target existing resources.\n\nSome requests require IDs that come from list/enumerate responses, such as objectId, authorizationAuditId, uploadId, multipartPartEtag, and versionId. Run the corresponding list/create request first, then copy the returned value into the matching variable."
   },
   "item": [
     {
@@ -21,7 +22,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/tenants?tenantId={{tenantId}}&limit=100&offset=0"
+                "url": "{{baseUrl}}/api/v1/tenants?tenantId={{tenantId}}&limit=100&offset=0",
+                "description": "GET {{baseUrl}}/api/v1/tenants?tenantId={{tenantId}}&limit=100&offset=0\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -50,7 +52,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/tenants/enumerate\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -79,7 +82,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/tenants?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nCreate requests use sample IDs from collection variables. Change those variables if the sample record already exists."
               },
               "response": []
             },
@@ -94,7 +98,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/tenants/{{tenantId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/tenants/{{tenantId}}?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/tenants/{{tenantId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -123,7 +128,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "PUT {{baseUrl}}/api/v1/tenants/{{tenantId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -138,7 +144,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/tenants/{{tenantId}}/exists?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/tenants/{{tenantId}}/exists?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/tenants/{{tenantId}}/exists?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -153,7 +160,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/tenants/{{tenantId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/tenants/{{tenantId}}?tenantId={{tenantId}}",
+                "description": "DELETE {{baseUrl}}/api/v1/tenants/{{tenantId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -168,7 +176,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/tenants?tenantId={{tenantId}}&limit=100&offset=0"
+                "url": "{{baseUrl}}/admin/tenants?tenantId={{tenantId}}&limit=100&offset=0",
+                "description": "GET {{baseUrl}}/admin/tenants?tenantId={{tenantId}}&limit=100&offset=0\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -183,11 +192,13 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/tenants/{{tenantId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/admin/tenants/{{tenantId}}?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/admin/tenants/{{tenantId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "Tenant management requests. Tenant IDs are the top-level ownership boundary for Less3 resources."
         },
         {
           "name": "Users",
@@ -203,7 +214,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/users?tenantId={{tenantId}}&limit=100&offset=0"
+                "url": "{{baseUrl}}/api/v1/users?tenantId={{tenantId}}&limit=100&offset=0",
+                "description": "GET {{baseUrl}}/api/v1/users?tenantId={{tenantId}}&limit=100&offset=0\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -232,7 +244,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/users/enumerate\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -261,7 +274,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/users?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nCreate requests use sample IDs from collection variables. Change those variables if the sample record already exists."
               },
               "response": []
             },
@@ -276,7 +290,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/users/{{userId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/users/{{userId}}?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/users/{{userId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -305,7 +320,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "PUT {{baseUrl}}/api/v1/users/{{userId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -320,7 +336,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/users/{{userId}}/exists?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/users/{{userId}}/exists?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/users/{{userId}}/exists?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -335,7 +352,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/users/{{userId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/users/{{userId}}?tenantId={{tenantId}}",
+                "description": "DELETE {{baseUrl}}/api/v1/users/{{userId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -350,7 +368,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/users?tenantId={{tenantId}}&limit=100&offset=0"
+                "url": "{{baseUrl}}/admin/users?tenantId={{tenantId}}&limit=100&offset=0",
+                "description": "GET {{baseUrl}}/admin/users?tenantId={{tenantId}}&limit=100&offset=0\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -365,11 +384,13 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/users/{{userId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/admin/users/{{userId}}?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/admin/users/{{userId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "User management requests. User email addresses are unique per tenant."
         },
         {
           "name": "Credentials",
@@ -385,7 +406,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/credentials?tenantId={{tenantId}}&limit=100&offset=0"
+                "url": "{{baseUrl}}/api/v1/credentials?tenantId={{tenantId}}&limit=100&offset=0",
+                "description": "GET {{baseUrl}}/api/v1/credentials?tenantId={{tenantId}}&limit=100&offset=0\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -414,7 +436,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/credentials/enumerate\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -443,7 +466,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/credentials?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nCreate requests use sample IDs from collection variables. Change those variables if the sample record already exists."
               },
               "response": []
             },
@@ -458,7 +482,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/credentials/{{credentialId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/credentials/{{credentialId}}?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/credentials/{{credentialId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -487,7 +512,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "PUT {{baseUrl}}/api/v1/credentials/{{credentialId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -502,7 +528,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/credentials/{{credentialId}}/exists?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/credentials/{{credentialId}}/exists?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/credentials/{{credentialId}}/exists?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -517,7 +544,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/credentials/{{credentialId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/credentials/{{credentialId}}?tenantId={{tenantId}}",
+                "description": "DELETE {{baseUrl}}/api/v1/credentials/{{credentialId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -532,7 +560,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/credentials?tenantId={{tenantId}}&limit=100&offset=0"
+                "url": "{{baseUrl}}/admin/credentials?tenantId={{tenantId}}&limit=100&offset=0",
+                "description": "GET {{baseUrl}}/admin/credentials?tenantId={{tenantId}}&limit=100&offset=0\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -547,7 +576,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/credentials/{{credentialId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/admin/credentials/{{credentialId}}?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/admin/credentials/{{credentialId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -576,7 +606,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/credentials/rotate?tenantId={{tenantId}}&id={{credentialId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -591,7 +622,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/credentials/disable?tenantId={{tenantId}}&id={{credentialId}}"
+                "url": "{{baseUrl}}/api/v1/credentials/disable?tenantId={{tenantId}}&id={{credentialId}}",
+                "description": "POST {{baseUrl}}/api/v1/credentials/disable?tenantId={{tenantId}}&id={{credentialId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -620,7 +652,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/admin/credentials/{{credentialId}}/rotate?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -635,11 +668,13 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/credentials/{{credentialId}}/disable?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/admin/credentials/{{credentialId}}/disable?tenantId={{tenantId}}",
+                "description": "POST {{baseUrl}}/admin/credentials/{{credentialId}}/disable?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "Credential and access-key management requests. Access keys are globally unique and secret keys are only returned on create/rotate."
         },
         {
           "name": "Roles",
@@ -655,7 +690,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/roles?tenantId={{tenantId}}&limit=100&offset=0"
+                "url": "{{baseUrl}}/api/v1/roles?tenantId={{tenantId}}&limit=100&offset=0",
+                "description": "GET {{baseUrl}}/api/v1/roles?tenantId={{tenantId}}&limit=100&offset=0\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -684,7 +720,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/roles/enumerate\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -713,7 +750,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/roles?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nCreate requests use sample IDs from collection variables. Change those variables if the sample record already exists."
               },
               "response": []
             },
@@ -728,7 +766,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/roles/{{roleId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/roles/{{roleId}}?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/roles/{{roleId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -757,7 +796,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "PUT {{baseUrl}}/api/v1/roles/{{roleId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -772,7 +812,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/roles/{{roleId}}/exists?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/roles/{{roleId}}/exists?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/roles/{{roleId}}/exists?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -787,7 +828,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/roles/{{roleId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/roles/{{roleId}}?tenantId={{tenantId}}",
+                "description": "DELETE {{baseUrl}}/api/v1/roles/{{roleId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -802,7 +844,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/roles?tenantId={{tenantId}}&limit=100&offset=0"
+                "url": "{{baseUrl}}/admin/roles?tenantId={{tenantId}}&limit=100&offset=0",
+                "description": "GET {{baseUrl}}/admin/roles?tenantId={{tenantId}}&limit=100&offset=0\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -817,11 +860,13 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/roles/{{roleId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/admin/roles/{{roleId}}?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/admin/roles/{{roleId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "RBAC role management requests. Built-in roles are visible but protected; use custom role IDs for create/update/delete examples."
         },
         {
           "name": "Permissions",
@@ -837,7 +882,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/permissions?tenantId={{tenantId}}&limit=100&offset=0"
+                "url": "{{baseUrl}}/api/v1/permissions?tenantId={{tenantId}}&limit=100&offset=0",
+                "description": "GET {{baseUrl}}/api/v1/permissions?tenantId={{tenantId}}&limit=100&offset=0\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -866,7 +912,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/permissions/enumerate\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -895,7 +942,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/permissions?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nCreate requests use sample IDs from collection variables. Change those variables if the sample record already exists."
               },
               "response": []
             },
@@ -910,7 +958,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/permissions/{{permissionId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/permissions/{{permissionId}}?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/permissions/{{permissionId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -939,7 +988,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "PUT {{baseUrl}}/api/v1/permissions/{{permissionId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -954,7 +1004,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/permissions/{{permissionId}}/exists?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/permissions/{{permissionId}}/exists?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/permissions/{{permissionId}}/exists?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -969,7 +1020,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/permissions/{{permissionId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/permissions/{{permissionId}}?tenantId={{tenantId}}",
+                "description": "DELETE {{baseUrl}}/api/v1/permissions/{{permissionId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -984,7 +1036,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/permissions?tenantId={{tenantId}}&limit=100&offset=0"
+                "url": "{{baseUrl}}/admin/permissions?tenantId={{tenantId}}&limit=100&offset=0",
+                "description": "GET {{baseUrl}}/admin/permissions?tenantId={{tenantId}}&limit=100&offset=0\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -999,11 +1052,13 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/permissions/{{permissionId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/admin/permissions/{{permissionId}}?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/admin/permissions/{{permissionId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "RBAC permission management requests. Permissions grant or explicitly deny operations on resource types."
         },
         {
           "name": "Role Assignments",
@@ -1019,7 +1074,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/roleassignments?tenantId={{tenantId}}&limit=100&offset=0"
+                "url": "{{baseUrl}}/api/v1/roleassignments?tenantId={{tenantId}}&limit=100&offset=0",
+                "description": "GET {{baseUrl}}/api/v1/roleassignments?tenantId={{tenantId}}&limit=100&offset=0\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -1048,7 +1104,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/roleassignments/enumerate\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -1077,7 +1134,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/roleassignments?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nCreate requests use sample IDs from collection variables. Change those variables if the sample record already exists."
               },
               "response": []
             },
@@ -1092,7 +1150,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/roleassignments/{{assignmentId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/roleassignments/{{assignmentId}}?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/roleassignments/{{assignmentId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -1121,7 +1180,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "PUT {{baseUrl}}/api/v1/roleassignments/{{assignmentId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -1136,7 +1196,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/roleassignments/{{assignmentId}}/exists?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/roleassignments/{{assignmentId}}/exists?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/roleassignments/{{assignmentId}}/exists?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -1151,7 +1212,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/roleassignments/{{assignmentId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/roleassignments/{{assignmentId}}?tenantId={{tenantId}}",
+                "description": "DELETE {{baseUrl}}/api/v1/roleassignments/{{assignmentId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -1166,7 +1228,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/roleassignments?tenantId={{tenantId}}&limit=100&offset=0"
+                "url": "{{baseUrl}}/admin/roleassignments?tenantId={{tenantId}}&limit=100&offset=0",
+                "description": "GET {{baseUrl}}/admin/roleassignments?tenantId={{tenantId}}&limit=100&offset=0\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -1181,11 +1244,13 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/roleassignments/{{assignmentId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/admin/roleassignments/{{assignmentId}}?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/admin/roleassignments/{{assignmentId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "RBAC role-assignment requests. Assign roles to User or Credential principals and optionally scope assignments to resources."
         },
         {
           "name": "Auth Sessions",
@@ -1210,7 +1275,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/authsessions/login\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nSuccessful login responses save {{sessionToken}} and {{sessionId}} collection variables when possible."
               },
               "response": [],
               "event": [
@@ -1249,7 +1315,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/authsessions/credential-login\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nSuccessful login responses save {{sessionToken}} and {{sessionId}} collection variables when possible."
               },
               "response": [],
               "event": [
@@ -1288,7 +1355,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/authsessions/validate\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -1312,7 +1380,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/authsessions/revoke\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -1327,7 +1396,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/authsessions?tenantId={{tenantId}}&limit=100&offset=0"
+                "url": "{{baseUrl}}/api/v1/authsessions?tenantId={{tenantId}}&limit=100&offset=0",
+                "description": "GET {{baseUrl}}/api/v1/authsessions?tenantId={{tenantId}}&limit=100&offset=0\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -1342,7 +1412,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/authsessions/{{sessionId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/authsessions/{{sessionId}}?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/authsessions/{{sessionId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -1357,11 +1428,13 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/authsessions/{{sessionId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/admin/authsessions/{{sessionId}}?tenantId={{tenantId}}",
+                "description": "DELETE {{baseUrl}}/admin/authsessions/{{sessionId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "Session login, validation, revoke, and session listing requests. Login requests save {{sessionToken}} automatically when possible."
         },
         {
           "name": "Buckets",
@@ -1377,7 +1450,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/buckets?tenantId={{tenantId}}&limit=100&offset=0"
+                "url": "{{baseUrl}}/api/v1/buckets?tenantId={{tenantId}}&limit=100&offset=0",
+                "description": "GET {{baseUrl}}/api/v1/buckets?tenantId={{tenantId}}&limit=100&offset=0\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -1406,7 +1480,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/buckets/enumerate\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -1435,7 +1510,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/buckets?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nCreate requests use sample IDs from collection variables. Change those variables if the sample record already exists."
               },
               "response": []
             },
@@ -1450,7 +1526,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/buckets/{{bucketId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/buckets/{{bucketId}}?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/buckets/{{bucketId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -1479,7 +1556,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "PUT {{baseUrl}}/api/v1/buckets/{{bucketId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -1494,7 +1572,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/buckets/{{bucketId}}/exists?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/buckets/{{bucketId}}/exists?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/buckets/{{bucketId}}/exists?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -1509,7 +1588,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/buckets/{{bucketId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/buckets/{{bucketId}}?tenantId={{tenantId}}",
+                "description": "DELETE {{baseUrl}}/api/v1/buckets/{{bucketId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -1524,7 +1604,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/buckets?tenantId={{tenantId}}&limit=100&offset=0"
+                "url": "{{baseUrl}}/admin/buckets?tenantId={{tenantId}}&limit=100&offset=0",
+                "description": "GET {{baseUrl}}/admin/buckets?tenantId={{tenantId}}&limit=100&offset=0\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -1539,7 +1620,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/buckets/{{bucketId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/admin/buckets/{{bucketId}}?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/admin/buckets/{{bucketId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -1554,11 +1636,13 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/buckets/{{bucketId}}?destroy"
+                "url": "{{baseUrl}}/admin/buckets/{{bucketId}}?destroy",
+                "description": "DELETE {{baseUrl}}/admin/buckets/{{bucketId}}?destroy\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "Bucket metadata and S3 bucket-operation requests. REST bucket routes use bucket IDs; S3 bucket routes use bucket names."
         },
         {
           "name": "Objects",
@@ -1574,7 +1658,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/objects?tenantId={{tenantId}}&limit=100&offset=0"
+                "url": "{{baseUrl}}/api/v1/objects?tenantId={{tenantId}}&limit=100&offset=0",
+                "description": "GET {{baseUrl}}/api/v1/objects?tenantId={{tenantId}}&limit=100&offset=0\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -1603,7 +1688,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/objects/enumerate\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -1632,7 +1718,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/objects?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nCreate requests use sample IDs from collection variables. Change those variables if the sample record already exists."
               },
               "response": []
             },
@@ -1647,7 +1734,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/objects/{{objectId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/objects/{{objectId}}?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/objects/{{objectId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -1676,7 +1764,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "PUT {{baseUrl}}/api/v1/objects/{{objectId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -1691,7 +1780,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/objects/{{objectId}}/exists?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/objects/{{objectId}}/exists?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/objects/{{objectId}}/exists?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -1706,11 +1796,13 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/objects/{{objectId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/objects/{{objectId}}?tenantId={{tenantId}}",
+                "description": "DELETE {{baseUrl}}/api/v1/objects/{{objectId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "Object metadata and S3 object-operation requests. REST object routes use object IDs; S3 object routes use bucket names and object keys."
         },
         {
           "name": "Bucket Tags",
@@ -1726,7 +1818,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/buckettags?tenantId={{tenantId}}&limit=100&offset=0"
+                "url": "{{baseUrl}}/api/v1/buckettags?tenantId={{tenantId}}&limit=100&offset=0",
+                "description": "GET {{baseUrl}}/api/v1/buckettags?tenantId={{tenantId}}&limit=100&offset=0\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -1755,7 +1848,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/buckettags/enumerate\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -1784,7 +1878,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/buckettags?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nCreate requests use sample IDs from collection variables. Change those variables if the sample record already exists."
               },
               "response": []
             },
@@ -1799,7 +1894,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/buckettags/{{bucketTagId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/buckettags/{{bucketTagId}}?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/buckettags/{{bucketTagId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -1828,7 +1924,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "PUT {{baseUrl}}/api/v1/buckettags/{{bucketTagId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -1843,7 +1940,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/buckettags/{{bucketTagId}}/exists?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/buckettags/{{bucketTagId}}/exists?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/buckettags/{{bucketTagId}}/exists?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -1858,11 +1956,13 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/buckettags/{{bucketTagId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/buckettags/{{bucketTagId}}?tenantId={{tenantId}}",
+                "description": "DELETE {{baseUrl}}/api/v1/buckettags/{{bucketTagId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "Bucket tag requests. REST routes manipulate tag records; S3 routes use S3 XML tagging payloads."
         },
         {
           "name": "Object Tags",
@@ -1878,7 +1978,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/objecttags?tenantId={{tenantId}}&limit=100&offset=0"
+                "url": "{{baseUrl}}/api/v1/objecttags?tenantId={{tenantId}}&limit=100&offset=0",
+                "description": "GET {{baseUrl}}/api/v1/objecttags?tenantId={{tenantId}}&limit=100&offset=0\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -1907,7 +2008,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/objecttags/enumerate\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -1936,7 +2038,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/objecttags?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nCreate requests use sample IDs from collection variables. Change those variables if the sample record already exists."
               },
               "response": []
             },
@@ -1951,7 +2054,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/objecttags/{{objectTagId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/objecttags/{{objectTagId}}?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/objecttags/{{objectTagId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -1980,7 +2084,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "PUT {{baseUrl}}/api/v1/objecttags/{{objectTagId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -1995,7 +2100,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/objecttags/{{objectTagId}}/exists?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/objecttags/{{objectTagId}}/exists?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/objecttags/{{objectTagId}}/exists?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -2010,11 +2116,13 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/objecttags/{{objectTagId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/objecttags/{{objectTagId}}?tenantId={{tenantId}}",
+                "description": "DELETE {{baseUrl}}/api/v1/objecttags/{{objectTagId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "Object tag requests. REST routes manipulate tag records; S3 routes use S3 XML tagging payloads."
         },
         {
           "name": "Bucket ACLs",
@@ -2030,7 +2138,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/bucketacls?tenantId={{tenantId}}&limit=100&offset=0"
+                "url": "{{baseUrl}}/api/v1/bucketacls?tenantId={{tenantId}}&limit=100&offset=0",
+                "description": "GET {{baseUrl}}/api/v1/bucketacls?tenantId={{tenantId}}&limit=100&offset=0\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -2059,7 +2168,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/bucketacls/enumerate\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -2088,7 +2198,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/bucketacls?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nCreate requests use sample IDs from collection variables. Change those variables if the sample record already exists."
               },
               "response": []
             },
@@ -2103,7 +2214,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/bucketacls/{{bucketAclId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/bucketacls/{{bucketAclId}}?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/bucketacls/{{bucketAclId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -2132,7 +2244,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "PUT {{baseUrl}}/api/v1/bucketacls/{{bucketAclId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -2147,7 +2260,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/bucketacls/{{bucketAclId}}/exists?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/bucketacls/{{bucketAclId}}/exists?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/bucketacls/{{bucketAclId}}/exists?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -2162,11 +2276,13 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/bucketacls/{{bucketAclId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/bucketacls/{{bucketAclId}}?tenantId={{tenantId}}",
+                "description": "DELETE {{baseUrl}}/api/v1/bucketacls/{{bucketAclId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "Bucket ACL requests. REST routes manipulate Less3 ACL records; S3 routes use S3 ACL XML payloads."
         },
         {
           "name": "Object ACLs",
@@ -2182,7 +2298,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/objectacls?tenantId={{tenantId}}&limit=100&offset=0"
+                "url": "{{baseUrl}}/api/v1/objectacls?tenantId={{tenantId}}&limit=100&offset=0",
+                "description": "GET {{baseUrl}}/api/v1/objectacls?tenantId={{tenantId}}&limit=100&offset=0\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -2211,7 +2328,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/objectacls/enumerate\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -2240,7 +2358,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/objectacls?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nCreate requests use sample IDs from collection variables. Change those variables if the sample record already exists."
               },
               "response": []
             },
@@ -2255,7 +2374,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/objectacls/{{objectAclId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/objectacls/{{objectAclId}}?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/objectacls/{{objectAclId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -2284,7 +2404,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "PUT {{baseUrl}}/api/v1/objectacls/{{objectAclId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -2299,7 +2420,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/objectacls/{{objectAclId}}/exists?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/objectacls/{{objectAclId}}/exists?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/objectacls/{{objectAclId}}/exists?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -2314,11 +2436,13 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/objectacls/{{objectAclId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/objectacls/{{objectAclId}}?tenantId={{tenantId}}",
+                "description": "DELETE {{baseUrl}}/api/v1/objectacls/{{objectAclId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "Object ACL requests. REST routes manipulate Less3 ACL records; S3 routes use S3 ACL XML payloads."
         },
         {
           "name": "Authorization Audit",
@@ -2334,7 +2458,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/authorizationaudit?tenantId={{tenantId}}&limit=100&offset=0"
+                "url": "{{baseUrl}}/api/v1/authorizationaudit?tenantId={{tenantId}}&limit=100&offset=0",
+                "description": "GET {{baseUrl}}/api/v1/authorizationaudit?tenantId={{tenantId}}&limit=100&offset=0\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -2363,7 +2488,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/authorizationaudit/enumerate\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -2378,7 +2504,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/authorizationaudit/{{authorizationAuditId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/authorizationaudit/{{authorizationAuditId}}?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/authorizationaudit/{{authorizationAuditId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -2393,7 +2520,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/authorizationaudit/{{authorizationAuditId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/authorizationaudit/{{authorizationAuditId}}?tenantId={{tenantId}}",
+                "description": "DELETE {{baseUrl}}/api/v1/authorizationaudit/{{authorizationAuditId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -2408,11 +2536,13 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/authorizationaudit?tenantId={{tenantId}}&limit=100&offset=0"
+                "url": "{{baseUrl}}/admin/authorizationaudit?tenantId={{tenantId}}&limit=100&offset=0",
+                "description": "GET {{baseUrl}}/admin/authorizationaudit?tenantId={{tenantId}}&limit=100&offset=0\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "Authorization audit list, read, and delete requests. Use these to inspect RBAC decisions and sensitive admin operations."
         },
         {
           "name": "Request History",
@@ -2428,7 +2558,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/requesthistory?tenantId={{tenantId}}&limit=100&offset=0"
+                "url": "{{baseUrl}}/api/v1/requesthistory?tenantId={{tenantId}}&limit=100&offset=0",
+                "description": "GET {{baseUrl}}/api/v1/requesthistory?tenantId={{tenantId}}&limit=100&offset=0\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -2457,7 +2588,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/requesthistory/enumerate\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             },
@@ -2486,7 +2618,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/api/v1/requesthistory?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nCreate requests use sample IDs from collection variables. Change those variables if the sample record already exists."
               },
               "response": []
             },
@@ -2501,7 +2634,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/requesthistory/{{requestHistoryId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/requesthistory/{{requestHistoryId}}?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/requesthistory/{{requestHistoryId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -2516,7 +2650,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/requesthistory/{{requestHistoryId}}/exists?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/requesthistory/{{requestHistoryId}}/exists?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/api/v1/requesthistory/{{requestHistoryId}}/exists?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -2531,7 +2666,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/api/v1/requesthistory/{{requestHistoryId}}?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/api/v1/requesthistory/{{requestHistoryId}}?tenantId={{tenantId}}",
+                "description": "DELETE {{baseUrl}}/api/v1/requesthistory/{{requestHistoryId}}?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -2546,11 +2682,13 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/requesthistory?tenantId={{tenantId}}&limit=100&offset=0"
+                "url": "{{baseUrl}}/admin/requesthistory?tenantId={{tenantId}}&limit=100&offset=0",
+                "description": "GET {{baseUrl}}/admin/requesthistory?tenantId={{tenantId}}&limit=100&offset=0\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records.\nList/enumerate requests support paging and filters where the server exposes them. Adjust query parameters or the EnumerationQuery body as needed."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "Request-history list, filter, create, read, and delete requests. These power dashboard history and reporting views."
         },
         {
           "name": "Reports",
@@ -2566,11 +2704,13 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/reports/requests?tenantId={{tenantId}}&startUtc={{reportStartUtc}}&endUtc={{reportEndUtc}}"
+                "url": "{{baseUrl}}/admin/reports/requests?tenantId={{tenantId}}&startUtc={{reportStartUtc}}&endUtc={{reportEndUtc}}",
+                "description": "GET {{baseUrl}}/admin/reports/requests?tenantId={{tenantId}}&startUtc={{reportStartUtc}}&endUtc={{reportEndUtc}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "Dashboard reporting endpoints for request volume, failure rate, latency, and top usage fields."
         },
         {
           "name": "Maintenance",
@@ -2586,7 +2726,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/maintenance/status"
+                "url": "{{baseUrl}}/admin/maintenance/status",
+                "description": "GET {{baseUrl}}/admin/maintenance/status\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -2615,7 +2756,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/admin/maintenance/settings\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -2644,7 +2786,8 @@
                       "language": "json"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/admin/maintenance/purge-request-history\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -2659,7 +2802,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/maintenance/cleanup-temp-uploads"
+                "url": "{{baseUrl}}/admin/maintenance/cleanup-temp-uploads",
+                "description": "POST {{baseUrl}}/admin/maintenance/cleanup-temp-uploads\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -2674,7 +2818,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/maintenance/run-cleanup"
+                "url": "{{baseUrl}}/admin/maintenance/run-cleanup",
+                "description": "POST {{baseUrl}}/admin/maintenance/run-cleanup\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -2689,7 +2834,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/maintenance/verify-objects?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/admin/maintenance/verify-objects?tenantId={{tenantId}}",
+                "description": "POST {{baseUrl}}/admin/maintenance/verify-objects?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             },
@@ -2704,11 +2850,13 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/maintenance/migration-status"
+                "url": "{{baseUrl}}/admin/maintenance/migration-status",
+                "description": "GET {{baseUrl}}/admin/maintenance/migration-status\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "Maintenance endpoints for runtime settings, cleanup, request-history purge, object verification, and migration status."
         },
         {
           "name": "Effective Permissions",
@@ -2724,11 +2872,13 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/effectivepermissions?tenantId={{tenantId}}&principalType=User&principalId={{userId}}&resourceType=Bucket&resourceId={{bucketId}}&operation=Read"
+                "url": "{{baseUrl}}/admin/effectivepermissions?tenantId={{tenantId}}&principalType=User&principalId={{userId}}&resourceType=Bucket&resourceId={{bucketId}}&operation=Read",
+                "description": "GET {{baseUrl}}/admin/effectivepermissions?tenantId={{tenantId}}&principalType=User&principalId={{userId}}&resourceType=Bucket&resourceId={{bucketId}}&operation=Read\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "Effective-permission inspection endpoint for explaining RBAC decisions for a principal/resource/operation."
         },
         {
           "name": "Stats",
@@ -2744,11 +2894,13 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/stats?tenantId={{tenantId}}"
+                "url": "{{baseUrl}}/admin/stats?tenantId={{tenantId}}",
+                "description": "GET {{baseUrl}}/admin/stats?tenantId={{tenantId}}\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "Dashboard aggregate statistics endpoint."
         },
         {
           "name": "Health",
@@ -2764,11 +2916,13 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/admin/health"
+                "url": "{{baseUrl}}/admin/health",
+                "description": "GET {{baseUrl}}/admin/health\n\nUses x-api-key: {{adminApiKey}} by default. For RBAC/session testing, authenticate through REST > Auth Sessions and send x-less3-session-token: {{sessionToken}} instead.\nSet {{tenantId}} and the resource ID variables before running requests that target existing tenant-owned records."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "Operational health endpoint for database, storage, cleanup, and runtime status."
         },
         {
           "name": "OpenAPI",
@@ -2778,7 +2932,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/openapi.json"
+                "url": "{{baseUrl}}/openapi.json",
+                "description": "GET {{baseUrl}}/openapi.json\n\nNo authentication is required for this documentation endpoint."
               },
               "response": []
             },
@@ -2787,13 +2942,16 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/swagger"
+                "url": "{{baseUrl}}/swagger",
+                "description": "GET {{baseUrl}}/swagger\n\nNo authentication is required for this documentation endpoint."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "OpenAPI and Swagger UI requests. These endpoints are unauthenticated."
         }
-      ]
+      ],
+      "description": "Less3 REST, admin, dashboard, RBAC, reporting, maintenance, and OpenAPI requests.\n\nMost requests use x-api-key: {{adminApiKey}} for convenience. To test RBAC/session authorization, run an Auth Sessions login request and use x-less3-session-token: {{sessionToken}} instead.\n\nCollection/enumerate requests accept tenantId, limit, offset, sort, time bounds, and filters depending on the resource."
     },
     {
       "name": "S3",
@@ -2807,11 +2965,12 @@
                 "method": "GET",
                 "header": [],
                 "url": "{{baseUrl}}/",
-                "description": "AWS-compatible ListBuckets. Returns tenant/account-owned buckets for the authenticated access key."
+                "description": "GET {{baseUrl}}/\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nListBuckets is scoped to the tenant/account resolved from the authenticated access key. It does not list other tenants buckets."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "S3 service-level requests. ListBuckets returns tenant/account-owned buckets for the authenticated access key."
         },
         {
           "name": "Buckets",
@@ -2821,7 +2980,8 @@
               "request": {
                 "method": "PUT",
                 "header": [],
-                "url": "{{baseUrl}}/{{newBucketName}}"
+                "url": "{{baseUrl}}/{{newBucketName}}",
+                "description": "PUT {{baseUrl}}/{{newBucketName}}\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server."
               },
               "response": []
             },
@@ -2830,7 +2990,8 @@
               "request": {
                 "method": "HEAD",
                 "header": [],
-                "url": "{{baseUrl}}/{{bucketName}}"
+                "url": "{{baseUrl}}/{{bucketName}}",
+                "description": "HEAD {{baseUrl}}/{{bucketName}}\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name."
               },
               "response": []
             },
@@ -2839,7 +3000,8 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/{{newBucketName}}"
+                "url": "{{baseUrl}}/{{newBucketName}}",
+                "description": "DELETE {{baseUrl}}/{{newBucketName}}\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server."
               },
               "response": []
             },
@@ -2848,7 +3010,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/{{bucketName}}?list-type=2"
+                "url": "{{baseUrl}}/{{bucketName}}?list-type=2",
+                "description": "GET {{baseUrl}}/{{bucketName}}?list-type=2\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name."
               },
               "response": []
             },
@@ -2857,7 +3020,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/{{bucketName}}?list-type=2&prefix={{objectPrefix}}&delimiter=/"
+                "url": "{{baseUrl}}/{{bucketName}}?list-type=2&prefix={{objectPrefix}}&delimiter=/",
+                "description": "GET {{baseUrl}}/{{bucketName}}?list-type=2&prefix={{objectPrefix}}&delimiter=/\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name."
               },
               "response": []
             },
@@ -2866,11 +3030,13 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/{{bucketName}}?location"
+                "url": "{{baseUrl}}/{{bucketName}}?location",
+                "description": "GET {{baseUrl}}/{{bucketName}}?location\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "Bucket metadata and S3 bucket-operation requests. REST bucket routes use bucket IDs; S3 bucket routes use bucket names."
         },
         {
           "name": "Bucket ACLs",
@@ -2880,7 +3046,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/{{bucketName}}?acl"
+                "url": "{{baseUrl}}/{{bucketName}}?acl",
+                "description": "GET {{baseUrl}}/{{bucketName}}?acl\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name."
               },
               "response": []
             },
@@ -2904,11 +3071,13 @@
                       "language": "xml"
                     }
                   }
-                }
+                },
+                "description": "PUT {{baseUrl}}/{{bucketName}}?acl\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "Bucket ACL requests. REST routes manipulate Less3 ACL records; S3 routes use S3 ACL XML payloads."
         },
         {
           "name": "Bucket Tags",
@@ -2918,7 +3087,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/{{bucketName}}?tagging"
+                "url": "{{baseUrl}}/{{bucketName}}?tagging",
+                "description": "GET {{baseUrl}}/{{bucketName}}?tagging\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name."
               },
               "response": []
             },
@@ -2942,7 +3112,8 @@
                       "language": "xml"
                     }
                   }
-                }
+                },
+                "description": "PUT {{baseUrl}}/{{bucketName}}?tagging\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name."
               },
               "response": []
             },
@@ -2951,11 +3122,13 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/{{bucketName}}?tagging"
+                "url": "{{baseUrl}}/{{bucketName}}?tagging",
+                "description": "DELETE {{baseUrl}}/{{bucketName}}?tagging\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "Bucket tag requests. REST routes manipulate tag records; S3 routes use S3 XML tagging payloads."
         },
         {
           "name": "Bucket Versioning",
@@ -2965,7 +3138,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/{{bucketName}}?versioning"
+                "url": "{{baseUrl}}/{{bucketName}}?versioning",
+                "description": "GET {{baseUrl}}/{{bucketName}}?versioning\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name."
               },
               "response": []
             },
@@ -2989,7 +3163,8 @@
                       "language": "xml"
                     }
                   }
-                }
+                },
+                "description": "PUT {{baseUrl}}/{{bucketName}}?versioning\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name."
               },
               "response": []
             },
@@ -2998,11 +3173,13 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/{{bucketName}}?versions"
+                "url": "{{baseUrl}}/{{bucketName}}?versions",
+                "description": "GET {{baseUrl}}/{{bucketName}}?versions\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "S3 bucket versioning and object-version listing requests."
         },
         {
           "name": "Objects",
@@ -3027,7 +3204,8 @@
                       "language": "text"
                     }
                   }
-                }
+                },
+                "description": "PUT {{baseUrl}}/{{bucketName}}/{{newObjectKey}}\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name.\nSet object key variables to the source or destination S3 object keys you want to use."
               },
               "response": []
             },
@@ -3036,7 +3214,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/{{bucketName}}/{{objectKey}}"
+                "url": "{{baseUrl}}/{{bucketName}}/{{objectKey}}",
+                "description": "GET {{baseUrl}}/{{bucketName}}/{{objectKey}}\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name.\nSet object key variables to the source or destination S3 object keys you want to use."
               },
               "response": []
             },
@@ -3051,7 +3230,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/{{bucketName}}/{{objectKey}}"
+                "url": "{{baseUrl}}/{{bucketName}}/{{objectKey}}",
+                "description": "GET {{baseUrl}}/{{bucketName}}/{{objectKey}}\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name.\nSet object key variables to the source or destination S3 object keys you want to use."
               },
               "response": []
             },
@@ -3060,7 +3240,8 @@
               "request": {
                 "method": "HEAD",
                 "header": [],
-                "url": "{{baseUrl}}/{{bucketName}}/{{objectKey}}"
+                "url": "{{baseUrl}}/{{bucketName}}/{{objectKey}}",
+                "description": "HEAD {{baseUrl}}/{{bucketName}}/{{objectKey}}\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name.\nSet object key variables to the source or destination S3 object keys you want to use."
               },
               "response": []
             },
@@ -3075,7 +3256,8 @@
                     "type": "text"
                   }
                 ],
-                "url": "{{baseUrl}}/{{bucketName}}/{{copyObjectKey}}"
+                "url": "{{baseUrl}}/{{bucketName}}/{{copyObjectKey}}",
+                "description": "PUT {{baseUrl}}/{{bucketName}}/{{copyObjectKey}}\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name."
               },
               "response": []
             },
@@ -3084,7 +3266,8 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/{{bucketName}}/{{newObjectKey}}"
+                "url": "{{baseUrl}}/{{bucketName}}/{{newObjectKey}}",
+                "description": "DELETE {{baseUrl}}/{{bucketName}}/{{newObjectKey}}\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name.\nSet object key variables to the source or destination S3 object keys you want to use."
               },
               "response": []
             },
@@ -3093,11 +3276,13 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/{{bucketName}}/{{objectKey}}?versionId={{versionId}}"
+                "url": "{{baseUrl}}/{{bucketName}}/{{objectKey}}?versionId={{versionId}}",
+                "description": "DELETE {{baseUrl}}/{{bucketName}}/{{objectKey}}?versionId={{versionId}}\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name.\nSet object key variables to the source or destination S3 object keys you want to use."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "Object metadata and S3 object-operation requests. REST object routes use object IDs; S3 object routes use bucket names and object keys."
         },
         {
           "name": "Object ACLs",
@@ -3107,7 +3292,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/{{bucketName}}/{{objectKey}}?acl"
+                "url": "{{baseUrl}}/{{bucketName}}/{{objectKey}}?acl",
+                "description": "GET {{baseUrl}}/{{bucketName}}/{{objectKey}}?acl\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name.\nSet object key variables to the source or destination S3 object keys you want to use."
               },
               "response": []
             },
@@ -3131,11 +3317,13 @@
                       "language": "xml"
                     }
                   }
-                }
+                },
+                "description": "PUT {{baseUrl}}/{{bucketName}}/{{objectKey}}?acl\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name.\nSet object key variables to the source or destination S3 object keys you want to use."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "Object ACL requests. REST routes manipulate Less3 ACL records; S3 routes use S3 ACL XML payloads."
         },
         {
           "name": "Object Tags",
@@ -3145,7 +3333,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/{{bucketName}}/{{objectKey}}?tagging"
+                "url": "{{baseUrl}}/{{bucketName}}/{{objectKey}}?tagging",
+                "description": "GET {{baseUrl}}/{{bucketName}}/{{objectKey}}?tagging\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name.\nSet object key variables to the source or destination S3 object keys you want to use."
               },
               "response": []
             },
@@ -3169,7 +3358,8 @@
                       "language": "xml"
                     }
                   }
-                }
+                },
+                "description": "PUT {{baseUrl}}/{{bucketName}}/{{objectKey}}?tagging\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name.\nSet object key variables to the source or destination S3 object keys you want to use."
               },
               "response": []
             },
@@ -3178,11 +3368,13 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/{{bucketName}}/{{objectKey}}?tagging"
+                "url": "{{baseUrl}}/{{bucketName}}/{{objectKey}}?tagging",
+                "description": "DELETE {{baseUrl}}/{{bucketName}}/{{objectKey}}?tagging\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name.\nSet object key variables to the source or destination S3 object keys you want to use."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "Object tag requests. REST routes manipulate tag records; S3 routes use S3 XML tagging payloads."
         },
         {
           "name": "Multipart Uploads",
@@ -3192,7 +3384,8 @@
               "request": {
                 "method": "POST",
                 "header": [],
-                "url": "{{baseUrl}}/{{bucketName}}/{{multipartObjectKey}}?uploads"
+                "url": "{{baseUrl}}/{{bucketName}}/{{multipartObjectKey}}?uploads",
+                "description": "POST {{baseUrl}}/{{bucketName}}/{{multipartObjectKey}}?uploads\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name.\nMultipart examples require running Create Multipart Upload first and copying the returned upload ID into {{uploadId}}."
               },
               "response": []
             },
@@ -3216,7 +3409,8 @@
                       "language": "text"
                     }
                   }
-                }
+                },
+                "description": "PUT {{baseUrl}}/{{bucketName}}/{{multipartObjectKey}}?partNumber=1&uploadId={{uploadId}}\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name.\nMultipart examples require running Create Multipart Upload first and copying the returned upload ID into {{uploadId}}."
               },
               "response": []
             },
@@ -3225,7 +3419,8 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/{{bucketName}}/{{multipartObjectKey}}?uploadId={{uploadId}}"
+                "url": "{{baseUrl}}/{{bucketName}}/{{multipartObjectKey}}?uploadId={{uploadId}}",
+                "description": "GET {{baseUrl}}/{{bucketName}}/{{multipartObjectKey}}?uploadId={{uploadId}}\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name.\nMultipart examples require running Create Multipart Upload first and copying the returned upload ID into {{uploadId}}."
               },
               "response": []
             },
@@ -3249,7 +3444,8 @@
                       "language": "xml"
                     }
                   }
-                }
+                },
+                "description": "POST {{baseUrl}}/{{bucketName}}/{{multipartObjectKey}}?uploadId={{uploadId}}\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name.\nMultipart examples require running Create Multipart Upload first and copying the returned upload ID into {{uploadId}}."
               },
               "response": []
             },
@@ -3258,7 +3454,8 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{baseUrl}}/{{bucketName}}/{{multipartObjectKey}}?uploadId={{uploadId}}"
+                "url": "{{baseUrl}}/{{bucketName}}/{{multipartObjectKey}}?uploadId={{uploadId}}",
+                "description": "DELETE {{baseUrl}}/{{bucketName}}/{{multipartObjectKey}}?uploadId={{uploadId}}\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name.\nMultipart examples require running Create Multipart Upload first and copying the returned upload ID into {{uploadId}}."
               },
               "response": []
             },
@@ -3267,11 +3464,13 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{baseUrl}}/{{bucketName}}?uploads"
+                "url": "{{baseUrl}}/{{bucketName}}?uploads",
+                "description": "GET {{baseUrl}}/{{bucketName}}?uploads\n\nUses inherited AWS Signature Version 4 auth from the S3 folder. Set {{s3AccessKey}}, {{s3SecretKey}}, and {{awsRegion}} before running against a non-default server.\nSet {{bucketName}} to the target S3 bucket name.\nMultipart examples require running Create Multipart Upload first and copying the returned upload ID into {{uploadId}}."
               },
               "response": []
             }
-          ]
+          ],
+          "description": "S3 multipart upload lifecycle requests. Run Create Multipart Upload first, then copy uploadId into {{uploadId}}."
         }
       ],
       "auth": {
@@ -3298,229 +3497,274 @@
             "type": "string"
           }
         ]
-      }
+      },
+      "description": "S3-compatible data-plane requests against {{baseUrl}}.\n\nThis folder uses inherited AWS Signature Version 4 auth. Set s3AccessKey, s3SecretKey, and awsRegion before running requests against a non-default Less3 server.\n\nLocal defaults target tenant default with access key default and secret key default."
     }
   ],
   "variable": [
     {
       "key": "baseUrl",
       "value": "http://localhost:8000",
-      "type": "string"
+      "type": "string",
+      "description": "Less3 server base URL. Local Docker and development default: http://localhost:8000."
     },
     {
       "key": "adminApiKey",
       "value": "less3admin",
-      "type": "string"
+      "type": "string",
+      "description": "Value for the x-api-key header. Local default: less3admin."
     },
     {
       "key": "tenantId",
       "value": "default",
-      "type": "string"
+      "type": "string",
+      "description": "Tenant scope used by REST/admin requests. Local default tenant: default."
     },
     {
       "key": "adminEmail",
       "value": "admin@less3",
-      "type": "string"
+      "type": "string",
+      "description": "Default seeded dashboard/admin user email for session login."
     },
     {
       "key": "adminPassword",
       "value": "password",
-      "type": "string"
+      "type": "string",
+      "description": "Default seeded dashboard/admin user password for session login."
     },
     {
       "key": "userId",
       "value": "usr_default_admin",
-      "type": "string"
+      "type": "string",
+      "description": "Existing user ID to target in REST requests. Local default admin user: usr_default_admin."
     },
     {
       "key": "credentialId",
       "value": "crd_default",
-      "type": "string"
+      "type": "string",
+      "description": "Existing credential ID to target in REST requests. Local default credential: crd_default."
     },
     {
       "key": "bucketId",
       "value": "bkt_default",
-      "type": "string"
+      "type": "string",
+      "description": "Existing bucket ID to target in REST requests. Local default bucket: bkt_default."
     },
     {
       "key": "objectId",
       "value": "obj_replace_actual_id",
-      "type": "string"
+      "type": "string",
+      "description": "Existing object ID from REST object enumeration. Replace with an actual object ID before object tag/ACL REST calls."
     },
     {
       "key": "bucketName",
       "value": "default",
-      "type": "string"
+      "type": "string",
+      "description": "Existing S3 bucket name. Local default bucket: default."
     },
     {
       "key": "objectKey",
       "value": "hello.txt",
-      "type": "string"
+      "type": "string",
+      "description": "Existing S3 object key. Local default sample object: hello.txt."
     },
     {
       "key": "objectPrefix",
       "value": "hello",
-      "type": "string"
+      "type": "string",
+      "description": "Prefix used by S3 ListObjects examples."
     },
     {
       "key": "s3AccessKey",
       "value": "default",
-      "type": "string"
+      "type": "string",
+      "description": "S3 access key used by inherited AWS Signature v4 auth. Local default: default."
     },
     {
       "key": "s3SecretKey",
       "value": "default",
-      "type": "string"
+      "type": "string",
+      "description": "S3 secret key used by inherited AWS Signature v4 auth. Local default: default."
     },
     {
       "key": "awsRegion",
       "value": "us-west-1",
-      "type": "string"
+      "type": "string",
+      "description": "Signing region and bucket region. Less3 default: us-west-1."
     },
     {
       "key": "newTenantId",
       "value": "ten_postman",
-      "type": "string"
+      "type": "string",
+      "description": "Sample tenant ID for create/update/delete requests. Must be unique before creation."
     },
     {
       "key": "newUserId",
       "value": "usr_postman",
-      "type": "string"
+      "type": "string",
+      "description": "Sample user ID for create/update/delete requests. Must be unique before creation."
     },
     {
       "key": "newUserEmail",
       "value": "postman.user@example.com",
-      "type": "string"
+      "type": "string",
+      "description": "Sample user email for create/update/delete requests. Must be unique per tenant before creation."
     },
     {
       "key": "newCredentialId",
       "value": "crd_postman",
-      "type": "string"
+      "type": "string",
+      "description": "Sample credential ID for create/update/delete requests. Must be unique before creation."
     },
     {
       "key": "newAccessKey",
       "value": "ak_postman",
-      "type": "string"
+      "type": "string",
+      "description": "Sample S3 access key for credential creation. Must be globally unique before creation."
     },
     {
       "key": "newSecretKey",
       "value": "postman-secret",
-      "type": "string"
+      "type": "string",
+      "description": "Sample secret key for credential creation. Change before using beyond local testing."
     },
     {
       "key": "newBucketId",
       "value": "bkt_postman",
-      "type": "string"
+      "type": "string",
+      "description": "Sample bucket metadata ID for REST bucket creation. Must be unique before creation."
     },
     {
       "key": "newBucketName",
       "value": "postman-bucket",
-      "type": "string"
+      "type": "string",
+      "description": "Sample S3 bucket name for create/delete requests. Must be unique within the tenant before creation."
     },
     {
       "key": "newObjectId",
       "value": "obj_postman",
-      "type": "string"
+      "type": "string",
+      "description": "Sample object metadata ID for REST object creation. Must be unique before creation."
     },
     {
       "key": "newObjectKey",
       "value": "postman-object.txt",
-      "type": "string"
+      "type": "string",
+      "description": "Sample S3 object key for PutObject/DeleteObject requests."
     },
     {
       "key": "copyObjectKey",
       "value": "postman-copy.txt",
-      "type": "string"
+      "type": "string",
+      "description": "Destination key for S3 CopyObject."
     },
     {
       "key": "bucketTagId",
       "value": "btg_postman",
-      "type": "string"
+      "type": "string",
+      "description": "Sample REST bucket-tag record ID. Must be unique before creation."
     },
     {
       "key": "objectTagId",
       "value": "otg_postman",
-      "type": "string"
+      "type": "string",
+      "description": "Sample REST object-tag record ID. Must be unique before creation."
     },
     {
       "key": "bucketAclId",
       "value": "bac_postman",
-      "type": "string"
+      "type": "string",
+      "description": "Sample REST bucket-ACL record ID. Must be unique before creation."
     },
     {
       "key": "objectAclId",
       "value": "oac_postman",
-      "type": "string"
+      "type": "string",
+      "description": "Sample REST object-ACL record ID. Must be unique before creation."
     },
     {
       "key": "roleId",
       "value": "rol_postman",
-      "type": "string"
+      "type": "string",
+      "description": "Sample custom role ID. Must be unique before creation."
     },
     {
       "key": "permissionId",
       "value": "per_postman",
-      "type": "string"
+      "type": "string",
+      "description": "Sample permission ID. Must be unique before creation."
     },
     {
       "key": "assignmentId",
       "value": "asn_postman",
-      "type": "string"
+      "type": "string",
+      "description": "Sample role-assignment ID. Must be unique before creation."
     },
     {
       "key": "sessionId",
       "value": "ses_replace_actual_id",
-      "type": "string"
+      "type": "string",
+      "description": "Session ID from an auth session list/login response."
     },
     {
       "key": "sessionToken",
       "value": "",
-      "type": "string"
+      "type": "string",
+      "description": "Raw session token captured by login requests. Use with x-less3-session-token for session-auth testing."
     },
     {
       "key": "authorizationAuditId",
       "value": "aud_replace_actual_id",
-      "type": "string"
+      "type": "string",
+      "description": "Authorization audit ID from an authorization audit list/enumerate response."
     },
     {
       "key": "requestHistoryId",
       "value": "req_postman",
-      "type": "string"
+      "type": "string",
+      "description": "Sample request-history ID for synthetic request-history REST calls."
     },
     {
       "key": "reportStartUtc",
       "value": "2026-07-23T00:00:00.000Z",
-      "type": "string"
+      "type": "string",
+      "description": "Inclusive report start timestamp in UTC."
     },
     {
       "key": "reportEndUtc",
       "value": "2026-07-24T23:59:59.999Z",
-      "type": "string"
+      "type": "string",
+      "description": "Inclusive report end timestamp in UTC."
     },
     {
       "key": "purgeOlderThanUtc",
       "value": "2026-01-01T00:00:00.000Z",
-      "type": "string"
+      "type": "string",
+      "description": "Cutoff timestamp for maintenance request-history purge."
     },
     {
       "key": "versionId",
       "value": "1",
-      "type": "string"
+      "type": "string",
+      "description": "S3 object version ID returned by versioned object operations."
     },
     {
       "key": "uploadId",
       "value": "upl_replace_actual_id",
-      "type": "string"
+      "type": "string",
+      "description": "Multipart upload ID returned by Create Multipart Upload."
     },
     {
       "key": "multipartObjectKey",
       "value": "postman-multipart.txt",
-      "type": "string"
+      "type": "string",
+      "description": "Object key used by multipart upload examples."
     },
     {
       "key": "multipartPartEtag",
       "value": "replace-with-upload-part-etag",
-      "type": "string"
+      "type": "string",
+      "description": "ETag returned by Upload Part, required by Complete Multipart Upload."
     }
   ]
 }

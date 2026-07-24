@@ -29,6 +29,13 @@ export interface RequestHistoryEntry {
 export type RequestHistoryListResponse = RequestHistoryEntry[];
 export type RequestHistoryResponse = RequestHistoryEntry;
 
+export interface RequestHistoryListParams {
+  limit?: number;
+  offset?: number;
+  sortField?: string;
+  sortDirection?: 'asc' | 'desc';
+}
+
 export interface DeleteRequestHistoryParams {
   id: string;
 }

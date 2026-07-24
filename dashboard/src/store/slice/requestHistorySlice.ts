@@ -4,6 +4,7 @@ import type {
   RequestHistoryEntry,
   RequestHistoryListResponse,
   RequestHistoryResponse,
+  RequestHistoryListParams,
   DeleteRequestHistoryParams,
   DeleteRequestHistoryResponse,
   RequestHistorySummaryResult,
@@ -19,6 +20,7 @@ export type {
   RequestHistoryEntry,
   RequestHistoryListResponse,
   RequestHistoryResponse,
+  RequestHistoryListParams,
   DeleteRequestHistoryParams,
   DeleteRequestHistoryResponse,
   RequestHistorySummaryResult,
@@ -34,15 +36,25 @@ const getRequestHistoryTags = (id: string) => [
   { type: RequestHistorySliceTags.REQUEST_HISTORY, id: 'LIST' },
 ];
 
+const buildRequestHistoryQueryString = (params?: RequestHistoryListParams): string => {
+  const queryParams = new URLSearchParams();
+  queryParams.set('limit', String(params?.limit ?? 1000));
+  queryParams.set('offset', String(params?.offset ?? 0));
+  queryParams.set('sortField', params?.sortField ?? 'createdUtc');
+  queryParams.set('sortDirection', params?.sortDirection ?? 'desc');
+  return queryParams.toString();
+};
+
 const requestHistorySliceInstance = enhancedSdk.injectEndpoints({
   overrideExisting: true,
   endpoints: (
     build: EndpointBuilder<BaseQueryFn<ApiBaseQueryArgs, unknown, unknown>, RequestHistorySliceTags, 'sdk'>
   ) => ({
-    getRequestHistory: build.query<RequestHistoryListResponse, void>({
-      query: () => ({
-        url: 'admin/requesthistory',
+    getRequestHistory: build.query<RequestHistoryListResponse, RequestHistoryListParams | void>({
+      query: (params) => ({
+        url: `admin/requesthistory?${buildRequestHistoryQueryString(params || undefined)}`,
         method: 'GET',
+        cache: 'no-store',
       }),
       transformResponse: (response: any): RequestHistoryEntry[] => (Array.isArray(response) ? response : []),
       providesTags: (result: RequestHistoryEntry[] | undefined) =>
@@ -88,6 +100,8 @@ const requestHistorySliceInstance = enhancedSdk.injectEndpoints({
     }),
   }),
 });
+
+export const requestHistorySliceApi = requestHistorySliceInstance;
 
 export const {
   useGetRequestHistoryQuery,

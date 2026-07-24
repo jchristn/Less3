@@ -56,6 +56,8 @@ const TIME_RANGES: TimeRangeConfig[] = [
 
 const SUCCESS_COLOR = '#22AF79';
 const FAILURE_COLOR = '#d9383a';
+const Y_AXIS_LABEL_FONT_SIZE = '0.625rem';
+const X_AXIS_LABEL_FONT_SIZE = '0.5625rem';
 
 // ── Helpers (matching Lattice exactly) ───────────────────────────────
 
@@ -184,6 +186,17 @@ const SummaryChart: React.FC<SummaryChartProps> = ({ summary, timeRange, onTimeR
   const totalSuccess: number = summary?.TotalSuccess ?? 0;
   const totalFailure: number = summary?.TotalFailure ?? 0;
   const totalRequests: number = totalSuccess + totalFailure;
+  const xAxisLabelIndexes: number[] = buckets
+    .map((_, index) => index)
+    .filter((index) => {
+      const labelStep: number = Math.ceil(buckets.length / 5);
+      if (index !== 0 && index !== buckets.length - 1 && index % labelStep !== 0) return false;
+      if (index === buckets.length - 1 && index % labelStep !== 0) {
+        const prevStep: number = Math.floor(index / labelStep) * labelStep;
+        if (index - prevStep < labelStep * 0.5) return false;
+      }
+      return true;
+    });
 
   return (
     <Less3Card style={{ marginBottom: 16 }}>
@@ -226,74 +239,100 @@ const SummaryChart: React.FC<SummaryChartProps> = ({ summary, timeRange, onTimeR
           <Less3Text type="secondary">Loading chart data...</Less3Text>
         </div>
       ) : (
-        <svg
-          viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-          style={{ width: '100%', height: 'auto', display: 'block' }}
-        >
-          {/* Grid lines and Y-axis labels */}
-          {gridRatios.map((ratio) => {
-            const y: number = paddingTop + innerHeight - innerHeight * ratio;
-            const label: number = hasData ? Math.round(maxCount * ratio) : 0;
-            return (
-              <g key={ratio}>
-                <line x1={paddingLeft} x2={chartWidth - paddingRight} y1={y} y2={y} stroke="#e8e8e8" strokeWidth={0.5} />
-                <text x={paddingLeft - 10} y={y + 4} textAnchor="end" fontSize={10} fill="#8c8c8c">
+        <div style={{ position: 'relative' }}>
+          <svg
+            viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+            style={{ width: '100%', height: 'auto', display: 'block' }}
+          >
+            {/* Grid lines */}
+            {gridRatios.map((ratio) => {
+              const y: number = paddingTop + innerHeight - innerHeight * ratio;
+              return (
+                <line
+                  key={ratio}
+                  x1={paddingLeft}
+                  x2={chartWidth - paddingRight}
+                  y1={y}
+                  y2={y}
+                  stroke="#e8e8e8"
+                  strokeWidth={0.5}
+                />
+              );
+            })}
+
+            {/* Bars (matching Lattice positioning exactly) */}
+            {buckets.map((bucket, index) => {
+              const total: number = bucket.successCount + bucket.failureCount;
+              const x: number = paddingLeft + index * (innerWidth / Math.max(buckets.length, 1)) + 2;
+              const successHeight: number = innerHeight * (bucket.successCount / maxCount);
+              const failureHeight: number = innerHeight * (bucket.failureCount / maxCount);
+              const totalHeight: number = innerHeight * (total / maxCount);
+              const y: number = paddingTop + innerHeight - totalHeight;
+
+              return (
+                <g
+                  key={`${bucket.timestampUtc}-${index}`}
+                  onMouseEnter={(event) => setHoveredBucket({ ...bucket, total, clientX: event.clientX, clientY: event.clientY })}
+                  onMouseMove={(event) => setHoveredBucket({ ...bucket, total, clientX: event.clientX, clientY: event.clientY })}
+                  onMouseLeave={() => setHoveredBucket(null)}
+                >
+                  {/* Invisible hover target */}
+                  <rect x={x} y={paddingTop} width={barWidth} height={innerHeight} fill="transparent" style={{ cursor: 'pointer' }} />
+                  {/* Success bar (bottom portion) */}
+                  <rect x={x} y={paddingTop + innerHeight - successHeight} width={barWidth} height={successHeight} fill={SUCCESS_COLOR} opacity={0.85} rx={3} />
+                  {/* Failure bar (stacked on top) */}
+                  <rect x={x} y={y} width={barWidth} height={failureHeight} fill={FAILURE_COLOR} opacity={0.85} rx={3} />
+                </g>
+              );
+            })}
+          </svg>
+          <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+            {gridRatios.map((ratio) => {
+              const y: number = paddingTop + innerHeight - innerHeight * ratio;
+              const label: number = hasData ? Math.round(maxCount * ratio) : 0;
+              return (
+                <span
+                  key={`ylabel-${ratio}`}
+                  data-chart-axis-label="y"
+                  style={{
+                    position: 'absolute',
+                    left: `${((paddingLeft - 10) / chartWidth) * 100}%`,
+                    top: `${(y / chartHeight) * 100}%`,
+                    transform: 'translate(-100%, -50%)',
+                    color: '#8c8c8c',
+                    fontSize: Y_AXIS_LABEL_FONT_SIZE,
+                    lineHeight: 1,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
                   {label}
-                </text>
-              </g>
-            );
-          })}
-
-          {/* Bars (matching Lattice positioning exactly) */}
-          {buckets.map((bucket, index) => {
-            const total: number = bucket.successCount + bucket.failureCount;
-            const x: number = paddingLeft + index * (innerWidth / Math.max(buckets.length, 1)) + 2;
-            const successHeight: number = innerHeight * (bucket.successCount / maxCount);
-            const failureHeight: number = innerHeight * (bucket.failureCount / maxCount);
-            const totalHeight: number = innerHeight * (total / maxCount);
-            const y: number = paddingTop + innerHeight - totalHeight;
-
-            return (
-              <g
-                key={`${bucket.timestampUtc}-${index}`}
-                onMouseEnter={(event) => setHoveredBucket({ ...bucket, total, clientX: event.clientX, clientY: event.clientY })}
-                onMouseMove={(event) => setHoveredBucket({ ...bucket, total, clientX: event.clientX, clientY: event.clientY })}
-                onMouseLeave={() => setHoveredBucket(null)}
-              >
-                {/* Invisible hover target */}
-                <rect x={x} y={paddingTop} width={barWidth} height={innerHeight} fill="transparent" style={{ cursor: 'pointer' }} />
-                {/* Success bar (bottom portion) */}
-                <rect x={x} y={paddingTop + innerHeight - successHeight} width={barWidth} height={successHeight} fill={SUCCESS_COLOR} opacity={0.85} rx={3} />
-                {/* Failure bar (stacked on top) */}
-                <rect x={x} y={y} width={barWidth} height={failureHeight} fill={FAILURE_COLOR} opacity={0.85} rx={3} />
-              </g>
-            );
-          })}
-
-          {/* X-axis labels (matching Lattice: first, last, and every ~5th) */}
-          {buckets.map((bucket, index) => {
-            const labelStep: number = Math.ceil(buckets.length / 5);
-            if (index !== 0 && index !== buckets.length - 1 && index % labelStep !== 0) return null;
-            // Skip last label if too close to previous stepped label
-            if (index === buckets.length - 1 && index % labelStep !== 0) {
-              const prevStep: number = Math.floor(index / labelStep) * labelStep;
-              if (index - prevStep < labelStep * 0.5) return null;
-            }
-            const labelX: number = paddingLeft + index * (innerWidth / Math.max(buckets.length, 1)) + 2 + barWidth / 2;
-            return (
-              <text
-                key={`xlabel-${index}`}
-                x={labelX}
-                y={chartHeight - 16}
-                textAnchor="middle"
-                fontSize={9}
-                fill="#8c8c8c"
-              >
-                {formatChartLabel(bucket.timestampUtc, range.interval)}
-              </text>
-            );
-          })}
-        </svg>
+                </span>
+              );
+            })}
+            {xAxisLabelIndexes.map((index) => {
+              const bucket: ChartBucket = buckets[index];
+              const labelX: number = paddingLeft + index * (innerWidth / Math.max(buckets.length, 1)) + 2 + barWidth / 2;
+              return (
+                <span
+                  key={`xlabel-${index}`}
+                  data-chart-axis-label="x"
+                  style={{
+                    position: 'absolute',
+                    left: `${(labelX / chartWidth) * 100}%`,
+                    bottom: `${(16 / chartHeight) * 100}%`,
+                    transform: 'translateX(-50%)',
+                    color: '#8c8c8c',
+                    fontSize: X_AXIS_LABEL_FONT_SIZE,
+                    lineHeight: 1,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {formatChartLabel(bucket.timestampUtc, range.interval)}
+                </span>
+              );
+            })}
+          </div>
+        </div>
       )}
 
       {/* Stat cards */}

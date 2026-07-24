@@ -2,25 +2,31 @@ import { renderWithRedux } from '../store/utils';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ApiExplorerPage from '#/page/api-explorer/ApiExplorerPage';
+import { message } from '#/utils/message';
+
+type MockCredential = {
+  Id: string;
+  Description: string;
+  AccessKey: string;
+  SecretKey?: string | null;
+};
+
+const mockCredentialWithSecret: MockCredential = {
+  Id: 'cred-1',
+  Description: 'Primary Key',
+  AccessKey: 'AK123',
+  SecretKey: 'SK123',
+};
+
+let mockCredentialsData: MockCredential[] = [mockCredentialWithSecret];
+let mockSelectedCredentialDetails: MockCredential | undefined = mockCredentialWithSecret;
 
 jest.mock('#/store/slice/credentialsSlice', () => ({
   useGetCredentialsQuery: () => ({
-    data: [
-      {
-        Id: 'cred-1',
-        Description: 'Primary Key',
-        AccessKey: 'AK123',
-        SecretKey: 'SK123',
-      },
-    ],
+    data: mockCredentialsData,
   }),
-  useGetCredentialByIdQuery: () => ({
-    data: {
-      Id: 'cred-1',
-      Description: 'Primary Key',
-      AccessKey: 'AK123',
-      SecretKey: 'SK123',
-    },
+  useGetCredentialByIdQuery: (_id: string, options?: { skip?: boolean }) => ({
+    data: options?.skip ? undefined : mockSelectedCredentialDetails,
   }),
 }));
 
@@ -53,6 +59,8 @@ describe('ApiExplorerPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
+    mockCredentialsData = [mockCredentialWithSecret];
+    mockSelectedCredentialDetails = mockCredentialWithSecret;
     global.fetch = jest.fn();
   });
 
@@ -162,6 +170,43 @@ describe('ApiExplorerPage', () => {
     });
 
     expect(screen.getByRole('button', { name: 'Show Raw' })).toBeInTheDocument();
+  });
+
+  it('sends S3 requests with an existing credential whose secret key is redacted', async () => {
+    const redactedCredential = {
+      Id: 'cred-1',
+      Description: 'Primary Key',
+      AccessKey: 'AK123',
+      SecretKey: null,
+    };
+    mockCredentialsData = [redactedCredential];
+    mockSelectedCredentialDetails = redactedCredential;
+    localStorage.setItem('less3S3CredentialId', 'cred-1');
+    (global.fetch as jest.Mock).mockResolvedValue({
+      status: 200,
+      statusText: 'OK',
+      headers: new Headers({ 'content-type': 'application/xml' }),
+      text: jest.fn().mockResolvedValue('<ListAllMyBucketsResult />'),
+    });
+
+    renderWithRedux(<ApiExplorerPage />, false, undefined, true);
+
+    await userEvent.click(screen.getByRole('button', { name: /Send/i }));
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+    });
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      'http://127.0.0.1:8000/',
+      expect.objectContaining({
+        method: 'GET',
+        headers: expect.objectContaining({
+          Authorization: expect.stringContaining('Credential=AK123/'),
+        }),
+      })
+    );
+    expect(message.error).not.toHaveBeenCalledWith('Selected S3 credential is unavailable');
   });
 
   it('saves collections', async () => {

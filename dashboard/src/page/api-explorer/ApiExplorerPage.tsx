@@ -459,23 +459,27 @@ const ApiExplorerPage: React.FC = () => {
 
         Object.assign(fetchHeaders, adminHeaders);
       } else if (selectedCredentialId !== NO_CREDENTIAL_VALUE) {
-        if (!activeS3Credential?.AccessKey || !activeS3Credential?.SecretKey) {
+        if (!activeS3Credential?.AccessKey) {
           message.error('Selected S3 credential is unavailable');
           setIsLoading(false);
           abortControllerRef.current = null;
           return;
         }
 
-        const signedHeaders = await buildSignedS3Headers({
-          method: selectedOp.method,
-          url: resolvedUrl,
-          accessKey: activeS3Credential.AccessKey,
-          secretKey: activeS3Credential.SecretKey,
-          headers: selectedOp.hasBody ? { 'Content-Type': 'application/json' } : undefined,
-          body: body.trim() && selectedOp.hasBody ? body : undefined,
-        });
+        if (activeS3Credential.SecretKey?.trim()) {
+          const signedHeaders = await buildSignedS3Headers({
+            method: selectedOp.method,
+            url: resolvedUrl,
+            accessKey: activeS3Credential.AccessKey,
+            secretKey: activeS3Credential.SecretKey,
+            headers: selectedOp.hasBody ? { 'Content-Type': 'application/json' } : undefined,
+            body: body.trim() && selectedOp.hasBody ? body : undefined,
+          });
 
-        Object.assign(fetchHeaders, signedHeaders);
+          Object.assign(fetchHeaders, signedHeaders);
+        } else {
+          fetchHeaders.Authorization = buildS3AuthorizationHeader(activeS3Credential.AccessKey);
+        }
       }
 
       if (selectedOp.hasBody && !fetchHeaders['Content-Type']) {

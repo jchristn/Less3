@@ -1,1333 +1,3526 @@
 {
-	"info": {
-		"_postman_id": "c21009c2-84fb-43ed-be5c-588eb3ea174e",
-		"name": "Less3-Local",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "720438"
-	},
-	"item": [
-		{
-			"name": "Admin",
-			"item": [
-				{
-					"name": "*Admin* Create Bucket",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "x-api-key",
-								"value": "less3admin",
-								"type": "text"
-							},
-							{
-								"key": "content-type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"GUID\": \"testbucket\",\n  \"OwnerGUID\": \"default\",\n  \"Name\": \"testbucket\",\n  \"StorageType\": \"Disk\",\n  \"DiskDirectory\": \"./Storage/testbucket/Objects/\",\n  \"EnableVersioning\": false,\n  \"EnablePublicWrite\": false,\n  \"EnablePUblicRead\": true,\n  \"CreatedUtc\": \"2020-01-01T00:00:00.000000Z\"\n}"
-						},
-						"url": {
-							"raw": "http://localhost:8000/admin/buckets",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"admin",
-								"buckets"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "*Admin* List Buckets",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-api-key",
-								"value": "less3admin",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8000/admin/buckets",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"admin",
-								"buckets"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "*Admin* List Bucket Metadata",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-api-key",
-								"value": "less3admin",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8000/admin/buckets/default",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"admin",
-								"buckets",
-								"default"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "*Admin* Delete Bucket (with destroy)",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "x-api-key",
-								"value": "less3admin",
-								"type": "text"
-							},
-							{
-								"key": "Authentication",
-								"value": "ubuntu",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8000/admin/buckets/testbucket?destroy",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"admin",
-								"buckets",
-								"testbucket"
-							],
-							"query": [
-								{
-									"key": "destroy",
-									"value": null
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "*Admin* Delete Bucket (without destroy)",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "x-api-key",
-								"value": "less3admin",
-								"type": "text"
-							},
-							{
-								"key": "Authentication",
-								"value": "ubuntu",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8000/admin/buckets/testbucket",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"admin",
-								"buckets",
-								"testbucket"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "*Admin* Create User",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "x-api-key",
-								"value": "less3admin",
-								"type": "text"
-							},
-							{
-								"key": "content-type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{ \r\n  \"GUID\": \"testuser\",\r\n  \"Name\": \"Test User\",\r\n  \"Email\": \"test@user.com\"\r\n}"
-						},
-						"url": {
-							"raw": "http://localhost:8000/admin/users",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"admin",
-								"users"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "*Admin* List Users",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-api-key",
-								"value": "less3admin",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8000/admin/users",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"admin",
-								"users"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "*Admin* List User Metadata",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-api-key",
-								"value": "less3admin",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8000/admin/users/default",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"admin",
-								"users",
-								"default"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "*Admin* Delete User",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "x-api-key",
-								"value": "less3admin",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8000/admin/users/testuser",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"admin",
-								"users",
-								"testuser"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "*Admin* List Credentials",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-api-key",
-								"value": "less3admin",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8000/admin/credentials",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"admin",
-								"credentials"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "*Admin* List Credential Metadata",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-api-key",
-								"value": "less3admin",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8000/admin/credentials/default",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"admin",
-								"credentials",
-								"default"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "*Admin* Create Credentials",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "x-api-key",
-								"value": "less3admin",
-								"type": "text"
-							},
-							{
-								"key": "content-type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{ \r\n  \"GUID\": \"testcred\",\r\n  \"UserGUID\": \"default\",\r\n  \"Description\": \"My second access key\",\r\n  \"AccessKey\": \"testcred\",\r\n  \"SecretKey\": \"testcred\"\r\n}"
-						},
-						"url": {
-							"raw": "http://localhost:8000/admin/credentials",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"admin",
-								"credentials"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "*Admin* Delete Credentials",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "x-api-key",
-								"value": "less3admin",
-								"type": "text"
-							},
-							{
-								"key": "content-type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8000/admin/credentials/testcred",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"admin",
-								"credentials",
-								"testcred"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Buckets",
-			"item": [
-				{
-					"name": "List Buckets",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-								"type": "text"
-							},
-							{
-								"key": "Authentication",
-								"value": "ubuntu",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8000/",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Write Bucket",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/xml",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8000/testbucket",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"testbucket"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Check Bucket Existence",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "HEAD",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "text/plain",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8000/default",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"default"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "List Objects in Bucket",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-								"type": "text"
-							},
-							{
-								"key": "Authentication",
-								"value": "ubuntu",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8000/default/",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"default",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Bucket",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "text/plain",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8000/default",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"default"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Bucket ACLs",
-			"item": [
-				{
-					"name": "Write Bucket ACL",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/xml",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "<AccessControlPolicy xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\">\r\n  <Owner>\r\n    <ID>default</ID>\r\n    <DisplayName>default</DisplayName>\r\n  </Owner>\r\n  <AccessControlList>\r\n    <Grant>\r\n      <Grantee xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"CanonicalUser\">\r\n        <ID>default</ID>\r\n        <DisplayName>default@default.com</DisplayName>\r\n      </Grantee>\r\n      <Permission>FULL_CONTROL</Permission>\r\n    </Grant>\r\n  </AccessControlList>\r\n</AccessControlPolicy> "
-						},
-						"url": {
-							"raw": "http://localhost:8000/default?acl",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"default"
-							],
-							"query": [
-								{
-									"key": "acl",
-									"value": null
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Retrieve Bucket ACL",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "text/plain",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8000/default?acl",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"default"
-							],
-							"query": [
-								{
-									"key": "acl",
-									"value": null
-								}
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Bucket Tags",
-			"item": [
-				{
-					"name": "Write Bucket Tags",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/xml",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Tagging xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\r\n    <TagSet>\r\n        <Tag>\r\n            <Key>key</Key>\r\n            <Value>val</Value>\r\n        </Tag>\r\n    </TagSet>\r\n</Tagging>"
-						},
-						"url": {
-							"raw": "http://localhost:8000/default?tagging",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"default"
-							],
-							"query": [
-								{
-									"key": "tagging",
-									"value": null
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Retrieve Bucket Tags",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "text/plain",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8000/default?tagging",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"default"
-							],
-							"query": [
-								{
-									"key": "tagging",
-									"value": null
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Bucket Tags",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/xml",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8000/default?tagging",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"default"
-							],
-							"query": [
-								{
-									"key": "tagging",
-									"value": null
-								}
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Objects",
-			"item": [
-				{
-					"name": "Check Object Existence",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "HEAD",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "text/plain",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8000/default/hello.txt",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"default",
-								"hello.txt"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Write Object (non-chunked)",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "text/plain",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "Hello, world!"
-						},
-						"url": {
-							"raw": "http://localhost:8000/default/hello.temp",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"default",
-								"hello.temp"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Write Object (chunked)",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "text/plain",
-								"type": "text"
-							},
-							{
-								"key": "x-amz-content-sha256",
-								"value": "STREAMING",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "D;chunk-signature=c47420eedec1c2370bb5a16b80d282244790d3ae3369fb1a401c5cb49412f619\r\nHello, world!\r\n0;chunk-signature=b338f2fd4775cd936fa244a1ba27470a2c58581c9882b471620ed802889a176e\r\n\r\n"
-						},
-						"url": {
-							"raw": "http://localhost:8000/default/hello.temp",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"default",
-								"hello.temp"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Retrieve Object",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "text/plain",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8000/default/hello.txt",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"default",
-								"hello.txt"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Retrieve Object Range",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-								"type": "text"
-							},
-							{
-								"key": "Range",
-								"value": "bytes=1-10",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8000/default/hello.txt",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"default",
-								"hello.txt"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Object",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "text/plain",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8000/default/hello.temp",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"default",
-								"hello.temp"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Object ACLs",
-			"item": [
-				{
-					"name": "Write Object ACL",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/xml",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "<AccessControlPolicy xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\">\r\n  <Owner>\r\n    <ID>default</ID>\r\n    <DisplayName>default</DisplayName>\r\n  </Owner>\r\n  <AccessControlList>\r\n    <Grant>\r\n      <Grantee xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"CanonicalUser\">\r\n        <ID>default</ID>\r\n        <DisplayName>default@default.com</DisplayName>\r\n      </Grantee>\r\n      <Permission>FULL_CONTROL</Permission>\r\n    </Grant>\r\n  </AccessControlList>\r\n</AccessControlPolicy> "
-						},
-						"url": {
-							"raw": "http://localhost:8000/default/hello.txt?acl",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"default",
-								"hello.txt"
-							],
-							"query": [
-								{
-									"key": "acl",
-									"value": null
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Retrieve Object ACL",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "text/plain",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8000/default/hello.txt?acl",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"default",
-								"hello.txt"
-							],
-							"query": [
-								{
-									"key": "acl",
-									"value": null
-								}
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Object Tags",
-			"item": [
-				{
-					"name": "Write Object Tags",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/xml",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Tagging xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\r\n    <TagSet>\r\n        <Tag>\r\n            <Key>key</Key>\r\n            <Value>val</Value>\r\n        </Tag>\r\n    </TagSet>\r\n</Tagging>"
-						},
-						"url": {
-							"raw": "http://localhost:8000/default/hello.html?tagging",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"default",
-								"hello.html"
-							],
-							"query": [
-								{
-									"key": "tagging",
-									"value": null
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Retrieve Object Tags",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "text/plain",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8000/default/hello.txt?tagging",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"default",
-								"hello.txt"
-							],
-							"query": [
-								{
-									"key": "tagging",
-									"value": null
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Object Tags",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "AWS4-HMAC-SHA256 Credential=default/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-date, Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/xml",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8000/default/hello.txt?tagging",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"default",
-								"hello.txt"
-							],
-							"query": [
-								{
-									"key": "tagging",
-									"value": null
-								}
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		}
-	]
+  "info": {
+    "name": "Less3 Local",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "REST",
+      "item": [
+        {
+          "name": "Tenants",
+          "item": [
+            {
+              "name": "List Tenants (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/tenants?tenantId={{tenantId}}&limit=100&offset=0"
+              },
+              "response": []
+            },
+            {
+              "name": "Enumerate Tenants (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/tenants/enumerate",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"TenantId\": \"{{tenantId}}\",\n  \"Limit\": 100,\n  \"Offset\": 0,\n  \"SortField\": \"CreatedUtc\",\n  \"SortDirection\": \"desc\",\n  \"Filters\": {}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Tenant (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/tenants?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Id\": \"{{newTenantId}}\",\n  \"ParentId\": null,\n  \"Name\": \"Postman tenant\",\n  \"Active\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Read Tenant (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/tenants/{{tenantId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Tenant (/api/v1)",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/tenants/{{tenantId}}?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Id\": \"{{newTenantId}}\",\n  \"ParentId\": null,\n  \"Name\": \"Postman tenant updated\",\n  \"Active\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Exists Tenant (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/tenants/{{tenantId}}/exists?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Tenant (/api/v1)",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/tenants/{{tenantId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "List Tenants (/admin)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/tenants?tenantId={{tenantId}}&limit=100&offset=0"
+              },
+              "response": []
+            },
+            {
+              "name": "Read Tenant (/admin)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/tenants/{{tenantId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Users",
+          "item": [
+            {
+              "name": "List Users (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/users?tenantId={{tenantId}}&limit=100&offset=0"
+              },
+              "response": []
+            },
+            {
+              "name": "Enumerate Users (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/users/enumerate",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"TenantId\": \"{{tenantId}}\",\n  \"Limit\": 100,\n  \"Offset\": 0,\n  \"SortField\": \"CreatedUtc\",\n  \"SortDirection\": \"desc\",\n  \"Filters\": {}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create User (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/users?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Id\": \"{{newUserId}}\",\n  \"TenantId\": \"{{tenantId}}\",\n  \"Name\": \"Postman User\",\n  \"Email\": \"{{newUserEmail}}\",\n  \"PasswordHash\": \"password\",\n  \"IsAdmin\": false,\n  \"IsTenantAdmin\": false,\n  \"Active\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Read User (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/users/{{userId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Update User (/api/v1)",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/users/{{userId}}?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Id\": \"{{newUserId}}\",\n  \"TenantId\": \"{{tenantId}}\",\n  \"Name\": \"Postman User Updated\",\n  \"Email\": \"{{newUserEmail}}\",\n  \"PasswordHash\": \"password\",\n  \"IsAdmin\": false,\n  \"IsTenantAdmin\": false,\n  \"Active\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Exists User (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/users/{{userId}}/exists?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete User (/api/v1)",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/users/{{userId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "List Users (/admin)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/users?tenantId={{tenantId}}&limit=100&offset=0"
+              },
+              "response": []
+            },
+            {
+              "name": "Read User (/admin)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/users/{{userId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Credentials",
+          "item": [
+            {
+              "name": "List Credentials (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/credentials?tenantId={{tenantId}}&limit=100&offset=0"
+              },
+              "response": []
+            },
+            {
+              "name": "Enumerate Credentials (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/credentials/enumerate",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"TenantId\": \"{{tenantId}}\",\n  \"Limit\": 100,\n  \"Offset\": 0,\n  \"SortField\": \"CreatedUtc\",\n  \"SortDirection\": \"desc\",\n  \"Filters\": {}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Credential (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/credentials?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Id\": \"{{newCredentialId}}\",\n  \"TenantId\": \"{{tenantId}}\",\n  \"UserId\": \"{{userId}}\",\n  \"Description\": \"Postman credential\",\n  \"AccessKey\": \"{{newAccessKey}}\",\n  \"SecretKey\": \"{{newSecretKey}}\",\n  \"IsBase64\": false,\n  \"Active\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Read Credential (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/credentials/{{credentialId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Credential (/api/v1)",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/credentials/{{credentialId}}?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Id\": \"{{newCredentialId}}\",\n  \"TenantId\": \"{{tenantId}}\",\n  \"UserId\": \"{{userId}}\",\n  \"Description\": \"Postman credential\",\n  \"AccessKey\": \"{{newAccessKey}}\",\n  \"SecretKey\": \"{{newSecretKey}}\",\n  \"IsBase64\": false,\n  \"Active\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Exists Credential (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/credentials/{{credentialId}}/exists?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Credential (/api/v1)",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/credentials/{{credentialId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "List Credentials (/admin)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/credentials?tenantId={{tenantId}}&limit=100&offset=0"
+              },
+              "response": []
+            },
+            {
+              "name": "Read Credential (/admin)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/credentials/{{credentialId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Rotate Credential (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/credentials/rotate?tenantId={{tenantId}}&id={{credentialId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"SecretKey\": \"{{newSecretKey}}\",\n  \"IsBase64\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Disable Credential (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/credentials/disable?tenantId={{tenantId}}&id={{credentialId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Rotate Credential (/admin)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/credentials/{{credentialId}}/rotate?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"SecretKey\": \"{{newSecretKey}}\",\n  \"IsBase64\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Disable Credential (/admin)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/credentials/{{credentialId}}/disable?tenantId={{tenantId}}"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Roles",
+          "item": [
+            {
+              "name": "List Roles (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/roles?tenantId={{tenantId}}&limit=100&offset=0"
+              },
+              "response": []
+            },
+            {
+              "name": "Enumerate Roles (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/roles/enumerate",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"TenantId\": \"{{tenantId}}\",\n  \"Limit\": 100,\n  \"Offset\": 0,\n  \"SortField\": \"CreatedUtc\",\n  \"SortDirection\": \"desc\",\n  \"Filters\": {}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Role (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/roles?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Id\": \"{{roleId}}\",\n  \"TenantId\": \"{{tenantId}}\",\n  \"Name\": \"PostmanRole\",\n  \"Description\": \"Role created from the Postman collection\",\n  \"InheritsToChildren\": true,\n  \"Active\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Read Role (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/roles/{{roleId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Role (/api/v1)",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/roles/{{roleId}}?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Id\": \"{{roleId}}\",\n  \"TenantId\": \"{{tenantId}}\",\n  \"Name\": \"PostmanRole\",\n  \"Description\": \"Role created from the Postman collection\",\n  \"InheritsToChildren\": true,\n  \"Active\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Exists Role (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/roles/{{roleId}}/exists?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Role (/api/v1)",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/roles/{{roleId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "List Roles (/admin)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/roles?tenantId={{tenantId}}&limit=100&offset=0"
+              },
+              "response": []
+            },
+            {
+              "name": "Read Role (/admin)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/roles/{{roleId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Permissions",
+          "item": [
+            {
+              "name": "List Permissions (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/permissions?tenantId={{tenantId}}&limit=100&offset=0"
+              },
+              "response": []
+            },
+            {
+              "name": "Enumerate Permissions (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/permissions/enumerate",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"TenantId\": \"{{tenantId}}\",\n  \"Limit\": 100,\n  \"Offset\": 0,\n  \"SortField\": \"CreatedUtc\",\n  \"SortDirection\": \"desc\",\n  \"Filters\": {}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Permission (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/permissions?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Id\": \"{{permissionId}}\",\n  \"TenantId\": \"{{tenantId}}\",\n  \"RoleId\": \"{{roleId}}\",\n  \"ResourceType\": \"Bucket\",\n  \"Operation\": \"Read\",\n  \"Permit\": true,\n  \"Active\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Read Permission (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/permissions/{{permissionId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Permission (/api/v1)",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/permissions/{{permissionId}}?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Id\": \"{{permissionId}}\",\n  \"TenantId\": \"{{tenantId}}\",\n  \"RoleId\": \"{{roleId}}\",\n  \"ResourceType\": \"Bucket\",\n  \"Operation\": \"Read\",\n  \"Permit\": true,\n  \"Active\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Exists Permission (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/permissions/{{permissionId}}/exists?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Permission (/api/v1)",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/permissions/{{permissionId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "List Permissions (/admin)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/permissions?tenantId={{tenantId}}&limit=100&offset=0"
+              },
+              "response": []
+            },
+            {
+              "name": "Read Permission (/admin)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/permissions/{{permissionId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Role Assignments",
+          "item": [
+            {
+              "name": "List Role Assignments (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/roleassignments?tenantId={{tenantId}}&limit=100&offset=0"
+              },
+              "response": []
+            },
+            {
+              "name": "Enumerate Role Assignments (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/roleassignments/enumerate",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"TenantId\": \"{{tenantId}}\",\n  \"Limit\": 100,\n  \"Offset\": 0,\n  \"SortField\": \"CreatedUtc\",\n  \"SortDirection\": \"desc\",\n  \"Filters\": {}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Role Assignment (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/roleassignments?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Id\": \"{{assignmentId}}\",\n  \"TenantId\": \"{{tenantId}}\",\n  \"RoleId\": \"{{roleId}}\",\n  \"PrincipalType\": \"User\",\n  \"PrincipalId\": \"{{userId}}\",\n  \"ResourceType\": \"Tenant\",\n  \"ResourceId\": \"{{tenantId}}\",\n  \"Active\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Read Role Assignment (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/roleassignments/{{assignmentId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Role Assignment (/api/v1)",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/roleassignments/{{assignmentId}}?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Id\": \"{{assignmentId}}\",\n  \"TenantId\": \"{{tenantId}}\",\n  \"RoleId\": \"{{roleId}}\",\n  \"PrincipalType\": \"User\",\n  \"PrincipalId\": \"{{userId}}\",\n  \"ResourceType\": \"Tenant\",\n  \"ResourceId\": \"{{tenantId}}\",\n  \"Active\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Exists Role Assignment (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/roleassignments/{{assignmentId}}/exists?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Role Assignment (/api/v1)",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/roleassignments/{{assignmentId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "List Role Assignments (/admin)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/roleassignments?tenantId={{tenantId}}&limit=100&offset=0"
+              },
+              "response": []
+            },
+            {
+              "name": "Read Role Assignment (/admin)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/roleassignments/{{assignmentId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Auth Sessions",
+          "item": [
+            {
+              "name": "Login with User Password",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/authsessions/login",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"TenantId\": \"{{tenantId}}\",\n  \"Email\": \"{{adminEmail}}\",\n  \"Password\": \"{{adminPassword}}\",\n  \"ExpirationMinutes\": 480\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                      "  const body = pm.response.json();",
+                      "  if (body.Token) pm.collectionVariables.set(\"sessionToken\", body.Token);",
+                      "  if (body.Id) pm.collectionVariables.set(\"sessionId\", body.Id);",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Login with Credential",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/authsessions/credential-login",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"AccessKey\": \"{{s3AccessKey}}\",\n  \"SecretKey\": \"{{s3SecretKey}}\",\n  \"ExpirationMinutes\": 480\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                      "  const body = pm.response.json();",
+                      "  if (body.Token) pm.collectionVariables.set(\"sessionToken\", body.Token);",
+                      "  if (body.Id) pm.collectionVariables.set(\"sessionId\", body.Id);",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Validate Session Token",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/authsessions/validate",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Token\": \"{{sessionToken}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Revoke Session Token",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/authsessions/revoke",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Token\": \"{{sessionToken}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Auth Sessions (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/authsessions?tenantId={{tenantId}}&limit=100&offset=0"
+              },
+              "response": []
+            },
+            {
+              "name": "Read Auth Session (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/authsessions/{{sessionId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Revoke Auth Session by ID (/admin)",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/authsessions/{{sessionId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Buckets",
+          "item": [
+            {
+              "name": "List Buckets (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/buckets?tenantId={{tenantId}}&limit=100&offset=0"
+              },
+              "response": []
+            },
+            {
+              "name": "Enumerate Buckets (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/buckets/enumerate",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"TenantId\": \"{{tenantId}}\",\n  \"Limit\": 100,\n  \"Offset\": 0,\n  \"SortField\": \"CreatedUtc\",\n  \"SortDirection\": \"desc\",\n  \"Filters\": {}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Bucket (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/buckets?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Id\": \"{{newBucketId}}\",\n  \"TenantId\": \"{{tenantId}}\",\n  \"OwnerId\": \"{{userId}}\",\n  \"Name\": \"{{newBucketName}}\",\n  \"RegionString\": \"{{awsRegion}}\",\n  \"StorageType\": \"Disk\",\n  \"DiskDirectory\": \"./disk/{{newBucketName}}/Objects/\",\n  \"EnableVersioning\": false,\n  \"EnablePublicWrite\": false,\n  \"EnablePublicRead\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Read Bucket (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/buckets/{{bucketId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Bucket (/api/v1)",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/buckets/{{bucketId}}?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Id\": \"{{newBucketId}}\",\n  \"TenantId\": \"{{tenantId}}\",\n  \"OwnerId\": \"{{userId}}\",\n  \"Name\": \"{{newBucketName}}\",\n  \"RegionString\": \"{{awsRegion}}\",\n  \"StorageType\": \"Disk\",\n  \"DiskDirectory\": \"./disk/{{newBucketName}}/Objects/\",\n  \"EnableVersioning\": false,\n  \"EnablePublicWrite\": false,\n  \"EnablePublicRead\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Exists Bucket (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/buckets/{{bucketId}}/exists?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Bucket (/api/v1)",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/buckets/{{bucketId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "List Buckets (/admin)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/buckets?tenantId={{tenantId}}&limit=100&offset=0"
+              },
+              "response": []
+            },
+            {
+              "name": "Read Bucket (/admin)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/buckets/{{bucketId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Bucket with Destroy (/admin)",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/buckets/{{bucketId}}?destroy"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Objects",
+          "item": [
+            {
+              "name": "List Objects (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/objects?tenantId={{tenantId}}&limit=100&offset=0"
+              },
+              "response": []
+            },
+            {
+              "name": "Enumerate Objects (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/objects/enumerate",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"TenantId\": \"{{tenantId}}\",\n  \"Limit\": 100,\n  \"Offset\": 0,\n  \"SortField\": \"CreatedUtc\",\n  \"SortDirection\": \"desc\",\n  \"Filters\": {}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Object (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/objects?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Id\": \"{{newObjectId}}\",\n  \"TenantId\": \"{{tenantId}}\",\n  \"BucketId\": \"{{bucketId}}\",\n  \"OwnerId\": \"{{userId}}\",\n  \"AuthorId\": \"{{userId}}\",\n  \"Key\": \"{{objectKey}}\",\n  \"ContentType\": \"text/plain\",\n  \"ContentLength\": 0,\n  \"Version\": 1,\n  \"BlobFilename\": \"{{newObjectId}}\",\n  \"IsFolder\": false,\n  \"DeleteMarker\": false,\n  \"Metadata\": \"{\\\"source\\\":\\\"postman\\\"}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Read Object (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/objects/{{objectId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Object (/api/v1)",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/objects/{{objectId}}?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Id\": \"{{newObjectId}}\",\n  \"TenantId\": \"{{tenantId}}\",\n  \"BucketId\": \"{{bucketId}}\",\n  \"OwnerId\": \"{{userId}}\",\n  \"AuthorId\": \"{{userId}}\",\n  \"Key\": \"{{objectKey}}\",\n  \"ContentType\": \"text/plain\",\n  \"ContentLength\": 0,\n  \"Version\": 1,\n  \"BlobFilename\": \"{{newObjectId}}\",\n  \"IsFolder\": false,\n  \"DeleteMarker\": false,\n  \"Metadata\": \"{\\\"source\\\":\\\"postman\\\"}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Exists Object (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/objects/{{objectId}}/exists?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Object (/api/v1)",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/objects/{{objectId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Bucket Tags",
+          "item": [
+            {
+              "name": "List Bucket Tags (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/buckettags?tenantId={{tenantId}}&limit=100&offset=0"
+              },
+              "response": []
+            },
+            {
+              "name": "Enumerate Bucket Tags (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/buckettags/enumerate",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"TenantId\": \"{{tenantId}}\",\n  \"Limit\": 100,\n  \"Offset\": 0,\n  \"SortField\": \"CreatedUtc\",\n  \"SortDirection\": \"desc\",\n  \"Filters\": {}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Bucket Tag (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/buckettags?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Id\": \"{{bucketTagId}}\",\n  \"TenantId\": \"{{tenantId}}\",\n  \"BucketId\": \"{{bucketId}}\",\n  \"Key\": \"source\",\n  \"Value\": \"postman\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Read Bucket Tag (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/buckettags/{{bucketTagId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Bucket Tag (/api/v1)",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/buckettags/{{bucketTagId}}?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Id\": \"{{bucketTagId}}\",\n  \"TenantId\": \"{{tenantId}}\",\n  \"BucketId\": \"{{bucketId}}\",\n  \"Key\": \"source\",\n  \"Value\": \"postman\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Exists Bucket Tag (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/buckettags/{{bucketTagId}}/exists?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Bucket Tag (/api/v1)",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/buckettags/{{bucketTagId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Object Tags",
+          "item": [
+            {
+              "name": "List Object Tags (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/objecttags?tenantId={{tenantId}}&limit=100&offset=0"
+              },
+              "response": []
+            },
+            {
+              "name": "Enumerate Object Tags (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/objecttags/enumerate",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"TenantId\": \"{{tenantId}}\",\n  \"Limit\": 100,\n  \"Offset\": 0,\n  \"SortField\": \"CreatedUtc\",\n  \"SortDirection\": \"desc\",\n  \"Filters\": {}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Object Tag (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/objecttags?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Id\": \"{{objectTagId}}\",\n  \"TenantId\": \"{{tenantId}}\",\n  \"BucketId\": \"{{bucketId}}\",\n  \"ObjectId\": \"{{objectId}}\",\n  \"Key\": \"source\",\n  \"Value\": \"postman\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Read Object Tag (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/objecttags/{{objectTagId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Object Tag (/api/v1)",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/objecttags/{{objectTagId}}?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Id\": \"{{objectTagId}}\",\n  \"TenantId\": \"{{tenantId}}\",\n  \"BucketId\": \"{{bucketId}}\",\n  \"ObjectId\": \"{{objectId}}\",\n  \"Key\": \"source\",\n  \"Value\": \"postman\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Exists Object Tag (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/objecttags/{{objectTagId}}/exists?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Object Tag (/api/v1)",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/objecttags/{{objectTagId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Bucket ACLs",
+          "item": [
+            {
+              "name": "List Bucket ACLs (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/bucketacls?tenantId={{tenantId}}&limit=100&offset=0"
+              },
+              "response": []
+            },
+            {
+              "name": "Enumerate Bucket ACLs (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/bucketacls/enumerate",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"TenantId\": \"{{tenantId}}\",\n  \"Limit\": 100,\n  \"Offset\": 0,\n  \"SortField\": \"CreatedUtc\",\n  \"SortDirection\": \"desc\",\n  \"Filters\": {}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Bucket ACL (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/bucketacls?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Id\": \"{{bucketAclId}}\",\n  \"TenantId\": \"{{tenantId}}\",\n  \"BucketId\": \"{{bucketId}}\",\n  \"UserId\": \"{{userId}}\",\n  \"IssuedByUserId\": \"{{userId}}\",\n  \"PermitRead\": true,\n  \"PermitWrite\": false,\n  \"PermitReadAcp\": true,\n  \"PermitWriteAcp\": false,\n  \"FullControl\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Read Bucket ACL (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/bucketacls/{{bucketAclId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Bucket ACL (/api/v1)",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/bucketacls/{{bucketAclId}}?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Id\": \"{{bucketAclId}}\",\n  \"TenantId\": \"{{tenantId}}\",\n  \"BucketId\": \"{{bucketId}}\",\n  \"UserId\": \"{{userId}}\",\n  \"IssuedByUserId\": \"{{userId}}\",\n  \"PermitRead\": true,\n  \"PermitWrite\": false,\n  \"PermitReadAcp\": true,\n  \"PermitWriteAcp\": false,\n  \"FullControl\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Exists Bucket ACL (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/bucketacls/{{bucketAclId}}/exists?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Bucket ACL (/api/v1)",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/bucketacls/{{bucketAclId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Object ACLs",
+          "item": [
+            {
+              "name": "List Object ACLs (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/objectacls?tenantId={{tenantId}}&limit=100&offset=0"
+              },
+              "response": []
+            },
+            {
+              "name": "Enumerate Object ACLs (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/objectacls/enumerate",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"TenantId\": \"{{tenantId}}\",\n  \"Limit\": 100,\n  \"Offset\": 0,\n  \"SortField\": \"CreatedUtc\",\n  \"SortDirection\": \"desc\",\n  \"Filters\": {}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Object ACL (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/objectacls?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Id\": \"{{objectAclId}}\",\n  \"TenantId\": \"{{tenantId}}\",\n  \"BucketId\": \"{{bucketId}}\",\n  \"ObjectId\": \"{{objectId}}\",\n  \"UserId\": \"{{userId}}\",\n  \"IssuedByUserId\": \"{{userId}}\",\n  \"PermitRead\": true,\n  \"PermitWrite\": false,\n  \"PermitReadAcp\": true,\n  \"PermitWriteAcp\": false,\n  \"FullControl\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Read Object ACL (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/objectacls/{{objectAclId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Object ACL (/api/v1)",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/objectacls/{{objectAclId}}?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Id\": \"{{objectAclId}}\",\n  \"TenantId\": \"{{tenantId}}\",\n  \"BucketId\": \"{{bucketId}}\",\n  \"ObjectId\": \"{{objectId}}\",\n  \"UserId\": \"{{userId}}\",\n  \"IssuedByUserId\": \"{{userId}}\",\n  \"PermitRead\": true,\n  \"PermitWrite\": false,\n  \"PermitReadAcp\": true,\n  \"PermitWriteAcp\": false,\n  \"FullControl\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Exists Object ACL (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/objectacls/{{objectAclId}}/exists?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Object ACL (/api/v1)",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/objectacls/{{objectAclId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Authorization Audit",
+          "item": [
+            {
+              "name": "List Authorization Audit (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/authorizationaudit?tenantId={{tenantId}}&limit=100&offset=0"
+              },
+              "response": []
+            },
+            {
+              "name": "Enumerate Authorization Audit (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/authorizationaudit/enumerate",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"TenantId\": \"{{tenantId}}\",\n  \"Limit\": 100,\n  \"Offset\": 0,\n  \"SortField\": \"CreatedUtc\",\n  \"SortDirection\": \"desc\",\n  \"Filters\": {\n    \"ResourceType\": \"Bucket\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Read Authorization Audit (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/authorizationaudit/{{authorizationAuditId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Authorization Audit (/api/v1)",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/authorizationaudit/{{authorizationAuditId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "List Authorization Audit (/admin)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/authorizationaudit?tenantId={{tenantId}}&limit=100&offset=0"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Request History",
+          "item": [
+            {
+              "name": "List Request History (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/requesthistory?tenantId={{tenantId}}&limit=100&offset=0"
+              },
+              "response": []
+            },
+            {
+              "name": "Enumerate Request History with Filters (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/requesthistory/enumerate",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"TenantId\": \"{{tenantId}}\",\n  \"Limit\": 100,\n  \"Offset\": 0,\n  \"SortField\": \"CreatedUtc\",\n  \"SortDirection\": \"desc\",\n  \"Filters\": {\n    \"RequestType\": \"ListBuckets\",\n    \"AccessKey\": \"{{s3AccessKey}}\",\n    \"UserId\": \"{{userId}}\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Synthetic Request History (/api/v1)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/requesthistory?tenantId={{tenantId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Id\": \"{{requestHistoryId}}\",\n  \"TenantId\": \"{{tenantId}}\",\n  \"HttpMethod\": \"GET\",\n  \"RequestUrl\": \"{{baseUrl}}/\",\n  \"SourceIp\": \"127.0.0.1\",\n  \"StatusCode\": 200,\n  \"Success\": true,\n  \"DurationMs\": 1,\n  \"RequestType\": \"ListBuckets\",\n  \"UserId\": \"{{userId}}\",\n  \"AccessKey\": \"{{s3AccessKey}}\",\n  \"RequestBodyLength\": 0,\n  \"ResponseBodyLength\": 0\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Read Request History (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/requesthistory/{{requestHistoryId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Exists Request History (/api/v1)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/requesthistory/{{requestHistoryId}}/exists?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Request History (/api/v1)",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/requesthistory/{{requestHistoryId}}?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "List Request History (/admin)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/requesthistory?tenantId={{tenantId}}&limit=100&offset=0"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Reports",
+          "item": [
+            {
+              "name": "Request Summary Report",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/reports/requests?tenantId={{tenantId}}&startUtc={{reportStartUtc}}&endUtc={{reportEndUtc}}"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Maintenance",
+          "item": [
+            {
+              "name": "Maintenance Status",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/maintenance/status"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Maintenance Settings",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/maintenance/settings",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"RequestHistoryRetentionDays\": 30,\n  \"CleanupIntervalMs\": 3600000\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Purge Request History",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/maintenance/purge-request-history",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"OlderThanUtc\": \"{{purgeOlderThanUtc}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Cleanup Temporary Uploads",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/maintenance/cleanup-temp-uploads"
+              },
+              "response": []
+            },
+            {
+              "name": "Run Cleanup Cycle",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/maintenance/run-cleanup"
+              },
+              "response": []
+            },
+            {
+              "name": "Verify Objects",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/maintenance/verify-objects?tenantId={{tenantId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Migration Status",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/maintenance/migration-status"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Effective Permissions",
+          "item": [
+            {
+              "name": "Evaluate Effective Permission",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/effectivepermissions?tenantId={{tenantId}}&principalType=User&principalId={{userId}}&resourceType=Bucket&resourceId={{bucketId}}&operation=Read"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Stats",
+          "item": [
+            {
+              "name": "Dashboard Stats",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/stats?tenantId={{tenantId}}"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Health",
+          "item": [
+            {
+              "name": "Health",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{adminApiKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/admin/health"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "OpenAPI",
+          "item": [
+            {
+              "name": "OpenAPI Document",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/openapi.json"
+              },
+              "response": []
+            },
+            {
+              "name": "Swagger UI",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/swagger"
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "S3",
+      "item": [
+        {
+          "name": "Service",
+          "item": [
+            {
+              "name": "List Buckets",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/",
+                "description": "AWS-compatible ListBuckets. Returns tenant/account-owned buckets for the authenticated access key."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Buckets",
+          "item": [
+            {
+              "name": "Create Bucket",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "url": "{{baseUrl}}/{{newBucketName}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Head Bucket",
+              "request": {
+                "method": "HEAD",
+                "header": [],
+                "url": "{{baseUrl}}/{{bucketName}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Bucket",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/{{newBucketName}}"
+              },
+              "response": []
+            },
+            {
+              "name": "List Objects V2",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/{{bucketName}}?list-type=2"
+              },
+              "response": []
+            },
+            {
+              "name": "List Objects V2 with Prefix",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/{{bucketName}}?list-type=2&prefix={{objectPrefix}}&delimiter=/"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Bucket Location",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/{{bucketName}}?location"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Bucket ACLs",
+          "item": [
+            {
+              "name": "Get Bucket ACL",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/{{bucketName}}?acl"
+              },
+              "response": []
+            },
+            {
+              "name": "Put Bucket ACL",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/xml",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/{{bucketName}}?acl",
+                "body": {
+                  "mode": "raw",
+                  "raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<AccessControlPolicy xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\">\n  <Owner>\n    <ID>{{tenantId}}</ID>\n    <DisplayName>{{tenantId}}</DisplayName>\n  </Owner>\n  <AccessControlList>\n    <Grant>\n      <Grantee xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"CanonicalUser\">\n        <ID>{{userId}}</ID>\n        <DisplayName>{{userId}}</DisplayName>\n      </Grantee>\n      <Permission>FULL_CONTROL</Permission>\n    </Grant>\n  </AccessControlList>\n</AccessControlPolicy>",
+                  "options": {
+                    "raw": {
+                      "language": "xml"
+                    }
+                  }
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Bucket Tags",
+          "item": [
+            {
+              "name": "Get Bucket Tags",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/{{bucketName}}?tagging"
+              },
+              "response": []
+            },
+            {
+              "name": "Put Bucket Tags",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/xml",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/{{bucketName}}?tagging",
+                "body": {
+                  "mode": "raw",
+                  "raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<Tagging>\n  <TagSet>\n    <Tag>\n      <Key>source</Key>\n      <Value>postman</Value>\n    </Tag>\n  </TagSet>\n</Tagging>",
+                  "options": {
+                    "raw": {
+                      "language": "xml"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Bucket Tags",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/{{bucketName}}?tagging"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Bucket Versioning",
+          "item": [
+            {
+              "name": "Get Bucket Versioning",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/{{bucketName}}?versioning"
+              },
+              "response": []
+            },
+            {
+              "name": "Put Bucket Versioning",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/xml",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/{{bucketName}}?versioning",
+                "body": {
+                  "mode": "raw",
+                  "raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<VersioningConfiguration xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\">\n  <Status>Enabled</Status>\n</VersioningConfiguration>",
+                  "options": {
+                    "raw": {
+                      "language": "xml"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Object Versions",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/{{bucketName}}?versions"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Objects",
+          "item": [
+            {
+              "name": "Put Object",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "text/plain",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/{{bucketName}}/{{newObjectKey}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "Hello from Postman",
+                  "options": {
+                    "raw": {
+                      "language": "text"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Object",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/{{bucketName}}/{{objectKey}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Object Range",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Range",
+                    "value": "bytes=0-10",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/{{bucketName}}/{{objectKey}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Head Object",
+              "request": {
+                "method": "HEAD",
+                "header": [],
+                "url": "{{baseUrl}}/{{bucketName}}/{{objectKey}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Copy Object",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "x-amz-copy-source",
+                    "value": "/{{bucketName}}/{{objectKey}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/{{bucketName}}/{{copyObjectKey}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Object",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/{{bucketName}}/{{newObjectKey}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Object Version",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/{{bucketName}}/{{objectKey}}?versionId={{versionId}}"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Object ACLs",
+          "item": [
+            {
+              "name": "Get Object ACL",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/{{bucketName}}/{{objectKey}}?acl"
+              },
+              "response": []
+            },
+            {
+              "name": "Put Object ACL",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/xml",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/{{bucketName}}/{{objectKey}}?acl",
+                "body": {
+                  "mode": "raw",
+                  "raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<AccessControlPolicy xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\">\n  <Owner>\n    <ID>{{tenantId}}</ID>\n    <DisplayName>{{tenantId}}</DisplayName>\n  </Owner>\n  <AccessControlList>\n    <Grant>\n      <Grantee xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"CanonicalUser\">\n        <ID>{{userId}}</ID>\n        <DisplayName>{{userId}}</DisplayName>\n      </Grantee>\n      <Permission>FULL_CONTROL</Permission>\n    </Grant>\n  </AccessControlList>\n</AccessControlPolicy>",
+                  "options": {
+                    "raw": {
+                      "language": "xml"
+                    }
+                  }
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Object Tags",
+          "item": [
+            {
+              "name": "Get Object Tags",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/{{bucketName}}/{{objectKey}}?tagging"
+              },
+              "response": []
+            },
+            {
+              "name": "Put Object Tags",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/xml",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/{{bucketName}}/{{objectKey}}?tagging",
+                "body": {
+                  "mode": "raw",
+                  "raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<Tagging>\n  <TagSet>\n    <Tag>\n      <Key>source</Key>\n      <Value>postman</Value>\n    </Tag>\n  </TagSet>\n</Tagging>",
+                  "options": {
+                    "raw": {
+                      "language": "xml"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Object Tags",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/{{bucketName}}/{{objectKey}}?tagging"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Multipart Uploads",
+          "item": [
+            {
+              "name": "Create Multipart Upload",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/{{bucketName}}/{{multipartObjectKey}}?uploads"
+              },
+              "response": []
+            },
+            {
+              "name": "Upload Part",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "text/plain",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/{{bucketName}}/{{multipartObjectKey}}?partNumber=1&uploadId={{uploadId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "Multipart data from Postman",
+                  "options": {
+                    "raw": {
+                      "language": "text"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Parts",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/{{bucketName}}/{{multipartObjectKey}}?uploadId={{uploadId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Complete Multipart Upload",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/xml",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/{{bucketName}}/{{multipartObjectKey}}?uploadId={{uploadId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<CompleteMultipartUpload>\n  <Part>\n    <PartNumber>1</PartNumber>\n    <ETag>{{multipartPartEtag}}</ETag>\n  </Part>\n</CompleteMultipartUpload>",
+                  "options": {
+                    "raw": {
+                      "language": "xml"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Abort Multipart Upload",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/{{bucketName}}/{{multipartObjectKey}}?uploadId={{uploadId}}"
+              },
+              "response": []
+            },
+            {
+              "name": "List Bucket Multipart Uploads",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/{{bucketName}}?uploads"
+              },
+              "response": []
+            }
+          ]
+        }
+      ],
+      "auth": {
+        "type": "awsv4",
+        "awsv4": [
+          {
+            "key": "accessKey",
+            "value": "{{s3AccessKey}}",
+            "type": "string"
+          },
+          {
+            "key": "secretKey",
+            "value": "{{s3SecretKey}}",
+            "type": "string"
+          },
+          {
+            "key": "region",
+            "value": "{{awsRegion}}",
+            "type": "string"
+          },
+          {
+            "key": "service",
+            "value": "s3",
+            "type": "string"
+          }
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "adminApiKey",
+      "value": "less3admin",
+      "type": "string"
+    },
+    {
+      "key": "tenantId",
+      "value": "default",
+      "type": "string"
+    },
+    {
+      "key": "adminEmail",
+      "value": "admin@less3",
+      "type": "string"
+    },
+    {
+      "key": "adminPassword",
+      "value": "password",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "usr_default_admin",
+      "type": "string"
+    },
+    {
+      "key": "credentialId",
+      "value": "crd_default",
+      "type": "string"
+    },
+    {
+      "key": "bucketId",
+      "value": "bkt_default",
+      "type": "string"
+    },
+    {
+      "key": "objectId",
+      "value": "obj_replace_actual_id",
+      "type": "string"
+    },
+    {
+      "key": "bucketName",
+      "value": "default",
+      "type": "string"
+    },
+    {
+      "key": "objectKey",
+      "value": "hello.txt",
+      "type": "string"
+    },
+    {
+      "key": "objectPrefix",
+      "value": "hello",
+      "type": "string"
+    },
+    {
+      "key": "s3AccessKey",
+      "value": "default",
+      "type": "string"
+    },
+    {
+      "key": "s3SecretKey",
+      "value": "default",
+      "type": "string"
+    },
+    {
+      "key": "awsRegion",
+      "value": "us-west-1",
+      "type": "string"
+    },
+    {
+      "key": "newTenantId",
+      "value": "ten_postman",
+      "type": "string"
+    },
+    {
+      "key": "newUserId",
+      "value": "usr_postman",
+      "type": "string"
+    },
+    {
+      "key": "newUserEmail",
+      "value": "postman.user@example.com",
+      "type": "string"
+    },
+    {
+      "key": "newCredentialId",
+      "value": "crd_postman",
+      "type": "string"
+    },
+    {
+      "key": "newAccessKey",
+      "value": "ak_postman",
+      "type": "string"
+    },
+    {
+      "key": "newSecretKey",
+      "value": "postman-secret",
+      "type": "string"
+    },
+    {
+      "key": "newBucketId",
+      "value": "bkt_postman",
+      "type": "string"
+    },
+    {
+      "key": "newBucketName",
+      "value": "postman-bucket",
+      "type": "string"
+    },
+    {
+      "key": "newObjectId",
+      "value": "obj_postman",
+      "type": "string"
+    },
+    {
+      "key": "newObjectKey",
+      "value": "postman-object.txt",
+      "type": "string"
+    },
+    {
+      "key": "copyObjectKey",
+      "value": "postman-copy.txt",
+      "type": "string"
+    },
+    {
+      "key": "bucketTagId",
+      "value": "btg_postman",
+      "type": "string"
+    },
+    {
+      "key": "objectTagId",
+      "value": "otg_postman",
+      "type": "string"
+    },
+    {
+      "key": "bucketAclId",
+      "value": "bac_postman",
+      "type": "string"
+    },
+    {
+      "key": "objectAclId",
+      "value": "oac_postman",
+      "type": "string"
+    },
+    {
+      "key": "roleId",
+      "value": "rol_postman",
+      "type": "string"
+    },
+    {
+      "key": "permissionId",
+      "value": "per_postman",
+      "type": "string"
+    },
+    {
+      "key": "assignmentId",
+      "value": "asn_postman",
+      "type": "string"
+    },
+    {
+      "key": "sessionId",
+      "value": "ses_replace_actual_id",
+      "type": "string"
+    },
+    {
+      "key": "sessionToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "authorizationAuditId",
+      "value": "aud_replace_actual_id",
+      "type": "string"
+    },
+    {
+      "key": "requestHistoryId",
+      "value": "req_postman",
+      "type": "string"
+    },
+    {
+      "key": "reportStartUtc",
+      "value": "2026-07-23T00:00:00.000Z",
+      "type": "string"
+    },
+    {
+      "key": "reportEndUtc",
+      "value": "2026-07-24T23:59:59.999Z",
+      "type": "string"
+    },
+    {
+      "key": "purgeOlderThanUtc",
+      "value": "2026-01-01T00:00:00.000Z",
+      "type": "string"
+    },
+    {
+      "key": "versionId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "uploadId",
+      "value": "upl_replace_actual_id",
+      "type": "string"
+    },
+    {
+      "key": "multipartObjectKey",
+      "value": "postman-multipart.txt",
+      "type": "string"
+    },
+    {
+      "key": "multipartPartEtag",
+      "value": "replace-with-upload-part-etag",
+      "type": "string"
+    }
+  ]
 }

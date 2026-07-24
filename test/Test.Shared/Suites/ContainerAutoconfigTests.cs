@@ -43,7 +43,7 @@ namespace Test.Shared.Suites
 
                 string body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 using JsonDocument doc = JsonDocument.Parse(body);
-                AssertTrue(doc.RootElement.EnumerateArray().Any(e => e.GetProperty("GUID").GetString() == "default"));
+                AssertTrue(doc.RootElement.EnumerateArray().Any(e => e.GetProperty("Id").GetString() == "usr_default_admin"));
             });
 
             await RunTest("ContainerAutoconfig_DefaultBucketSeeded", async () =>

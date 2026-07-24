@@ -1,4 +1,4 @@
-﻿namespace Less3.Classes
+namespace Less3.Classes
 {
     using System;
     using System.Text.Json.Serialization;
@@ -11,15 +11,14 @@
         #region Public-Members
 
         /// <summary>
-        /// Database identifier.
+        /// Id.
         /// </summary>
-        [JsonIgnore]
-        public int Id { get; set; } = 0;
+        public string Id { get; set; } = Less3.Helpers.IdGenerator.GenerateUserId();
 
         /// <summary>
-        /// GUID.
+        /// Tenant identifier.
         /// </summary>
-        public string GUID { get; set; } = Guid.NewGuid().ToString();
+        public string TenantId { get; set; } = "default";
 
         /// <summary>
         /// Name of the user.
@@ -30,6 +29,26 @@
         /// Email address of the user.
         /// </summary>
         public string Email { get; set; } = null;
+
+        /// <summary>
+        /// Password hash for REST/dashboard authentication.
+        /// </summary>
+        public string PasswordHash { get; set; } = null;
+
+        /// <summary>
+        /// Whether the user is a global administrator.
+        /// </summary>
+        public bool IsAdmin { get; set; } = false;
+
+        /// <summary>
+        /// Whether the user is an administrator within the user's tenant.
+        /// </summary>
+        public bool IsTenantAdmin { get; set; } = false;
+
+        /// <summary>
+        /// Whether the user is active.
+        /// </summary>
+        public bool Active { get; set; } = true;
 
         /// <summary>
         /// Timestamp from record creation, in UTC time.
@@ -62,7 +81,7 @@
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
             if (String.IsNullOrEmpty(email)) throw new ArgumentNullException(nameof(email));
 
-            GUID = Guid.NewGuid().ToString();
+            Id = Less3.Helpers.IdGenerator.GenerateUserId();
             Name = name;
             Email = email;
         }
@@ -70,16 +89,16 @@
         /// <summary>
         /// Instantiate.
         /// </summary>
-        /// <param name="guid">GUID.</param>
+        /// <param name="id">Id.</param>
         /// <param name="name">Name.</param>
         /// <param name="email">Email.</param>
-        public User(string guid, string name, string email)
+        public User(string id, string name, string email)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
             if (String.IsNullOrEmpty(email)) throw new ArgumentNullException(nameof(email));
 
-            GUID = guid;
+            Id = id;
             Name = name;
             Email = email;
         }

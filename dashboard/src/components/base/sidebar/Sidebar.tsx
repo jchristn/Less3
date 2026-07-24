@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Layout, Menu, Button } from 'antd';
+import { Layout, Menu, Button, MenuProps } from 'antd';
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -11,6 +11,11 @@ import {
   KeyOutlined,
   HistoryOutlined,
   ApiOutlined,
+  ToolOutlined,
+  BankOutlined,
+  SafetyCertificateOutlined,
+  TeamOutlined,
+  UnlockOutlined,
 } from '@ant-design/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -36,46 +41,100 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onCollapse, showLo
     if (pathname.startsWith('/admin/objects')) return ['objects'];
     if (pathname.startsWith('/admin/users')) return ['users'];
     if (pathname.startsWith('/admin/credentials')) return ['credentials'];
+    if (pathname.startsWith('/admin/tenants')) return ['tenants'];
+    if (pathname.startsWith('/admin/roles')) return ['roles'];
+    if (pathname.startsWith('/admin/role-assignments')) return ['role-assignments'];
+    if (pathname.startsWith('/admin/permissions')) return ['permissions'];
     if (pathname.startsWith('/admin/request-history')) return ['request-history'];
+    if (pathname.startsWith('/admin/maintenance')) return ['maintenance'];
     if (pathname.startsWith('/admin/api-explorer')) return ['api-explorer'];
     return [];
   };
 
-  const menuItems = [
+  const menuItems: MenuProps['items'] = [
     {
-      key: 'dashboard',
-      icon: <HomeOutlined />,
-      label: <Link href="/dashboard">Home</Link>,
+      type: 'group',
+      label: 'HOME',
+      children: [
+        {
+          key: 'dashboard',
+          icon: <HomeOutlined />,
+          label: <Link href="/dashboard">Home</Link>,
+        },
+      ],
     },
     {
-      key: 'buckets',
-      icon: <DatabaseOutlined />,
-      label: <Link href="/admin/buckets">Buckets</Link>,
+      type: 'group',
+      label: 'MANAGE',
+      children: [
+        {
+          key: 'buckets',
+          icon: <DatabaseOutlined />,
+          label: <Link href="/admin/buckets">Buckets</Link>,
+        },
+        {
+          key: 'objects',
+          icon: <FolderOutlined />,
+          label: <Link href="/admin/objects">Objects</Link>,
+        },
+      ],
     },
     {
-      key: 'objects',
-      icon: <FolderOutlined />,
-      label: <Link href="/admin/objects">Objects</Link>,
+      type: 'group',
+      label: 'CONFIGURE',
+      children: [
+        {
+          key: 'tenants',
+          icon: <BankOutlined />,
+          label: <Link href="/admin/tenants">Tenants</Link>,
+        },
+        {
+          key: 'users',
+          icon: <UserOutlined />,
+          label: <Link href="/admin/users">Users</Link>,
+        },
+        {
+          key: 'credentials',
+          icon: <KeyOutlined />,
+          label: <Link href="/admin/credentials">Credentials</Link>,
+        },
+        {
+          key: 'roles',
+          icon: <SafetyCertificateOutlined />,
+          label: <Link href="/admin/roles">Roles</Link>,
+        },
+        {
+          key: 'role-assignments',
+          icon: <TeamOutlined />,
+          label: <Link href="/admin/role-assignments">Assignments</Link>,
+        },
+        {
+          key: 'permissions',
+          icon: <UnlockOutlined />,
+          label: <Link href="/admin/permissions">Permissions</Link>,
+        },
+      ],
     },
     {
-      key: 'users',
-      icon: <UserOutlined />,
-      label: <Link href="/admin/users">Users</Link>,
-    },
-    {
-      key: 'credentials',
-      icon: <KeyOutlined />,
-      label: <Link href="/admin/credentials">Credentials</Link>,
-    },
-    {
-      key: 'request-history',
-      icon: <HistoryOutlined />,
-      label: <Link href="/admin/request-history">Request History</Link>,
-    },
-    {
-      key: 'api-explorer',
-      icon: <ApiOutlined />,
-      label: <Link href="/admin/api-explorer">API Explorer</Link>,
+      type: 'group',
+      label: 'OPERATE',
+      children: [
+        {
+          key: 'request-history',
+          icon: <HistoryOutlined />,
+          label: <Link href="/admin/request-history">Request History</Link>,
+        },
+        {
+          key: 'maintenance',
+          icon: <ToolOutlined />,
+          label: <Link href="/admin/maintenance">Maintenance</Link>,
+        },
+        {
+          key: 'api-explorer',
+          icon: <ApiOutlined />,
+          label: <Link href="/admin/api-explorer">API Explorer</Link>,
+        },
+      ],
     },
   ];
 

@@ -4,6 +4,7 @@ namespace Less3.Database.PostgreSql.Implementations
     using System.Collections.Generic;
     using System.Data;
     using Less3.Classes;
+    using Less3.Database.Implementations;
     using Less3.Database.Interfaces;
     using Less3.Database.PostgreSql.Queries;
 
@@ -22,41 +23,41 @@ namespace Less3.Database.PostgreSql.Implementations
             _Driver.ExecuteQuery(ObjQueries.InsertQuery(obj), true).Wait();
         }
 
-        public Obj GetLatestByKey(string key, string bucketGuid)
+        public Obj GetLatestByKey(string key, string bucketId)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            DataTable result = _Driver.ExecuteQuery(ObjQueries.SelectLatestByKey(key, bucketGuid)).Result;
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Driver.ExecuteQuery(ObjQueries.SelectLatestByKey(key, bucketId)).Result;
             List<Obj> objects = MapObjects(result);
             if (objects.Count > 0) return objects[0];
             return null;
         }
 
-        public Obj GetByKeyAndVersion(string key, long version, string bucketGuid)
+        public Obj GetByKeyAndVersion(string key, long version, string bucketId)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            DataTable result = _Driver.ExecuteQuery(ObjQueries.SelectByKeyAndVersion(key, version, bucketGuid)).Result;
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Driver.ExecuteQuery(ObjQueries.SelectByKeyAndVersion(key, version, bucketId)).Result;
             List<Obj> objects = MapObjects(result);
             if (objects.Count > 0) return objects[0];
             return null;
         }
 
-        public Obj GetByGuid(string guid, string bucketGuid)
+        public Obj GetById(string id, string bucketId)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            DataTable result = _Driver.ExecuteQuery(ObjQueries.SelectByGuid(guid, bucketGuid)).Result;
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Driver.ExecuteQuery(ObjQueries.SelectById(id, bucketId)).Result;
             List<Obj> objects = MapObjects(result);
             if (objects.Count > 0) return objects[0];
             return null;
         }
 
-        public long GetLatestVersion(string key, string bucketGuid)
+        public long GetLatestVersion(string key, string bucketId)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            DataTable result = _Driver.ExecuteQuery(ObjQueries.SelectLatestVersion(key, bucketGuid)).Result;
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Driver.ExecuteQuery(ObjQueries.SelectLatestVersion(key, bucketId)).Result;
             if (result != null && result.Rows.Count > 0)
                 return Convert.ToInt64(result.Rows[0]["maxversion"]);
             return 0;
@@ -74,17 +75,17 @@ namespace Less3.Database.PostgreSql.Implementations
             _Driver.ExecuteQuery(ObjQueries.DeleteQuery(obj), true).Wait();
         }
 
-        public List<Obj> Enumerate(string bucketGuid, int startIndex, int maxResults, bool excludeDeleteMarkers, string prefix)
+        public List<Obj> Enumerate(string bucketId, int startIndex, int maxResults, bool excludeDeleteMarkers, string prefix)
         {
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            DataTable result = _Driver.ExecuteQuery(ObjQueries.Enumerate(bucketGuid, startIndex, maxResults, excludeDeleteMarkers, prefix)).Result;
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Driver.ExecuteQuery(ObjQueries.Enumerate(bucketId, startIndex, maxResults, excludeDeleteMarkers, prefix)).Result;
             return MapObjects(result);
         }
 
-        public BucketStatistics GetStatistics(string bucketGuid)
+        public BucketStatistics GetStatistics(string bucketId)
         {
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            DataTable result = _Driver.ExecuteQuery(ObjQueries.GetStatistics(bucketGuid)).Result;
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Driver.ExecuteQuery(ObjQueries.GetStatistics(bucketId)).Result;
             BucketStatistics stats = new BucketStatistics();
             if (result != null && result.Rows.Count > 0)
             {
@@ -102,11 +103,11 @@ namespace Less3.Database.PostgreSql.Implementations
             foreach (DataRow row in dt.Rows)
             {
                 Obj obj = new Obj();
-                obj.Id = Convert.ToInt32(row["id"]);
-                obj.GUID = row["guid"] != DBNull.Value ? row["guid"].ToString() : null;
-                obj.BucketGUID = row["bucketguid"] != DBNull.Value ? row["bucketguid"].ToString() : null;
-                obj.OwnerGUID = row["ownerguid"] != DBNull.Value ? row["ownerguid"].ToString() : null;
-                obj.AuthorGUID = row["authorguid"] != DBNull.Value ? row["authorguid"].ToString() : null;
+                obj.Id = row["id"] != DBNull.Value ? row["id"].ToString() : null;
+                obj.TenantId = ControlPlaneDataMapper.StringValue(row, "tenant_id") ?? "default";
+                obj.BucketId = row["bucket_id"] != DBNull.Value ? row["bucket_id"].ToString() : null;
+                obj.OwnerId = row["owner_id"] != DBNull.Value ? row["owner_id"].ToString() : null;
+                obj.AuthorId = row["author_id"] != DBNull.Value ? row["author_id"].ToString() : null;
                 obj.Key = row["key"] != DBNull.Value ? row["key"].ToString() : null;
                 obj.ContentType = row["contenttype"] != DBNull.Value ? row["contenttype"].ToString() : null;
                 obj.ContentLength = Convert.ToInt64(row["contentlength"]);
@@ -120,8 +121,8 @@ namespace Less3.Database.PostgreSql.Implementations
                     obj.Retention = RetentionType.NONE;
 
                 obj.BlobFilename = row["blobfilename"] != DBNull.Value ? row["blobfilename"].ToString() : null;
-                obj.IsFolder = Convert.ToBoolean(row["isfolder"]);
-                obj.DeleteMarker = Convert.ToBoolean(row["deletemarker"]);
+                obj.IsFolder = ControlPlaneDataMapper.BoolValue(row, "isfolder");
+                obj.DeleteMarker = ControlPlaneDataMapper.BoolValue(row, "deletemarker");
                 obj.Md5 = row["md5"] != DBNull.Value ? row["md5"].ToString() : null;
                 obj.CreatedUtc = Convert.ToDateTime(row["createdutc"]).ToUniversalTime();
                 obj.LastUpdateUtc = Convert.ToDateTime(row["lastupdateutc"]).ToUniversalTime();

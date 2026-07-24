@@ -1,6 +1,5 @@
-﻿namespace Less3.Api.S3
+namespace Less3.Api.S3
 {
-    using Azure;
     using Less3.Classes;
     using Less3.Helpers;
     using Less3.Settings;
@@ -68,6 +67,12 @@
             RequestValidator.ValidateBucketExists(md, _Logging, header);
 
             long versionId = RequestValidator.ParseVersionId(ctx);
+            if (md.Obj == null)
+            {
+                _Logging.Info(header + "object " + ctx.Request.Key + " does not exist, returning idempotent delete success");
+                return;
+            }
+
             RequestValidator.ValidateObjectExists(md.Obj, versionId, _Logging, header);
             RequestValidator.CheckDeleteMarker(md.Obj, ctx);
 
@@ -181,7 +186,7 @@
 
             RequestValidator.CheckDeleteMarker(md.Obj, ctx);
 
-            ObjectMetadata metadata = new ObjectMetadata(md.Obj.Key, md.Obj.LastUpdateUtc, md.Obj.Etag ?? md.Obj.Md5, md.Obj.ContentLength, new Owner(md.Obj.OwnerGUID, null));
+            ObjectMetadata metadata = new ObjectMetadata(md.Obj.Key, md.Obj.LastUpdateUtc, md.Obj.Etag ?? md.Obj.Md5, md.Obj.ContentLength, new Owner(md.Obj.OwnerId, null));
             metadata.ContentType = md.Obj.ContentType;
 
             if (md.Bucket.EnableVersioning)
@@ -214,7 +219,7 @@
             AddUserMetadataHeaders(md.Obj, ctx, header);
 
             FileStream fs = new FileStream(GetObjectBlobFile(md.Bucket, md.Obj), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            return new S3Object(md.Obj.Key, md.Obj.Version.ToString(), isLatest, md.Obj.LastUpdateUtc, md.Obj.Etag, md.Obj.ContentLength, GetOwnerFromUserGuid(md.Obj.OwnerGUID), fs, md.Obj.ContentType);
+            return new S3Object(md.Obj.Key, md.Obj.Version.ToString(), isLatest, md.Obj.LastUpdateUtc, md.Obj.Etag, md.Obj.ContentLength, GetOwnerFromUserId(md.Obj.OwnerId), fs, md.Obj.ContentType);
         }
 
         internal async Task<AccessControlPolicy> ReadAcl(S3Context ctx)
@@ -229,10 +234,10 @@
             RequestValidator.ValidateObjectExists(md.Obj, versionId, _Logging, header);
             RequestValidator.CheckDeleteMarker(md.Obj, ctx);
 
-            User owner = _Config.GetUserByGuid(md.Obj.OwnerGUID);
+            User owner = _Config.GetUserById(md.Obj.OwnerId);
             if (owner == null)
             {
-                _Logging.Warn(header + "unable to find owner GUID " + md.Obj.OwnerGUID + " for object GUID " + md.Obj.GUID);
+                _Logging.Warn(header + "unable to find owner Id " + md.Obj.OwnerId + " for object Id " + md.Obj.Id);
                 throw new S3Exception(new Error(ErrorCode.InternalError));
             }
 
@@ -345,7 +350,7 @@
                 if (md.Bucket.EnableVersioning)
                     ctx.Response.Headers.Add("x-amz-version-id", md.Obj.Version.ToString());
 
-                return new S3Object(md.Obj.Key, md.Obj.Version.ToString(), isLatest, md.Obj.LastUpdateUtc, md.Obj.Etag, readLen, GetOwnerFromUserGuid(md.Obj.OwnerGUID), data, md.Obj.ContentType);
+                return new S3Object(md.Obj.Key, md.Obj.Version.ToString(), isLatest, md.Obj.LastUpdateUtc, md.Obj.Etag, readLen, GetOwnerFromUserId(md.Obj.OwnerId), data, md.Obj.ContentType);
             }
         }
 
@@ -415,21 +420,22 @@
             {
                 // new object 
                 obj = new Obj();
+                obj.TenantId = md.Bucket.TenantId;
 
                 if (md.User != null)
                 {
-                    obj.AuthorGUID = md.User.GUID;
-                    obj.OwnerGUID = md.User.GUID;
+                    obj.AuthorId = md.User.Id;
+                    obj.OwnerId = md.User.Id;
                 }
                 else
                 {
-                    obj.AuthorGUID = ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port;
-                    obj.OwnerGUID = ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port;
+                    obj.AuthorId = ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port;
+                    obj.OwnerId = ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port;
                 }
                  
-                obj.GUID = Guid.NewGuid().ToString();
+                obj.Id = Less3.Helpers.IdGenerator.GenerateObjectId();
                 obj.Version = 1;
-                obj.BlobFilename = obj.GUID;
+                obj.BlobFilename = obj.Id;
                 obj.ContentLength = ctx.Http.Request.ContentLength;
                 obj.ContentType = ctx.Http.Request.ContentType;
                 obj.CreatedUtc = ts;
@@ -444,21 +450,22 @@
             else
             {
                 // new version
+                obj.TenantId = md.Bucket.TenantId;
                 if (md.User != null)
                 {
-                    obj.AuthorGUID = md.User.GUID;
-                    obj.OwnerGUID = md.User.GUID;
+                    obj.AuthorId = md.User.Id;
+                    obj.OwnerId = md.User.Id;
                 }
                 else
                 {
-                    obj.AuthorGUID = ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port;
-                    obj.OwnerGUID = ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port;
+                    obj.AuthorId = ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port;
+                    obj.OwnerId = ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port;
                 }
 
                 obj.Etag = null;
-                obj.GUID = Guid.NewGuid().ToString();
+                obj.Id = Less3.Helpers.IdGenerator.GenerateObjectId();
                 obj.Version = obj.Version + 1;
-                obj.BlobFilename = obj.GUID;
+                obj.BlobFilename = obj.Id;
                 obj.ContentLength = ctx.Http.Request.ContentLength;
                 obj.ContentType = ctx.Http.Request.ContentType;
                 obj.CreatedUtc = ts;
@@ -473,7 +480,7 @@
 
             #region Write-Data-to-Temp-and-to-Bucket
              
-            string tempFilename = _Settings.Storage.TempDirectory + Guid.NewGuid().ToString();
+            string tempFilename = _Settings.Storage.TempDirectory + Less3.Helpers.IdGenerator.GenerateObjectId();
             long totalLength = 0;
             bool writeSuccess = false;
 
@@ -569,7 +576,7 @@
 
                             if (!String.IsNullOrEmpty(curr.Grantee.ID))
                             {
-                                tempUser = _Config.GetUserByGuid(curr.Grantee.ID);
+                                tempUser = _Config.GetUserById(md.Bucket.TenantId, curr.Grantee.ID);
                                 if (tempUser == null)
                                 {
                                     _Logging.Warn(header + "unable to retrieve user " + curr.Grantee.ID + " to add ACL to object " + ctx.Request.Bucket + "/" + ctx.Request.Key + " version " + obj.Version);
@@ -584,14 +591,15 @@
 
                                 objectAcl = ObjectAcl.UserAcl(
                                     curr.Grantee.ID,
-                                    md.User.GUID,
-                                    md.Bucket.GUID,
-                                    obj.GUID,
+                                    md.User.Id,
+                                    md.Bucket.Id,
+                                    obj.Id,
                                     permitRead,
                                     permitWrite,
                                     permitReadAcp,
                                     permitWriteAcp,
                                     fullControl);
+                                objectAcl.TenantId = md.Bucket.TenantId;
 
                                 md.BucketClient.AddObjectAcl(objectAcl);
                             }
@@ -605,14 +613,15 @@
 
                                 objectAcl = ObjectAcl.GroupAcl(
                                     curr.Grantee.URI,
-                                    md.User.GUID,
-                                    md.Bucket.GUID,
-                                    obj.GUID,
+                                    md.User.Id,
+                                    md.Bucket.Id,
+                                    obj.Id,
                                     permitRead,
                                     permitWrite,
                                     permitReadAcp,
                                     permitWriteAcp,
                                     fullControl);
+                                objectAcl.TenantId = md.Bucket.TenantId;
 
                                 md.BucketClient.AddObjectAcl(objectAcl);
                             }
@@ -643,15 +652,16 @@
                 acp,
                 ctx.Http.Request.Headers,
                 md.User,
-                md.Bucket.GUID,
-                md.Obj.GUID,
-                md.Bucket.OwnerGUID,
+                md.Bucket.Id,
+                md.Obj.Id,
+                md.Bucket.OwnerId,
                 _Config,
                 _Logging,
                 header);
 
             foreach (ObjectAcl acl in acls)
             {
+                acl.TenantId = md.Bucket.TenantId;
                 md.BucketClient.AddObjectAcl(acl);
             }
 
@@ -667,6 +677,12 @@
             RequestValidator.ValidateAuthorization(md, _Logging, header);
             RequestValidator.ValidateBucketExists(md, _Logging, header);
 
+            if (S3TagValidator.IsInvalid(tagging))
+            {
+                _Logging.Warn(header + "invalid object tag set");
+                throw new S3Exception(new Error(ErrorCode.InvalidRequest));
+            }
+
             long versionId = RequestValidator.ParseVersionId(ctx);
             RequestValidator.ValidateObjectExists(md.Obj, versionId, _Logging, header);
             RequestValidator.CheckDeleteMarker(md.Obj, ctx);
@@ -679,8 +695,9 @@
                 foreach (Tag curr in tagging.Tags.Tags)
                 {
                     ObjectTag ot = new ObjectTag();
-                    ot.BucketGUID = md.Bucket.GUID;
-                    ot.ObjectGUID = md.Obj.GUID;
+                    ot.TenantId = md.Bucket.TenantId;
+                    ot.BucketId = md.Bucket.Id;
+                    ot.ObjectId = md.Obj.Id;
                     ot.Key = curr.Key;
                     ot.Value = curr.Value;
                     tags.Add(ot);
@@ -704,8 +721,9 @@
             DateTime ts = DateTime.UtcNow;
 
             Less3.Classes.Upload upload = new Less3.Classes.Upload();
-            upload.GUID = Guid.NewGuid().ToString();
-            upload.BucketGUID = md.Bucket.GUID;
+            upload.TenantId = md.Bucket.TenantId;
+            upload.Id = Less3.Helpers.IdGenerator.GenerateUploadId();
+            upload.BucketId = md.Bucket.Id;
             upload.Key = ctx.Request.Key;
             upload.CreatedUtc = ts;
             upload.LastAccessUtc = ts;
@@ -713,13 +731,13 @@
 
             if (md.User != null)
             {
-                upload.OwnerGUID = md.User.GUID;
-                upload.AuthorGUID = md.User.GUID;
+                upload.OwnerId = md.User.Id;
+                upload.AuthorId = md.User.Id;
             }
             else
             {
-                upload.OwnerGUID = ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port;
-                upload.AuthorGUID = ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port;
+                upload.OwnerId = ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port;
+                upload.AuthorId = ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port;
             }
 
             if (ctx.Http.Request.Headers != null)
@@ -738,12 +756,12 @@
 
             _Config.AddUpload(upload);
 
-            _Logging.Info(header + "initiated multipart upload " + upload.GUID + " for key " + ctx.Request.Bucket + "/" + ctx.Request.Key);
+            _Logging.Info(header + "initiated multipart upload " + upload.Id + " for key " + ctx.Request.Bucket + "/" + ctx.Request.Key);
 
             InitiateMultipartUploadResult result = new InitiateMultipartUploadResult();
             result.Bucket = ctx.Request.Bucket;
             result.Key = ctx.Request.Key;
-            result.UploadId = upload.GUID;
+            result.UploadId = upload.Id;
 
             return result;
         }
@@ -757,7 +775,7 @@
             RequestValidator.ValidateBucketExists(md, _Logging, header);
             RequestValidator.ValidateUploadId(ctx, _Logging, header);
 
-            Less3.Classes.Upload uploadRecord = _Config.GetUploadByGuid(ctx.Request.UploadId);
+            Less3.Classes.Upload uploadRecord = _Config.GetUploadById(md.Bucket.TenantId, ctx.Request.UploadId);
             RequestValidator.ValidateUpload(uploadRecord, ctx.Request.UploadId, _Logging, header);
 
             if (upload == null || upload.Parts == null || upload.Parts.Count < 1)
@@ -766,7 +784,7 @@
                 throw new S3Exception(new Error(ErrorCode.InvalidRequest));
             }
 
-            List<UploadPart> storedParts = _Config.GetUploadPartsByUploadGuid(ctx.Request.UploadId);
+            List<UploadPart> storedParts = _Config.GetUploadPartsByUploadId(md.Bucket.TenantId, ctx.Request.UploadId);
             if (storedParts == null || storedParts.Count == 0)
             {
                 _Logging.Warn(header + "no parts found for upload " + ctx.Request.UploadId);
@@ -813,19 +831,20 @@
             DateTime ts = DateTime.UtcNow;
 
             Obj obj = new Obj();
+            obj.TenantId = md.Bucket.TenantId;
             if (md.User != null)
             {
-                obj.AuthorGUID = md.User.GUID;
-                obj.OwnerGUID = md.User.GUID;
+                obj.AuthorId = md.User.Id;
+                obj.OwnerId = md.User.Id;
             }
             else
             {
-                obj.AuthorGUID = ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port;
-                obj.OwnerGUID = ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port;
+                obj.AuthorId = ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port;
+                obj.OwnerId = ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port;
             }
 
-            obj.GUID = Guid.NewGuid().ToString();
-            obj.BlobFilename = obj.GUID;
+            obj.Id = Less3.Helpers.IdGenerator.GenerateObjectId();
+            obj.BlobFilename = obj.Id;
             obj.Key = ctx.Request.Key;
             obj.ContentType = uploadRecord.ContentType;
             obj.Metadata = uploadRecord.Metadata;
@@ -844,7 +863,7 @@
                 obj.Version = existingObj.Version + 1;
             }
 
-            string tempFilename = _Settings.Storage.TempDirectory + Guid.NewGuid().ToString();
+            string tempFilename = _Settings.Storage.TempDirectory + Less3.Helpers.IdGenerator.GenerateObjectId();
             long totalLength = 0;
 
             string multipartEtag = ComputeMultipartEtag(selectedParts);
@@ -856,7 +875,7 @@
                 {
                     foreach (UploadPart part in selectedParts)
                     {
-                        string partFile = GetPartFilePath(md.Bucket.GUID, ctx.Request.UploadId, part.PartNumber);
+                        string partFile = GetPartFilePath(md.Bucket.Id, ctx.Request.UploadId, part.PartNumber);
                         if (!File.Exists(partFile))
                         {
                             _Logging.Warn(header + "part file " + partFile + " not found for part " + part.PartNumber);
@@ -909,15 +928,15 @@
 
             foreach (UploadPart part in availableParts)
             {
-                string partFile = GetPartFilePath(md.Bucket.GUID, ctx.Request.UploadId, part.PartNumber);
+                string partFile = GetPartFilePath(md.Bucket.Id, ctx.Request.UploadId, part.PartNumber);
                 if (File.Exists(partFile))
                 {
                     File.Delete(partFile);
                 }
             }
 
-            _Config.DeleteUploadParts(ctx.Request.UploadId);
-            _Config.DeleteUpload(ctx.Request.UploadId);
+            _Config.DeleteUploadParts(md.Bucket.TenantId, ctx.Request.UploadId);
+            _Config.DeleteUpload(md.Bucket.TenantId, ctx.Request.UploadId);
 
             _Logging.Info(header + "completed multipart upload " + ctx.Request.UploadId + " for key " + ctx.Request.Bucket + "/" + ctx.Request.Key);
 
@@ -945,11 +964,11 @@
             RequestValidator.ValidateUploadId(ctx, _Logging, header);
             RequestValidator.ValidatePartNumber(ctx.Request.PartNumber, _Logging, header);
 
-            Less3.Classes.Upload uploadRecord = _Config.GetUploadByGuid(ctx.Request.UploadId);
+            Less3.Classes.Upload uploadRecord = _Config.GetUploadById(md.Bucket.TenantId, ctx.Request.UploadId);
             RequestValidator.ValidateUpload(uploadRecord, ctx.Request.UploadId, _Logging, header);
 
-            string partFile = GetPartFilePath(md.Bucket.GUID, ctx.Request.UploadId, ctx.Request.PartNumber);
-            string tempPartFile = partFile + ".tmp-" + Guid.NewGuid().ToString("N");
+            string partFile = GetPartFilePath(md.Bucket.Id, ctx.Request.UploadId, ctx.Request.PartNumber);
+            string tempPartFile = partFile + ".tmp-" + Less3.Helpers.IdGenerator.GenerateUploadPartId();
             long partLength = 0;
             HashResult hashes = new HashResult();
 
@@ -1009,12 +1028,13 @@
                 }
 
                 File.Move(tempPartFile, partFile);
-                _Config.DeleteUploadPart(ctx.Request.UploadId, ctx.Request.PartNumber);
+                _Config.DeleteUploadPart(md.Bucket.TenantId, ctx.Request.UploadId, ctx.Request.PartNumber);
 
                 UploadPart part = new UploadPart();
-                part.GUID = Guid.NewGuid().ToString();
-                part.BucketGUID = md.Bucket.GUID;
-                part.UploadGUID = ctx.Request.UploadId;
+                part.TenantId = md.Bucket.TenantId;
+                part.Id = Less3.Helpers.IdGenerator.GenerateUploadPartId();
+                part.BucketId = md.Bucket.Id;
+                part.UploadId = ctx.Request.UploadId;
                 part.PartNumber = ctx.Request.PartNumber;
                 part.PartLength = (int)partLength;
                 part.MD5Hash = hashes.MD5;
@@ -1025,11 +1045,11 @@
 
                 if (md.User != null)
                 {
-                    part.OwnerGUID = md.User.GUID;
+                    part.OwnerId = md.User.Id;
                 }
                 else
                 {
-                    part.OwnerGUID = Guid.NewGuid().ToString();
+                    part.OwnerId = Less3.Helpers.IdGenerator.GenerateUserId();
                 }
 
                 _Config.AddUploadPart(part);
@@ -1070,15 +1090,15 @@
             RequestValidator.ValidateBucketExists(md, _Logging, header);
             RequestValidator.ValidateUploadId(ctx, _Logging, header);
 
-            Less3.Classes.Upload uploadRecord = _Config.GetUploadByGuid(ctx.Request.UploadId);
+            Less3.Classes.Upload uploadRecord = _Config.GetUploadById(md.Bucket.TenantId, ctx.Request.UploadId);
             RequestValidator.ValidateUpload(uploadRecord, ctx.Request.UploadId, _Logging, header);
 
-            List<UploadPart> parts = GetLatestUploadPartsByNumber(_Config.GetUploadPartsByUploadGuid(ctx.Request.UploadId));
+            List<UploadPart> parts = GetLatestUploadPartsByNumber(_Config.GetUploadPartsByUploadId(md.Bucket.TenantId, ctx.Request.UploadId));
             if (parts != null && parts.Count > 0)
             {
                 foreach (UploadPart part in parts)
                 {
-                    string partFile = GetPartFilePath(md.Bucket.GUID, ctx.Request.UploadId, part.PartNumber);
+                    string partFile = GetPartFilePath(md.Bucket.Id, ctx.Request.UploadId, part.PartNumber);
                     if (File.Exists(partFile))
                     {
                         File.Delete(partFile);
@@ -1086,8 +1106,8 @@
                 }
             }
 
-            _Config.DeleteUploadParts(ctx.Request.UploadId);
-            _Config.DeleteUpload(ctx.Request.UploadId);
+            _Config.DeleteUploadParts(md.Bucket.TenantId, ctx.Request.UploadId);
+            _Config.DeleteUpload(md.Bucket.TenantId, ctx.Request.UploadId);
 
             _Logging.Info(header + "aborted multipart upload " + ctx.Request.UploadId);
         }
@@ -1101,21 +1121,21 @@
             RequestValidator.ValidateBucketExists(md, _Logging, header);
             RequestValidator.ValidateUploadId(ctx, _Logging, header);
 
-            Less3.Classes.Upload uploadRecord = _Config.GetUploadByGuid(ctx.Request.UploadId);
+            Less3.Classes.Upload uploadRecord = _Config.GetUploadById(md.Bucket.TenantId, ctx.Request.UploadId);
             RequestValidator.ValidateUpload(uploadRecord, ctx.Request.UploadId, _Logging, header);
 
-            List<UploadPart> parts = GetLatestUploadPartsByNumber(_Config.GetUploadPartsByUploadGuid(ctx.Request.UploadId));
+            List<UploadPart> parts = GetLatestUploadPartsByNumber(_Config.GetUploadPartsByUploadId(md.Bucket.TenantId, ctx.Request.UploadId));
 
             ListPartsResult result = new ListPartsResult();
             result.Bucket = ctx.Request.Bucket;
             result.Key = ctx.Request.Key;
             result.UploadId = ctx.Request.UploadId;
             result.Initiator = new Owner();
-            result.Initiator.ID = uploadRecord.OwnerGUID;
+            result.Initiator.ID = uploadRecord.OwnerId;
             result.Owner = new Owner();
-            result.Owner.ID = uploadRecord.OwnerGUID;
+            result.Owner.ID = uploadRecord.OwnerId;
 
-            User owner = _Config.GetUserByGuid(uploadRecord.OwnerGUID);
+            User owner = _Config.GetUserById(uploadRecord.OwnerId);
             if (owner != null)
             {
                 result.Owner.DisplayName = owner.Name;
@@ -1154,10 +1174,10 @@
 
         #region Private-Methods
 
-        private string GetPartFilePath(string bucketGuid, string uploadGuid, int partNumber)
+        private string GetPartFilePath(string bucketId, string uploadId, int partNumber)
         {
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            if (String.IsNullOrEmpty(uploadGuid)) throw new ArgumentNullException(nameof(uploadGuid));
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            if (String.IsNullOrEmpty(uploadId)) throw new ArgumentNullException(nameof(uploadId));
             if (partNumber < 1) throw new ArgumentOutOfRangeException(nameof(partNumber));
 
             string tempDir = _Settings.Storage.TempDirectory;
@@ -1166,7 +1186,7 @@
                 tempDir += "/";
             }
 
-            return tempDir + bucketGuid + "-upload-" + uploadGuid + "-part-" + partNumber;
+            return tempDir + bucketId + "-upload-" + uploadId + "-part-" + partNumber;
         }
 
         private void AddUserMetadataHeaders(Obj obj, S3Context ctx, string header)
@@ -1187,7 +1207,7 @@
             }
             catch (System.Text.Json.JsonException)
             {
-                _Logging.Warn(header + "ignoring invalid object metadata for object GUID " + obj.GUID);
+                _Logging.Warn(header + "ignoring invalid object metadata for object Id " + obj.Id);
             }
         }
 
@@ -1211,13 +1231,13 @@
             return metadata;
         }
 
-        private Owner GetOwnerFromUserGuid(string guid)
+        private Owner GetOwnerFromUserId(string id)
         {
-            if (String.IsNullOrEmpty(guid)) return null;
-            User user = _Config.GetUserByGuid(guid);
+            if (String.IsNullOrEmpty(id)) return null;
+            User user = _Config.GetUserById(id);
             if (user != null)
             {
-                Owner owner = new Owner(guid, user.Name);
+                Owner owner = new Owner(id, user.Name);
                 return owner;
             }
             return null;
@@ -1309,7 +1329,7 @@
                         grant = new Grant();
                         grant.Permission = PermissionEnum.FullControl;
                         grant.Grantee = new CanonicalUser();
-                        grant.Grantee.ID = user.GUID;
+                        grant.Grantee.ID = user.Id;
                         grant.Grantee.DisplayName = user.Name;
                         ret.Add(grant);
                         break;
@@ -1318,7 +1338,7 @@
                         grant = new Grant();
                         grant.Permission = PermissionEnum.FullControl;
                         grant.Grantee = new CanonicalUser();
-                        grant.Grantee.ID = user.GUID;
+                        grant.Grantee.ID = user.Id;
                         grant.Grantee.DisplayName = user.Name;
                         ret.Add(grant);
 
@@ -1333,7 +1353,7 @@
                         grant = new Grant();
                         grant.Permission = PermissionEnum.FullControl;
                         grant.Grantee = new CanonicalUser();
-                        grant.Grantee.ID = user.GUID;
+                        grant.Grantee.ID = user.Id;
                         grant.Grantee.DisplayName = user.Name;
                         ret.Add(grant);
 
@@ -1354,7 +1374,7 @@
                         grant = new Grant();
                         grant.Permission = PermissionEnum.FullControl;
                         grant.Grantee = new CanonicalUser();
-                        grant.Grantee.ID = user.GUID;
+                        grant.Grantee.ID = user.Id;
                         grant.Grantee.DisplayName = user.Name;
                         ret.Add(grant);
 
@@ -1468,14 +1488,14 @@
                 else
                 {
                     grant.Grantee = new CanonicalUser();
-                    grant.Grantee.ID = user.GUID;
+                    grant.Grantee.ID = user.Id;
                     grant.Grantee.DisplayName = user.Name;
                     return true;
                 }
             }
             else if (granteeType.Equals("id"))
             {
-                User user = _Config.GetUserByGuid(grantee);
+                User user = _Config.GetUserById(grantee);
                 if (user == null)
                 {
                     return false;
@@ -1483,7 +1503,7 @@
                 else
                 {
                     grant.Grantee = new CanonicalUser();
-                    grant.Grantee.ID = user.GUID;
+                    grant.Grantee.ID = user.Id;
                     grant.Grantee.DisplayName = user.Name;
                     return true;
                 }

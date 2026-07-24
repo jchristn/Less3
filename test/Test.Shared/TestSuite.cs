@@ -64,22 +64,11 @@ namespace Test.Shared
                 await action().ConfigureAwait(false);
                 stopwatch.Stop();
                 result.MarkPassed(stopwatch.ElapsedMilliseconds);
-
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.Write("  PASS ");
-                Console.ResetColor();
-                Console.WriteLine($"{name} ({stopwatch.ElapsedMilliseconds}ms)");
             }
             catch (Exception ex)
             {
                 stopwatch.Stop();
                 result.MarkFailed(stopwatch.ElapsedMilliseconds, ex.Message, ex);
-
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.Write("  FAIL ");
-                Console.ResetColor();
-                Console.WriteLine($"{name} ({stopwatch.ElapsedMilliseconds}ms)");
-                Console.WriteLine($"       {ex.Message}");
             }
 
             _Results.Add(result);

@@ -1,4 +1,3 @@
-/* eslint-disable max-lines-per-function */
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -7,6 +6,8 @@ import {
   CloseOutlined,
   HistoryOutlined,
   LoadingOutlined,
+  SaveOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons';
 import Less3Button from '#/components/base/button/Button';
 import Less3Card from '#/components/base/card/Card';
@@ -17,16 +18,24 @@ import Less3Select from '#/components/base/select/Select';
 import Less3Tabs from '#/components/base/tabs/Tabs';
 import Less3Text from '#/components/base/typograpghy/Text';
 import CopyToClipboard from '#/components/copy-to-clipboard/CopyToClipboard';
-import { getAdminApiKey, getApiEndpoint } from '#/services/sdk.service';
+import IdDisplay from '#/components/id-display';
+import {
+  buildAdminRequestHeaders,
+  buildBackendUrl,
+  rawBackendFetch,
+} from '#/services/backendApi.service';
+import { useGetBucketsQuery } from '#/store/slice/bucketsSlice';
 import { useGetCredentialByIdQuery, useGetCredentialsQuery } from '#/store/slice/credentialsSlice';
+import { useGetUsersQuery } from '#/store/slice/usersSlice';
 import { getPrettyPrintedTextContent } from '#/utils/objectContentUtils';
 import {
   buildS3AuthorizationHeader,
   buildSignedS3Headers,
-  clearPreferredS3CredentialGuid,
-  getPreferredS3CredentialGuid,
-  setPreferredS3CredentialGuid,
+  clearPreferredS3CredentialId,
+  getPreferredS3CredentialId,
+  setPreferredS3CredentialId,
 } from '#/utils/s3Auth';
+import { buildPortableCurlCommand } from '#/utils/curlUtils';
 import { message } from '#/utils/message';
 
 interface OperationParam {
@@ -34,6 +43,7 @@ interface OperationParam {
   label: string;
   placeholder: string;
   required?: boolean;
+  source?: 'bucket' | 'user' | 'credential';
 }
 
 interface ApiOperation {
@@ -66,21 +76,40 @@ const S3_OPERATIONS: ApiOperation[] = [
 
 const ADMIN_OPERATIONS: ApiOperation[] = [
   { id: 'admin-list-buckets', group: 'Buckets', label: 'List Buckets', method: 'GET', pathTemplate: '/admin/buckets', params: [] },
-  { id: 'admin-get-bucket', group: 'Buckets', label: 'Get Bucket', method: 'GET', pathTemplate: '/admin/buckets/{guid}', params: [{ name: 'guid', label: 'Bucket GUID', placeholder: 'bucket-guid', required: true }] },
+  { id: 'admin-get-bucket', group: 'Buckets', label: 'Get Bucket', method: 'GET', pathTemplate: '/admin/buckets/{id}', params: [{ name: 'id', label: 'Bucket Id', placeholder: 'bkt_test', required: true }] },
   { id: 'admin-create-bucket', group: 'Buckets', label: 'Create Bucket', method: 'POST', pathTemplate: '/admin/buckets', params: [], hasBody: true, bodyPlaceholder: '{\n  "Name": "my-bucket"\n}' },
-  { id: 'admin-delete-bucket', group: 'Buckets', label: 'Delete Bucket', method: 'DELETE', pathTemplate: '/admin/buckets/{guid}', params: [{ name: 'guid', label: 'Bucket GUID', placeholder: 'bucket-guid', required: true }] },
+  { id: 'admin-delete-bucket', group: 'Buckets', label: 'Delete Bucket', method: 'DELETE', pathTemplate: '/admin/buckets/{id}', params: [{ name: 'id', label: 'Bucket Id', placeholder: 'bkt_test', required: true }] },
   { id: 'admin-list-users', group: 'Users', label: 'List Users', method: 'GET', pathTemplate: '/admin/users', params: [] },
-  { id: 'admin-get-user', group: 'Users', label: 'Get User', method: 'GET', pathTemplate: '/admin/users/{guid}', params: [{ name: 'guid', label: 'User GUID', placeholder: 'user-guid', required: true }] },
+  { id: 'admin-get-user', group: 'Users', label: 'Get User', method: 'GET', pathTemplate: '/admin/users/{id}', params: [{ name: 'id', label: 'User Id', placeholder: 'user-id', required: true }] },
   { id: 'admin-create-user', group: 'Users', label: 'Create User', method: 'POST', pathTemplate: '/admin/users', params: [], hasBody: true, bodyPlaceholder: '{\n  "Name": "username",\n  "Email": "user@example.com"\n}' },
-  { id: 'admin-delete-user', group: 'Users', label: 'Delete User', method: 'DELETE', pathTemplate: '/admin/users/{guid}', params: [{ name: 'guid', label: 'User GUID', placeholder: 'user-guid', required: true }] },
+  { id: 'admin-delete-user', group: 'Users', label: 'Delete User', method: 'DELETE', pathTemplate: '/admin/users/{id}', params: [{ name: 'id', label: 'User Id', placeholder: 'user-id', required: true }] },
   { id: 'admin-list-credentials', group: 'Credentials', label: 'List Credentials', method: 'GET', pathTemplate: '/admin/credentials', params: [] },
-  { id: 'admin-get-credential', group: 'Credentials', label: 'Get Credential', method: 'GET', pathTemplate: '/admin/credentials/{guid}', params: [{ name: 'guid', label: 'Credential GUID', placeholder: 'credential-guid', required: true }] },
-  { id: 'admin-create-credential', group: 'Credentials', label: 'Create Credential', method: 'POST', pathTemplate: '/admin/credentials', params: [], hasBody: true, bodyPlaceholder: '{\n  "UserGUID": "user-guid",\n  "Description": "My key",\n  "AccessKey": "mykey",\n  "SecretKey": "mysecret"\n}' },
-  { id: 'admin-delete-credential', group: 'Credentials', label: 'Delete Credential', method: 'DELETE', pathTemplate: '/admin/credentials/{guid}', params: [{ name: 'guid', label: 'Credential GUID', placeholder: 'credential-guid', required: true }] },
+  { id: 'admin-get-credential', group: 'Credentials', label: 'Get Credential', method: 'GET', pathTemplate: '/admin/credentials/{id}', params: [{ name: 'id', label: 'Credential Id', placeholder: 'credential-id', required: true }] },
+  { id: 'admin-create-credential', group: 'Credentials', label: 'Create Credential', method: 'POST', pathTemplate: '/admin/credentials', params: [], hasBody: true, bodyPlaceholder: '{\n  "UserId": "user-id",\n  "Description": "My key",\n  "AccessKey": "mykey",\n  "SecretKey": "mysecret"\n}' },
+  { id: 'admin-delete-credential', group: 'Credentials', label: 'Delete Credential', method: 'DELETE', pathTemplate: '/admin/credentials/{id}', params: [{ name: 'id', label: 'Credential Id', placeholder: 'credential-id', required: true }] },
   { id: 'admin-list-history', group: 'Request History', label: 'List Request History', method: 'GET', pathTemplate: '/admin/requesthistory', params: [] },
-  { id: 'admin-get-history', group: 'Request History', label: 'Get Request History Entry', method: 'GET', pathTemplate: '/admin/requesthistory/{guid}', params: [{ name: 'guid', label: 'Entry GUID', placeholder: 'entry-guid', required: true }] },
+  { id: 'admin-get-history', group: 'Request History', label: 'Get Request History Entry', method: 'GET', pathTemplate: '/admin/requesthistory/{id}', params: [{ name: 'id', label: 'Entry Id', placeholder: 'entry-id', required: true }] },
   { id: 'admin-get-history-summary', group: 'Request History', label: 'Get Summary', method: 'GET', pathTemplate: '/admin/requesthistory/summary', params: [] },
-  { id: 'admin-delete-history', group: 'Request History', label: 'Delete Request History Entry', method: 'DELETE', pathTemplate: '/admin/requesthistory/{guid}', params: [{ name: 'guid', label: 'Entry GUID', placeholder: 'entry-guid', required: true }] },
+  { id: 'admin-delete-history', group: 'Request History', label: 'Delete Request History Entry', method: 'DELETE', pathTemplate: '/admin/requesthistory/{id}', params: [{ name: 'id', label: 'Entry Id', placeholder: 'entry-id', required: true }] },
+];
+
+const REST_OPERATIONS: ApiOperation[] = [
+  { id: 'rest-list-tenants', group: 'Tenants', label: 'List Tenants', method: 'GET', pathTemplate: '/api/v1/tenants', params: [] },
+  { id: 'rest-create-tenant', group: 'Tenants', label: 'Create Tenant', method: 'POST', pathTemplate: '/api/v1/tenants', params: [], hasBody: true, bodyPlaceholder: '{\n  "Id": "ten_example",\n  "Name": "Example",\n  "Active": true\n}' },
+  { id: 'rest-get-bucket', group: 'Buckets', label: 'Get Bucket', method: 'GET', pathTemplate: '/api/v1/buckets/{id}', params: [{ name: 'id', label: 'Bucket Id', placeholder: 'bkt_example', required: true, source: 'bucket' }] },
+  { id: 'rest-create-bucket', group: 'Buckets', label: 'Create Bucket', method: 'POST', pathTemplate: '/api/v1/buckets', params: [], hasBody: true, bodyPlaceholder: '{\n  "TenantId": "default",\n  "Name": "my-bucket"\n}' },
+  { id: 'rest-enumerate-buckets', group: 'Buckets', label: 'Enumerate Buckets', method: 'POST', pathTemplate: '/api/v1/buckets/enumerate', params: [], hasBody: true, bodyPlaceholder: '{\n  "TenantId": "default",\n  "Limit": 50,\n  "Offset": 0\n}' },
+  { id: 'rest-list-users', group: 'Users', label: 'List Users', method: 'GET', pathTemplate: '/api/v1/users?tenantId=default', params: [] },
+  { id: 'rest-get-user', group: 'Users', label: 'Get User', method: 'GET', pathTemplate: '/api/v1/users/{id}?tenantId=default', params: [{ name: 'id', label: 'User Id', placeholder: 'usr_example', required: true, source: 'user' }] },
+  { id: 'rest-create-user', group: 'Users', label: 'Create User', method: 'POST', pathTemplate: '/api/v1/users?tenantId=default', params: [], hasBody: true, bodyPlaceholder: '{\n  "TenantId": "default",\n  "Name": "Operator",\n  "Email": "operator@example.com",\n  "PasswordHash": "password",\n  "Active": true\n}' },
+  { id: 'rest-list-credentials', group: 'Credentials', label: 'List Credentials', method: 'GET', pathTemplate: '/api/v1/credentials?tenantId=default', params: [] },
+  { id: 'rest-get-credential', group: 'Credentials', label: 'Get Credential', method: 'GET', pathTemplate: '/api/v1/credentials/{id}?tenantId=default', params: [{ name: 'id', label: 'Credential Id', placeholder: 'crd_example', required: true, source: 'credential' }] },
+  { id: 'rest-list-roles', group: 'RBAC', label: 'List Roles', method: 'GET', pathTemplate: '/api/v1/roles?tenantId=default', params: [] },
+  { id: 'rest-list-permissions', group: 'RBAC', label: 'List Permissions', method: 'GET', pathTemplate: '/api/v1/permissions?tenantId=default', params: [] },
+  { id: 'rest-list-roleassignments', group: 'RBAC', label: 'List Role Assignments', method: 'GET', pathTemplate: '/api/v1/roleassignments?tenantId=default', params: [] },
+  { id: 'rest-list-authsessions', group: 'Sessions', label: 'List Auth Sessions', method: 'GET', pathTemplate: '/api/v1/authsessions?tenantId=default', params: [] },
+  { id: 'rest-login-session', group: 'Sessions', label: 'Login Session', method: 'POST', pathTemplate: '/api/v1/authsessions/login', params: [], hasBody: true, bodyPlaceholder: '{\n  "TenantId": "default",\n  "Email": "admin@less3",\n  "Password": "password"\n}' },
+  { id: 'rest-list-requesthistory', group: 'Request History', label: 'List Request History', method: 'GET', pathTemplate: '/api/v1/requesthistory?tenantId=default', params: [] },
 ];
 
 const METHOD_COLORS: Record<string, string> = {
@@ -92,8 +121,16 @@ const METHOD_COLORS: Record<string, string> = {
 };
 
 const RECENT_REQUESTS_KEY = 'less3_api_explorer_recent';
+const SAVED_COLLECTIONS_KEY = 'less3_api_explorer_collections';
 const MAX_RECENT_ITEMS = 12;
 const NO_CREDENTIAL_VALUE = '__none__';
+
+const renderOptionLabel = (label: string, id?: string): React.ReactNode => (
+  <Less3Flex vertical gap={2} style={{ minWidth: 0 }}>
+    <Less3Text>{label}</Less3Text>
+    {id ? <IdDisplay id={id} /> : null}
+  </Less3Flex>
+);
 
 interface RecentRequest {
   operationId: string;
@@ -103,7 +140,17 @@ interface RecentRequest {
   statusCode: number | null;
   timestamp: string;
   body: string;
-  credentialGuid?: string;
+  credentialId?: string;
+}
+
+interface SavedCollectionItem {
+  id: string;
+  name: string;
+  operationId: string;
+  params: Record<string, string>;
+  body: string;
+  credentialId?: string;
+  createdUtc: string;
 }
 
 interface ResponseData {
@@ -150,8 +197,11 @@ const getPrettyPrintedResponseBody = (body: string, headers: Record<string, stri
 const getPrettyPrintedResponseHeaders = (headers: Record<string, string>): string =>
   JSON.stringify(headers, null, 2);
 
-const getOperationApiType = (operationId: string): 's3' | 'admin' =>
-  operationId.startsWith('s3-') ? 's3' : 'admin';
+const getOperationApiType = (operationId: string): 's3' | 'admin' | 'rest' => {
+  if (operationId.startsWith('s3-')) return 's3';
+  if (operationId.startsWith('rest-')) return 'rest';
+  return 'admin';
+};
 
 const loadRecentRequests = (): RecentRequest[] => {
   try {
@@ -175,6 +225,26 @@ const saveRecentRequests = (requests: RecentRequest[]): void => {
   }
 };
 
+const loadSavedCollections = (): SavedCollectionItem[] => {
+  try {
+    const stored = localStorage.getItem(SAVED_COLLECTIONS_KEY);
+    if (!stored) return [];
+
+    const parsed: unknown = JSON.parse(stored);
+    return Array.isArray(parsed) ? parsed as SavedCollectionItem[] : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveSavedCollections = (items: SavedCollectionItem[]): void => {
+  try {
+    localStorage.setItem(SAVED_COLLECTIONS_KEY, JSON.stringify(items));
+  } catch {
+    // Ignore storage failures.
+  }
+};
+
 const ALL_API_FILTER_VALUE = 'all';
 
 const ApiExplorerPage: React.FC = () => {
@@ -187,17 +257,20 @@ const ApiExplorerPage: React.FC = () => {
   const [activeResponseTab, setActiveResponseTab] = useState<string>('body');
   const [isPrettyPrintEnabled, setIsPrettyPrintEnabled] = useState(false);
   const [recentRequests, setRecentRequests] = useState<RecentRequest[]>(() => loadRecentRequests());
-  const [selectedCredentialGuid, setSelectedCredentialGuid] = useState<string>(
-    () => getPreferredS3CredentialGuid() || NO_CREDENTIAL_VALUE
+  const [savedCollections, setSavedCollections] = useState<SavedCollectionItem[]>(() => loadSavedCollections());
+  const [selectedCredentialId, setSelectedCredentialId] = useState<string>(
+    () => getPreferredS3CredentialId() || NO_CREDENTIAL_VALUE
   );
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const { data: credentialsData } = useGetCredentialsQuery();
-  const { data: selectedCredentialDetails } = useGetCredentialByIdQuery(selectedCredentialGuid, {
-    skip: selectedCredentialGuid === NO_CREDENTIAL_VALUE,
+  const { data: bucketsData } = useGetBucketsQuery();
+  const { data: usersData } = useGetUsersQuery();
+  const { data: selectedCredentialDetails } = useGetCredentialByIdQuery(selectedCredentialId, {
+    skip: selectedCredentialId === NO_CREDENTIAL_VALUE,
   });
 
-  const allOperations = useMemo<ApiOperation[]>(() => [...S3_OPERATIONS, ...ADMIN_OPERATIONS], []);
+  const allOperations = useMemo<ApiOperation[]>(() => [...S3_OPERATIONS, ...ADMIN_OPERATIONS, ...REST_OPERATIONS], []);
   const operations = useMemo<ApiOperation[]>(() => {
     if (operationFilter === ALL_API_FILTER_VALUE) {
       return allOperations;
@@ -215,11 +288,11 @@ const ApiExplorerPage: React.FC = () => {
   );
 
   const selectedOp = allOperations.find((operation) => operation.id === selectedOpId);
-  const selectedOperationApiType: 's3' | 'admin' = selectedOp ? getOperationApiType(selectedOp.id) : 'admin';
+  const selectedOperationApiType: 's3' | 'admin' | 'rest' = selectedOp ? getOperationApiType(selectedOp.id) : 'admin';
 
   const selectedCredential = useMemo(
-    () => credentialsData?.find((credential) => credential.GUID === selectedCredentialGuid) || null,
-    [credentialsData, selectedCredentialGuid]
+    () => credentialsData?.find((credential) => credential.Id === selectedCredentialId) || null,
+    [credentialsData, selectedCredentialId]
   );
 
   const activeS3Credential = selectedCredentialDetails || selectedCredential;
@@ -229,20 +302,59 @@ const ApiExplorerPage: React.FC = () => {
       { label: 'No credential', value: NO_CREDENTIAL_VALUE },
       ...(
         credentialsData?.map((credential) => ({
-          label: `${credential.Description || credential.AccessKey} (${credential.AccessKey})`,
-          value: credential.GUID,
+          label: renderOptionLabel(`${credential.Description || credential.AccessKey} (${credential.AccessKey})`, credential.Id),
+          value: credential.Id,
         })) || []
       ),
     ],
     [credentialsData]
   );
 
+  const bucketIdOptions = useMemo(
+    () => bucketsData?.map((bucket) => ({
+      label: renderOptionLabel(bucket.Name, bucket.Id),
+      value: bucket.Id || bucket.Name,
+    })) || [],
+    [bucketsData]
+  );
+
+  const bucketNameOptions = useMemo(
+    () => bucketsData?.map((bucket) => ({
+      label: bucket.Name,
+      value: bucket.Name,
+    })) || [],
+    [bucketsData]
+  );
+
+  const userOptions = useMemo(
+    () => usersData?.map((user) => ({
+      label: renderOptionLabel(user.Email || user.Name, user.Id),
+      value: user.Id,
+    })) || [],
+    [usersData]
+  );
+
+  const resourceCredentialOptions = useMemo(
+    () => credentialsData?.map((credential) => ({
+      label: renderOptionLabel(credential.Description || credential.AccessKey, credential.Id),
+      value: credential.Id,
+    })) || [],
+    [credentialsData]
+  );
+
+  const getParamOptions = useCallback((param: OperationParam) => {
+    if (param.source === 'bucket') return bucketIdOptions;
+    if (param.name.toLowerCase() === 'bucket') return bucketNameOptions;
+    if (param.source === 'user' || param.name.toLowerCase().includes('userid')) return userOptions;
+    if (param.source === 'credential' || param.name.toLowerCase().includes('credential')) return resourceCredentialOptions;
+    return [];
+  }, [bucketIdOptions, bucketNameOptions, resourceCredentialOptions, userOptions]);
+
   const resolvedUrl = useMemo(() => {
     if (!selectedOp) {
       return '';
     }
 
-    const baseUrl = getApiEndpoint().replace(/\/$/, '');
     let path = selectedOp.pathTemplate;
 
     for (const param of selectedOp.params) {
@@ -250,7 +362,7 @@ const ApiExplorerPage: React.FC = () => {
       path = path.replace(`{${param.name}}`, encodeURIComponent(value));
     }
 
-    return baseUrl + path;
+    return buildBackendUrl(path);
   }, [paramValues, selectedOp]);
 
   const hasMissingRequiredParams = useMemo(() => {
@@ -262,13 +374,13 @@ const ApiExplorerPage: React.FC = () => {
   }, [paramValues, selectedOp]);
 
   useEffect(() => {
-    if (selectedCredentialGuid === NO_CREDENTIAL_VALUE) {
-      clearPreferredS3CredentialGuid();
+    if (selectedCredentialId === NO_CREDENTIAL_VALUE) {
+      clearPreferredS3CredentialId();
       return;
     }
 
-    setPreferredS3CredentialGuid(selectedCredentialGuid);
-  }, [selectedCredentialGuid]);
+    setPreferredS3CredentialId(selectedCredentialId);
+  }, [selectedCredentialId]);
 
   useEffect(() => {
     setIsPrettyPrintEnabled(false);
@@ -332,17 +444,21 @@ const ApiExplorerPage: React.FC = () => {
     try {
       const fetchHeaders: Record<string, string> = {};
 
-      if (selectedOperationApiType === 'admin') {
-        const adminApiKey = getAdminApiKey();
-        if (!adminApiKey) {
-          message.error('No admin API key is saved. Sign in again to use admin requests.');
+      if (selectedOperationApiType === 'admin' || selectedOperationApiType === 'rest') {
+        const adminHeaders = buildAdminRequestHeaders();
+        const hasAdminApiKey = Object.keys(adminHeaders).some(
+          (key) => key.toLowerCase() === 'x-api-key' && adminHeaders[key]
+        );
+
+        if (!hasAdminApiKey) {
+          message.error('No admin API key is saved. Sign in again to use admin or REST requests.');
           setIsLoading(false);
           abortControllerRef.current = null;
           return;
         }
 
-        fetchHeaders['x-api-key'] = adminApiKey;
-      } else if (selectedCredentialGuid !== NO_CREDENTIAL_VALUE) {
+        Object.assign(fetchHeaders, adminHeaders);
+      } else if (selectedCredentialId !== NO_CREDENTIAL_VALUE) {
         if (!activeS3Credential?.AccessKey || !activeS3Credential?.SecretKey) {
           message.error('Selected S3 credential is unavailable');
           setIsLoading(false);
@@ -376,7 +492,7 @@ const ApiExplorerPage: React.FC = () => {
         requestOptions.body = body;
       }
 
-      const result = await fetch(resolvedUrl, requestOptions);
+      const result = await rawBackendFetch(resolvedUrl, requestOptions);
       const responseBody = await result.text().catch(() => '');
       const responseHeaders: Record<string, string> = {};
 
@@ -403,7 +519,7 @@ const ApiExplorerPage: React.FC = () => {
         statusCode: result.status,
         timestamp: new Date().toISOString(),
         body,
-        credentialGuid: selectedCredentialGuid,
+        credentialId: selectedCredentialId,
       };
 
       const updatedRecent = [recentEntry, ...recentRequests].slice(0, MAX_RECENT_ITEMS);
@@ -433,7 +549,7 @@ const ApiExplorerPage: React.FC = () => {
     handleCancel,
     recentRequests,
     resolvedUrl,
-    selectedCredentialGuid,
+    selectedCredentialId,
     selectedOp,
     selectedOperationApiType,
   ]);
@@ -442,10 +558,45 @@ const ApiExplorerPage: React.FC = () => {
     setOperationFilter(ALL_API_FILTER_VALUE);
     setSelectedOpId(recent.operationId);
     setBody(recent.body || '');
-    setSelectedCredentialGuid(recent.credentialGuid || NO_CREDENTIAL_VALUE);
+    setSelectedCredentialId(recent.credentialId || NO_CREDENTIAL_VALUE);
     setResponse(null);
     setActiveResponseTab('body');
   }, []);
+
+  const handleSaveCollectionItem = useCallback(() => {
+    if (!selectedOp) return;
+
+    const item: SavedCollectionItem = {
+      id: `${selectedOp.id}-${Date.now()}`,
+      name: selectedOp.label,
+      operationId: selectedOp.id,
+      params: paramValues,
+      body,
+      credentialId: selectedCredentialId,
+      createdUtc: new Date().toISOString(),
+    };
+
+    const nextItems = [item, ...savedCollections].slice(0, 24);
+    setSavedCollections(nextItems);
+    saveSavedCollections(nextItems);
+    message.success('Request saved');
+  }, [body, paramValues, savedCollections, selectedCredentialId, selectedOp]);
+
+  const handleLoadCollectionItem = useCallback((item: SavedCollectionItem) => {
+    setOperationFilter(ALL_API_FILTER_VALUE);
+    setSelectedOpId(item.operationId);
+    setParamValues(item.params || {});
+    setBody(item.body || '');
+    setSelectedCredentialId(item.credentialId || NO_CREDENTIAL_VALUE);
+    setResponse(null);
+    setActiveResponseTab('body');
+  }, []);
+
+  const handleDeleteCollectionItem = useCallback((id: string) => {
+    const nextItems = savedCollections.filter((item) => item.id !== id);
+    setSavedCollections(nextItems);
+    saveSavedCollections(nextItems);
+  }, [savedCollections]);
 
   const formatResponseSize = (bytes: number): string => {
     if (bytes < 1024) {
@@ -464,26 +615,26 @@ const ApiExplorerPage: React.FC = () => {
       return '';
     }
 
-    let curl = `curl -X ${selectedOp.method}`;
+    const headers: Record<string, string> = {};
 
-    if (selectedOperationApiType === 'admin') {
-      curl += ` \\\n  -H 'x-api-key: <saved-admin-api-key>'`;
+    if (selectedOperationApiType === 'admin' || selectedOperationApiType === 'rest') {
+      headers['x-api-key'] = '<saved-admin-api-key>';
     }
 
     if (selectedOperationApiType === 's3' && activeS3Credential?.AccessKey) {
-      curl += ` \\\n  -H 'Authorization: ${buildS3AuthorizationHeader(activeS3Credential.AccessKey)}'`;
+      headers.Authorization = buildS3AuthorizationHeader(activeS3Credential.AccessKey);
     }
 
     if (selectedOp.hasBody) {
-      curl += ` \\\n  -H 'Content-Type: application/json'`;
+      headers['Content-Type'] = 'application/json';
     }
 
-    if (body.trim() && selectedOp.hasBody) {
-      curl += ` \\\n  -d '${body}'`;
-    }
-
-    curl += ` \\\n  '${resolvedUrl}'`;
-    return curl;
+    return buildPortableCurlCommand({
+      method: selectedOp.method,
+      url: resolvedUrl,
+      headers,
+      body: body.trim() && selectedOp.hasBody ? body : undefined,
+    });
   }, [activeS3Credential, body, resolvedUrl, selectedOp, selectedOperationApiType]);
 
   const responseHeadersJsonText = useMemo(() => {
@@ -506,6 +657,16 @@ const ApiExplorerPage: React.FC = () => {
   const displayedResponseBody = response
     ? (isPrettyPrintEnabled && prettyPrintedResponseBody ? prettyPrintedResponseBody : response.body)
     : '';
+
+  const generatedExampleText = useMemo(() => {
+    return JSON.stringify({
+      api: selectedOperationApiType,
+      method: selectedOp?.method || 'GET',
+      url: resolvedUrl,
+      body: selectedOp?.hasBody ? body : undefined,
+      curl: curlCommand,
+    }, null, 2);
+  }, [body, curlCommand, resolvedUrl, selectedOp, selectedOperationApiType]);
 
   const responseTabs = useMemo(() => [
     {
@@ -587,10 +748,27 @@ const ApiExplorerPage: React.FC = () => {
         </div>
       ),
     },
+    {
+      key: 'examples',
+      label: 'Examples',
+      children: (
+        <div>
+          <Less3Flex justify="flex-end" style={{ marginBottom: 8 }}>
+            <CopyToClipboard
+              text={generatedExampleText}
+              tooltip="Copy generated example"
+              ariaLabel="Copy generated example"
+            />
+          </Less3Flex>
+          <pre style={responseBlockStyle}>{generatedExampleText}</pre>
+        </div>
+      ),
+    },
   ], [
     canPrettyPrintResponseBody,
     curlCommand,
     displayedResponseBody,
+    generatedExampleText,
     isPrettyPrintEnabled,
     response,
     responseHeadersJsonText,
@@ -598,9 +776,8 @@ const ApiExplorerPage: React.FC = () => {
 
   return (
     <PageContainer pageTitle="API Explorer">
-      <Less3Flex gap={16} style={{ flexWrap: 'wrap' }}>
-        <div style={{ flex: 1, minWidth: 400 }}>
-          <Less3Card title="Request" style={{ marginBottom: 16 }}>
+      <Less3Flex vertical gap={16}>
+          <Less3Card title="Request">
             <Less3Flex vertical gap={14}>
               <div>
                 <Less3Text fontSize={12} weight={500} style={{ display: 'block', marginBottom: 4 }}>Operation Filter</Less3Text>
@@ -609,6 +786,7 @@ const ApiExplorerPage: React.FC = () => {
                     { label: 'All APIs', value: ALL_API_FILTER_VALUE },
                     { label: 'S3 API', value: 's3' },
                     { label: 'Admin API', value: 'admin' },
+                    { label: 'REST API', value: 'rest' },
                   ]}
                   value={operationFilter}
                   onChange={(value) => handleOperationFilterChange(value as string)}
@@ -636,8 +814,8 @@ const ApiExplorerPage: React.FC = () => {
                 </Less3Text>
                 <Less3Select
                   options={credentialOptions}
-                  value={selectedCredentialGuid}
-                  onChange={(value) => setSelectedCredentialGuid(value as string)}
+                  value={selectedCredentialId}
+                  onChange={(value) => setSelectedCredentialId(value as string)}
                   style={{ width: '100%', ...inputStyle }}
                   showSearch
                   filterOption={(input, option) =>
@@ -647,7 +825,7 @@ const ApiExplorerPage: React.FC = () => {
                 <Less3Text type="secondary" fontSize={11} style={{ display: 'block', marginTop: 4 }}>
                   {selectedOperationApiType === 's3'
                     ? 'The selected credential will be used for this S3 request. Choose "No credential" to send it unsigned.'
-                    : 'Credential selection is preserved for S3 requests. Admin requests use the saved dashboard API key.'}
+                    : 'Credential selection is preserved for S3 requests. Admin and REST requests use the saved dashboard API key.'}
                 </Less3Text>
               </div>
 
@@ -691,23 +869,44 @@ const ApiExplorerPage: React.FC = () => {
                 <div>
                   <Less3Text fontSize={12} weight={500} style={{ display: 'block', marginBottom: 6 }}>Parameters</Less3Text>
                   <Less3Flex vertical gap={8}>
-                    {selectedOp.params.map((param) => (
-                      <Less3Flex key={param.name} gap={8} align="center">
-                        <Less3Text fontSize={12} style={{ minWidth: 100 }}>
-                          {param.label}
-                          {param.required ? ' *' : ''}
-                        </Less3Text>
-                        <Less3Input
-                          value={paramValues[param.name] || ''}
-                          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                            setParamValues((current) => ({ ...current, [param.name]: event.target.value }))
-                          }
-                          placeholder={param.placeholder}
-                          style={{ flex: 1, ...inputStyle }}
-                          size="small"
-                        />
-                      </Less3Flex>
-                    ))}
+                    {selectedOp.params.map((param) => {
+                      const paramOptions = getParamOptions(param);
+
+                      return (
+                        <Less3Flex key={param.name} gap={8} align="center">
+                          <Less3Text fontSize={12} style={{ minWidth: 100 }}>
+                            {param.label}
+                            {param.required ? ' *' : ''}
+                          </Less3Text>
+                          {paramOptions.length > 0 ? (
+                            <Less3Select
+                              options={paramOptions}
+                              value={paramValues[param.name] || undefined}
+                              onChange={(value) =>
+                                setParamValues((current) => ({ ...current, [param.name]: String(value) }))
+                              }
+                              placeholder={param.placeholder}
+                              style={{ flex: 1, ...inputStyle }}
+                              size="small"
+                              showSearch
+                              filterOption={(input, option) =>
+                                String(option?.label || '').toLowerCase().includes(String(input).toLowerCase())
+                              }
+                            />
+                          ) : (
+                            <Less3Input
+                              value={paramValues[param.name] || ''}
+                              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                                setParamValues((current) => ({ ...current, [param.name]: event.target.value }))
+                              }
+                              placeholder={param.placeholder}
+                              style={{ flex: 1, ...inputStyle }}
+                              size="small"
+                            />
+                          )}
+                        </Less3Flex>
+                      );
+                    })}
                   </Less3Flex>
                 </div>
               )}
@@ -753,8 +952,47 @@ const ApiExplorerPage: React.FC = () => {
                     Cancel
                   </Less3Button>
                 )}
+                <Less3Button icon={<SaveOutlined />} onClick={handleSaveCollectionItem}>
+                  Save
+                </Less3Button>
               </Less3Flex>
             </Less3Flex>
+          </Less3Card>
+
+          <Less3Card title="Response">
+            {response ? (
+              <Less3Flex vertical gap={12}>
+                <Less3Flex gap={12} align="center">
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      padding: '3px 10px',
+                      borderRadius: 4,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: '#fff',
+                      background: getStatusColor(response.status),
+                    }}
+                  >
+                    {response.status} {response.statusText}
+                  </span>
+                  <Less3Text type="secondary" fontSize={12}>{response.durationMs} ms</Less3Text>
+                  <Less3Text type="secondary" fontSize={12}>{formatResponseSize(response.size)}</Less3Text>
+                </Less3Flex>
+                <Less3Tabs
+                  activeKey={activeResponseTab}
+                  onChange={setActiveResponseTab}
+                  items={responseTabs}
+                  size="small"
+                />
+              </Less3Flex>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '60px 0' }}>
+                <Less3Text type="secondary">
+                  {isLoading ? 'Sending request...' : 'Send a request to see the response'}
+                </Less3Text>
+              </div>
+            )}
           </Less3Card>
 
           {recentRequests.length > 0 && (
@@ -823,45 +1061,48 @@ const ApiExplorerPage: React.FC = () => {
               </Less3Flex>
             </Less3Card>
           )}
-        </div>
 
-        <div style={{ flex: 1, minWidth: 400 }}>
-          <Less3Card title="Response" style={{ marginBottom: 16 }}>
-            {response ? (
-              <Less3Flex vertical gap={12}>
-                <Less3Flex gap={12} align="center">
-                  <span
+          {savedCollections.length > 0 && (
+            <Less3Card title="Saved Collections" size="small">
+              <Less3Flex vertical gap={4}>
+                {savedCollections.map((item) => (
+                  <div
+                    key={item.id}
                     style={{
-                      display: 'inline-block',
-                      padding: '3px 10px',
+                      padding: '6px 10px',
                       borderRadius: 4,
+                      border: '1px solid var(--color-separator)',
                       fontSize: 12,
-                      fontWeight: 600,
-                      color: '#fff',
-                      background: getStatusColor(response.status),
                     }}
                   >
-                    {response.status} {response.statusText}
-                  </span>
-                  <Less3Text type="secondary" fontSize={12}>{response.durationMs} ms</Less3Text>
-                  <Less3Text type="secondary" fontSize={12}>{formatResponseSize(response.size)}</Less3Text>
-                </Less3Flex>
-                <Less3Tabs
-                  activeKey={activeResponseTab}
-                  onChange={setActiveResponseTab}
-                  items={responseTabs}
-                  size="small"
-                />
+                    <Less3Flex gap={8} align="center">
+                      <button
+                        type="button"
+                        onClick={() => handleLoadCollectionItem(item)}
+                        style={{
+                          flex: 1,
+                          border: 0,
+                          background: 'transparent',
+                          color: 'var(--ant-color-text)',
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                          padding: 0,
+                        }}
+                      >
+                        {item.name}
+                      </button>
+                      <Less3Button
+                        type="text"
+                        size="small"
+                        icon={<DeleteOutlined />}
+                        onClick={() => handleDeleteCollectionItem(item.id)}
+                      />
+                    </Less3Flex>
+                  </div>
+                ))}
               </Less3Flex>
-            ) : (
-              <div style={{ textAlign: 'center', padding: '60px 0' }}>
-                <Less3Text type="secondary">
-                  {isLoading ? 'Sending request...' : 'Send a request to see the response'}
-                </Less3Text>
-              </div>
-            )}
-          </Less3Card>
-        </div>
+            </Less3Card>
+          )}
       </Less3Flex>
     </PageContainer>
   );

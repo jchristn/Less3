@@ -1,4 +1,4 @@
-﻿namespace Less3.Classes
+namespace Less3.Classes
 {
     using System;
     using System.Text.Json.Serialization;
@@ -11,15 +11,14 @@
         #region Public-Members
 
         /// <summary>
-        /// Database identifier.
+        /// Id.
         /// </summary>
-        [JsonIgnore]
-        public int Id { get; set; } = 0;
+        public string Id { get; set; } = Less3.Helpers.IdGenerator.GenerateObjectAclId();
 
         /// <summary>
-        /// GUID.
+        /// Tenant identifier.
         /// </summary>
-        public string GUID { get; set; } = Guid.NewGuid().ToString();
+        public string TenantId { get; set; } = "default";
 
         /// <summary>
         /// User group.
@@ -27,24 +26,24 @@
         public string UserGroup { get; set; } = null;
 
         /// <summary>
-        /// User GUID.
+        /// User Id.
         /// </summary>
-        public string UserGUID { get; set; } = null;
+        public string UserId { get; set; } = null;
 
         /// <summary>
-        /// GUID of the issuing user.
+        /// Id of the issuing user.
         /// </summary>
-        public string IssuedByUserGUID { get; set; } = null;
+        public string IssuedByUserId { get; set; } = null;
 
         /// <summary>
-        /// GUID of the bucket.
+        /// Id of the bucket.
         /// </summary>
-        public string BucketGUID { get; set; } = null;
+        public string BucketId { get; set; } = null;
 
         /// <summary>
-        /// GUID of the object.
+        /// Id of the object.
         /// </summary>
-        public string ObjectGUID { get; set; } = null;
+        public string ObjectId { get; set; } = null;
 
         /// <summary>
         /// Permit read operations.
@@ -96,9 +95,9 @@
         /// Create a group ACL.
         /// </summary>
         /// <param name="groupName">Group name.</param>
-        /// <param name="issuedByUserGuid">Issued by user GUID.</param>
-        /// <param name="bucketGuid">Bucket GUID.</param>
-        /// <param name="objectGuid">Object GUID.</param>
+        /// <param name="issuedByUserId">Issued by user Id.</param>
+        /// <param name="bucketId">Bucket Id.</param>
+        /// <param name="objectId">Object Id.</param>
         /// <param name="permitRead">Permit read.</param>
         /// <param name="permitWrite">Permit write.</param>
         /// <param name="permitReadAcp">Permit access control read.</param>
@@ -107,9 +106,9 @@
         /// <returns>Instance.</returns>
         public static ObjectAcl GroupAcl(
             string groupName, 
-            string issuedByUserGuid, 
-            string bucketGuid,
-            string objectGuid,  
+            string issuedByUserId, 
+            string bucketId,
+            string objectId,  
             bool permitRead,
             bool permitWrite,
             bool permitReadAcp,
@@ -117,17 +116,17 @@
             bool fullControl)
         {
             if (String.IsNullOrEmpty(groupName)) throw new ArgumentNullException(nameof(groupName));
-            if (String.IsNullOrEmpty(issuedByUserGuid)) throw new ArgumentNullException(nameof(issuedByUserGuid));
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            if (String.IsNullOrEmpty(objectGuid)) throw new ArgumentNullException(nameof(objectGuid)); 
+            if (String.IsNullOrEmpty(issuedByUserId)) throw new ArgumentNullException(nameof(issuedByUserId));
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            if (String.IsNullOrEmpty(objectId)) throw new ArgumentNullException(nameof(objectId)); 
 
             ObjectAcl ret = new ObjectAcl();
 
             ret.UserGroup = groupName;
-            ret.UserGUID = null;
-            ret.IssuedByUserGUID = issuedByUserGuid;
-            ret.BucketGUID = bucketGuid;
-            ret.ObjectGUID = objectGuid;
+            ret.UserId = null;
+            ret.IssuedByUserId = issuedByUserId;
+            ret.BucketId = bucketId;
+            ret.ObjectId = objectId;
 
             ret.PermitRead = permitRead;
             ret.PermitWrite = permitWrite;
@@ -141,10 +140,10 @@
         /// <summary>
         /// Create a user ACL.
         /// </summary>
-        /// <param name="userGuid">User GUID.</param>
-        /// <param name="issuedByUserGuid">Issued by user GUID.</param>
-        /// <param name="bucketGuid">Bucket GUID.</param>
-        /// <param name="objectGuid">Object GUID.</param>
+        /// <param name="userId">User Id.</param>
+        /// <param name="issuedByUserId">Issued by user Id.</param>
+        /// <param name="bucketId">Bucket Id.</param>
+        /// <param name="objectId">Object Id.</param>
         /// <param name="permitRead">Permit read.</param>
         /// <param name="permitWrite">Permit write.</param>
         /// <param name="permitReadAcp">Permit access control read.</param>
@@ -152,27 +151,27 @@
         /// <param name="fullControl">Full control.</param>
         /// <returns>Instance.</returns>
         public static ObjectAcl UserAcl(
-            string userGuid, 
-            string issuedByUserGuid, 
-            string bucketGuid,
-            string objectGuid,  
+            string userId, 
+            string issuedByUserId, 
+            string bucketId,
+            string objectId,  
             bool permitRead,
             bool permitWrite,
             bool permitReadAcp,
             bool permitWriteAcp,
             bool fullControl)
         {
-            if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
-            if (String.IsNullOrEmpty(issuedByUserGuid)) throw new ArgumentNullException(nameof(issuedByUserGuid));
-            if (String.IsNullOrEmpty(objectGuid)) throw new ArgumentNullException(nameof(objectGuid)); 
+            if (String.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
+            if (String.IsNullOrEmpty(issuedByUserId)) throw new ArgumentNullException(nameof(issuedByUserId));
+            if (String.IsNullOrEmpty(objectId)) throw new ArgumentNullException(nameof(objectId)); 
 
             ObjectAcl ret = new ObjectAcl();
 
             ret.UserGroup = null;
-            ret.UserGUID = userGuid;
-            ret.IssuedByUserGUID = issuedByUserGuid;
-            ret.BucketGUID = bucketGuid;
-            ret.ObjectGUID = objectGuid;
+            ret.UserId = userId;
+            ret.IssuedByUserId = issuedByUserId;
+            ret.BucketId = bucketId;
+            ret.ObjectId = objectId;
 
             ret.PermitRead = permitRead;
             ret.PermitWrite = permitWrite;
@@ -196,10 +195,10 @@
             string
                 ret = "--- Object ACL " + Id + " ---" + Environment.NewLine +
                 "  User group      : " + UserGroup + Environment.NewLine +
-                "  User GUID       : " + UserGUID + Environment.NewLine +
-                "  Issued by       : " + IssuedByUserGUID + Environment.NewLine +
-                "  Bucket GUID     : " + BucketGUID + Environment.NewLine +
-                "  Object GUID     : " + ObjectGUID + Environment.NewLine +
+                "  User Id       : " + UserId + Environment.NewLine +
+                "  Issued by       : " + IssuedByUserId + Environment.NewLine +
+                "  Bucket Id     : " + BucketId + Environment.NewLine +
+                "  Object Id     : " + ObjectId + Environment.NewLine +
                 "  Permissions     : " + Environment.NewLine +
                 "    READ          : " + PermitRead.ToString() + Environment.NewLine +
                 "    WRITE         : " + PermitWrite.ToString() + Environment.NewLine +

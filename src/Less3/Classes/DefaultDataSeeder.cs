@@ -16,11 +16,22 @@ namespace Less3.Classes
     /// </summary>
     internal static class DefaultDataSeeder
     {
-        private const string DefaultUserGuid = "default";
+        private const string DefaultTenantId = "default";
+        private const string DefaultUserId = "usr_default_admin";
+        private const string DefaultCredentialId = "crd_default";
+        private const string DefaultBucketId = "bkt_default";
+        private const string DefaultUserEmail = "admin@less3";
+        private const string DefaultUserPassword = "password";
         private const string DefaultAccessKey = "default";
         private const string DefaultSecretKey = "default";
         private const string DefaultBucketName = "default";
         private const string SourceLink = "http://github.com/jchristn/less3";
+        private const string TenantAdminRoleId = "rol_builtin_tenantadmin";
+        private const string SecurityAdminRoleId = "rol_builtin_securityadmin";
+        private const string AuditorRoleId = "rol_builtin_auditor";
+        private const string OperatorRoleId = "rol_builtin_operator";
+        private const string TenantMemberRoleId = "rol_builtin_tenantmember";
+        private const string CustomRoleId = "rol_builtin_custom";
 
         internal static void Seed(SettingsBase settings, LoggingModule logging, DatabaseDriverBase database, ConfigManager config)
         {
@@ -32,15 +43,20 @@ namespace Less3.Classes
             Directory.CreateDirectory(settings.Storage.DiskDirectory);
             Directory.CreateDirectory(settings.Storage.TempDirectory);
 
-            config.AddUser(new User(DefaultUserGuid, "Default user", "default@default.com"));
-            config.AddCredential(DefaultUserGuid, "My first access key", DefaultAccessKey, DefaultSecretKey, false);
+            SeedCore(settings, logging, database, config);
+
+            if (config.BucketExists(DefaultTenantId, DefaultBucketName))
+            {
+                return;
+            }
 
             Bucket bucketConfig = new Bucket(
+                DefaultBucketId,
                 DefaultBucketName,
-                DefaultUserGuid,
-                DefaultUserGuid,
+                DefaultUserId,
                 StorageDriverType.Disk,
                 settings.Storage.DiskDirectory + DefaultBucketName + "/Objects/");
+            bucketConfig.TenantId = DefaultTenantId;
             bucketConfig.EnablePublicRead = true;
             bucketConfig.EnablePublicWrite = false;
             bucketConfig.EnableVersioning = false;
@@ -57,9 +73,10 @@ namespace Less3.Classes
 
             Obj obj1 = new Obj
             {
-                OwnerGUID = DefaultUserGuid,
-                AuthorGUID = DefaultUserGuid,
-                BlobFilename = Guid.NewGuid().ToString(),
+                TenantId = DefaultTenantId,
+                OwnerId = DefaultUserId,
+                AuthorId = DefaultUserId,
+                BlobFilename = Less3.Helpers.IdGenerator.GenerateObjectId(),
                 ContentLength = htmlFile.Length,
                 ContentType = "text/html",
                 Key = "hello.html",
@@ -74,9 +91,10 @@ namespace Less3.Classes
 
             Obj obj2 = new Obj
             {
-                OwnerGUID = DefaultUserGuid,
-                AuthorGUID = DefaultUserGuid,
-                BlobFilename = Guid.NewGuid().ToString(),
+                TenantId = DefaultTenantId,
+                OwnerId = DefaultUserId,
+                AuthorId = DefaultUserId,
+                BlobFilename = Less3.Helpers.IdGenerator.GenerateObjectId(),
                 ContentLength = textFile.Length,
                 ContentType = "text/plain",
                 Key = "hello.txt",
@@ -91,9 +109,10 @@ namespace Less3.Classes
 
             Obj obj3 = new Obj
             {
-                OwnerGUID = DefaultUserGuid,
-                AuthorGUID = DefaultUserGuid,
-                BlobFilename = Guid.NewGuid().ToString(),
+                TenantId = DefaultTenantId,
+                OwnerId = DefaultUserId,
+                AuthorId = DefaultUserId,
+                BlobFilename = Less3.Helpers.IdGenerator.GenerateObjectId(),
                 ContentLength = jsonFile.Length,
                 ContentType = "application/json",
                 Key = "hello.json",
@@ -109,6 +128,108 @@ namespace Less3.Classes
             bucket.AddObject(obj1, Encoding.UTF8.GetBytes(htmlFile));
             bucket.AddObject(obj2, Encoding.UTF8.GetBytes(textFile));
             bucket.AddObject(obj3, Encoding.UTF8.GetBytes(jsonFile));
+        }
+
+        internal static void SeedCore(SettingsBase settings, LoggingModule logging, DatabaseDriverBase database, ConfigManager config)
+        {
+            if (settings == null) throw new ArgumentNullException(nameof(settings));
+            if (logging == null) throw new ArgumentNullException(nameof(logging));
+            if (database == null) throw new ArgumentNullException(nameof(database));
+            if (config == null) throw new ArgumentNullException(nameof(config));
+
+            Directory.CreateDirectory(settings.Storage.DiskDirectory);
+            Directory.CreateDirectory(settings.Storage.TempDirectory);
+
+            if (!config.TenantExists(DefaultTenantId))
+            {
+                Tenant tenant = new Tenant(DefaultTenantId, "Default");
+                tenant.Active = true;
+                config.AddTenant(tenant);
+            }
+
+            SeedBuiltInRole(config, TenantAdminRoleId, "TenantAdmin", "Tenant administrator with all tenant permissions.");
+            SeedBuiltInRole(config, SecurityAdminRoleId, "SecurityAdmin", "Security administrator for tenant IAM and audit surfaces.");
+            SeedBuiltInRole(config, AuditorRoleId, "Auditor", "Read-only auditor for tenant security and activity records.");
+            SeedBuiltInRole(config, OperatorRoleId, "Operator", "Operator for bucket and object operations.");
+            SeedBuiltInRole(config, TenantMemberRoleId, "TenantMember", "Minimal tenant membership role.");
+            SeedBuiltInRole(config, CustomRoleId, "Custom", "Template role for tenant-defined custom access.");
+
+            SeedPermission(config, "per_builtin_tenantadmin_all", TenantAdminRoleId, "All", "All", true);
+            SeedPermission(config, "per_builtin_security_admin", SecurityAdminRoleId, "Security", "Admin", true);
+            SeedPermission(config, "per_builtin_auditor_read", AuditorRoleId, "All", "Read", true);
+            SeedPermission(config, "per_builtin_operator_rw", OperatorRoleId, "Storage", "Write", true);
+            SeedPermission(config, "per_builtin_tenantmember_read", TenantMemberRoleId, "Tenant", "Read", true);
+
+            User adminUser = new User(DefaultUserId, "Less3 administrator", DefaultUserEmail);
+            adminUser.TenantId = DefaultTenantId;
+            adminUser.PasswordHash = DefaultUserPassword;
+            adminUser.IsAdmin = true;
+            adminUser.IsTenantAdmin = true;
+            adminUser.Active = true;
+
+            config.AddUser(adminUser);
+
+            Credential defaultCredential = new Credential(DefaultCredentialId, DefaultUserId, "Default development access key", DefaultAccessKey, DefaultSecretKey, false);
+            defaultCredential.TenantId = DefaultTenantId;
+            defaultCredential.Active = true;
+            config.AddCredential(defaultCredential);
+
+            SeedAssignment(config, "asn_default_tenantadmin", TenantAdminRoleId, "User", DefaultUserId);
+            SeedAssignment(config, "asn_default_credential_admin", TenantAdminRoleId, "Credential", DefaultCredentialId);
+        }
+
+        private static void SeedBuiltInRole(ConfigManager config, string id, string name, string description)
+        {
+            Role existing = config.GetRoleById(null, id);
+            if (existing != null) return;
+
+            Role role = new Role();
+            role.Id = id;
+            role.TenantId = null;
+            role.Name = name;
+            role.Description = description;
+            role.IsBuiltIn = true;
+            role.InheritsToChildren = true;
+            role.Active = true;
+            config.AddRole(role);
+        }
+
+        private static void SeedPermission(ConfigManager config, string id, string roleId, string resourceType, string operation, bool permit)
+        {
+            Permission existing = config.GetPermissionById(null, id);
+            if (existing != null) return;
+
+            Permission permission = new Permission();
+            permission.Id = id;
+            permission.TenantId = null;
+            permission.RoleId = roleId;
+            permission.ResourceType = resourceType;
+            permission.Operation = operation;
+            permission.Permit = permit;
+            permission.Active = true;
+            config.AddPermission(permission);
+        }
+
+        private static void SeedAssignment(
+            ConfigManager config,
+            string id,
+            string roleId,
+            string principalType,
+            string principalId)
+        {
+            RoleAssignment existing = config.GetRoleAssignmentById(DefaultTenantId, id);
+            if (existing != null) return;
+
+            RoleAssignment assignment = new RoleAssignment();
+            assignment.Id = id;
+            assignment.TenantId = DefaultTenantId;
+            assignment.RoleId = roleId;
+            assignment.PrincipalType = principalType;
+            assignment.PrincipalId = principalId;
+            assignment.ResourceType = "Tenant";
+            assignment.ResourceId = DefaultTenantId;
+            assignment.Active = true;
+            config.AddRoleAssignment(assignment);
         }
 
         private static string SampleHtmlFile(string link)

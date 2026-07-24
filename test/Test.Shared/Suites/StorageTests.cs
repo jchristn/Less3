@@ -33,7 +33,7 @@ namespace Test.Shared.Suites
         /// </summary>
         public StorageTests()
         {
-            _TestDirectory = Path.Combine(Path.GetTempPath(), "less3-storage-test-" + Guid.NewGuid().ToString("N"));
+            _TestDirectory = Path.Combine(Path.GetTempPath(), "less3-storage-test-" + Test.Shared.TestIds.Suffix());
         }
 
         #endregion

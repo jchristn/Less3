@@ -3,6 +3,19 @@ import DashboardPage from '#/page/dashboard/DashboardPage';
 import { renderWithRedux } from '../store/utils';
 
 jest.mock('#/store/slice/dashboardStatsSlice', () => ({
+  useGetAdminHealthQuery: () => ({
+    data: {
+      ServerVersion: '3.0.0-test',
+      UptimeSeconds: 120,
+      DatabaseType: 'Sqlite',
+      DatabaseReachable: true,
+      StoragePathWritable: true,
+      FreeDiskBytes: 1073741824,
+      TempUploadCount: 0,
+      RequestHistoryRetentionDays: 30,
+    },
+    isLoading: false,
+  }),
   useGetDashboardStatsQuery: () => ({
     data: {
       BucketCount: 12,
@@ -12,6 +25,50 @@ jest.mock('#/store/slice/dashboardStatsSlice', () => ({
       Buckets: [],
     },
     isLoading: false,
+  }),
+  useGetRequestReportQuery: () => ({
+    data: {
+      RequestsPerMinute: 1.25,
+      P95LatencyMs: 42,
+    },
+    isLoading: false,
+  }),
+}));
+
+jest.mock('#/store/slice/credentialsSlice', () => ({
+  useGetCredentialsQuery: () => ({
+    data: [
+      { Id: 'crd_active', Active: true },
+      { Id: 'crd_disabled', Active: false },
+    ],
+    isLoading: false,
+  }),
+}));
+
+jest.mock('#/store/slice/requestHistorySlice', () => ({
+  useGetRequestHistorySummaryQuery: () => ({
+    data: {
+      TotalSuccess: 8,
+      TotalFailure: 2,
+      Points: [],
+    },
+    isLoading: false,
+    refetch: jest.fn(),
+  }),
+}));
+
+jest.mock('#/page/request-history/SummaryChart', () => ({
+  __esModule: true,
+  default: () => (
+    <div>
+      <span>Request Summary</span>
+      <span>Last Day</span>
+    </div>
+  ),
+  getQuickRange: () => ({
+    startUtc: new Date('2026-05-15T00:00:00.000Z'),
+    endUtc: new Date('2026-05-16T00:00:00.000Z'),
+    interval: 'hour',
   }),
 }));
 
@@ -37,6 +94,31 @@ describe('DashboardPage', () => {
       expect(screen.getByText('Manage Objects')).toBeInTheDocument();
     });
 
+    it('renders quick actions above the request summary', () => {
+      renderWithRedux(<DashboardPage />);
+
+      const quickActions = screen.getByText('Quick Actions');
+      const requestSummary = screen.getByText('Request Summary');
+      expect(quickActions.compareDocumentPosition(requestSummary) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it('renders quick actions in the expected operational order', () => {
+      renderWithRedux(<DashboardPage />);
+
+      const titles = [
+        'Manage Tenants',
+        'Manage Users',
+        'Manage Credentials',
+        'Manage Roles',
+        'Create a Bucket',
+        'Manage Objects',
+      ].map((title) => screen.getByText(title));
+
+      for (let index = 0; index < titles.length - 1; index++) {
+        expect(titles[index].compareDocumentPosition(titles[index + 1]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      }
+    });
+
     it('renders the request summary controls', () => {
       renderWithRedux(<DashboardPage />);
 
@@ -44,7 +126,7 @@ describe('DashboardPage', () => {
       expect(screen.getByText('12')).toBeInTheDocument();
       expect(screen.getByText('Total Objects')).toBeInTheDocument();
       expect(screen.getByText('25')).toBeInTheDocument();
-      expect(screen.getByText('Total Storage')).toBeInTheDocument();
+      expect(screen.getByText('Storage Used')).toBeInTheDocument();
       expect(screen.getByText('1.0 MB')).toBeInTheDocument();
       expect(screen.getByText('Request Summary')).toBeInTheDocument();
       expect(screen.getByText('Last Day')).toBeInTheDocument();
@@ -54,6 +136,14 @@ describe('DashboardPage', () => {
       const { container } = renderWithRedux(<DashboardPage />);
 
       expect(container.querySelector('.anticon-database')).toBeInTheDocument();
+    });
+
+    it('renders the KPI cards in a single eight-card grid', () => {
+      const { container } = renderWithRedux(<DashboardPage />);
+
+      const kpiGrid = container.querySelector('.kpiGrid');
+      expect(kpiGrid).toBeInTheDocument();
+      expect(kpiGrid?.children).toHaveLength(8);
     });
   });
 

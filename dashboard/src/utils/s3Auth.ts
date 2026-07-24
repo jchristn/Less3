@@ -1,8 +1,8 @@
 'use client';
 
 export interface S3CredentialLike {
-  GUID?: string;
-  UserGUID?: string;
+  Id?: string;
+  UserId?: string;
   AccessKey: string;
   SecretKey?: string | null;
   Description?: string;
@@ -21,7 +21,7 @@ interface BuildSignedS3HeadersOptions {
 }
 
 export const DEFAULT_S3_REGION = 'us-west-1';
-export const S3_PREFERRED_CREDENTIAL_STORAGE_KEY = 'less3S3CredentialGuid';
+export const S3_PREFERRED_CREDENTIAL_STORAGE_KEY = 'less3S3CredentialId';
 
 const encoder = new TextEncoder();
 
@@ -337,32 +337,32 @@ const hmacSha256 = async (key: string | Uint8Array, data: string): Promise<Uint8
   return hmacSha256Fallback(rawKey, encoder.encode(data));
 };
 
-export const getPreferredS3CredentialGuid = (): string | null => {
+export const getPreferredS3CredentialId = (): string | null => {
   if (typeof window === 'undefined') {
     return null;
   }
 
   try {
-    const storedGuid = window.localStorage.getItem(S3_PREFERRED_CREDENTIAL_STORAGE_KEY)?.trim();
-    return storedGuid || null;
+    const storedId = window.localStorage.getItem(S3_PREFERRED_CREDENTIAL_STORAGE_KEY)?.trim();
+    return storedId || null;
   } catch {
     return null;
   }
 };
 
-export const setPreferredS3CredentialGuid = (guid: string): void => {
+export const setPreferredS3CredentialId = (id: string): void => {
   if (typeof window === 'undefined') {
     return;
   }
 
   try {
-    window.localStorage.setItem(S3_PREFERRED_CREDENTIAL_STORAGE_KEY, guid);
+    window.localStorage.setItem(S3_PREFERRED_CREDENTIAL_STORAGE_KEY, id);
   } catch {
     // Ignore storage errors and continue without persistence.
   }
 };
 
-export const clearPreferredS3CredentialGuid = (): void => {
+export const clearPreferredS3CredentialId = (): void => {
   if (typeof window === 'undefined') {
     return;
   }
@@ -376,7 +376,7 @@ export const clearPreferredS3CredentialGuid = (): void => {
 
 export const selectS3Credential = (
   credentials: S3CredentialLike[],
-  preferredUserGuid?: string
+  preferredUserId?: string
 ): S3CredentialLike | null => {
   const validCredentials = credentials.filter((credential) => credential.AccessKey?.trim());
 
@@ -384,16 +384,16 @@ export const selectS3Credential = (
     return null;
   }
 
-  const preferredGuid = getPreferredS3CredentialGuid();
-  if (preferredGuid) {
-    const preferredCredential = validCredentials.find((credential) => credential.GUID === preferredGuid);
+  const preferredId = getPreferredS3CredentialId();
+  if (preferredId) {
+    const preferredCredential = validCredentials.find((credential) => credential.Id === preferredId);
     if (preferredCredential) {
       return preferredCredential;
     }
   }
 
-  if (preferredUserGuid) {
-    const ownerCredential = validCredentials.find((credential) => credential.UserGUID === preferredUserGuid);
+  if (preferredUserId) {
+    const ownerCredential = validCredentials.find((credential) => credential.UserId === preferredUserId);
     if (ownerCredential) {
       return ownerCredential;
     }

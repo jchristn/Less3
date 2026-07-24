@@ -1,4 +1,4 @@
-﻿namespace Less3.Classes
+namespace Less3.Classes
 {
     using System;
     using System.Text.Json.Serialization;
@@ -12,20 +12,19 @@
         #region Public-Members
 
         /// <summary>
-        /// Database identifier.
+        /// Id of the bucket.
         /// </summary>
-        [JsonIgnore]
-        public int Id { get; set; } = 0;
+        public string Id { get; set; } = Less3.Helpers.IdGenerator.GenerateBucketId();
 
         /// <summary>
-        /// GUID of the bucket.
+        /// Tenant identifier.
         /// </summary>
-        public string GUID { get; set; } = Guid.NewGuid().ToString();
+        public string TenantId { get; set; } = "default";
 
         /// <summary>
-        /// GUID of the owner.
+        /// Id of the owner.
         /// </summary>
-        public string OwnerGUID { get; set; } = Guid.NewGuid().ToString();
+        public string OwnerId { get; set; } = Less3.Helpers.IdGenerator.GenerateUserId();
 
         /// <summary>
         /// Name of the bucket.
@@ -87,7 +86,7 @@
         /// Instantiate.
         /// </summary>
         /// <param name="name">Name.</param>
-        /// <param name="owner">Owner GUID.</param>
+        /// <param name="owner">Owner Id.</param>
         /// <param name="storageType">Storage type.</param>
         /// <param name="diskDirectory">Disk directory.</param>
         /// <param name="region">Region.</param>
@@ -106,38 +105,38 @@
             RegionString = region;
             StorageType = storageType;
             DiskDirectory = diskDirectory;
-            OwnerGUID = owner;
+            OwnerId = owner;
             CreatedUtc = DateTime.Now.ToUniversalTime();
         }
 
         /// <summary>
         /// Instantiate.
         /// </summary>
-        /// <param name="guid">GUID.</param>
+        /// <param name="id">Id.</param>
         /// <param name="name">Name.</param>
-        /// <param name="owner">Owner GUID.</param>
+        /// <param name="owner">Owner Id.</param>
         /// <param name="storageType">Storage type.</param>
         /// <param name="diskDirectory">Disk directory.</param>
         /// <param name="region">Region.</param>
         public Bucket(
-            string guid,
+            string id,
             string name,
             string owner,
             StorageDriverType storageType,
             string diskDirectory,
             string region = "us-west-1")
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
             if (String.IsNullOrEmpty(owner)) throw new ArgumentNullException(nameof(owner));
             if (String.IsNullOrEmpty(diskDirectory)) throw new ArgumentNullException(nameof(diskDirectory));
 
-            GUID = guid;
+            Id = id;
             Name = name;
             RegionString = region;
             StorageType = storageType;
             DiskDirectory = diskDirectory;
-            OwnerGUID = owner;
+            OwnerId = owner;
             CreatedUtc = DateTime.Now.ToUniversalTime();
         }
 

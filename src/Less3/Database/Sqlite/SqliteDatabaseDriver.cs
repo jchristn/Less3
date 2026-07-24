@@ -10,6 +10,7 @@ namespace Less3.Database.Sqlite
     using Microsoft.Data.Sqlite;
     using SyslogLogging;
 
+    using Less3.Database.Implementations;
     using Less3.Database.Sqlite.Implementations;
     using Less3.Database.Sqlite.Queries;
 
@@ -45,6 +46,7 @@ namespace Less3.Database.Sqlite
         {
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _Logging = logging ?? throw new ArgumentNullException(nameof(logging));
+            Dialect = SqlDialect.Sqlite;
 
             if (String.IsNullOrEmpty(_Settings.Filename))
                 throw new ArgumentException("Database filename must be specified in settings.");
@@ -62,6 +64,12 @@ namespace Less3.Database.Sqlite
             Uploads = new UploadMethods(this);
             UploadParts = new UploadPartMethods(this);
             RequestHistory = new RequestHistoryMethods(this);
+            Tenants = new ControlPlaneTenantMethods(this, SqlDialect.Sqlite);
+            Roles = new ControlPlaneRoleMethods(this, SqlDialect.Sqlite);
+            Permissions = new ControlPlanePermissionMethods(this, SqlDialect.Sqlite);
+            RoleAssignments = new ControlPlaneRoleAssignmentMethods(this, SqlDialect.Sqlite);
+            AuthSessions = new ControlPlaneAuthSessionMethods(this, SqlDialect.Sqlite);
+            AuthorizationAudit = new ControlPlaneAuthorizationAuditMethods(this, SqlDialect.Sqlite);
 
             ExecuteQuery("PRAGMA journal_mode=WAL;").Wait();
             ExecuteQuery("PRAGMA synchronous=NORMAL;").Wait();
@@ -70,6 +78,8 @@ namespace Less3.Database.Sqlite
             ExecuteQuery("PRAGMA page_size=4096;").Wait();
             ExecuteQuery("PRAGMA mmap_size=2147483648;").Wait();
             ExecuteQuery("PRAGMA wal_autocheckpoint=1000;").Wait();
+
+            SqliteLegacyV2Migrator.RunIfNeeded(_ConnectionString, _Logging, _Header);
 
             ExecuteQuery(SetupQueries.CreateTablesAndIndices(), true).Wait();
 

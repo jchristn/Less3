@@ -18,34 +18,34 @@ namespace Less3.Database.Interfaces
         /// Retrieve the latest version of an object by key within a bucket.
         /// </summary>
         /// <param name="key">Object key.</param>
-        /// <param name="bucketGuid">Bucket GUID.</param>
+        /// <param name="bucketId">Bucket Id.</param>
         /// <returns>Object or null if not found.</returns>
-        Obj GetLatestByKey(string key, string bucketGuid);
+        Obj GetLatestByKey(string key, string bucketId);
 
         /// <summary>
         /// Retrieve an object by key and version within a bucket.
         /// </summary>
         /// <param name="key">Object key.</param>
         /// <param name="version">Object version.</param>
-        /// <param name="bucketGuid">Bucket GUID.</param>
+        /// <param name="bucketId">Bucket Id.</param>
         /// <returns>Object or null if not found.</returns>
-        Obj GetByKeyAndVersion(string key, long version, string bucketGuid);
+        Obj GetByKeyAndVersion(string key, long version, string bucketId);
 
         /// <summary>
-        /// Retrieve an object by GUID within a bucket.
+        /// Retrieve an object by Id within a bucket.
         /// </summary>
-        /// <param name="guid">Object GUID.</param>
-        /// <param name="bucketGuid">Bucket GUID.</param>
+        /// <param name="id">Object Id.</param>
+        /// <param name="bucketId">Bucket Id.</param>
         /// <returns>Object or null if not found.</returns>
-        Obj GetByGuid(string guid, string bucketGuid);
+        Obj GetById(string id, string bucketId);
 
         /// <summary>
         /// Get the latest version number for a given key within a bucket.
         /// </summary>
         /// <param name="key">Object key.</param>
-        /// <param name="bucketGuid">Bucket GUID.</param>
+        /// <param name="bucketId">Bucket Id.</param>
         /// <returns>Latest version number, or 0 if none found.</returns>
-        long GetLatestVersion(string key, string bucketGuid);
+        long GetLatestVersion(string key, string bucketId);
 
         /// <summary>
         /// Update an existing object record.
@@ -63,19 +63,19 @@ namespace Less3.Database.Interfaces
         /// Enumerate objects in a bucket with pagination, optional prefix filter, and optional delete marker exclusion.
         /// Results are ordered by ID ascending.
         /// </summary>
-        /// <param name="bucketGuid">Bucket GUID.</param>
+        /// <param name="bucketId">Bucket Id.</param>
         /// <param name="startIndex">Minimum ID to start from.</param>
         /// <param name="maxResults">Maximum number of results to return.</param>
         /// <param name="excludeDeleteMarkers">Whether to exclude objects with delete markers.</param>
         /// <param name="prefix">Optional key prefix filter.</param>
         /// <returns>List of matching objects.</returns>
-        List<Obj> Enumerate(string bucketGuid, int startIndex, int maxResults, bool excludeDeleteMarkers, string prefix);
+        List<Obj> Enumerate(string bucketId, int startIndex, int maxResults, bool excludeDeleteMarkers, string prefix);
 
         /// <summary>
         /// Get object count and total bytes for a bucket.
         /// </summary>
-        /// <param name="bucketGuid">Bucket GUID.</param>
+        /// <param name="bucketId">Bucket Id.</param>
         /// <returns>Bucket statistics.</returns>
-        BucketStatistics GetStatistics(string bucketGuid);
+        BucketStatistics GetStatistics(string bucketId);
     }
 }

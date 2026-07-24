@@ -30,21 +30,23 @@ describe("bucketsSlice endpoints", () => {
   });
 
   it("getBuckets success populates data", async () => {
+    const bucketResponse = JSON.stringify([{ Id: "bkt_test", Name: "one", CreatedUtc: "now" }]);
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       status: 200,
       statusText: "OK",
-      json: async () => [{ GUID: "bucket-guid", Name: "one", CreatedUtc: "now" }],
+      headers: new Headers({ "content-type": "application/json" }),
+      text: async () => bucketResponse,
     }) as any;
 
     const store = makeStore();
     const promise = store.dispatch(bucketsSliceApi.endpoints.getBuckets.initiate());
     const result = await promise.unwrap();
-    expect(result).toEqual([{ GUID: "bucket-guid", Name: "one", CreatedUtc: "now", CreationDate: "now" }]);
+    expect(result).toEqual([{ Id: "bkt_test", Name: "one", CreatedUtc: "now", CreationDate: "now" }]);
     promise.unsubscribe?.();
   });
 
-  it("deleteBucket uses admin bucket guid", async () => {
+  it("deleteBucket uses admin bucket id", async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       status: 204,
@@ -54,12 +56,12 @@ describe("bucketsSlice endpoints", () => {
 
     const store = makeStore();
     const promise = store.dispatch(
-      bucketsSliceApi.endpoints.deleteBucket.initiate({ guid: "bucket-guid", bucketName: "one" })
+      bucketsSliceApi.endpoints.deleteBucket.initiate({ id: "bkt_test", bucketName: "one" })
     );
     const result = await promise.unwrap();
     expect(result).toEqual({ success: true });
     expect(global.fetch).toHaveBeenCalledWith(
-      "http://localhost:8000/admin/buckets/bucket-guid?destroy=true",
+      "http://127.0.0.1:8000/admin/buckets/bkt_test?destroy=true",
       expect.objectContaining({
         method: "DELETE",
         headers: expect.objectContaining({
@@ -87,13 +89,15 @@ describe("bucketsSlice endpoints", () => {
   });
 
   it("listBucketObjects returns contents", async () => {
+    const credentialResponse = JSON.stringify([{ Id: "crd_test", AccessKey: "default", SecretKey: "default" }]);
     global.fetch = jest
       .fn()
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
         statusText: "OK",
-        json: async () => [{ GUID: "cred-guid", AccessKey: "default", SecretKey: "default" }],
+        headers: new Headers({ "content-type": "application/json" }),
+        text: async () => credentialResponse,
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -106,7 +110,7 @@ describe("bucketsSlice endpoints", () => {
     const store = makeStore();
     const promise = store.dispatch(
       bucketsSliceApi.endpoints.listBucketObjects.initiate({
-        bucketGUID: "g",
+        bucketId: "g",
         prefix: "",
         continuationToken: "",
       } as any)
@@ -115,7 +119,7 @@ describe("bucketsSlice endpoints", () => {
     expect(res).toHaveProperty("Contents");
     expect(global.fetch).toHaveBeenNthCalledWith(
       1,
-      "http://localhost:8000/admin/credentials",
+      "http://127.0.0.1:8000/admin/credentials",
       expect.objectContaining({
         method: "GET",
         headers: expect.objectContaining({
@@ -125,7 +129,7 @@ describe("bucketsSlice endpoints", () => {
     );
     expect(global.fetch).toHaveBeenNthCalledWith(
       2,
-      "http://localhost:8000/g/",
+      "http://127.0.0.1:8000/g/",
       expect.objectContaining({
         method: "GET",
         headers: expect.objectContaining({
@@ -139,13 +143,15 @@ describe("bucketsSlice endpoints", () => {
   });
 
   it("downloadBucketObject error is returned", async () => {
+    const credentialResponse = JSON.stringify([{ Id: "crd_test", AccessKey: "default", SecretKey: "default" }]);
     global.fetch = jest
       .fn()
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
         statusText: "OK",
-        json: async () => [{ GUID: "cred-guid", AccessKey: "default", SecretKey: "default" }],
+        headers: new Headers({ "content-type": "application/json" }),
+        text: async () => credentialResponse,
       })
       .mockResolvedValueOnce({
         ok: false,
@@ -157,7 +163,7 @@ describe("bucketsSlice endpoints", () => {
     const store = makeStore();
     const promise = store.dispatch(
       bucketsSliceApi.endpoints.downloadBucketObject.initiate({
-        bucketGUID: "g",
+        bucketId: "g",
         objectKey: "k",
       } as any)
     );

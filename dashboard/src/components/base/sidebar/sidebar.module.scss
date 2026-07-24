@@ -34,7 +34,7 @@
 }
 
 .collapseButtonContainer {
-  padding: 8px;
+  padding: 6px;
   display: flex;
   justify-content: flex-end;
   width: 100%;
@@ -48,3 +48,17 @@
   border-right: none;
 }
 
+.menu :global(.ant-menu-item) {
+  height: 30px;
+  line-height: 30px;
+  margin-block: 3px;
+}
+
+.menu:global(.ant-menu-inline:not(.ant-menu-inline-collapsed)) :global(.ant-menu-item) {
+  padding-inline: 12px !important;
+  padding-left: 18px !important;
+}
+
+.menu :global(.ant-menu-item-group-title) {
+  padding: 9px 12px 3px;
+}

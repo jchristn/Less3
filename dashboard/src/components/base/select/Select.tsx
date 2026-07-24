@@ -3,7 +3,7 @@ import { Select, SelectProps } from 'antd';
 
 export interface OptionProps {
   value: string | number;
-  label: string;
+  label: React.ReactNode;
 }
 
 interface Less3SelectProps extends Omit<SelectProps<string | number | string[]>, 'options'> {

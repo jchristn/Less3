@@ -1,9 +1,13 @@
 // User API types and interfaces
 
 export interface User {
-  GUID: string;
+  Id: string;
+  TenantId?: string;
   Name: string;
   Email: string;
+  Active?: boolean;
+  IsAdmin?: boolean;
+  IsTenantAdmin?: boolean;
   CreatedUtc: string;
   [key: string]: any;
 }
@@ -12,21 +16,31 @@ export type UserListResponse = User[];
 export type UserResponse = User;
 
 export interface CreateUserRequest {
-  GUID?: string;
+  Id?: string;
+  TenantId?: string;
   Name: string;
   Email: string;
+  PasswordHash?: string;
+  Active?: boolean;
+  IsAdmin?: boolean;
+  IsTenantAdmin?: boolean;
   [key: string]: any;
 }
 
 export interface UpdateUserRequest {
-  GUID: string;
+  Id: string;
+  TenantId?: string;
   Name: string;
   Email: string;
+  PasswordHash?: string;
+  Active?: boolean;
+  IsAdmin?: boolean;
+  IsTenantAdmin?: boolean;
   [key: string]: any;
 }
 
 export interface DeleteUserParams {
-  guid: string;
+  id: string;
 }
 
 export interface DeleteUserResponse {

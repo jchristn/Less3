@@ -1,4 +1,4 @@
-﻿namespace Less3.Api.S3
+namespace Less3.Api.S3
 {
     using System;
     using System.Collections.Generic;
@@ -11,6 +11,7 @@
     using S3ServerLibrary.S3Objects;
 
     using Less3.Classes;
+    using Less3.Helpers;
     using Less3.Settings;
 
     /// <summary>
@@ -75,18 +76,17 @@
             {
                 _Logging.Warn(header + "requestor not authenticated");
                 throw new S3Exception(new Error(ErrorCode.AccessDenied));
-            } 
-            else
-            {
-                md.Authorization = AuthorizationResult.PermitService;
             }
 
-            List<Classes.Bucket> buckets = _Buckets.GetUserBuckets(md.User.GUID);
+            RequestValidator.ValidateAuthorization(md, _Logging, header);
+
+            List<Classes.Bucket> buckets = _Buckets.GetTenantBuckets(md.TenantId);
+            Tenant tenant = _Config.GetTenantById(md.TenantId);
 
             ListAllMyBucketsResult listBucketsResult = new ListAllMyBucketsResult();
             listBucketsResult.Owner = new S3ServerLibrary.S3Objects.Owner();
-            listBucketsResult.Owner.DisplayName = md.User.Name;
-            listBucketsResult.Owner.ID = md.User.GUID;
+            listBucketsResult.Owner.DisplayName = tenant != null ? tenant.Name : md.TenantId;
+            listBucketsResult.Owner.ID = md.TenantId;
 
             listBucketsResult.Buckets = new Buckets();
             listBucketsResult.Buckets.BucketList = new List<S3ServerLibrary.S3Objects.Bucket>();

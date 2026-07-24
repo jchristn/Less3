@@ -33,7 +33,7 @@ describe("LoginPage", () => {
       mockValidateConnectivity,
       { isLoading: false },
     ]);
-    (getInitialApiEndpoint as jest.Mock).mockReturnValue("http://localhost:8000");
+    (getInitialApiEndpoint as jest.Mock).mockReturnValue("http://127.0.0.1:8000");
     (getInitialAdminApiKey as jest.Mock).mockReturnValue("");
     (persistDashboardSession as jest.Mock).mockImplementation(() => {});
   });
@@ -79,7 +79,9 @@ describe("LoginPage", () => {
         endpoint: "http://test.com",
         apiKey: "super-secret",
       });
-      expect(persistDashboardSession).toHaveBeenCalledWith("http://test.com", "super-secret");
+      expect(persistDashboardSession).toHaveBeenCalledWith("http://test.com", "super-secret", {
+        rememberAdminKey: true,
+      });
       expect(mockPush).toHaveBeenCalledWith("/dashboard");
     });
   });

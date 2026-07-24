@@ -1,4 +1,4 @@
-﻿namespace Less3.Classes
+namespace Less3.Classes
 {
     using System;
     using System.Text.Json.Serialization;
@@ -11,20 +11,19 @@
         #region Public-Members
 
         /// <summary>
-        /// Database identifier.
+        /// Id of the credential.
         /// </summary>
-        [JsonIgnore]
-        public int Id { get; set; } = 0;
+        public string Id { get; set; } = Less3.Helpers.IdGenerator.GenerateCredentialId();
 
         /// <summary>
-        /// GUID of the credential.
+        /// Tenant identifier.
         /// </summary>
-        public string GUID { get; set; } = Guid.NewGuid().ToString();
+        public string TenantId { get; set; } = "default";
 
         /// <summary>
-        /// User GUID.
+        /// User Id.
         /// </summary>
-        public string UserGUID { get; set; } = Guid.NewGuid().ToString();
+        public string UserId { get; set; } = Less3.Helpers.IdGenerator.GenerateUserId();
 
         /// <summary>
         /// Description.
@@ -45,6 +44,21 @@
         /// Indicates if the secret key is base64 encoded.
         /// </summary>
         public bool IsBase64 { get; set; } = false;
+
+        /// <summary>
+        /// Whether the credential is active.
+        /// </summary>
+        public bool Active { get; set; } = true;
+
+        /// <summary>
+        /// UTC timestamp of the last successful use.
+        /// </summary>
+        public DateTime? LastUsedUtc { get; set; } = null;
+
+        /// <summary>
+        /// UTC timestamp of the last failed use.
+        /// </summary>
+        public DateTime? LastFailedUtc { get; set; } = null;
 
         /// <summary>
         /// Timestamp from record creation, in UTC time.
@@ -70,19 +84,19 @@
         /// <summary>
         /// Instantiate.
         /// </summary>
-        /// <param name="userGuid">User GUID.</param>
+        /// <param name="userId">User Id.</param>
         /// <param name="description">Description.</param>
         /// <param name="accessKey">Access key.</param>
         /// <param name="secretKey">Secret key.</param>
         /// <param name="isBase64">Is base64 encoded.</param>
-        public Credential(string userGuid, string description, string accessKey, string secretKey, bool isBase64)
+        public Credential(string userId, string description, string accessKey, string secretKey, bool isBase64)
         {
-            if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
+            if (String.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
             if (String.IsNullOrEmpty(accessKey)) throw new ArgumentNullException(nameof(accessKey));
             if (String.IsNullOrEmpty(secretKey)) throw new ArgumentNullException(nameof(secretKey));
 
-            GUID = Guid.NewGuid().ToString();
-            UserGUID = userGuid;
+            Id = Less3.Helpers.IdGenerator.GenerateCredentialId();
+            UserId = userId;
             Description = description;
             AccessKey = accessKey;
             SecretKey = secretKey;
@@ -92,21 +106,21 @@
         /// <summary>
         /// Instantiate.
         /// </summary>
-        /// <param name="guid">GUID.</param>
-        /// <param name="userGuid">User GUID.</param>
+        /// <param name="id">Id.</param>
+        /// <param name="userId">User Id.</param>
         /// <param name="description">Description.</param>
         /// <param name="accessKey">Access key.</param>
         /// <param name="secretKey">Secret key.</param>
         /// <param name="isBase64">Is base64 encoded.</param>
-        public Credential(string guid, string userGuid, string description, string accessKey, string secretKey, bool isBase64)
+        public Credential(string id, string userId, string description, string accessKey, string secretKey, bool isBase64)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            if (String.IsNullOrEmpty(userGuid)) throw new ArgumentNullException(nameof(userGuid));
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            if (String.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
             if (String.IsNullOrEmpty(accessKey)) throw new ArgumentNullException(nameof(accessKey));
             if (String.IsNullOrEmpty(secretKey)) throw new ArgumentNullException(nameof(secretKey));
 
-            GUID = guid;
-            UserGUID = userGuid;
+            Id = id;
+            UserId = userId;
             Description = description;
             AccessKey = accessKey;
             SecretKey = secretKey;

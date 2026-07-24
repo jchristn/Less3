@@ -1,4 +1,4 @@
-﻿namespace Less3.Classes
+namespace Less3.Classes
 {
     using System;
     using System.Collections.Generic;
@@ -11,6 +11,11 @@
     public class RequestMetadata
     {
         #region Public-Members
+
+        /// <summary>
+        /// Tenant identifier resolved for the request.
+        /// </summary>
+        public string TenantId = null;
 
         /// <summary>
         /// User.

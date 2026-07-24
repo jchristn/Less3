@@ -8,9 +8,7 @@ services:
 
   less3:
     container_name: 'less3'
-    build:
-      context: ../src
-      dockerfile: Less3/Dockerfile
+    image: 'jchristn77/less3:v3.0.0'
     ports:
       - "8000:8000"
     stdin_open: true
@@ -30,12 +28,12 @@ services:
 
   #
   # Less3 UI (Dashboard)
-  # See https://hub.docker.com/r/jchristn/less3-ui
+  # See https://hub.docker.com/r/jchristn77/less3-ui
   #
 
   less3-ui:
     container_name: 'less3-ui'
-    image: 'jchristn77/less3-ui:v2.2.0'
+    image: 'jchristn77/less3-ui:v3.0.0'
     ports:
       - "3000:3000"
     stdin_open: true

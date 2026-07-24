@@ -1,4 +1,4 @@
-﻿namespace Less3.Classes
+namespace Less3.Classes
 {
     using System;
     using System.Collections.Generic;
@@ -17,9 +17,9 @@
         public string Name { get; set; } = null;
 
         /// <summary>
-        /// GUID of the bucket.
+        /// Id of the bucket.
         /// </summary>
-        public string GUID { get; set; } = Guid.NewGuid().ToString();
+        public string Id { get; set; } = Less3.Helpers.IdGenerator.GenerateBucketId();
 
         /// <summary>
         /// The number of objects in the bucket including all versions.
@@ -51,13 +51,13 @@
         /// Instantiate.
         /// </summary>
         /// <param name="name">Name.</param>
-        /// <param name="guid">GUID.</param>
+        /// <param name="id">Id.</param>
         /// <param name="objects">Number of objects.</param>
         /// <param name="bytes">Number of bytes.</param>
-        public BucketStatistics(string name, string guid, long objects, long bytes)
+        public BucketStatistics(string name, string id, long objects, long bytes)
         {
             Name = name;
-            GUID = guid;
+            Id = id;
             Objects = objects;
             Bytes = bytes;
         }

@@ -14,6 +14,8 @@ import {
   HomeOutlined,
   ReloadOutlined,
   UploadOutlined,
+  CopyOutlined,
+  RollbackOutlined,
 } from '@ant-design/icons';
 import { Breadcrumb } from 'antd';
 import { useSearchParams } from 'next/navigation';
@@ -28,7 +30,9 @@ import PageContainer from '#/components/base/pageContainer/PageContainer';
 import Less3Flex from '#/components/base/flex/Flex';
 import Less3Text from '#/components/base/typograpghy/Text';
 import CopyToClipboard from '#/components/copy-to-clipboard/CopyToClipboard';
+import IdDisplay from '#/components/id-display';
 import JsonViewerModal from '#/components/json-viewer-modal/JsonViewerModal';
+import TextWithCopy from '#/components/text-with-copy/TextWithCopy';
 import {
   useGetBucketsQuery,
   useListBucketObjectsQuery,
@@ -46,7 +50,7 @@ import {
 } from '#/store/slice/bucketsSlice';
 import { type BucketObject, type BucketTag, type ACLOwner, type ACLGrant, type ACLGrantee } from '#/utils/xmlUtils';
 import { formatDate } from '#/utils/dateUtils';
-import { getBaseUrl } from '#/services/sdk.service';
+import { buildS3Url } from '#/services/backendApi.service';
 import WriteObjectModal from '../buckets/WriteObjectModal';
 import { Less3Theme } from '#/theme/theme';
 import { useAppContext } from '#/hooks/appHooks';
@@ -100,11 +104,12 @@ const ObjectsPage: React.FC = () => {
   const [isWriteACLModalVisible, setIsWriteACLModalVisible] = useState(false);
   const [isViewACLModalVisible, setIsViewACLModalVisible] = useState(false);
   const [selectedObject, setSelectedObject] = useState<BucketObject | null>(null);
+  const [viewingObject, setViewingObject] = useState<BucketObject | null>(null);
+  const [isObjectDetailsModalVisible, setIsObjectDetailsModalVisible] = useState(false);
   const [activeContentObject, setActiveContentObject] = useState<BucketObject | null>(null);
   const [activeContentType, setActiveContentType] = useState<string>('');
   const [objectContent, setObjectContent] = useState('');
   const [isObjectContentModalVisible, setIsObjectContentModalVisible] = useState(false);
-  const [objectContentModalMode, setObjectContentModalMode] = useState<'view' | 'edit' | null>(null);
   const [isObjectContentLoading, setIsObjectContentLoading] = useState(false);
   const [isSavingObjectContent, setIsSavingObjectContent] = useState(false);
   const [isUploadObjectModalVisible, setIsUploadObjectModalVisible] = useState(false);
@@ -122,6 +127,14 @@ const ObjectsPage: React.FC = () => {
   const [isDeleteFolderModalVisible, setIsDeleteFolderModalVisible] = useState(false);
   const [deletingFolderPrefix, setDeletingFolderPrefix] = useState<string | null>(null);
   const [isDeletingFolder, setIsDeletingFolder] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
+  const [showDeleteMarkers, setShowDeleteMarkers] = useState(false);
+  const [copyingObject, setCopyingObject] = useState<BucketObject | null>(null);
+  const [isCopyModalVisible, setIsCopyModalVisible] = useState(false);
+  const [isCopyingVersion, setIsCopyingVersion] = useState(false);
+  const [isRestoringVersion, setIsRestoringVersion] = useState(false);
+  const [copyForm] = Form.useForm<{ targetKey: string }>();
 
   const { data: bucketsData, isLoading: isLoadingBuckets } = useGetBucketsQuery();
 
@@ -131,7 +144,7 @@ const ObjectsPage: React.FC = () => {
     isError: isObjectsError,
     error: objectsError,
     refetch: refetchObjects,
-  } = useListBucketObjectsQuery({ bucketGUID: selectedBucketName || '' }, { skip: !selectedBucketName });
+  } = useListBucketObjectsQuery({ bucketId: selectedBucketName || '' }, { skip: !selectedBucketName });
 
   const [downloadBucketObject] = useLazyDownloadBucketObjectQuery();
   const [deleteBucketObject, { isLoading: isDeleting }] = useDeleteBucketObjectMutation();
@@ -159,7 +172,7 @@ const ObjectsPage: React.FC = () => {
     refetch: refetchObjectTags,
   } = useGetObjectTagsQuery(
     {
-      bucketGUID: selectedBucketName || '',
+      bucketId: selectedBucketName || '',
       objectKey: selectedObject?.Key || '',
     },
     { skip: !shouldFetchObjectTags }
@@ -173,7 +186,7 @@ const ObjectsPage: React.FC = () => {
     refetch: refetchObjectACL,
   } = useGetObjectACLQuery(
     {
-      bucketGUID: selectedBucketName || '',
+      bucketId: selectedBucketName || '',
       objectKey: selectedObject?.Key || '',
     },
     { skip: !shouldFetchObjectACL }
@@ -271,7 +284,11 @@ const ObjectsPage: React.FC = () => {
     }));
 
     // Combine parent entry, folders and files
-    const allItems = [...parentEntry, ...folderObjects, ...files];
+    const allItems = [...parentEntry, ...folderObjects, ...files].filter((item) => {
+      const deleteMarker = Boolean((item as BucketObject & { IsDeleteMarker?: boolean; DeleteMarker?: boolean }).IsDeleteMarker)
+        || Boolean((item as BucketObject & { IsDeleteMarker?: boolean; DeleteMarker?: boolean }).DeleteMarker);
+      return showDeleteMarkers || !deleteMarker;
+    });
 
     const q = searchText.trim().toLowerCase();
     if (!q) return allItems;
@@ -285,7 +302,21 @@ const ObjectsPage: React.FC = () => {
 
       return key.includes(q) || contentType.includes(q) || storageClass.includes(q) || owner.includes(q);
     });
-  }, [objectsAtCurrentLevel, currentPrefix, searchText]);
+  }, [objectsAtCurrentLevel, currentPrefix, searchText, showDeleteMarkers]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [currentPrefix, pageSize, searchText, selectedBucketName, showDeleteMarkers]);
+
+  const totalObjectPages = useMemo(() => {
+    return Math.max(1, Math.ceil(filteredObjects.length / pageSize));
+  }, [filteredObjects.length, pageSize]);
+
+  const paginatedObjects = useMemo(() => {
+    const safePage = Math.min(currentPage, totalObjectPages);
+    const start = (safePage - 1) * pageSize;
+    return filteredObjects.slice(start, start + pageSize);
+  }, [currentPage, filteredObjects, pageSize, totalObjectPages]);
 
   const selectableObjectKeys = useMemo(() => {
     return filteredObjects
@@ -381,7 +412,7 @@ const ObjectsPage: React.FC = () => {
       const folderKey = currentPrefix + folderName + '/';
 
       await writeBucketObject({
-        bucketGUID: selectedBucketName,
+        bucketId: selectedBucketName,
         objectKey: folderKey,
         content: '',
       }).unwrap();
@@ -421,7 +452,7 @@ const ObjectsPage: React.FC = () => {
 
     try {
       const result = await deleteMultipleObjects({
-        bucketGUID: selectedBucketName,
+        bucketId: selectedBucketName,
         objectKeys: keysToDelete,
       }).unwrap();
 
@@ -490,7 +521,7 @@ const ObjectsPage: React.FC = () => {
       try {
         const objectKey = currentPrefix + file.name;
         await uploadBucketObject({
-          bucketGUID: selectedBucketName,
+          bucketId: selectedBucketName,
           objectKey,
           file,
         }).unwrap();
@@ -530,7 +561,7 @@ const ObjectsPage: React.FC = () => {
 
     try {
       const result = await downloadBucketObject({
-        bucketGUID: selectedBucketName,
+        bucketId: selectedBucketName,
         objectKey: record.Key,
       }).unwrap();
 
@@ -557,6 +588,79 @@ const ObjectsPage: React.FC = () => {
     } finally {
       // Clear the downloading key to hide loading state
       setDownloadingObjectKey(null);
+    }
+  };
+
+  const handleRestoreVersion = async (record: BucketObject) => {
+    if (!selectedBucketName) {
+      message.error('Bucket information not available');
+      return;
+    }
+
+    setIsRestoringVersion(true);
+    try {
+      const result = await downloadBucketObject({
+        bucketId: selectedBucketName,
+        objectKey: record.Key,
+      }).unwrap();
+
+      await writeBucketObject({
+        bucketId: selectedBucketName,
+        objectKey: record.Key,
+        content: result.content,
+        contentType: result.contentType || record.ContentType || inferTextObjectContentType(undefined, record.Key),
+      }).unwrap();
+
+      message.success(`Version restored to current object "${record.Key}"`);
+      refetchObjects();
+    } catch (error: any) {
+      message.error(error?.data?.data || error?.message || 'Failed to restore object version');
+    } finally {
+      setIsRestoringVersion(false);
+    }
+  };
+
+  const handleCopyVersion = (record: BucketObject) => {
+    setCopyingObject(record);
+    copyForm.setFieldsValue({
+      targetKey: `${record.Key}.copy`,
+    });
+    setIsCopyModalVisible(true);
+  };
+
+  const handleCopyVersionConfirm = async () => {
+    if (!copyingObject || !selectedBucketName) {
+      message.error('Object or bucket information not available');
+      return;
+    }
+
+    try {
+      const values = await copyForm.validateFields();
+      const targetKey = values.targetKey.trim();
+      setIsCopyingVersion(true);
+
+      const result = await downloadBucketObject({
+        bucketId: selectedBucketName,
+        objectKey: copyingObject.Key,
+      }).unwrap();
+
+      await writeBucketObject({
+        bucketId: selectedBucketName,
+        objectKey: targetKey,
+        content: result.content,
+        contentType: result.contentType || copyingObject.ContentType || inferTextObjectContentType(undefined, copyingObject.Key),
+      }).unwrap();
+
+      message.success(`Copied "${copyingObject.Key}" to "${targetKey}"`);
+      setIsCopyModalVisible(false);
+      setCopyingObject(null);
+      copyForm.resetFields();
+      refetchObjects();
+    } catch (error: any) {
+      if (error?.errorFields) return;
+      message.error(error?.data?.data || error?.message || 'Failed to copy object version');
+    } finally {
+      setIsCopyingVersion(false);
     }
   };
 
@@ -588,7 +692,6 @@ const ObjectsPage: React.FC = () => {
 
   const closeObjectContentModal = () => {
     setIsObjectContentModalVisible(false);
-    setObjectContentModalMode(null);
     setActiveContentObject(null);
     setActiveContentType('');
     setObjectContent('');
@@ -606,6 +709,16 @@ const ObjectsPage: React.FC = () => {
     setIsDeleteModalVisible(true);
   };
 
+  const handleViewObjectDetails = (record: BucketObject) => {
+    setViewingObject(record);
+    setIsObjectDetailsModalVisible(true);
+  };
+
+  const closeObjectDetailsModal = () => {
+    setIsObjectDetailsModalVisible(false);
+    setViewingObject(null);
+  };
+
   const handleDeleteConfirm = async () => {
     if (!deletingObject || !selectedBucketName) {
       message.error('Object or bucket information not available');
@@ -614,7 +727,7 @@ const ObjectsPage: React.FC = () => {
 
     try {
       await deleteBucketObject({
-        bucketGUID: selectedBucketName,
+        bucketId: selectedBucketName,
         objectKey: deletingObject.Key,
       }).unwrap();
 
@@ -651,7 +764,7 @@ const ObjectsPage: React.FC = () => {
 
     try {
       const result = await deleteMultipleObjects({
-        bucketGUID: selectedBucketName,
+        bucketId: selectedBucketName,
         objectKeys: keysToDelete,
       }).unwrap();
 
@@ -720,7 +833,7 @@ const ObjectsPage: React.FC = () => {
       }
 
       await writeObjectTags({
-        bucketGUID: selectedBucketName,
+        bucketId: selectedBucketName,
         objectKey: selectedObject.Key,
         tags,
       }).unwrap();
@@ -754,7 +867,7 @@ const ObjectsPage: React.FC = () => {
 
     try {
       await deleteObjectTags({
-        bucketGUID: selectedBucketName,
+        bucketId: selectedBucketName,
         objectKey: selectedObject.Key,
       }).unwrap();
       message.success('Object tags deleted successfully');
@@ -793,7 +906,7 @@ const ObjectsPage: React.FC = () => {
       ];
 
       await writeObjectACL({
-        bucketGUID: selectedBucketName,
+        bucketId: selectedBucketName,
         objectKey: selectedObject.Key,
         owner,
         grants,
@@ -921,7 +1034,18 @@ const ObjectsPage: React.FC = () => {
     return `${(size / (1024 * 1024 * 1024)).toFixed(2)} GB`;
   };
 
-  const loadObjectContents = async (record: BucketObject, mode: 'view' | 'edit') => {
+  const getObjectVersionId = (item: BucketObject | null): string =>
+    item
+      ? (item as BucketObject & { VersionId?: string; Version?: string }).VersionId
+        || (item as BucketObject & { VersionId?: string; Version?: string }).Version
+        || ''
+      : '';
+
+  const isDeleteMarkerObject = (item: BucketObject): boolean =>
+    Boolean((item as BucketObject & { IsDeleteMarker?: boolean; DeleteMarker?: boolean }).IsDeleteMarker)
+    || Boolean((item as BucketObject & { IsDeleteMarker?: boolean; DeleteMarker?: boolean }).DeleteMarker);
+
+  const loadObjectContents = async (record: BucketObject) => {
     if (!selectedBucketName) {
       message.error('Bucket information not available');
       return;
@@ -930,13 +1054,12 @@ const ObjectsPage: React.FC = () => {
     setActiveContentObject(record);
     setActiveContentType(record.ContentType || inferTextObjectContentType(record.ContentType, record.Key));
     setObjectContent('');
-    setObjectContentModalMode(mode);
     setIsObjectContentModalVisible(true);
     setIsObjectContentLoading(true);
 
     try {
       const result = await downloadBucketObject({
-        bucketGUID: selectedBucketName,
+        bucketId: selectedBucketName,
         objectKey: record.Key,
       }).unwrap();
 
@@ -950,12 +1073,8 @@ const ObjectsPage: React.FC = () => {
     }
   };
 
-  const handleViewObjectContents = (record: BucketObject) => {
-    void loadObjectContents(record, 'view');
-  };
-
-  const handleEditObjectContents = (record: BucketObject) => {
-    void loadObjectContents(record, 'edit');
+  const handleObjectContents = (record: BucketObject) => {
+    void loadObjectContents(record);
   };
 
   const handleSaveObjectContents = async (nextContent: string) => {
@@ -969,13 +1088,13 @@ const ObjectsPage: React.FC = () => {
 
     try {
       await deleteBucketObject({
-        bucketGUID: selectedBucketName,
+        bucketId: selectedBucketName,
         objectKey: activeContentObject.Key,
       }).unwrap();
       deleteSucceeded = true;
 
       await writeBucketObject({
-        bucketGUID: selectedBucketName,
+        bucketId: selectedBucketName,
         objectKey: activeContentObject.Key,
         content: nextContent,
         contentType: inferTextObjectContentType(activeContentType || activeContentObject.ContentType, activeContentObject.Key),
@@ -1001,17 +1120,23 @@ const ObjectsPage: React.FC = () => {
       return;
     }
 
-    if (isFolder(item.Key)) {
-      openObjectJsonModal(`Folder JSON - ${item.Key}`, item);
-      return;
-    }
+    handleViewObjectDetails(item);
+  };
 
-    if (isTextObject(item)) {
-      handleEditObjectContents(item);
-      return;
-    }
+  type ObjectActionClickInfo = Parameters<NonNullable<MenuProps['onClick']>>[0];
 
-    openObjectJsonModal(`Object JSON - ${item.Key}`, item);
+  const stopObjectActionClick = (info: ObjectActionClickInfo) => {
+    info.domEvent.stopPropagation();
+  };
+
+  const runObjectAction = (info: ObjectActionClickInfo, action: () => void) => {
+    stopObjectActionClick(info);
+    setOpenDropdownKey(null);
+    action();
+  };
+
+  const createObjectAction = (action: () => void): NonNullable<MenuProps['onClick']> => {
+    return (info) => runObjectAction(info, action);
   };
 
   const columns: DataTableColumn<BucketObject>[] = [
@@ -1094,8 +1219,7 @@ const ObjectsPage: React.FC = () => {
           );
         }
 
-        const baseUrl = getBaseUrl();
-        const downloadUrl = `${baseUrl}/${selectedBucketName}/${key}`;
+        const downloadUrl = buildS3Url(`/${selectedBucketName}/${key}`);
 
         return (
           <Less3Flex align="center" gap={8}>
@@ -1131,6 +1255,36 @@ const ObjectsPage: React.FC = () => {
       label: 'ETag',
     },
     {
+      key: 'VersionId',
+      label: 'Version',
+      width: '160px',
+      render: (item) => {
+        const versionId = (item as BucketObject & { VersionId?: string; Version?: string }).VersionId
+          || (item as BucketObject & { VersionId?: string; Version?: string }).Version
+          || '';
+        return versionId ? <IdDisplay id={versionId} /> : '-';
+      },
+      filterValue: (item) =>
+        (item as BucketObject & { VersionId?: string; Version?: string }).VersionId
+        || (item as BucketObject & { VersionId?: string; Version?: string }).Version
+        || '',
+    },
+    {
+      key: 'DeleteMarker',
+      label: 'Delete Marker',
+      width: '130px',
+      render: (item) => {
+        const deleteMarker = Boolean((item as BucketObject & { IsDeleteMarker?: boolean; DeleteMarker?: boolean }).IsDeleteMarker)
+          || Boolean((item as BucketObject & { IsDeleteMarker?: boolean; DeleteMarker?: boolean }).DeleteMarker);
+        return deleteMarker ? 'Yes' : 'No';
+      },
+      filterValue: (item) => {
+        const deleteMarker = Boolean((item as BucketObject & { IsDeleteMarker?: boolean; DeleteMarker?: boolean }).IsDeleteMarker)
+          || Boolean((item as BucketObject & { IsDeleteMarker?: boolean; DeleteMarker?: boolean }).DeleteMarker);
+        return deleteMarker ? 'Yes' : 'No';
+      },
+    },
+    {
       key: 'StorageClass',
       label: 'Storage Class',
     },
@@ -1151,43 +1305,37 @@ const ObjectsPage: React.FC = () => {
 
         const folderMenuItems: MenuProps['items'] = [
           {
+            key: 'view-details',
+            label: 'View Details',
+            onClick: createObjectAction(() => handleViewObjectDetails(item)),
+          },
+          {
             key: 'open-folder',
             label: 'Open Folder',
-            onClick: () => {
-              setOpenDropdownKey(null);
-              navigateToFolder(item.Key);
-            },
+            onClick: createObjectAction(() => navigateToFolder(item.Key)),
           },
           { type: 'divider' },
           {
             key: 'delete-folder',
             label: 'Delete Folder',
             danger: true,
-            onClick: () => {
-              setOpenDropdownKey(null);
-              handleDeleteFolder(item.Key);
-            },
+            onClick: createObjectAction(() => handleDeleteFolder(item.Key)),
           },
         ];
 
         const fileMenuItems: MenuProps['items'] = [
+          {
+            key: 'view-details',
+            label: 'View Details',
+            onClick: createObjectAction(() => handleViewObjectDetails(item)),
+          },
+          { type: 'divider' },
           ...(isTextItem
             ? [
                 {
-                  key: 'view-contents',
-                  label: 'View Contents',
-                  onClick: () => {
-                    setOpenDropdownKey(null);
-                    handleViewObjectContents(item);
-                  },
-                },
-                {
-                  key: 'edit-contents',
-                  label: 'Edit Contents',
-                  onClick: () => {
-                    setOpenDropdownKey(null);
-                    handleEditObjectContents(item);
-                  },
+                  key: 'contents',
+                  label: 'Contents',
+                  onClick: createObjectAction(() => handleObjectContents(item)),
                 },
                 { type: 'divider' as const },
               ]
@@ -1195,61 +1343,57 @@ const ObjectsPage: React.FC = () => {
           {
             key: 'write-tags',
             label: 'Write Tags',
-            onClick: () => {
-              setOpenDropdownKey(null);
-              handleWriteObjectTags(item);
-            },
+            onClick: createObjectAction(() => handleWriteObjectTags(item)),
           },
           {
             key: 'read-tags',
             label: 'Read Tags',
-            onClick: () => {
-              setOpenDropdownKey(null);
-              handleViewObjectTags(item);
-            },
+            onClick: createObjectAction(() => handleViewObjectTags(item)),
           },
           {
             key: 'delete-tags',
             label: 'Delete Tags',
-            onClick: () => {
-              setOpenDropdownKey(null);
-              handleDeleteObjectTags(item);
-            },
+            onClick: createObjectAction(() => handleDeleteObjectTags(item)),
           },
           { type: 'divider' },
           {
             key: 'write-acl',
             label: 'Write ACL',
-            onClick: () => {
-              setOpenDropdownKey(null);
-              handleWriteObjectACL(item);
-            },
+            onClick: createObjectAction(() => handleWriteObjectACL(item)),
           },
           {
             key: 'read-acl',
             label: 'Read ACL',
-            onClick: () => {
-              setOpenDropdownKey(null);
-              handleViewObjectACL(item);
-            },
+            onClick: createObjectAction(() => handleViewObjectACL(item)),
           },
           { type: 'divider' },
           {
             key: 'download',
             label: 'Download Object',
-            onClick: () => {
-              setOpenDropdownKey(null);
-              handleDownloadObject(item);
-            },
+            onClick: createObjectAction(() => {
+              void handleDownloadObject(item);
+            }),
             disabled: downloadingObjectKey === item.Key,
+          },
+          {
+            key: 'copy-version',
+            icon: <CopyOutlined />,
+            label: 'Copy Version',
+            onClick: createObjectAction(() => handleCopyVersion(item)),
+          },
+          {
+            key: 'restore-version',
+            icon: <RollbackOutlined />,
+            label: 'Restore Version',
+            onClick: createObjectAction(() => {
+              void handleRestoreVersion(item);
+            }),
+            disabled: isRestoringVersion,
           },
           {
             key: 'delete',
             label: 'Delete Object',
-            onClick: () => {
-              setOpenDropdownKey(null);
-              handleDeleteObject(item);
-            },
+            onClick: createObjectAction(() => handleDeleteObject(item)),
           },
         ];
 
@@ -1257,7 +1401,7 @@ const ObjectsPage: React.FC = () => {
 
         return (
           <Less3Dropdown
-            menu={{ items: menuItems }}
+            menu={{ items: menuItems, onClick: stopObjectActionClick }}
             trigger={['click']}
             open={isOpen}
             onOpenChange={(open) => {
@@ -1291,6 +1435,7 @@ const ObjectsPage: React.FC = () => {
               setSearchText(''); // Clear search when bucket changes
               setCurrentPrefix(''); // Reset to root when bucket changes
               setSelectedRowKeys([]); // Clear selection when bucket changes
+              setCurrentPage(1);
             }}
             style={{ width: 250 }}
             loading={isLoadingBuckets}
@@ -1441,6 +1586,42 @@ const ObjectsPage: React.FC = () => {
                 ]}
               />
               <Less3Flex style={{ marginLeft: 'auto' }} align="center" gap={8}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+                  <input
+                    type="checkbox"
+                    checked={showDeleteMarkers}
+                    onChange={(event) => setShowDeleteMarkers(event.target.checked)}
+                  />
+                  Delete markers
+                </label>
+                <Less3Select
+                  options={[
+                    { label: '25 / page', value: 25 },
+                    { label: '50 / page', value: 50 },
+                    { label: '100 / page', value: 100 },
+                  ]}
+                  value={pageSize}
+                  onChange={(value) => setPageSize(Number(value))}
+                  style={{ width: 112 }}
+                  size="small"
+                />
+                <Less3Button
+                  size="small"
+                  disabled={currentPage <= 1}
+                  onClick={() => setCurrentPage((value) => Math.max(1, value - 1))}
+                >
+                  Previous
+                </Less3Button>
+                <Less3Text type="secondary" style={{ fontSize: 12 }}>
+                  {`${currentPage} / ${totalObjectPages}`}
+                </Less3Text>
+                <Less3Button
+                  size="small"
+                  disabled={currentPage >= totalObjectPages}
+                  onClick={() => setCurrentPage((value) => Math.min(totalObjectPages, value + 1))}
+                >
+                  Next
+                </Less3Button>
                 {selectedRowKeys.length > 0 && (
                   <Less3Text type="secondary" style={{ fontSize: 12 }}>
                     {selectedRowKeys.length} selected
@@ -1460,7 +1641,7 @@ const ObjectsPage: React.FC = () => {
 
             <DataTable
               columns={columns}
-              data={filteredObjects}
+              data={paginatedObjects}
               loading={isLoadingObjects}
               rowKey="Key"
               onRowClick={handleObjectRowClick}
@@ -1490,7 +1671,6 @@ const ObjectsPage: React.FC = () => {
 
       <ObjectContentModal
         open={isObjectContentModalVisible}
-        mode={objectContentModalMode || 'view'}
         objectKey={activeContentObject?.Key || ''}
         contentType={activeContentType}
         content={objectContent}
@@ -1499,6 +1679,101 @@ const ObjectsPage: React.FC = () => {
         onClose={closeObjectContentModal}
         onSave={handleSaveObjectContents}
       />
+
+      <Less3Modal
+        title={`Object Details - ${viewingObject ? getDisplayName(viewingObject.Key) || viewingObject.Key : ''}`}
+        open={isObjectDetailsModalVisible}
+        onCancel={closeObjectDetailsModal}
+        footer={[
+          viewingObject && isFolder(viewingObject.Key) ? (
+            <Less3Button
+              key="open-folder"
+              onClick={() => {
+                navigateToFolder(viewingObject.Key);
+                closeObjectDetailsModal();
+              }}
+            >
+              Open Folder
+            </Less3Button>
+          ) : null,
+          viewingObject && !isFolder(viewingObject.Key) && isTextObject(viewingObject) ? (
+            <Less3Button
+              key="contents"
+              onClick={() => {
+                const object = viewingObject;
+                closeObjectDetailsModal();
+                handleObjectContents(object);
+              }}
+            >
+              Contents
+            </Less3Button>
+          ) : null,
+          <Less3Button key="close" onClick={closeObjectDetailsModal}>
+            Close
+          </Less3Button>,
+        ].filter(Boolean)}
+        width={760}
+        centered
+        keyboard={true}
+      >
+        {viewingObject ? (
+          <table
+            style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              tableLayout: 'fixed',
+            }}
+          >
+            <tbody>
+              {(() => {
+                const versionId = getObjectVersionId(viewingObject);
+                const isFolderObject = isFolder(viewingObject.Key);
+                const downloadUrl = selectedBucketName && !isFolderObject
+                  ? buildS3Url(`/${selectedBucketName}/${viewingObject.Key}`)
+                  : '';
+
+                return [
+                  { label: 'Bucket', value: selectedBucketName || 'Not set' },
+                  { label: 'Bucket ID', value: selectedBucket?.Id || 'Not set', id: Boolean(selectedBucket?.Id) },
+                  { label: 'Tenant ID', value: selectedBucket?.TenantId || 'default', id: true },
+                  { label: 'Key', value: viewingObject.Key, copyable: true, mono: true },
+                  { label: 'Name', value: getDisplayName(viewingObject.Key) || viewingObject.Key },
+                  { label: 'Type', value: isFolderObject ? 'Folder' : 'Object' },
+                  { label: 'Content Type', value: viewingObject.ContentType || (isFolderObject ? 'folder' : 'Not set') },
+                  { label: 'Size', value: formatSize(viewingObject.Size || 0) },
+                  { label: 'Last Modified', value: viewingObject.LastModified ? formatDate(viewingObject.LastModified) : 'Not set' },
+                  { label: 'ETag', value: viewingObject.ETag || 'Not set' },
+                  { label: 'Storage Class', value: viewingObject.StorageClass || 'Not set' },
+                  { label: 'Version ID', value: versionId || 'Not set', id: Boolean(versionId) },
+                  { label: 'Delete Marker', value: isDeleteMarkerObject(viewingObject) ? 'Yes' : 'No' },
+                  { label: 'Owner ID', value: viewingObject.Owner?.ID || 'Not set', id: Boolean(viewingObject.Owner?.ID) },
+                  { label: 'Owner Display Name', value: viewingObject.Owner?.DisplayName || 'Not set' },
+                  { label: 'Download URL', value: downloadUrl, copyable: Boolean(downloadUrl), mono: true, hidden: !downloadUrl },
+                ];
+              })().filter((item) => !item.hidden).map((item) => (
+                <tr key={item.label}>
+                  <td style={{ width: 150, padding: '8px 12px 8px 0', verticalAlign: 'top' }}>
+                    <Less3Text type="secondary" fontSize={12}>
+                      {item.label}
+                    </Less3Text>
+                  </td>
+                  <td style={{ padding: '8px 0', verticalAlign: 'top' }}>
+                    {item.id ? (
+                      <IdDisplay id={item.value} />
+                    ) : item.copyable ? (
+                      <TextWithCopy text={item.value} className={item.mono ? 'code-font-style' : undefined} />
+                    ) : (
+                      <Less3Text style={{ wordBreak: 'break-all' }}>{item.value}</Less3Text>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '20px' }}>No object details available</div>
+        )}
+      </Less3Modal>
 
       <Less3Modal
         title="Delete Object"
@@ -1617,6 +1892,33 @@ const ObjectsPage: React.FC = () => {
             This will delete {deletingFolderPrefix ? getFolderObjectCount(deletingFolderPrefix) : 0} object(s). This action cannot be undone.
           </p>
         </Less3Flex>
+      </Less3Modal>
+
+      <Less3Modal
+        title={`Copy Version - ${copyingObject?.Key || ''}`}
+        open={isCopyModalVisible}
+        forceRender
+        onOk={handleCopyVersionConfirm}
+        onCancel={() => {
+          setIsCopyModalVisible(false);
+          setCopyingObject(null);
+          copyForm.resetFields();
+        }}
+        confirmLoading={isCopyingVersion}
+        centered
+        keyboard={true}
+      >
+        <Form form={copyForm} layout="vertical" autoComplete="off">
+          <Less3FormItem
+            label="Target Key"
+            name="targetKey"
+            rules={[
+              { required: true, message: 'Please enter a target key' },
+            ]}
+          >
+            <Less3Input placeholder="path/to/copied-object.txt" />
+          </Less3FormItem>
+        </Form>
       </Less3Modal>
 
       <Less3Modal
@@ -1857,7 +2159,10 @@ const ObjectsPage: React.FC = () => {
             <div>
               <Less3Text strong>Owner</Less3Text>
               <Less3Flex vertical gap={8} style={{ marginTop: '8px', paddingLeft: '16px' }}>
-                <Less3Text>ID: {objectACLData.acl.Owner.ID}</Less3Text>
+                <Less3Flex align="center" gap={8}>
+                  <Less3Text>ID:</Less3Text>
+                  <IdDisplay id={objectACLData.acl.Owner.ID} />
+                </Less3Flex>
                 <Less3Text>Display Name: {objectACLData.acl.Owner.DisplayName}</Less3Text>
               </Less3Flex>
             </div>
@@ -1874,7 +2179,7 @@ const ObjectsPage: React.FC = () => {
                         {
                           key: 'granteeId',
                           label: 'Grantee ID',
-                          render: (item: ACLGrant) => item.Grantee?.ID,
+                          render: (item: ACLGrant) => item.Grantee?.ID ? <IdDisplay id={item.Grantee.ID} /> : '',
                           filterValue: (item: ACLGrant) => item.Grantee?.ID || '',
                         },
                         {

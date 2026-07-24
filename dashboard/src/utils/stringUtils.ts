@@ -1,4 +1,3 @@
-import { v4 } from "uuid";
 import { message } from "#/utils/message";
 
 export const toTitleCase = (str: string): string => {
@@ -12,10 +11,6 @@ export const toTitleCase = (str: string): string => {
 
 export const getFirstLetterOfTheWord = (value: string) => {
   return (value?.substring(0, 1) || "").toUpperCase();
-};
-
-export const uuid = () => {
-  return v4();
 };
 
 export const decodePayload = (payload: string) => {

@@ -1,0 +1,15 @@
+.idDisplay {
+  display: inline-flex;
+  max-width: 100%;
+  min-width: 0;
+  vertical-align: middle;
+}
+
+.idText {
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Consolas', monospace;
+  font-size: 13px;
+  color: var(--ant-color-text);
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}

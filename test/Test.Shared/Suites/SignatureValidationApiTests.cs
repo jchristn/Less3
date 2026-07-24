@@ -35,15 +35,15 @@ namespace Test.Shared.Suites
             using Less3TestServer server = new Less3TestServer(validateSignatures: true);
             await server.StartAsync().ConfigureAwait(false);
 
-            string userGuid = Guid.NewGuid().ToString();
-            string credGuid = Guid.NewGuid().ToString();
-            string bucketGuid = Guid.NewGuid().ToString();
-            string bucketName = "s3-signature-test-" + Guid.NewGuid().ToString("N").Substring(0, 8);
+            string userId = Test.Shared.TestIds.User();
+            string credentialId = Test.Shared.TestIds.Credential();
+            string bucketId = Test.Shared.TestIds.Bucket();
+            string bucketName = "s3-signature-test-" + Test.Shared.TestIds.Suffix().Substring(0, 8);
 
             try
             {
-                await SetupUserAndCredential(server, userGuid, credGuid).ConfigureAwait(false);
-                await SetupBucket(server, userGuid, bucketGuid, bucketName).ConfigureAwait(false);
+                await SetupUserAndCredential(server, userId, credentialId).ConfigureAwait(false);
+                await SetupBucket(server, userId, bucketId, bucketName).ConfigureAwait(false);
 
                 await RunTest("S3_Signature_CreateBucket", async () =>
                 {
@@ -199,9 +199,9 @@ namespace Test.Shared.Suites
             }
             finally
             {
-                try { await server.AdminDeleteAsync($"buckets/{bucketGuid}?destroy=true").ConfigureAwait(false); } catch { }
-                try { await server.AdminDeleteAsync($"credentials/{credGuid}").ConfigureAwait(false); } catch { }
-                try { await server.AdminDeleteAsync($"users/{userGuid}").ConfigureAwait(false); } catch { }
+                try { await server.AdminDeleteAsync($"buckets/{bucketId}?destroy=true").ConfigureAwait(false); } catch { }
+                try { await server.AdminDeleteAsync($"credentials/{credentialId}").ConfigureAwait(false); } catch { }
+                try { await server.AdminDeleteAsync($"users/{userId}").ConfigureAwait(false); } catch { }
             }
         }
 
@@ -209,11 +209,11 @@ namespace Test.Shared.Suites
 
         #region Private-Methods
 
-        private static async Task SetupUserAndCredential(Less3TestServer server, string userGuid, string credGuid)
+        private static async Task SetupUserAndCredential(Less3TestServer server, string userId, string credentialId)
         {
             string userJson = JsonSerializer.Serialize(new
             {
-                GUID = userGuid,
+                Id = userId,
                 Name = "SignatureUser",
                 Email = "signature@example.com"
             });
@@ -221,22 +221,24 @@ namespace Test.Shared.Suites
 
             string credJson = JsonSerializer.Serialize(new
             {
-                GUID = credGuid,
-                UserGUID = userGuid,
+                Id = credentialId,
+                UserId = userId,
                 Description = "Signature credential",
                 AccessKey = server.AccessKey,
                 SecretKey = server.SecretKey,
                 IsBase64 = false
             });
             await server.AdminPostAsync("credentials", credJson).ConfigureAwait(false);
+            await server.GrantTenantAdminAsync("User", userId).ConfigureAwait(false);
+            await server.GrantTenantAdminAsync("Credential", credentialId).ConfigureAwait(false);
         }
 
-        private static async Task SetupBucket(Less3TestServer server, string userGuid, string bucketGuid, string bucketName)
+        private static async Task SetupBucket(Less3TestServer server, string userId, string bucketId, string bucketName)
         {
             string bucketJson = JsonSerializer.Serialize(new
             {
-                GUID = bucketGuid,
-                OwnerGUID = userGuid,
+                Id = bucketId,
+                OwnerId = userId,
                 Name = bucketName
             });
             await server.AdminPostAsync("buckets", bucketJson).ConfigureAwait(false);

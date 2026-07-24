@@ -1,6 +1,5 @@
-/* eslint-disable max-lines-per-function */
 'use client';
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { MenuProps } from 'antd';
 import {
   SearchOutlined,
@@ -8,6 +7,9 @@ import {
   DeleteOutlined,
   EyeOutlined,
   ReloadOutlined,
+  DownloadOutlined,
+  CopyOutlined,
+  SaveOutlined,
 } from '@ant-design/icons';
 import CopyToClipboard from '#/components/copy-to-clipboard/CopyToClipboard';
 import DataTable, { DataTableColumn } from '#/components/DataTable';
@@ -19,6 +21,8 @@ import PageContainer from '#/components/base/pageContainer/PageContainer';
 import Less3Flex from '#/components/base/flex/Flex';
 import Less3Dropdown from '#/components/base/dropdown/Dropdown';
 import Less3Text from '#/components/base/typograpghy/Text';
+import IdDisplay from '#/components/id-display';
+import TextWithCopy from '#/components/text-with-copy/TextWithCopy';
 import {
   useGetRequestHistoryQuery,
   useGetRequestHistorySummaryQuery,
@@ -26,6 +30,8 @@ import {
   RequestHistoryEntry,
 } from '#/store/slice/requestHistorySlice';
 import { formatDate } from '#/utils/dateUtils';
+import { buildBackendUrl } from '#/services/backendApi.service';
+import { buildPortableCurlCommand } from '#/utils/curlUtils';
 import { getPrettyPrintedTextContent } from '#/utils/objectContentUtils';
 import { message } from '#/utils/message';
 import SummaryChart, { getQuickRange } from './SummaryChart';
@@ -38,6 +44,17 @@ const METHOD_OPTIONS = [
   { label: 'DELETE', value: 'DELETE' },
   { label: 'HEAD', value: 'HEAD' },
 ];
+
+const STATUS_FAMILY_OPTIONS = [
+  { label: 'All Families', value: '' },
+  { label: '2xx', value: '2' },
+  { label: '3xx', value: '3' },
+  { label: '4xx', value: '4' },
+  { label: '5xx', value: '5' },
+];
+
+const SAVED_FILTERS_KEY = 'less3_request_history_saved_filters';
+const SYSTEM_REQUEST_PATH_SEGMENTS = new Set(['admin', 'api', 'swagger', 'openapi', 'health', 'assets', '_next']);
 
 const METHOD_COLORS: Record<string, string> = {
   GET: '#22AF79',
@@ -56,6 +73,91 @@ const getStatusColor = (code: number): string => {
 };
 
 const formatDurationMs = (value: number): string => `${value.toFixed(2)}ms`;
+
+const normalizeIdentityValue = (value: unknown): string => (typeof value === 'string' ? value.trim() : '');
+
+const decodePathSegment = (value: string): string => {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+};
+
+const getRequestBucketFromUrl = (requestUrl: string): string => {
+  const rawUrl = normalizeIdentityValue(requestUrl);
+  if (!rawUrl) return '';
+
+  try {
+    const parsedUrl = new URL(rawUrl, 'http://less3.local');
+    const queryBucket = normalizeIdentityValue(parsedUrl.searchParams.get('bucketId'))
+      || normalizeIdentityValue(parsedUrl.searchParams.get('bucketName'))
+      || normalizeIdentityValue(parsedUrl.searchParams.get('bucket'));
+
+    if (queryBucket) {
+      return queryBucket;
+    }
+
+    const segments = parsedUrl.pathname.split('/').map(decodePathSegment).filter(Boolean);
+    const firstSegment = segments[0]?.toLowerCase();
+    const isControlPlanePath = firstSegment === 'admin' || firstSegment === 'api';
+    const bucketRouteIndex = isControlPlanePath
+      ? segments.findIndex((segment) => ['bucket', 'buckets'].includes(segment.toLowerCase()))
+      : -1;
+
+    if (bucketRouteIndex >= 0 && segments[bucketRouteIndex + 1]) {
+      return segments[bucketRouteIndex + 1];
+    }
+
+    if (!segments[0] || SYSTEM_REQUEST_PATH_SEGMENTS.has(firstSegment)) {
+      return '';
+    }
+
+    return segments[0];
+  } catch {
+    const firstSegment = rawUrl.split('?')[0].split('/').filter(Boolean)[0];
+    return firstSegment && !SYSTEM_REQUEST_PATH_SEGMENTS.has(firstSegment.toLowerCase())
+      ? decodePathSegment(firstSegment)
+      : '';
+  }
+};
+
+const getEntryTenantId = (entry: RequestHistoryEntry): string => normalizeIdentityValue(entry.TenantId) || 'default';
+const getEntryUserId = (entry: RequestHistoryEntry): string => normalizeIdentityValue(entry.UserId);
+const getEntryCredentialIdentifier = (entry: RequestHistoryEntry): string =>
+  normalizeIdentityValue(entry.CredentialId) || normalizeIdentityValue(entry.AccessKey);
+
+const getEntryBucketIdentifier = (entry: RequestHistoryEntry): string =>
+  normalizeIdentityValue(entry.BucketId)
+  || normalizeIdentityValue(entry.BucketName)
+  || normalizeIdentityValue(entry.Bucket)
+  || normalizeIdentityValue(entry.bucketId)
+  || normalizeIdentityValue(entry.bucketName)
+  || normalizeIdentityValue(entry.bucket)
+  || getRequestBucketFromUrl(entry.RequestUrl);
+
+const buildIdentityFilterOptions = (label: string, values: string[]) => [
+  { label: `All ${label}`, value: '' },
+  ...Array.from(new Set(values.map(normalizeIdentityValue).filter(Boolean)))
+    .sort((a, b) => a.localeCompare(b))
+    .map((value) => ({ label: value, value })),
+];
+
+const createCurlCommand = (entry: RequestHistoryEntry): string => {
+  const method = entry.HttpMethod || 'GET';
+  const url = buildBackendUrl(entry.RequestUrl || '/');
+
+  return buildPortableCurlCommand({
+    method,
+    url,
+    headers: {
+      'Content-Type': entry.RequestContentType,
+    },
+    body: entry.RequestBody,
+  });
+};
+
+const csvEscape = (value: unknown): string => `"${String(value ?? '').replace(/"/g, '""')}"`;
 
 interface DetailBlockProps {
   title: string;
@@ -136,7 +238,15 @@ const DetailBlock: React.FC<DetailBlockProps> = ({
 const RequestHistoryPage: React.FC = () => {
   const [methodFilter, setMethodFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('');
+  const [statusFamilyFilter, setStatusFamilyFilter] = useState<string>('');
   const [sourceIpFilter, setSourceIpFilter] = useState<string>('');
+  const [tenantFilter, setTenantFilter] = useState<string>('');
+  const [userFilter, setUserFilter] = useState<string>('');
+  const [credentialFilter, setCredentialFilter] = useState<string>('');
+  const [bucketFilter, setBucketFilter] = useState<string>('');
+  const [slowRequestMs, setSlowRequestMs] = useState<string>('');
+  const [failedOnly, setFailedOnly] = useState(false);
+  const [groupedView, setGroupedView] = useState(false);
   const [timeRange, setTimeRange] = useState<string>('hour');
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
@@ -160,6 +270,28 @@ const RequestHistoryPage: React.FC = () => {
     pollingInterval: 10000,
   });
 
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(SAVED_FILTERS_KEY);
+      if (!stored) return;
+
+      const parsed = JSON.parse(stored);
+      setMethodFilter(typeof parsed.methodFilter === 'string' ? parsed.methodFilter : '');
+      setStatusFilter(typeof parsed.statusFilter === 'string' ? parsed.statusFilter : '');
+      setStatusFamilyFilter(typeof parsed.statusFamilyFilter === 'string' ? parsed.statusFamilyFilter : '');
+      setSourceIpFilter(typeof parsed.sourceIpFilter === 'string' ? parsed.sourceIpFilter : '');
+      setTenantFilter(typeof parsed.tenantFilter === 'string' ? parsed.tenantFilter : '');
+      setUserFilter(typeof parsed.userFilter === 'string' ? parsed.userFilter : '');
+      setCredentialFilter(typeof parsed.credentialFilter === 'string' ? parsed.credentialFilter : '');
+      setBucketFilter(typeof parsed.bucketFilter === 'string' ? parsed.bucketFilter : '');
+      setSlowRequestMs(typeof parsed.slowRequestMs === 'string' ? parsed.slowRequestMs : '');
+      setFailedOnly(Boolean(parsed.failedOnly));
+      setGroupedView(Boolean(parsed.groupedView));
+    } catch {
+      localStorage.removeItem(SAVED_FILTERS_KEY);
+    }
+  }, []);
+
   const handleViewDetail = useCallback((entry: RequestHistoryEntry) => {
     setSelectedEntry(entry);
     setIsDetailModalVisible(true);
@@ -171,9 +303,9 @@ const RequestHistoryPage: React.FC = () => {
   }, []);
 
   const handleDeleteConfirm = async () => {
-    if (!deletingEntry?.GUID) return;
+    if (!deletingEntry?.Id) return;
     try {
-      await deleteRequestHistory({ guid: deletingEntry.GUID }).unwrap();
+      await deleteRequestHistory({ id: deletingEntry.Id }).unwrap();
       message.success('Request history entry deleted');
       setIsDeleteModalVisible(false);
       setDeletingEntry(null);
@@ -181,6 +313,72 @@ const RequestHistoryPage: React.FC = () => {
       message.error(error?.data?.data || error?.message || 'Failed to delete entry');
     }
   };
+
+  const handleCopyCurl = useCallback(async (entry: RequestHistoryEntry) => {
+    const command = createCurlCommand(entry);
+    try {
+      await navigator.clipboard.writeText(command);
+      message.success('cURL command copied');
+    } catch {
+      message.error('Failed to copy cURL command');
+    }
+  }, []);
+
+  const handleSaveFilters = useCallback(() => {
+    const savedFilters = {
+      methodFilter,
+      statusFilter,
+      statusFamilyFilter,
+      sourceIpFilter,
+      tenantFilter,
+      userFilter,
+      credentialFilter,
+      bucketFilter,
+      slowRequestMs,
+      failedOnly,
+      groupedView,
+      savedUtc: new Date().toISOString(),
+    };
+
+    try {
+      localStorage.setItem(SAVED_FILTERS_KEY, JSON.stringify(savedFilters));
+      message.success('Filters saved');
+    } catch {
+      message.error('Failed to save filters');
+    }
+  }, [
+    bucketFilter,
+    credentialFilter,
+    failedOnly,
+    groupedView,
+    methodFilter,
+    slowRequestMs,
+    sourceIpFilter,
+    statusFamilyFilter,
+    statusFilter,
+    tenantFilter,
+    userFilter,
+  ]);
+
+  const tenantOptions = useMemo(
+    () => buildIdentityFilterOptions('Tenants', (data || []).map(getEntryTenantId)),
+    [data]
+  );
+
+  const userOptions = useMemo(
+    () => buildIdentityFilterOptions('Users', (data || []).map(getEntryUserId)),
+    [data]
+  );
+
+  const credentialOptions = useMemo(
+    () => buildIdentityFilterOptions('Credentials', (data || []).map(getEntryCredentialIdentifier)),
+    [data]
+  );
+
+  const bucketOptions = useMemo(
+    () => buildIdentityFilterOptions('Buckets', (data || []).map(getEntryBucketIdentifier)),
+    [data]
+  );
 
   const filteredData = useMemo(() => {
     if (!data) return [];
@@ -198,13 +396,127 @@ const RequestHistoryPage: React.FC = () => {
       result = result.filter((entry) => String(entry.StatusCode).includes(statusStr));
     }
 
+    if (statusFamilyFilter) {
+      result = result.filter((entry) => String(entry.StatusCode).startsWith(statusFamilyFilter));
+    }
+
     if (sourceIpFilter.trim()) {
       const ipStr: string = sourceIpFilter.trim().toLowerCase();
       result = result.filter((entry) => (entry.SourceIp || '').toLowerCase().includes(ipStr));
     }
 
+    if (tenantFilter) {
+      result = result.filter((entry) => getEntryTenantId(entry) === tenantFilter);
+    }
+
+    if (userFilter) {
+      result = result.filter((entry) => getEntryUserId(entry) === userFilter);
+    }
+
+    if (credentialFilter) {
+      result = result.filter((entry) => getEntryCredentialIdentifier(entry) === credentialFilter);
+    }
+
+    if (bucketFilter) {
+      result = result.filter((entry) => getEntryBucketIdentifier(entry) === bucketFilter);
+    }
+
+    if (failedOnly) {
+      result = result.filter((entry) => !entry.Success || entry.StatusCode >= 400);
+    }
+
+    if (slowRequestMs.trim()) {
+      const threshold = Number(slowRequestMs);
+      if (!Number.isNaN(threshold)) {
+        result = result.filter((entry) => entry.DurationMs >= threshold);
+      }
+    }
+
     return result;
-  }, [data, methodFilter, statusFilter, sourceIpFilter]);
+  }, [
+    bucketFilter,
+    credentialFilter,
+    data,
+    failedOnly,
+    methodFilter,
+    slowRequestMs,
+    sourceIpFilter,
+    statusFamilyFilter,
+    statusFilter,
+    tenantFilter,
+    userFilter,
+  ]);
+
+  const groupedRows = useMemo(() => {
+    const groups = new Map<string, { Key: string; Count: number; Failures: number; AverageMs: number; TotalMs: number }>();
+
+    filteredData.forEach((entry) => {
+      const family = `${Math.floor(entry.StatusCode / 100)}xx`;
+      const key = `${entry.HttpMethod || 'GET'} ${family}`;
+      const existing = groups.get(key) || {
+        Key: key,
+        Count: 0,
+        Failures: 0,
+        AverageMs: 0,
+        TotalMs: 0,
+      };
+
+      existing.Count += 1;
+      existing.Failures += entry.StatusCode >= 400 ? 1 : 0;
+      existing.TotalMs += entry.DurationMs;
+      existing.AverageMs = existing.TotalMs / existing.Count;
+      groups.set(key, existing);
+    });
+
+    return Array.from(groups.values()).sort((a, b) => b.Count - a.Count);
+  }, [filteredData]);
+
+  const handleExportCsv = useCallback(() => {
+    const header = [
+      'ID',
+      'CreatedUtc',
+      'TenantId',
+      'HttpMethod',
+      'RequestUrl',
+      'Bucket',
+      'StatusCode',
+      'Success',
+      'DurationMs',
+      'SourceIp',
+      'RequestType',
+      'UserId',
+      'AccessKey',
+    ];
+
+    const rows = filteredData.map((entry) => [
+      entry.Id,
+      entry.CreatedUtc,
+      getEntryTenantId(entry),
+      entry.HttpMethod,
+      entry.RequestUrl,
+      getEntryBucketIdentifier(entry),
+      entry.StatusCode,
+      entry.Success,
+      entry.DurationMs,
+      entry.SourceIp,
+      entry.RequestType,
+      entry.UserId,
+      entry.AccessKey,
+    ]);
+
+    const csv = [header, ...rows]
+      .map((row) => row.map(csvEscape).join(','))
+      .join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `less3-request-history-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  }, [filteredData]);
 
   const columns: DataTableColumn<RequestHistoryEntry>[] = [
     {
@@ -213,6 +525,37 @@ const RequestHistoryPage: React.FC = () => {
       render: (item) => formatDate(item.CreatedUtc),
       sortValue: (item) => new Date(item.CreatedUtc).getTime(),
       filterValue: (item) => formatDate(item.CreatedUtc),
+    },
+    {
+      key: 'TenantId',
+      label: 'Tenant ID',
+      width: '180px',
+      render: (item) => <IdDisplay id={getEntryTenantId(item)} />,
+      filterValue: getEntryTenantId,
+    },
+    {
+      key: 'UserId',
+      label: 'User ID',
+      width: '220px',
+      render: (item) => {
+        const userId = getEntryUserId(item);
+        return userId ? <IdDisplay id={userId} /> : <Less3Text type="secondary">Not set</Less3Text>;
+      },
+      filterValue: getEntryUserId,
+    },
+    {
+      key: 'AccessKey',
+      label: 'Credential',
+      width: '180px',
+      render: (item) => {
+        const credential = getEntryCredentialIdentifier(item);
+        return credential ? (
+          <TextWithCopy text={credential} className="code-font-style" />
+        ) : (
+          <Less3Text type="secondary">Not set</Less3Text>
+        );
+      },
+      filterValue: getEntryCredentialIdentifier,
     },
     {
       key: 'HttpMethod',
@@ -245,6 +588,20 @@ const RequestHistoryPage: React.FC = () => {
         <span style={{ wordBreak: 'break-all', fontSize: 12 }}>{item.RequestUrl}</span>
       ),
       filterValue: (item) => item.RequestUrl || '',
+    },
+    {
+      key: 'Bucket',
+      label: 'Bucket',
+      width: '180px',
+      render: (item) => {
+        const bucket = getEntryBucketIdentifier(item);
+        return bucket ? (
+          <TextWithCopy text={bucket} className="code-font-style" />
+        ) : (
+          <Less3Text type="secondary">Not set</Less3Text>
+        );
+      },
+      filterValue: getEntryBucketIdentifier,
     },
     {
       key: 'StatusCode',
@@ -293,7 +650,7 @@ const RequestHistoryPage: React.FC = () => {
       sortable: false,
       filterable: false,
       render: (item) => {
-        const dropdownKey: string = item.GUID || '';
+        const dropdownKey: string = item.Id || '';
         const isOpen: boolean = openDropdownKey === dropdownKey;
 
         const menuItems: MenuProps['items'] = [
@@ -304,6 +661,15 @@ const RequestHistoryPage: React.FC = () => {
             onClick: () => {
               setOpenDropdownKey(null);
               handleViewDetail(item);
+            },
+          },
+          {
+            key: 'copy-curl',
+            icon: <CopyOutlined />,
+            label: 'Copy as cURL',
+            onClick: () => {
+              setOpenDropdownKey(null);
+              void handleCopyCurl(item);
             },
           },
           { type: 'divider' },
@@ -340,6 +706,12 @@ const RequestHistoryPage: React.FC = () => {
       pageTitle="Request History"
       pageTitleRightContent={
         <Less3Flex gap={10} align="center">
+          <Less3Button icon={<SaveOutlined />} onClick={handleSaveFilters}>
+            Save Filters
+          </Less3Button>
+          <Less3Button icon={<DownloadOutlined />} onClick={handleExportCsv}>
+            Export CSV
+          </Less3Button>
           <Less3Button icon={<ReloadOutlined />} onClick={() => refetch()} loading={isLoading}>
             Refresh
           </Less3Button>
@@ -354,13 +726,58 @@ const RequestHistoryPage: React.FC = () => {
         onRefresh={refetchSummary}
       />
 
-      <Less3Flex gap={10} align="center" style={{ marginBottom: 16 }}>
+      <Less3Flex gap={10} align="center" wrap="wrap" style={{ marginBottom: 16 }}>
         <Less3Select
           options={METHOD_OPTIONS}
           value={methodFilter}
           onChange={(value) => setMethodFilter(value as string)}
           style={{ width: 150 }}
           placeholder="HTTP Method"
+          aria-label="HTTP method filter"
+        />
+        <Less3Select
+          options={STATUS_FAMILY_OPTIONS}
+          value={statusFamilyFilter}
+          onChange={(value) => setStatusFamilyFilter(value as string)}
+          style={{ width: 140 }}
+          placeholder="Status Family"
+          aria-label="Status family filter"
+        />
+        <Less3Select
+          options={tenantOptions}
+          value={tenantFilter}
+          onChange={(value) => setTenantFilter(value as string)}
+          style={{ width: 180 }}
+          placeholder="Tenant"
+          aria-label="Tenant filter"
+          showSearch
+        />
+        <Less3Select
+          options={userOptions}
+          value={userFilter}
+          onChange={(value) => setUserFilter(value as string)}
+          style={{ width: 180 }}
+          placeholder="User"
+          aria-label="User filter"
+          showSearch
+        />
+        <Less3Select
+          options={credentialOptions}
+          value={credentialFilter}
+          onChange={(value) => setCredentialFilter(value as string)}
+          style={{ width: 180 }}
+          placeholder="Credential"
+          aria-label="Credential filter"
+          showSearch
+        />
+        <Less3Select
+          options={bucketOptions}
+          value={bucketFilter}
+          onChange={(value) => setBucketFilter(value as string)}
+          style={{ width: 180 }}
+          placeholder="Bucket"
+          aria-label="Bucket filter"
+          showSearch
         />
         <Less3Input
           placeholder="Status Code"
@@ -378,13 +795,51 @@ const RequestHistoryPage: React.FC = () => {
           style={{ width: 180 }}
           allowClear
         />
+        <Less3Input
+          placeholder="Slow >= ms"
+          prefix={<SearchOutlined />}
+          value={slowRequestMs}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSlowRequestMs(e.target.value)}
+          style={{ width: 140 }}
+          allowClear
+        />
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+          <input type="checkbox" checked={failedOnly} onChange={(event) => setFailedOnly(event.target.checked)} />
+          Failed only
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+          <input type="checkbox" checked={groupedView} onChange={(event) => setGroupedView(event.target.checked)} />
+          Grouped
+        </label>
       </Less3Flex>
+
+      {groupedView && (
+        <div style={{ marginBottom: 16 }}>
+          <DataTable
+            columns={[
+              { key: 'Key', label: 'Group' },
+              { key: 'Count', label: 'Requests', sortValue: (item) => item.Count },
+              { key: 'Failures', label: 'Failures', sortValue: (item) => item.Failures },
+              {
+                key: 'AverageMs',
+                label: 'Avg Duration',
+                render: (item) => formatDurationMs(item.AverageMs),
+                sortValue: (item) => item.AverageMs,
+              },
+            ]}
+            data={groupedRows}
+            loading={isLoading}
+            rowKey="Key"
+            hidePagination
+          />
+        </div>
+      )}
 
       <DataTable
         columns={columns}
         data={filteredData}
         loading={isLoading}
-        rowKey="GUID"
+        rowKey="Id"
         onRowClick={handleViewDetail}
       />
 
@@ -430,6 +885,9 @@ const RequestHistoryPage: React.FC = () => {
                 {selectedEntry.RequestUrl}
               </span>
               <CopyToClipboard text={selectedEntry.RequestUrl} tooltip="Copy URL" ariaLabel="Copy URL" />
+              <Less3Button icon={<CopyOutlined />} onClick={() => void handleCopyCurl(selectedEntry)}>
+                Copy as cURL
+              </Less3Button>
             </Less3Flex>
 
             {/* Summary Header */}
@@ -449,9 +907,30 @@ const RequestHistoryPage: React.FC = () => {
                   {[
                     {
                       label: 'Entry ID',
-                      value: selectedEntry.GUID,
-                      copyable: true,
-                      mono: true,
+                      value: selectedEntry.Id,
+                      id: true,
+                    },
+                    {
+                      label: 'Tenant ID',
+                      value: getEntryTenantId(selectedEntry),
+                      id: true,
+                    },
+                    {
+                      label: 'User ID',
+                      value: selectedEntry.UserId || 'Not set',
+                      id: Boolean(selectedEntry.UserId),
+                    },
+                    {
+                      label: 'Credential',
+                      value: getEntryCredentialIdentifier(selectedEntry) || 'Not set',
+                      copyable: Boolean(getEntryCredentialIdentifier(selectedEntry)),
+                      mono: Boolean(getEntryCredentialIdentifier(selectedEntry)),
+                    },
+                    {
+                      label: 'Bucket',
+                      value: getEntryBucketIdentifier(selectedEntry) || 'Not set',
+                      copyable: Boolean(getEntryBucketIdentifier(selectedEntry)),
+                      mono: Boolean(getEntryBucketIdentifier(selectedEntry)),
                     },
                     {
                       label: 'Route',
@@ -473,6 +952,7 @@ const RequestHistoryPage: React.FC = () => {
                   ].map((item: {
                     label: string;
                     value: string;
+                    id?: boolean;
                     copyable?: boolean;
                     mono?: boolean;
                     accentColor?: string;
@@ -490,7 +970,11 @@ const RequestHistoryPage: React.FC = () => {
                         </Less3Text>
                       </td>
                       <td style={{ padding: '8px 0', verticalAlign: 'top' }}>
-                        <Less3Flex align="center" gap={8} style={{ flexWrap: 'wrap' }}>
+                        {item.id ? (
+                          <IdDisplay id={item.value} />
+                        ) : item.copyable ? (
+                          <TextWithCopy text={item.value} className={item.mono ? 'code-font-style' : undefined} />
+                        ) : (
                           <Less3Text
                             weight={600}
                             fontSize={13}
@@ -504,14 +988,7 @@ const RequestHistoryPage: React.FC = () => {
                           >
                             {item.value}
                           </Less3Text>
-                          {item.copyable && (
-                            <CopyToClipboard
-                              text={item.value}
-                              tooltip={`Copy ${item.label}`}
-                              ariaLabel={`Copy ${item.label}`}
-                            />
-                          )}
-                        </Less3Flex>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -535,11 +1012,13 @@ const RequestHistoryPage: React.FC = () => {
                 BodyLength: selectedEntry.ResponseBodyLength,
               }, null, 2)} />
               <DetailBlock title="Authentication" value={JSON.stringify({
-                UserGUID: selectedEntry.UserGUID || null,
-                AccessKey: selectedEntry.AccessKey || null,
+                TenantId: getEntryTenantId(selectedEntry),
+                UserId: selectedEntry.UserId || null,
+                Credential: getEntryCredentialIdentifier(selectedEntry) || null,
               }, null, 2)} />
               <DetailBlock title="Metadata" value={JSON.stringify({
-                GUID: selectedEntry.GUID,
+                ID: selectedEntry.Id,
+                Bucket: getEntryBucketIdentifier(selectedEntry) || null,
                 CreatedUtc: selectedEntry.CreatedUtc,
                 SourceIp: selectedEntry.SourceIp,
               }, null, 2)} />

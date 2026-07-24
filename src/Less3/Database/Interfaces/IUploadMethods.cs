@@ -9,11 +9,19 @@ namespace Less3.Database.Interfaces
     public interface IUploadMethods
     {
         /// <summary>
-        /// Retrieve an upload by GUID.
+        /// Retrieve an upload by Id.
         /// </summary>
-        /// <param name="guid">Upload GUID.</param>
+        /// <param name="id">Upload Id.</param>
         /// <returns>Upload or null if not found.</returns>
-        Upload GetByGuid(string guid);
+        Upload GetById(string id);
+
+        /// <summary>
+        /// Retrieve an upload by tenant and Id.
+        /// </summary>
+        /// <param name="tenantId">Tenant Id.</param>
+        /// <param name="id">Upload Id.</param>
+        /// <returns>Upload or null if not found.</returns>
+        Upload GetById(string tenantId, string id);
 
         /// <summary>
         /// Retrieve all uploads.
@@ -22,11 +30,26 @@ namespace Less3.Database.Interfaces
         List<Upload> GetAll();
 
         /// <summary>
-        /// Retrieve uploads by bucket GUID.
+        /// Retrieve all uploads for a tenant.
         /// </summary>
-        /// <param name="bucketGuid">Bucket GUID.</param>
+        /// <param name="tenantId">Tenant Id.</param>
         /// <returns>List of uploads.</returns>
-        List<Upload> GetByBucketGuid(string bucketGuid);
+        List<Upload> GetAll(string tenantId);
+
+        /// <summary>
+        /// Retrieve uploads by bucket Id.
+        /// </summary>
+        /// <param name="bucketId">Bucket Id.</param>
+        /// <returns>List of uploads.</returns>
+        List<Upload> GetByBucketId(string bucketId);
+
+        /// <summary>
+        /// Retrieve uploads by tenant and bucket Id.
+        /// </summary>
+        /// <param name="tenantId">Tenant Id.</param>
+        /// <param name="bucketId">Bucket Id.</param>
+        /// <returns>List of uploads.</returns>
+        List<Upload> GetByBucketId(string tenantId, string bucketId);
 
         /// <summary>
         /// Insert a new upload.
@@ -35,9 +58,16 @@ namespace Less3.Database.Interfaces
         void Insert(Upload upload);
 
         /// <summary>
-        /// Delete an upload by GUID.
+        /// Delete an upload by Id.
         /// </summary>
-        /// <param name="guid">Upload GUID.</param>
-        void DeleteByGuid(string guid);
+        /// <param name="id">Upload Id.</param>
+        void DeleteById(string id);
+
+        /// <summary>
+        /// Delete an upload by tenant and Id.
+        /// </summary>
+        /// <param name="tenantId">Tenant Id.</param>
+        /// <param name="id">Upload Id.</param>
+        void DeleteById(string tenantId, string id);
     }
 }

@@ -25,8 +25,8 @@ namespace Test.Shared.Suites
             await RunTest("Bucket_DefaultConstructor", () =>
             {
                 Bucket bucket = new Bucket();
-                AssertNotNull(bucket.GUID, "GUID should be set");
-                AssertNotNull(bucket.OwnerGUID, "OwnerGUID should be set");
+                AssertNotNull(bucket.Id, "Id should be set");
+                AssertNotNull(bucket.OwnerId, "OwnerId should be set");
                 AssertEqual("us-west-1", bucket.RegionString);
                 AssertEqual(StorageDriverType.Disk, bucket.StorageType);
                 AssertEqual("./disk/", bucket.DiskDirectory);
@@ -37,19 +37,19 @@ namespace Test.Shared.Suites
 
             await RunTest("Bucket_ParameterizedConstructor", () =>
             {
-                Bucket bucket = new Bucket("test-bucket", "owner-guid", StorageDriverType.Disk, "/data/", "eu-west-1");
+                Bucket bucket = new Bucket("test-bucket", "owner-id", StorageDriverType.Disk, "/data/", "eu-west-1");
                 AssertEqual("test-bucket", bucket.Name);
-                AssertEqual("owner-guid", bucket.OwnerGUID);
+                AssertEqual("owner-id", bucket.OwnerId);
                 AssertEqual(StorageDriverType.Disk, bucket.StorageType);
                 AssertEqual("/data/", bucket.DiskDirectory);
                 AssertEqual("eu-west-1", bucket.RegionString);
             });
 
-            await RunTest("Bucket_ParameterizedConstructorWithGuid", () =>
+            await RunTest("Bucket_ParameterizedConstructorWithId", () =>
             {
-                string guid = Guid.NewGuid().ToString();
-                Bucket bucket = new Bucket(guid, "test-bucket", "owner-guid", StorageDriverType.Disk, "/data/");
-                AssertEqual(guid, bucket.GUID);
+                string id = Test.Shared.TestIds.Object();
+                Bucket bucket = new Bucket(id, "test-bucket", "owner-id", StorageDriverType.Disk, "/data/");
+                AssertEqual(id, bucket.Id);
                 AssertEqual("test-bucket", bucket.Name);
             });
 
@@ -60,7 +60,7 @@ namespace Test.Shared.Suites
             await RunTest("User_DefaultConstructor", () =>
             {
                 User user = new User();
-                AssertNotNull(user.GUID, "GUID should be set");
+                AssertNotNull(user.Id, "Id should be set");
             });
 
             await RunTest("User_ParameterizedConstructor", () =>
@@ -68,14 +68,14 @@ namespace Test.Shared.Suites
                 User user = new User("Test User", "test@example.com");
                 AssertEqual("Test User", user.Name);
                 AssertEqual("test@example.com", user.Email);
-                AssertNotNull(user.GUID);
+                AssertNotNull(user.Id);
             });
 
-            await RunTest("User_ParameterizedConstructorWithGuid", () =>
+            await RunTest("User_ParameterizedConstructorWithId", () =>
             {
-                string guid = Guid.NewGuid().ToString();
-                User user = new User(guid, "Test User", "test@example.com");
-                AssertEqual(guid, user.GUID);
+                string id = Test.Shared.TestIds.Object();
+                User user = new User(id, "Test User", "test@example.com");
+                AssertEqual(id, user.Id);
                 AssertEqual("Test User", user.Name);
                 AssertEqual("test@example.com", user.Email);
             });
@@ -87,26 +87,26 @@ namespace Test.Shared.Suites
             await RunTest("Credential_DefaultConstructor", () =>
             {
                 Credential cred = new Credential();
-                AssertNotNull(cred.GUID);
-                AssertNotNull(cred.UserGUID);
+                AssertNotNull(cred.Id);
+                AssertNotNull(cred.UserId);
                 AssertFalse(cred.IsBase64);
             });
 
             await RunTest("Credential_ParameterizedConstructor", () =>
             {
-                Credential cred = new Credential("user-guid", "My credential", "AKIAEXAMPLE", "secretkey", false);
-                AssertEqual("user-guid", cred.UserGUID);
+                Credential cred = new Credential("user-id", "My credential", "AKIAEXAMPLE", "secretkey", false);
+                AssertEqual("user-id", cred.UserId);
                 AssertEqual("My credential", cred.Description);
                 AssertEqual("AKIAEXAMPLE", cred.AccessKey);
                 AssertEqual("secretkey", cred.SecretKey);
                 AssertFalse(cred.IsBase64);
             });
 
-            await RunTest("Credential_ParameterizedConstructorWithGuid", () =>
+            await RunTest("Credential_ParameterizedConstructorWithId", () =>
             {
-                string guid = Guid.NewGuid().ToString();
-                Credential cred = new Credential(guid, "user-guid", "desc", "ak", "sk", true);
-                AssertEqual(guid, cred.GUID);
+                string id = Test.Shared.TestIds.Object();
+                Credential cred = new Credential(id, "user-id", "desc", "ak", "sk", true);
+                AssertEqual(id, cred.Id);
                 AssertTrue(cred.IsBase64);
             });
 
@@ -117,7 +117,7 @@ namespace Test.Shared.Suites
             await RunTest("Obj_DefaultConstructor", () =>
             {
                 Obj obj = new Obj();
-                AssertNotNull(obj.GUID);
+                AssertNotNull(obj.Id);
                 AssertEqual("application/octet-stream", obj.ContentType);
                 AssertEqual(0L, obj.ContentLength);
                 AssertEqual(1L, obj.Version);
@@ -133,8 +133,8 @@ namespace Test.Shared.Suites
                 obj.ContentType = "text/plain";
                 obj.ContentLength = 1024;
                 obj.Version = 3;
-                obj.BucketGUID = "bucket-guid";
-                obj.OwnerGUID = "owner-guid";
+                obj.BucketId = "bucket-id";
+                obj.OwnerId = "owner-id";
 
                 AssertEqual("folder/file.txt", obj.Key);
                 AssertEqual("text/plain", obj.ContentType);
@@ -149,7 +149,7 @@ namespace Test.Shared.Suites
             await RunTest("BucketAcl_DefaultConstructor", () =>
             {
                 BucketAcl acl = new BucketAcl();
-                AssertNotNull(acl.GUID);
+                AssertNotNull(acl.Id);
                 AssertFalse(acl.PermitRead);
                 AssertFalse(acl.PermitWrite);
                 AssertFalse(acl.PermitReadAcp);
@@ -159,18 +159,18 @@ namespace Test.Shared.Suites
 
             await RunTest("BucketAcl_GroupAclFactory", () =>
             {
-                BucketAcl acl = BucketAcl.GroupAcl("AllUsers", "issuer-guid", "bucket-guid", true, false, false, false, false);
+                BucketAcl acl = BucketAcl.GroupAcl("AllUsers", "issuer-id", "bucket-id", true, false, false, false, false);
                 AssertEqual("AllUsers", acl.UserGroup);
-                AssertEqual("issuer-guid", acl.IssuedByUserGUID);
-                AssertEqual("bucket-guid", acl.BucketGUID);
+                AssertEqual("issuer-id", acl.IssuedByUserId);
+                AssertEqual("bucket-id", acl.BucketId);
                 AssertTrue(acl.PermitRead);
                 AssertFalse(acl.PermitWrite);
             });
 
             await RunTest("BucketAcl_UserAclFactory", () =>
             {
-                BucketAcl acl = BucketAcl.UserAcl("user-guid", "issuer-guid", "bucket-guid", true, true, true, true, true);
-                AssertEqual("user-guid", acl.UserGUID);
+                BucketAcl acl = BucketAcl.UserAcl("user-id", "issuer-id", "bucket-id", true, true, true, true, true);
+                AssertEqual("user-id", acl.UserId);
                 AssertTrue(acl.FullControl);
             });
 
@@ -189,7 +189,7 @@ namespace Test.Shared.Suites
             await RunTest("ObjectAcl_DefaultConstructor", () =>
             {
                 ObjectAcl acl = new ObjectAcl();
-                AssertNotNull(acl.GUID);
+                AssertNotNull(acl.Id);
                 AssertFalse(acl.PermitRead);
                 AssertFalse(acl.PermitWrite);
                 AssertFalse(acl.FullControl);
@@ -199,8 +199,8 @@ namespace Test.Shared.Suites
             {
                 ObjectAcl acl = ObjectAcl.GroupAcl("AuthenticatedUsers", "issuer", "bucket", "object", false, true, false, false, false);
                 AssertEqual("AuthenticatedUsers", acl.UserGroup);
-                AssertEqual("bucket", acl.BucketGUID);
-                AssertEqual("object", acl.ObjectGUID);
+                AssertEqual("bucket", acl.BucketId);
+                AssertEqual("object", acl.ObjectId);
                 AssertFalse(acl.PermitRead);
                 AssertTrue(acl.PermitWrite);
             });
@@ -208,7 +208,7 @@ namespace Test.Shared.Suites
             await RunTest("ObjectAcl_UserAclFactory", () =>
             {
                 ObjectAcl acl = ObjectAcl.UserAcl("user", "issuer", "bucket", "object", true, true, true, true, true);
-                AssertEqual("user", acl.UserGUID);
+                AssertEqual("user", acl.UserId);
                 AssertTrue(acl.FullControl);
             });
 
@@ -219,22 +219,22 @@ namespace Test.Shared.Suites
             await RunTest("BucketTag_DefaultConstructor", () =>
             {
                 BucketTag tag = new BucketTag();
-                AssertNotNull(tag.GUID);
+                AssertNotNull(tag.Id);
             });
 
             await RunTest("BucketTag_ParameterizedConstructor", () =>
             {
-                BucketTag tag = new BucketTag("bucket-guid", "env", "production");
-                AssertEqual("bucket-guid", tag.BucketGUID);
+                BucketTag tag = new BucketTag("bucket-id", "env", "production");
+                AssertEqual("bucket-id", tag.BucketId);
                 AssertEqual("env", tag.Key);
                 AssertEqual("production", tag.Value);
             });
 
-            await RunTest("BucketTag_ParameterizedConstructorWithGuid", () =>
+            await RunTest("BucketTag_ParameterizedConstructorWithId", () =>
             {
-                string guid = Guid.NewGuid().ToString();
-                BucketTag tag = new BucketTag(guid, "bucket-guid", "env", "staging");
-                AssertEqual(guid, tag.GUID);
+                string id = Test.Shared.TestIds.Object();
+                BucketTag tag = new BucketTag(id, "bucket-id", "env", "staging");
+                AssertEqual(id, tag.Id);
             });
 
             #endregion
@@ -244,23 +244,23 @@ namespace Test.Shared.Suites
             await RunTest("ObjectTag_DefaultConstructor", () =>
             {
                 ObjectTag tag = new ObjectTag();
-                AssertNotNull(tag.GUID);
+                AssertNotNull(tag.Id);
             });
 
             await RunTest("ObjectTag_ParameterizedConstructor", () =>
             {
-                ObjectTag tag = new ObjectTag("bucket-guid", "object-guid", "status", "active");
-                AssertEqual("bucket-guid", tag.BucketGUID);
-                AssertEqual("object-guid", tag.ObjectGUID);
+                ObjectTag tag = new ObjectTag("bucket-id", "object-id", "status", "active");
+                AssertEqual("bucket-id", tag.BucketId);
+                AssertEqual("object-id", tag.ObjectId);
                 AssertEqual("status", tag.Key);
                 AssertEqual("active", tag.Value);
             });
 
-            await RunTest("ObjectTag_ParameterizedConstructorWithGuid", () =>
+            await RunTest("ObjectTag_ParameterizedConstructorWithId", () =>
             {
-                string guid = Guid.NewGuid().ToString();
-                ObjectTag tag = new ObjectTag(guid, "bucket-guid", "object-guid", "k", "v");
-                AssertEqual(guid, tag.GUID);
+                string id = Test.Shared.TestIds.Object();
+                ObjectTag tag = new ObjectTag(id, "bucket-id", "object-id", "k", "v");
+                AssertEqual(id, tag.Id);
             });
 
             #endregion
@@ -270,7 +270,7 @@ namespace Test.Shared.Suites
             await RunTest("Upload_DefaultConstructor", () =>
             {
                 Upload upload = new Upload();
-                AssertNotNull(upload.GUID);
+                AssertNotNull(upload.Id);
                 AssertTrue(upload.ExpirationUtc > DateTime.UtcNow, "Expiration should be in the future");
             });
 
@@ -281,7 +281,7 @@ namespace Test.Shared.Suites
             await RunTest("UploadPart_DefaultConstructor", () =>
             {
                 UploadPart part = new UploadPart();
-                AssertNotNull(part.GUID);
+                AssertNotNull(part.Id);
                 AssertEqual(1, part.PartNumber);
                 AssertEqual(0, part.PartLength);
             });
@@ -328,10 +328,10 @@ namespace Test.Shared.Suites
 
             await RunTest("BucketStatistics_ParameterizedConstructor", () =>
             {
-                BucketStatistics stats = new BucketStatistics("mybucket", "guid-123", 100, 2048);
+                BucketStatistics stats = new BucketStatistics("mybucket", "id-123", 100, 2048);
                 AssertNotNull(stats);
                 AssertEqual("mybucket", stats.Name);
-                AssertEqual("guid-123", stats.GUID);
+                AssertEqual("id-123", stats.Id);
                 AssertEqual(100L, stats.Objects);
                 AssertEqual(2048L, stats.Bytes);
             });

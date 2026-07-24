@@ -4,6 +4,11 @@
 
 ## Features
 
+- Compact Less3 operator shell with grouped navigation
+- Tenant, bucket, object, user, credential, role, role assignment, and permission management
+- Credential create and rotate flows that show secrets once and hide them from metadata views
+- Health, reporting KPI, request history, maintenance, and API Explorer views
+
 ## Requirements
 
 - Node.js v18.20.4
@@ -46,6 +51,9 @@ Run the test suite:
 ```bash
 # Run all tests
 npm test
+
+# Run Playwright smoke tests
+npm run test:e2e
 
 # Run tests with coverage
 npm run test:coverage

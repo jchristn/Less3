@@ -1,7 +1,8 @@
 // Request History API types and interfaces
 
 export interface RequestHistoryEntry {
-  GUID: string;
+  Id: string;
+  TenantId?: string;
   HttpMethod: string;
   RequestUrl: string;
   SourceIp: string;
@@ -9,8 +10,12 @@ export interface RequestHistoryEntry {
   Success: boolean;
   DurationMs: number;
   RequestType: string;
-  UserGUID: string;
+  UserId: string;
+  CredentialId?: string;
   AccessKey: string;
+  BucketId?: string;
+  BucketName?: string;
+  Bucket?: string;
   RequestContentType: string;
   RequestBodyLength: number;
   ResponseContentType: string;
@@ -25,7 +30,7 @@ export type RequestHistoryListResponse = RequestHistoryEntry[];
 export type RequestHistoryResponse = RequestHistoryEntry;
 
 export interface DeleteRequestHistoryParams {
-  guid: string;
+  id: string;
 }
 
 export interface DeleteRequestHistoryResponse {

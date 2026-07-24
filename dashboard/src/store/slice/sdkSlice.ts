@@ -1,6 +1,6 @@
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query/react';
 import sdkSlice, { ApiBaseQueryArgs } from '#/store/rtk/rtkSdkInstance';
-import { buildAdminApiHeaders, buildApiUrl, buildApiUrlFromEndpoint } from '#/services/sdk.service';
+import { adminFetch, readResponseText } from '#/services/backendApi.service';
 
 const enhancedSdk = sdkSlice.enhanceEndpoints({
   addTagTypes: [],
@@ -16,17 +16,12 @@ const sdkSliceInstance = enhancedSdk.injectEndpoints({
     validateConnectivity: build.mutation<boolean, { apiKey?: string; endpoint?: string } | void>({
       async queryFn(args) {
         try {
-          const url = args?.endpoint
-            ? buildApiUrlFromEndpoint(args.endpoint, 'admin/users')
-            : buildApiUrl('admin/users');
-          const response = await fetch(url, {
-            method: 'GET',
-            headers: buildAdminApiHeaders(
-              {
-                'Content-Type': 'application/json',
-              },
-              args?.apiKey
-            ),
+          const response = await adminFetch('admin/users', {
+            endpoint: args?.endpoint,
+            apiKey: args?.apiKey,
+            headers: {
+              'Content-Type': 'application/json',
+            },
             cache: 'no-store',
           });
 
@@ -48,8 +43,7 @@ const sdkSliceInstance = enhancedSdk.injectEndpoints({
             };
           }
 
-          const responseText = await response.text();
-          const trimmedResponseText = responseText.trim();
+          const trimmedResponseText = await readResponseText(response);
           const contentType = response.headers.get('content-type') || '';
 
           if (

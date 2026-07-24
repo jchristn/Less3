@@ -98,7 +98,7 @@ namespace Test.Shared
             bool omitSystemJson = false)
         {
             _Port = GetRandomPort();
-            _TempDirectory = Path.Combine(Path.GetTempPath(), "less3-test-" + Guid.NewGuid().ToString("N"));
+            _TempDirectory = Path.Combine(Path.GetTempPath(), "less3-test-" + Path.GetRandomFileName().Replace(".", ""));
             _ValidateSignatures = validateSignatures;
             _SimulateContainerEnvironment = simulateContainerEnvironment;
             _OmitSystemJson = omitSystemJson;
@@ -190,13 +190,9 @@ namespace Test.Shared
 
             _Process.OutputDataReceived += (sender, e) =>
             {
-                if (!string.IsNullOrEmpty(e.Data))
-                    Console.WriteLine("[Less3] " + e.Data);
             };
             _Process.ErrorDataReceived += (sender, e) =>
             {
-                if (!string.IsNullOrEmpty(e.Data))
-                    Console.Error.WriteLine("[Less3 ERR] " + e.Data);
             };
 
             _Process.BeginOutputReadLine();
@@ -262,6 +258,109 @@ namespace Test.Shared
         }
 
         /// <summary>
+        /// Sends a GET request to the Less3 REST API.
+        /// </summary>
+        /// <param name="path">The REST API path below /api/v1.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The HTTP response.</returns>
+        public async Task<HttpResponseMessage> RestGetAsync(string path, CancellationToken cancellationToken = default)
+        {
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"{BaseUrl}/api/v1/{path}");
+            request.Headers.Add("x-api-key", _AdminApiKey);
+            return await _HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Sends a POST request to the Less3 REST API.
+        /// </summary>
+        /// <param name="path">The REST API path below /api/v1.</param>
+        /// <param name="jsonBody">The JSON request body.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The HTTP response.</returns>
+        public async Task<HttpResponseMessage> RestPostAsync(string path, string jsonBody, CancellationToken cancellationToken = default)
+        {
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/api/v1/{path}");
+            request.Headers.Add("x-api-key", _AdminApiKey);
+            request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+            return await _HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Sends an unauthenticated POST request to the Less3 REST API.
+        /// </summary>
+        /// <param name="path">The REST API path below /api/v1.</param>
+        /// <param name="jsonBody">The JSON request body.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The HTTP response.</returns>
+        public async Task<HttpResponseMessage> RestPostUnauthenticatedAsync(string path, string jsonBody, CancellationToken cancellationToken = default)
+        {
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/api/v1/{path}");
+            request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+            return await _HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Sends a PUT request to the Less3 REST API.
+        /// </summary>
+        /// <param name="path">The REST API path below /api/v1.</param>
+        /// <param name="jsonBody">The JSON request body.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The HTTP response.</returns>
+        public async Task<HttpResponseMessage> RestPutAsync(string path, string jsonBody, CancellationToken cancellationToken = default)
+        {
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Put, $"{BaseUrl}/api/v1/{path}");
+            request.Headers.Add("x-api-key", _AdminApiKey);
+            request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+            return await _HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Sends a DELETE request to the Less3 REST API.
+        /// </summary>
+        /// <param name="path">The REST API path below /api/v1.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The HTTP response.</returns>
+        public async Task<HttpResponseMessage> RestDeleteAsync(string path, CancellationToken cancellationToken = default)
+        {
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Delete, $"{BaseUrl}/api/v1/{path}");
+            request.Headers.Add("x-api-key", _AdminApiKey);
+            return await _HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Grants the built-in tenant administrator role to a test principal in a tenant.
+        /// </summary>
+        /// <param name="principalType">Principal type, such as User or Credential.</param>
+        /// <param name="principalId">Principal identifier.</param>
+        /// <param name="tenantId">Tenant identifier.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public async Task GrantTenantAdminAsync(
+            string principalType,
+            string principalId,
+            string tenantId = "default",
+            CancellationToken cancellationToken = default)
+        {
+            string json = JsonSerializer.Serialize(new
+            {
+                Id = TestIds.Assignment(),
+                TenantId = tenantId,
+                RoleId = "rol_builtin_tenantadmin",
+                PrincipalType = principalType,
+                PrincipalId = principalId,
+                ResourceType = "Tenant",
+                ResourceId = tenantId,
+                Active = true
+            });
+
+            HttpResponseMessage response = await RestPostAsync("roleassignments?tenantId=" + tenantId, json, cancellationToken).ConfigureAwait(false);
+            if (response.StatusCode != HttpStatusCode.Created)
+            {
+                throw new InvalidOperationException("Failed to grant tenant admin to " + principalType + " " + principalId + "; status " + response.StatusCode + ".");
+            }
+        }
+
+        /// <summary>
         /// Creates an AWS S3 client configured for this test server.
         /// </summary>
         /// <param name="accessKey">Optional access key override.</param>
@@ -288,11 +387,12 @@ namespace Test.Shared
         /// </summary>
         /// <param name="method">HTTP method.</param>
         /// <param name="relativePathAndQuery">Path and query, beginning with '/'.</param>
+        /// <param name="accessKey">Optional access key to place in the Authorization header.</param>
         /// <returns>The configured request.</returns>
-        public HttpRequestMessage CreateS3Request(HttpMethod method, string relativePathAndQuery)
+        public HttpRequestMessage CreateS3Request(HttpMethod method, string relativePathAndQuery, string? accessKey = null)
         {
             HttpRequestMessage request = new HttpRequestMessage(method, BaseUrl + relativePathAndQuery);
-            request.Headers.TryAddWithoutValidation("Authorization", BuildAuthHeader());
+            request.Headers.TryAddWithoutValidation("Authorization", BuildAuthHeader(accessKey ?? _AccessKey));
             return request;
         }
 
@@ -371,6 +471,8 @@ namespace Test.Shared
                 HeaderApiKey = "x-api-key",
                 AdminApiKey = _AdminApiKey,
                 RegionString = "us-west-1",
+                RequestHistoryRetentionDays = 30,
+                CleanupIntervalMs = 3600000,
                 Database = new
                 {
                     Type = "Sqlite",
@@ -378,7 +480,7 @@ namespace Test.Shared
                 },
                 Webserver = new
                 {
-                    Hostname = "localhost",
+                    Hostname = "127.0.0.1",
                     Port = _Port
                 },
                 Storage = new
@@ -507,9 +609,9 @@ namespace Test.Shared
             throw new TimeoutException($"Less3 server did not become ready within {maxAttempts * delayMs / 1000} seconds");
         }
 
-        private string BuildAuthHeader()
+        private string BuildAuthHeader(string accessKey)
         {
-            return $"AWS4-HMAC-SHA256 Credential={_AccessKey}/20260101/us-west-1/s3/aws4_request, SignedHeaders=host, Signature=placeholder";
+            return $"AWS4-HMAC-SHA256 Credential={accessKey}/20260101/us-west-1/s3/aws4_request, SignedHeaders=host, Signature=placeholder";
         }
         #endregion
     }

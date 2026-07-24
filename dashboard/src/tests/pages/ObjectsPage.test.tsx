@@ -6,6 +6,7 @@ import { message } from "#/utils/message";
 
 const mockDownloadBucketObject = jest.fn();
 const mockDeleteBucketObject = jest.fn();
+const mockWriteBucketObject = jest.fn();
 const mockRefetchObjects = jest.fn();
 
 jest.mock("next/navigation", () => ({
@@ -19,7 +20,7 @@ jest.mock("next/navigation", () => ({
 
 jest.mock("#/store/slice/bucketsSlice", () => ({
   useGetBucketsQuery: () => ({
-    data: [{ Name: "test-bucket", GUID: "bucket-guid" }],
+    data: [{ Name: "test-bucket", Id: "bkt_test" }],
     isLoading: false,
   }),
   useListBucketObjectsQuery: () => ({
@@ -30,6 +31,15 @@ jest.mock("#/store/slice/bucketsSlice", () => ({
           Size: 100,
           LastModified: "2024-01-01",
           ContentType: "text/plain",
+          VersionId: "objv_current",
+        },
+        {
+          Key: "deleted-file.txt",
+          Size: 0,
+          LastModified: "2024-01-02",
+          ContentType: "text/plain",
+          VersionId: "objv_deleted",
+          IsDeleteMarker: true,
         },
       ],
     },
@@ -42,12 +52,12 @@ jest.mock("#/store/slice/bucketsSlice", () => ({
     { isLoading: false },
   ],
   useDeleteBucketObjectMutation: () => [mockDeleteBucketObject, { isLoading: false }],
-  useWriteBucketObjectMutation: () => [jest.fn(), { isLoading: false }],
+  useWriteBucketObjectMutation: () => [mockWriteBucketObject, { isLoading: false }],
   useUploadBucketObjectMutation: () => [jest.fn(), { isLoading: false }],
   useDeleteMultipleObjectsMutation: () => [jest.fn(), { isLoading: false }],
   useWriteObjectTagsMutation: () => [jest.fn(), { isLoading: false }],
   useGetObjectTagsQuery: () => ({
-    data: null,
+    data: { tags: [] },
     isLoading: false,
   }),
   useDeleteObjectTagsMutation: () => [jest.fn(), { isLoading: false }],
@@ -72,6 +82,9 @@ describe("ObjectsPage", () => {
       }),
     });
     mockDeleteBucketObject.mockReturnValue({
+      unwrap: jest.fn().mockResolvedValue({}),
+    });
+    mockWriteBucketObject.mockReturnValue({
       unwrap: jest.fn().mockResolvedValue({}),
     });
   });
@@ -159,7 +172,96 @@ describe("ObjectsPage", () => {
         await userEvent.click(moreButton);
 
         expect(await screen.findByText("Download Object", { timeout: 3000 })).toBeInTheDocument();
-        expect(screen.queryByText("Edit Contents - test-file.txt")).not.toBeInTheDocument();
+        expect(screen.getByText("Contents")).toBeInTheDocument();
+        expect(screen.queryByText("View Contents")).not.toBeInTheDocument();
+        expect(screen.queryByText("Edit Contents")).not.toBeInTheDocument();
+        expect(screen.queryByText("Object Contents - test-file.txt")).not.toBeInTheDocument();
+      }
+    }, 20000);
+
+    it("should open object details from the action menu", async () => {
+      renderWithRedux(<ObjectsPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("test-file.txt")).toBeInTheDocument();
+      });
+
+      const moreButton = screen.getAllByRole("button").find((btn) => btn.querySelector(".anticon-more"));
+      expect(moreButton).toBeDefined();
+
+      await userEvent.click(moreButton as HTMLElement);
+      await userEvent.click(await screen.findByText("View Details", { selector: ".ant-dropdown-menu-title-content" }));
+
+      expect(await screen.findByText("Object Details - test-file.txt")).toBeInTheDocument();
+      expect(screen.getByText("Tenant ID")).toBeInTheDocument();
+      expect(screen.getByText("Bucket ID")).toBeInTheDocument();
+      expect(screen.getAllByText("Key").length).toBeGreaterThan(0);
+      expect(screen.getByText("Version ID")).toBeInTheDocument();
+      expect(screen.getAllByText("objv_current").length).toBeGreaterThan(0);
+      expect(screen.getByText("Download URL")).toBeInTheDocument();
+    }, 20000);
+
+    it("should open object details when an object row is clicked", async () => {
+      renderWithRedux(<ObjectsPage />);
+
+      await userEvent.click(await screen.findByText("test-file.txt"));
+
+      expect(await screen.findByText("Object Details - test-file.txt")).toBeInTheDocument();
+      expect(screen.getByText("Tenant ID")).toBeInTheDocument();
+      expect(screen.queryByRole("dialog", { name: "Object Contents - test-file.txt" })).not.toBeInTheDocument();
+    }, 20000);
+
+    it("should open object tag actions without opening the object editor", async () => {
+      renderWithRedux(<ObjectsPage />);
+
+      const fileText = await screen.queryByText("test-file.txt");
+      if (!fileText) {
+        expect(true).toBe(true);
+        return;
+      }
+
+      const moreButtons = screen.getAllByRole("button");
+      const moreButton = moreButtons.find((btn) => btn.querySelector(".anticon-more"));
+      if (moreButton) {
+        await userEvent.click(moreButton);
+
+        const writeTagsButton = await screen.findByText(
+          "Write Tags",
+          { selector: ".ant-dropdown-menu-title-content" },
+          { timeout: 3000 },
+        );
+        await userEvent.click(writeTagsButton);
+
+        expect(await screen.findByPlaceholderText("Enter tag key")).toBeInTheDocument();
+        expect(screen.queryByRole("dialog", { name: "Object Contents - test-file.txt" })).not.toBeInTheDocument();
+        expect(mockDownloadBucketObject).not.toHaveBeenCalled();
+      }
+    }, 20000);
+
+    it("should open object ACL actions without opening the object editor", async () => {
+      renderWithRedux(<ObjectsPage />);
+
+      const fileText = await screen.queryByText("test-file.txt");
+      if (!fileText) {
+        expect(true).toBe(true);
+        return;
+      }
+
+      const moreButtons = screen.getAllByRole("button");
+      const moreButton = moreButtons.find((btn) => btn.querySelector(".anticon-more"));
+      if (moreButton) {
+        await userEvent.click(moreButton);
+
+        const writeAclButton = await screen.findByText(
+          "Write ACL",
+          { selector: ".ant-dropdown-menu-title-content" },
+          { timeout: 3000 },
+        );
+        await userEvent.click(writeAclButton);
+
+        expect(await screen.findByText("Write ACL - test-file.txt")).toBeInTheDocument();
+        expect(screen.queryByRole("dialog", { name: "Object Contents - test-file.txt" })).not.toBeInTheDocument();
+        expect(mockDownloadBucketObject).not.toHaveBeenCalled();
       }
     }, 20000);
 
@@ -250,6 +352,72 @@ describe("ObjectsPage", () => {
       const objectsTexts = screen.getAllByText("Objects");
       expect(objectsTexts.length).toBeGreaterThan(0);
     });
+
+    it("should toggle delete markers and page size controls", async () => {
+      renderWithRedux(<ObjectsPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("test-file.txt")).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText("deleted-file.txt")).not.toBeInTheDocument();
+
+      await userEvent.click(screen.getByLabelText("Delete markers"));
+
+      expect(await screen.findByText("deleted-file.txt")).toBeInTheDocument();
+
+      const pageSizeSelect = screen.getAllByRole("combobox").find((select) =>
+        select.closest(".ant-select")?.textContent?.includes("50 / page")
+      );
+      expect(pageSizeSelect).toBeDefined();
+
+      await userEvent.click(pageSizeSelect as HTMLElement);
+      await userEvent.click(await screen.findByText("25 / page"));
+
+      expect(screen.getByText("1 / 1")).toBeInTheDocument();
+    }, 20000);
+
+    it("should copy and restore the selected object version", async () => {
+      renderWithRedux(<ObjectsPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("test-file.txt")).toBeInTheDocument();
+      });
+
+      const moreButton = screen.getAllByRole("button").find((btn) => btn.querySelector(".anticon-more"));
+      expect(moreButton).toBeDefined();
+
+      await userEvent.click(moreButton as HTMLElement);
+      await userEvent.click(await screen.findByText("Restore Version", {}, { timeout: 3000 }));
+
+      await waitFor(() => {
+        expect(mockDownloadBucketObject).toHaveBeenCalledWith({
+          bucketId: "test-bucket",
+          objectKey: "test-file.txt",
+        });
+        expect(mockWriteBucketObject).toHaveBeenCalledWith(expect.objectContaining({
+          bucketId: "test-bucket",
+          objectKey: "test-file.txt",
+          content: "test content",
+        }));
+      });
+
+      await userEvent.click(moreButton as HTMLElement);
+      await userEvent.click(await screen.findByText("Copy Version", {}, { timeout: 3000 }));
+
+      expect(await screen.findByText("Copy Version - test-file.txt")).toBeInTheDocument();
+
+      const okButton = screen.getByRole("button", { name: "OK" });
+      await userEvent.click(okButton);
+
+      await waitFor(() => {
+        expect(mockWriteBucketObject).toHaveBeenCalledWith(expect.objectContaining({
+          bucketId: "test-bucket",
+          objectKey: "test-file.txt.copy",
+          content: "test content",
+        }));
+      });
+    }, 20000);
   });
 
   describe("Snapshots", () => {

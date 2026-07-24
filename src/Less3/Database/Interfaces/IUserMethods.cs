@@ -15,11 +15,26 @@ namespace Less3.Database.Interfaces
         List<User> GetAll();
 
         /// <summary>
-        /// Check if a user exists by GUID.
+        /// Retrieve all users for a tenant.
         /// </summary>
-        /// <param name="guid">User GUID.</param>
+        /// <param name="tenantId">Tenant Id.</param>
+        /// <returns>List of users.</returns>
+        List<User> GetAll(string tenantId);
+
+        /// <summary>
+        /// Check if a user exists by Id.
+        /// </summary>
+        /// <param name="id">User Id.</param>
         /// <returns>True if the user exists.</returns>
-        bool ExistsByGuid(string guid);
+        bool ExistsById(string id);
+
+        /// <summary>
+        /// Check if a user exists by tenant and Id.
+        /// </summary>
+        /// <param name="tenantId">Tenant Id.</param>
+        /// <param name="id">User Id.</param>
+        /// <returns>True if the user exists.</returns>
+        bool ExistsById(string tenantId, string id);
 
         /// <summary>
         /// Check if a user exists by email.
@@ -29,11 +44,27 @@ namespace Less3.Database.Interfaces
         bool ExistsByEmail(string email);
 
         /// <summary>
-        /// Retrieve a user by GUID.
+        /// Check if a user exists by tenant and email.
         /// </summary>
-        /// <param name="guid">User GUID.</param>
+        /// <param name="tenantId">Tenant Id.</param>
+        /// <param name="email">Email address.</param>
+        /// <returns>True if the user exists.</returns>
+        bool ExistsByEmail(string tenantId, string email);
+
+        /// <summary>
+        /// Retrieve a user by Id.
+        /// </summary>
+        /// <param name="id">User Id.</param>
         /// <returns>User or null if not found.</returns>
-        User GetByGuid(string guid);
+        User GetById(string id);
+
+        /// <summary>
+        /// Retrieve a user by tenant and Id.
+        /// </summary>
+        /// <param name="tenantId">Tenant Id.</param>
+        /// <param name="id">User Id.</param>
+        /// <returns>User or null if not found.</returns>
+        User GetById(string tenantId, string id);
 
         /// <summary>
         /// Retrieve a user by name.
@@ -43,11 +74,27 @@ namespace Less3.Database.Interfaces
         User GetByName(string name);
 
         /// <summary>
+        /// Retrieve a user by tenant and name.
+        /// </summary>
+        /// <param name="tenantId">Tenant Id.</param>
+        /// <param name="name">User name.</param>
+        /// <returns>User or null if not found.</returns>
+        User GetByName(string tenantId, string name);
+
+        /// <summary>
         /// Retrieve a user by email.
         /// </summary>
         /// <param name="email">Email address.</param>
         /// <returns>User or null if not found.</returns>
         User GetByEmail(string email);
+
+        /// <summary>
+        /// Retrieve a user by tenant and email.
+        /// </summary>
+        /// <param name="tenantId">Tenant Id.</param>
+        /// <param name="email">Email address.</param>
+        /// <returns>User or null if not found.</returns>
+        User GetByEmail(string tenantId, string email);
 
         /// <summary>
         /// Insert a new user.
@@ -62,9 +109,16 @@ namespace Less3.Database.Interfaces
         void Update(User user);
 
         /// <summary>
-        /// Delete a user by GUID.
+        /// Delete a user by Id.
         /// </summary>
-        /// <param name="guid">User GUID.</param>
-        void DeleteByGuid(string guid);
+        /// <param name="id">User Id.</param>
+        void DeleteById(string id);
+
+        /// <summary>
+        /// Delete a user by tenant and Id.
+        /// </summary>
+        /// <param name="tenantId">Tenant Id.</param>
+        /// <param name="id">User Id.</param>
+        void DeleteById(string tenantId, string id);
     }
 }

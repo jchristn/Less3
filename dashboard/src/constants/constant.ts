@@ -15,6 +15,11 @@ export const paths = {
   objects: `/admin/objects`,
   users: `/admin/users`,
   credentials: `/admin/credentials`,
+  tenants: `/admin/tenants`,
+  roles: `/admin/roles`,
+  roleAssignments: `/admin/role-assignments`,
+  permissions: `/admin/permissions`,
   requestHistory: `/admin/request-history`,
+  maintenance: `/admin/maintenance`,
   apiExplorer: `/admin/api-explorer`,
 };

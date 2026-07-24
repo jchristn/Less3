@@ -1,4 +1,4 @@
-﻿namespace Less3.Classes
+namespace Less3.Classes
 {
     using System;
     using System.Text.Json.Serialization;
@@ -11,25 +11,24 @@
         #region Public-Members
 
         /// <summary>
-        /// Database identifier.
+        /// Id.
         /// </summary>
-        [JsonIgnore]
-        public int Id { get; set; } = 0;
+        public string Id { get; set; } = Less3.Helpers.IdGenerator.GenerateObjectTagId();
 
         /// <summary>
-        /// GUID.
+        /// Tenant identifier.
         /// </summary>
-        public string GUID { get; set; } = Guid.NewGuid().ToString();
+        public string TenantId { get; set; } = "default";
 
         /// <summary>
-        /// GUID of the bucket.
+        /// Id of the bucket.
         /// </summary>
-        public string BucketGUID { get; set; } = Guid.NewGuid().ToString();
+        public string BucketId { get; set; } = Less3.Helpers.IdGenerator.GenerateBucketId();
 
         /// <summary>
-        /// GUID of the object.
+        /// Id of the object.
         /// </summary>
-        public string ObjectGUID { get; set; } = Guid.NewGuid().ToString();
+        public string ObjectId { get; set; } = Less3.Helpers.IdGenerator.GenerateObjectId();
 
         /// <summary>
         /// Key.
@@ -65,18 +64,18 @@
         /// <summary>
         /// Instantiate.
         /// </summary>
-        /// <param name="bucketGuid">Bucket GUID.</param>
-        /// <param name="objectGuid">Object GUID.</param>
+        /// <param name="bucketId">Bucket Id.</param>
+        /// <param name="objectId">Object Id.</param>
         /// <param name="key">Key.</param>
         /// <param name="val">Value.</param>
-        public ObjectTag(string bucketGuid, string objectGuid, string key, string val)
+        public ObjectTag(string bucketId, string objectId, string key, string val)
         {
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            if (String.IsNullOrEmpty(objectGuid)) throw new ArgumentNullException(nameof(objectGuid));
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            if (String.IsNullOrEmpty(objectId)) throw new ArgumentNullException(nameof(objectId));
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            BucketGUID = bucketGuid;
-            ObjectGUID = objectGuid;
+            BucketId = bucketId;
+            ObjectId = objectId;
             Key = key;
             Value = val;
         }
@@ -84,21 +83,21 @@
         /// <summary>
         /// Instantiate.
         /// </summary>
-        /// <param name="guid">GUID.</param>
-        /// <param name="bucketGuid">Bucket GUID.</param>
-        /// <param name="objectGuid">Object GUID.</param>
+        /// <param name="id">Id.</param>
+        /// <param name="bucketId">Bucket Id.</param>
+        /// <param name="objectId">Object Id.</param>
         /// <param name="key">Key.</param>
         /// <param name="val">Value.</param>
-        public ObjectTag(string guid, string bucketGuid, string objectGuid, string key, string val)
+        public ObjectTag(string id, string bucketId, string objectId, string key, string val)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            if (String.IsNullOrEmpty(objectGuid)) throw new ArgumentNullException(nameof(objectGuid));
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            if (String.IsNullOrEmpty(objectId)) throw new ArgumentNullException(nameof(objectId));
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            GUID = guid;
-            BucketGUID = bucketGuid;
-            ObjectGUID = objectGuid;
+            Id = id;
+            BucketId = bucketId;
+            ObjectId = objectId;
             Key = key;
             Value = val;
         }

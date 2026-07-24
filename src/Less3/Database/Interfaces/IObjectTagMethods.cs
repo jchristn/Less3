@@ -15,18 +15,56 @@ namespace Less3.Database.Interfaces
         void Insert(ObjectTag tag);
 
         /// <summary>
-        /// Retrieve tags for an object by object GUID and bucket GUID.
+        /// Retrieve tags for an object by object Id and bucket Id.
         /// </summary>
-        /// <param name="objectGuid">Object GUID.</param>
-        /// <param name="bucketGuid">Bucket GUID.</param>
+        /// <param name="objectId">Object Id.</param>
+        /// <param name="bucketId">Bucket Id.</param>
         /// <returns>List of object tags.</returns>
-        List<ObjectTag> GetByObjectGuid(string objectGuid, string bucketGuid);
+        List<ObjectTag> GetByObjectId(string objectId, string bucketId);
 
         /// <summary>
-        /// Delete all tags for an object by object GUID and bucket GUID.
+        /// Retrieve tags for an object by tenant, object Id, and bucket Id.
         /// </summary>
-        /// <param name="objectGuid">Object GUID.</param>
-        /// <param name="bucketGuid">Bucket GUID.</param>
-        void DeleteByObjectGuid(string objectGuid, string bucketGuid);
+        /// <param name="tenantId">Tenant Id.</param>
+        /// <param name="objectId">Object Id.</param>
+        /// <param name="bucketId">Bucket Id.</param>
+        /// <returns>List of object tags.</returns>
+        List<ObjectTag> GetByObjectId(string tenantId, string objectId, string bucketId);
+
+        /// <summary>
+        /// Retrieve an object tag by Id.
+        /// </summary>
+        /// <param name="tenantId">Tenant Id.</param>
+        /// <param name="id">Object tag Id.</param>
+        /// <returns>Object tag.</returns>
+        ObjectTag GetById(string tenantId, string id);
+
+        /// <summary>
+        /// Check if an object tag exists.
+        /// </summary>
+        /// <param name="tenantId">Tenant Id.</param>
+        /// <param name="id">Object tag Id.</param>
+        /// <returns>True if the object tag exists.</returns>
+        bool ExistsById(string tenantId, string id);
+
+        /// <summary>
+        /// Update an object tag.
+        /// </summary>
+        /// <param name="tag">Object tag.</param>
+        void Update(ObjectTag tag);
+
+        /// <summary>
+        /// Delete all tags for an object by object Id and bucket Id.
+        /// </summary>
+        /// <param name="objectId">Object Id.</param>
+        /// <param name="bucketId">Bucket Id.</param>
+        void DeleteByObjectId(string objectId, string bucketId);
+
+        /// <summary>
+        /// Delete an object tag by Id.
+        /// </summary>
+        /// <param name="tenantId">Tenant Id.</param>
+        /// <param name="id">Object tag Id.</param>
+        void DeleteById(string tenantId, string id);
     }
 }

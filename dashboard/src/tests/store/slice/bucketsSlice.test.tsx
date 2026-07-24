@@ -82,14 +82,14 @@ describe("bucketsSlice", () => {
   });
 
   describe("useListBucketObjectsQuery", () => {
-    it("should return query hook with bucketGUID parameter", () => {
+    it("should return query hook with bucketId parameter", () => {
       const store = createTestStore();
       const wrapper = ({ children }: { children: React.ReactNode }) => (
         <Provider store={store}>{children}</Provider>
       );
 
       const { result } = renderHook(
-        () => useListBucketObjectsQuery({ bucketGUID: "test-guid" }, { skip: true }),
+        () => useListBucketObjectsQuery({ bucketId: "bkt_test" }, { skip: true }),
         { wrapper }
       );
       expect(result.current).toBeDefined();

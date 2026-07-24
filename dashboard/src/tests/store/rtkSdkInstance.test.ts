@@ -1,131 +1,84 @@
+import { adminRequest, toRtkQueryError } from "#/services/backendApi.service";
 import { dynamicBaseQuery } from "#/store/rtk/rtkSdkInstance";
-import { getAdminApiKey, getApiEndpoint } from "#/services/sdk.service";
 
-jest.mock("#/services/sdk.service", () => ({
-  getApiEndpoint: jest.fn(),
-  getAdminApiKey: jest.fn(),
+jest.mock("#/services/backendApi.service", () => ({
+  adminRequest: jest.fn(),
+  toRtkQueryError: jest.fn((error: unknown, fallbackMessage: string) => ({
+    status: "FETCH_ERROR",
+    data: error instanceof Error ? error.message : fallbackMessage,
+  })),
 }));
 
 describe("dynamicBaseQuery", () => {
-  const baseUrl = "http://api.test";
-  const fetchMock = jest.fn();
-  const originalFetch = global.fetch;
-
-  const createResponse = () => {
-    const res: any = {
-      ok: true,
-      json: async () => ({}),
-      text: async () => "",
-      headers: new Headers({ "content-type": "application/json" }),
-      status: 200,
-      statusText: "OK",
-    };
-    res.clone = () => res;
-    return res;
-  };
-
   beforeEach(() => {
     jest.resetAllMocks();
-    (getApiEndpoint as jest.Mock).mockReturnValue(baseUrl);
-    (getAdminApiKey as jest.Mock).mockReturnValue("less3admin");
-    fetchMock.mockResolvedValue(createResponse());
-    global.fetch = fetchMock as any;
+    (adminRequest as jest.Mock).mockResolvedValue({});
   });
 
-  afterEach(() => {
-    global.fetch = originalFetch;
-  });
-
-  it("sets JSON headers and uses dynamic base URL", async () => {
-    await dynamicBaseQuery({ url: "/test", method: "GET" }, {} as any, {} as any);
-
-    expect(getApiEndpoint).toHaveBeenCalled();
-    expect(fetchMock).toHaveBeenCalled();
-    const request = fetchMock.mock.calls[0][0] as Request;
-    const headerSnapshot = Object.fromEntries(
-      Array.from(request.headers.entries()).sort(([a], [b]) => a.localeCompare(b))
+  it("delegates backend requests to the shared admin request helper", async () => {
+    await dynamicBaseQuery(
+      {
+        url: "/test",
+        method: "POST",
+        body: { Name: "Example" },
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      },
+      {} as any,
+      {} as any
     );
 
-    expect({
-      url: request.url,
-      method: request.method,
-      headers: headerSnapshot,
-    }).toMatchInlineSnapshot(`
-{
-  "headers": {
-    "accept": "application/json",
-    "content-type": "application/json",
-    "x-api-key": "less3admin",
-  },
-  "method": "GET",
-  "url": "http://api.test/test",
-}
-`);
+    expect(adminRequest).toHaveBeenCalledWith("/test", {
+      method: "POST",
+      headers: { Accept: "application/json" },
+      body: { Name: "Example" },
+      cache: "no-store",
+    });
   });
 
-  it("omits Content-Type when body is FormData", async () => {
-    const formData = new FormData();
-    formData.append("file", new Blob(["test"]), "file.txt");
+  it("returns data from the shared admin request helper", async () => {
+    (adminRequest as jest.Mock).mockResolvedValueOnce({ ID: "bkt_example" });
 
-    await dynamicBaseQuery({ url: "/upload", method: "POST", body: formData }, {} as any, {} as any);
+    const result = await dynamicBaseQuery({ url: "/admin/buckets", method: "GET" }, {} as any, {} as any);
 
-    const request = fetchMock.mock.calls[0][0] as Request;
-    const headers = Object.fromEntries(
-      Array.from(request.headers.entries()).map(([key, value]) => [
-        key,
-        key === "content-type" ? "<form-data>" : value,
-      ])
-    );
+    expect(result).toEqual({
+      data: { ID: "bkt_example" },
+    });
+  });
 
-    expect({
-      url: request.url,
-      method: request.method,
-      hasBody: !!request.body,
-      headers,
-    }).toMatchInlineSnapshot(`
-{
-  "hasBody": true,
-  "headers": {
-    "accept": "application/json",
-    "content-type": "<form-data>",
-    "x-api-key": "less3admin",
-  },
-  "method": "POST",
-  "url": "http://api.test/upload",
-}
-`);
+  it("normalizes failures through the shared RTK error mapper", async () => {
+    const error = new Error("Boom");
+    (adminRequest as jest.Mock).mockRejectedValueOnce(error);
+    (toRtkQueryError as jest.Mock).mockReturnValueOnce({
+      status: 500,
+      data: "Boom",
+    });
+
+    const result = await dynamicBaseQuery({ url: "/admin/buckets", method: "GET" }, {} as any, {} as any);
+
+    expect(toRtkQueryError).toHaveBeenCalledWith(error, "Backend request failed");
+    expect(result).toEqual({
+      error: {
+        status: 500,
+        data: "Boom",
+      },
+    });
   });
 
   describe("Snapshots", () => {
-    it("captures request snapshot for JSON call", async () => {
-      await dynamicBaseQuery({ url: "/snapshot-test", method: "GET" }, {} as any, {} as any);
-      const request = fetchMock.mock.calls[0][0] as Request;
-      const headers = Object.fromEntries(request.headers.entries());
-      expect({
-        url: request.url,
-        method: request.method,
-        headers,
-      }).toMatchSnapshot();
-    });
-
-    it("captures request snapshot for FormData call", async () => {
-      const formData = new FormData();
-      formData.append("file", new Blob(["snapshot"]), "file.txt");
-
-      await dynamicBaseQuery({ url: "/snapshot-upload", method: "POST", body: formData }, {} as any, {} as any);
-      const request = fetchMock.mock.calls[0][0] as Request;
-      const headers = Object.fromEntries(
-        Array.from(request.headers.entries()).map(([key, value]) => [
-          key,
-          key === "content-type" ? "<form-data>" : value,
-        ])
+    it("captures the shared-helper call contract", async () => {
+      await dynamicBaseQuery(
+        {
+          url: "/snapshot-test",
+          method: "PUT",
+          body: { enabled: true },
+          headers: { "X-Test": "value" },
+        },
+        {} as any,
+        {} as any
       );
-      expect({
-        url: request.url,
-        method: request.method,
-        hasBody: !!request.body,
-        headers,
-      }).toMatchSnapshot();
+
+      expect((adminRequest as jest.Mock).mock.calls[0]).toMatchSnapshot();
     });
   });
 });

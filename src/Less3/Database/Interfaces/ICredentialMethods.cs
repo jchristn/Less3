@@ -4,7 +4,7 @@ namespace Less3.Database.Interfaces
     using Less3.Classes;
 
     /// <summary>
-    /// Interface for credential database methods.
+    /// Interface for credentials database methods.
     /// </summary>
     public interface ICredentialMethods
     {
@@ -15,49 +15,87 @@ namespace Less3.Database.Interfaces
         List<Credential> GetAll();
 
         /// <summary>
-        /// Check if a credential exists by GUID.
+        /// Retrieve all credentials for a tenant.
         /// </summary>
-        /// <param name="guid">Credential GUID.</param>
-        /// <returns>True if the credential exists.</returns>
-        bool ExistsByGuid(string guid);
-
-        /// <summary>
-        /// Retrieve a credential by GUID.
-        /// </summary>
-        /// <param name="guid">Credential GUID.</param>
-        /// <returns>Credential or null if not found.</returns>
-        Credential GetByGuid(string guid);
-
-        /// <summary>
-        /// Retrieve credentials by user GUID.
-        /// </summary>
-        /// <param name="userGuid">User GUID.</param>
+        /// <param name="tenantId">Tenant Id.</param>
         /// <returns>List of credentials.</returns>
-        List<Credential> GetByUserGuid(string userGuid);
+        List<Credential> GetAll(string tenantId);
 
         /// <summary>
-        /// Retrieve a credential by access key.
+        /// Check if a credentials exists by Id.
+        /// </summary>
+        /// <param name="id">credentials Id.</param>
+        /// <returns>True if the credentials exists.</returns>
+        bool ExistsById(string id);
+
+        /// <summary>
+        /// Check if credentials exists by tenant and Id.
+        /// </summary>
+        /// <param name="tenantId">Tenant Id.</param>
+        /// <param name="id">credentials Id.</param>
+        /// <returns>True if the credentials exists.</returns>
+        bool ExistsById(string tenantId, string id);
+
+        /// <summary>
+        /// Retrieve a credentials by Id.
+        /// </summary>
+        /// <param name="id">credentials Id.</param>
+        /// <returns>credentials or null if not found.</returns>
+        Credential GetById(string id);
+
+        /// <summary>
+        /// Retrieve credentials by tenant and Id.
+        /// </summary>
+        /// <param name="tenantId">Tenant Id.</param>
+        /// <param name="id">credentials Id.</param>
+        /// <returns>credentials or null if not found.</returns>
+        Credential GetById(string tenantId, string id);
+
+        /// <summary>
+        /// Retrieve credentials by user Id.
+        /// </summary>
+        /// <param name="userId">User Id.</param>
+        /// <returns>List of credentials.</returns>
+        List<Credential> GetByUserId(string userId);
+
+        /// <summary>
+        /// Retrieve credentials by tenant and user Id.
+        /// </summary>
+        /// <param name="tenantId">Tenant Id.</param>
+        /// <param name="userId">User Id.</param>
+        /// <returns>List of credentials.</returns>
+        List<Credential> GetByUserId(string tenantId, string userId);
+
+        /// <summary>
+        /// Retrieve a credentials by access key.
         /// </summary>
         /// <param name="accessKey">Access key.</param>
-        /// <returns>Credential or null if not found.</returns>
+        /// <returns>credentials or null if not found.</returns>
         Credential GetByAccessKey(string accessKey);
 
         /// <summary>
-        /// Insert a new credential.
+        /// Insert a new credentials.
         /// </summary>
-        /// <param name="credential">Credential to insert.</param>
-        void Insert(Credential credential);
+        /// <param name="credentials">credentials to insert.</param>
+        void Insert(Credential credentials);
 
         /// <summary>
-        /// Update an existing credential.
+        /// Update an existing credentials.
         /// </summary>
-        /// <param name="credential">Credential to update.</param>
-        void Update(Credential credential);
+        /// <param name="credentials">credentials to update.</param>
+        void Update(Credential credentials);
 
         /// <summary>
-        /// Delete a credential by GUID.
+        /// Delete a credentials by Id.
         /// </summary>
-        /// <param name="guid">Credential GUID.</param>
-        void DeleteByGuid(string guid);
+        /// <param name="id">credentials Id.</param>
+        void DeleteById(string id);
+
+        /// <summary>
+        /// Delete credentials by tenant and Id.
+        /// </summary>
+        /// <param name="tenantId">Tenant Id.</param>
+        /// <param name="id">credentials Id.</param>
+        void DeleteById(string tenantId, string id);
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Less3.Classes
+namespace Less3.Classes
 {
     using System;
     using System.Collections.Generic;
@@ -28,6 +28,26 @@
         /// </summary>
         [EnumMember(Value = "AccessKeyNotFound")]
         AccessKeyNotFound,
+        /// <summary>
+        /// The credential is inactive.
+        /// </summary>
+        [EnumMember(Value = "CredentialInactive")]
+        CredentialInactive,
+        /// <summary>
+        /// The user is inactive.
+        /// </summary>
+        [EnumMember(Value = "UserInactive")]
+        UserInactive,
+        /// <summary>
+        /// The tenant is inactive.
+        /// </summary>
+        [EnumMember(Value = "TenantInactive")]
+        TenantInactive,
+        /// <summary>
+        /// The credential and user do not belong to the same tenant.
+        /// </summary>
+        [EnumMember(Value = "TenantMismatch")]
+        TenantMismatch,
         /// <summary>
         /// Authentication was successful.
         /// </summary>

@@ -69,6 +69,11 @@
         [EnumMember(Value = "PermitObjectOwnership")]
         PermitObjectOwnership,
         /// <summary>
+        /// Operation permitted by tenant RBAC.
+        /// </summary>
+        [EnumMember(Value = "PermitRbac")]
+        PermitRbac,
+        /// <summary>
         /// Operation not authorized.
         /// </summary>
         [EnumMember(Value = "NotAuthorized")]

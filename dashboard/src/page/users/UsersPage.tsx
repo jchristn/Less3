@@ -1,8 +1,8 @@
-/* eslint-disable max-lines-per-function */
 'use client';
 import React, { useMemo, useState } from 'react';
-import { Form, Descriptions, MenuProps } from 'antd';
-import { PlusOutlined, SearchOutlined, MoreOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Form, Descriptions, MenuProps, Checkbox } from 'antd';
+import { PlusOutlined, SearchOutlined, MoreOutlined, ReloadOutlined, TeamOutlined, HistoryOutlined } from '@ant-design/icons';
+import { useRouter } from 'next/navigation';
 import DataTable, { DataTableColumn } from '#/components/DataTable';
 import Less3Button from '#/components/base/button/Button';
 import Less3Modal from '#/components/base/modal/Modal';
@@ -12,7 +12,7 @@ import PageContainer from '#/components/base/pageContainer/PageContainer';
 import Less3Flex from '#/components/base/flex/Flex';
 import Less3Dropdown from '#/components/base/dropdown/Dropdown';
 import Less3Text from '#/components/base/typograpghy/Text';
-import GuidDisplay from '#/components/guid-display';
+import IdDisplay from '#/components/id-display';
 import TextWithCopy from '#/components/text-with-copy/TextWithCopy';
 import {
   useGetUsersQuery,
@@ -26,24 +26,30 @@ import { formatDate } from '#/utils/dateUtils';
 import { message } from '#/utils/message';
 
 interface UserFormValues {
+  TenantId?: string;
   Name: string;
   Email: string;
+  PasswordHash?: string;
+  Active?: boolean;
+  IsAdmin?: boolean;
+  IsTenantAdmin?: boolean;
 }
 
 const UsersPage: React.FC = () => {
+  const router = useRouter();
   const [form] = Form.useForm<UserFormValues>();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [isMetadataModalVisible, setIsMetadataModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [viewingUserGUID, setViewingUserGUID] = useState<string | null>(null);
+  const [viewingUserId, setViewingUserId] = useState<string | null>(null);
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
   const [searchText, setSearchText] = useState('');
 
   const { data, isLoading, refetch } = useGetUsersQuery();
 
-  const { data: userMetadata, isLoading: isMetadataLoading } = useGetUserByIdQuery(viewingUserGUID || '', {
-    skip: !viewingUserGUID,
+  const { data: userMetadata, isLoading: isMetadataLoading } = useGetUserByIdQuery(viewingUserId || '', {
+    skip: !viewingUserId,
   });
 
   const [createUser, { isLoading: isCreating }] = useCreateUserMutation();
@@ -53,20 +59,30 @@ const UsersPage: React.FC = () => {
   const handleCreate = () => {
     setEditingUser(null);
     form.resetFields();
+    form.setFieldsValue({
+      TenantId: 'default',
+      Active: true,
+      IsAdmin: false,
+      IsTenantAdmin: false,
+    });
     setIsModalVisible(true);
   };
 
   const handleEdit = (record: User) => {
     setEditingUser(record);
     form.setFieldsValue({
+      TenantId: record.TenantId || 'default',
       Name: record.Name,
       Email: record.Email,
+      Active: record.Active ?? true,
+      IsAdmin: record.IsAdmin ?? false,
+      IsTenantAdmin: record.IsTenantAdmin ?? false,
     });
     setIsModalVisible(true);
   };
 
   const handleViewMetadata = (record: User) => {
-    setViewingUserGUID(record.GUID);
+    setViewingUserId(record.Id);
     setIsMetadataModalVisible(true);
   };
 
@@ -79,13 +95,18 @@ const UsersPage: React.FC = () => {
     try {
       const values = await form.validateFields();
       const createPayload = {
+        TenantId: values.TenantId || editingUser?.TenantId || 'default',
         Name: values.Name,
         Email: values.Email,
+        ...(values.PasswordHash ? { PasswordHash: values.PasswordHash } : {}),
+        Active: values.Active ?? true,
+        IsAdmin: values.IsAdmin ?? false,
+        IsTenantAdmin: values.IsTenantAdmin ?? false,
       };
 
-      if (editingUser?.GUID) {
+      if (editingUser?.Id) {
         await updateUser({
-          GUID: editingUser.GUID,
+          Id: editingUser.Id,
           ...createPayload,
         }).unwrap();
         message.success('User updated successfully');
@@ -104,10 +125,10 @@ const UsersPage: React.FC = () => {
   };
 
   const handleDeleteConfirm = async () => {
-    if (!deletingUser?.GUID) return;
+    if (!deletingUser?.Id) return;
 
     try {
-      await deleteUser({ guid: deletingUser.GUID }).unwrap();
+      await deleteUser({ id: deletingUser.Id }).unwrap();
       message.success('User deleted successfully');
       setIsDeleteModalVisible(false);
       setDeletingUser(null);
@@ -119,10 +140,17 @@ const UsersPage: React.FC = () => {
 
   const columns: DataTableColumn<User>[] = [
     {
-      key: 'GUID',
-      label: 'GUID',
+      key: 'Id',
+      label: 'Id',
       width: '320px',
-      render: (item) => <GuidDisplay guid={item.GUID} />,
+      render: (item) => <IdDisplay id={item.Id} />,
+    },
+    {
+      key: 'TenantId',
+      label: 'Tenant',
+      width: '160px',
+      render: (item) => <IdDisplay id={item.TenantId || 'default'} />,
+      filterValue: (item) => item.TenantId || 'default',
     },
     {
       key: 'Name',
@@ -135,6 +163,27 @@ const UsersPage: React.FC = () => {
       width: '280px',
       render: (item) => <TextWithCopy text={item.Email} className="code-font-style" />,
       filterValue: (item) => item.Email,
+    },
+    {
+      key: 'Active',
+      label: 'Active',
+      width: '90px',
+      render: (item) => (item.Active ?? true ? 'Yes' : 'No'),
+      filterValue: (item) => (item.Active ?? true ? 'Yes' : 'No'),
+    },
+    {
+      key: 'IsAdmin',
+      label: 'System Admin',
+      width: '130px',
+      render: (item) => (item.IsAdmin ? 'Yes' : 'No'),
+      filterValue: (item) => (item.IsAdmin ? 'Yes' : 'No'),
+    },
+    {
+      key: 'IsTenantAdmin',
+      label: 'Tenant Admin',
+      width: '130px',
+      render: (item) => (item.IsTenantAdmin ? 'Yes' : 'No'),
+      filterValue: (item) => (item.IsTenantAdmin ? 'Yes' : 'No'),
     },
     {
       key: 'CreatedUtc',
@@ -163,6 +212,18 @@ const UsersPage: React.FC = () => {
             onClick: () => handleViewMetadata(item),
           },
           {
+            key: 'roles',
+            icon: <TeamOutlined />,
+            label: 'Role Assignments',
+            onClick: () => router.push(`/admin/role-assignments?principalId=${encodeURIComponent(item.Id)}`),
+          },
+          {
+            key: 'sessions',
+            icon: <HistoryOutlined />,
+            label: 'Sessions',
+            onClick: () => router.push(`/admin/api-explorer?operation=rest-list-authsessions&userId=${encodeURIComponent(item.Id)}`),
+          },
+          {
             key: 'delete',
             label: 'Delete User',
             onClick: () => handleDelete(item),
@@ -185,11 +246,12 @@ const UsersPage: React.FC = () => {
     if (!q) return data;
 
     return data.filter((user) => {
-      const guid = user.GUID?.toLowerCase() ?? '';
+      const id = user.Id?.toLowerCase() ?? '';
+      const tenantId = user.TenantId?.toLowerCase() ?? '';
       const name = user.Name?.toLowerCase() ?? '';
       const email = user.Email?.toLowerCase() ?? '';
 
-      return guid.includes(q) || name.includes(q) || email.includes(q);
+      return id.includes(q) || tenantId.includes(q) || name.includes(q) || email.includes(q);
     });
   }, [data, searchText]);
 
@@ -221,7 +283,7 @@ const UsersPage: React.FC = () => {
         columns={columns}
         data={filteredData}
         loading={isLoading}
-        rowKey="GUID"
+        rowKey="Id"
         onRowClick={handleEdit}
       />
 
@@ -240,6 +302,13 @@ const UsersPage: React.FC = () => {
         centered
       >
         <Form form={form} layout="vertical" autoComplete="off">
+          <Less3FormItem
+            label="Tenant ID"
+            name="TenantId"
+            rules={[{ required: true, message: 'Please enter tenant ID' }]}
+          >
+            <Less3Input placeholder="default" />
+          </Less3FormItem>
           <Less3FormItem
             label="Name"
             name="Name"
@@ -260,6 +329,23 @@ const UsersPage: React.FC = () => {
           >
             <Less3Input placeholder="Enter email address" type="email" />
           </Less3FormItem>
+          <Less3FormItem
+            label="Password Hash"
+            name="PasswordHash"
+          >
+            <Less3Input placeholder={editingUser ? 'Leave unchanged' : 'Enter password or password hash'} type="password" />
+          </Less3FormItem>
+          <Less3Flex gap={16} align="center">
+            <Less3FormItem name="Active" valuePropName="checked">
+              <Checkbox>Active</Checkbox>
+            </Less3FormItem>
+            <Less3FormItem name="IsAdmin" valuePropName="checked">
+              <Checkbox>System Admin</Checkbox>
+            </Less3FormItem>
+            <Less3FormItem name="IsTenantAdmin" valuePropName="checked">
+              <Checkbox>Tenant Admin</Checkbox>
+            </Less3FormItem>
+          </Less3Flex>
         </Form>
       </Less3Modal>
 
@@ -292,14 +378,14 @@ const UsersPage: React.FC = () => {
         open={isMetadataModalVisible}
         onCancel={() => {
           setIsMetadataModalVisible(false);
-          setViewingUserGUID(null);
+          setViewingUserId(null);
         }}
         footer={[
           <Less3Button
             key="close"
             onClick={() => {
               setIsMetadataModalVisible(false);
-              setViewingUserGUID(null);
+              setViewingUserId(null);
             }}
           >
             Close
@@ -312,14 +398,26 @@ const UsersPage: React.FC = () => {
           <div style={{ textAlign: 'center', padding: '20px' }}>Loading metadata...</div>
         ) : userMetadata ? (
           <Descriptions bordered column={1} size="small">
-            <Descriptions.Item label="GUID">
-              <GuidDisplay guid={userMetadata.GUID} />
+            <Descriptions.Item label="ID">
+              <IdDisplay id={userMetadata.Id} />
             </Descriptions.Item>
             <Descriptions.Item label="Name">
               <Less3Text>{userMetadata.Name}</Less3Text>
             </Descriptions.Item>
+            <Descriptions.Item label="Tenant ID">
+              <IdDisplay id={userMetadata.TenantId || 'default'} />
+            </Descriptions.Item>
             <Descriptions.Item label="Email">
               <TextWithCopy text={userMetadata.Email} className="code-font-style" />
+            </Descriptions.Item>
+            <Descriptions.Item label="Active">
+              <Less3Text>{userMetadata.Active ?? true ? 'Yes' : 'No'}</Less3Text>
+            </Descriptions.Item>
+            <Descriptions.Item label="System Admin">
+              <Less3Text>{userMetadata.IsAdmin ? 'Yes' : 'No'}</Less3Text>
+            </Descriptions.Item>
+            <Descriptions.Item label="Tenant Admin">
+              <Less3Text>{userMetadata.IsTenantAdmin ? 'Yes' : 'No'}</Less3Text>
             </Descriptions.Item>
             <Descriptions.Item label="Created At">
               <Less3Text>

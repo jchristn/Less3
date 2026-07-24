@@ -1,4 +1,4 @@
-import { toTitleCase, getFirstLetterOfTheWord, uuid, decodePayload } from "#/utils/stringUtils";
+import { toTitleCase, getFirstLetterOfTheWord, decodePayload } from "#/utils/stringUtils";
 import { message } from "#/utils/message";
 
 describe("stringUtils", () => {
@@ -55,28 +55,6 @@ describe("stringUtils", () => {
 
     it("should handle null", () => {
       expect(getFirstLetterOfTheWord(null as any)).toBe("");
-    });
-  });
-
-  describe("uuid", () => {
-    it("should generate a UUID", () => {
-      const id = uuid();
-      expect(id).toBeDefined();
-      expect(typeof id).toBe("string");
-      expect(id.length).toBeGreaterThan(0);
-    });
-
-    it("should generate unique UUIDs", () => {
-      const id1 = uuid();
-      const id2 = uuid();
-      expect(id1).not.toBe(id2);
-    });
-
-    it("should generate valid UUID format", () => {
-      const id = uuid();
-      const uuidRegex =
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      expect(id).toMatch(uuidRegex);
     });
   });
 

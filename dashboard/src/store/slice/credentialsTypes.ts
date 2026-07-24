@@ -1,12 +1,15 @@
 // Credential API types and interfaces
 
 export interface Credential {
-  GUID: string;
-  UserGUID: string;
+  Id: string;
+  UserId: string;
   Description: string;
   AccessKey: string;
-  SecretKey: string;
+  SecretKey?: string | null;
   IsBase64: boolean;
+  Active?: boolean;
+  LastUsedUtc?: string | null;
+  LastFailedUtc?: string | null;
   CreatedUtc: string;
   [key: string]: any;
 }
@@ -15,26 +18,31 @@ export type CredentialListResponse = Credential[];
 export type CredentialResponse = Credential;
 
 export interface CreateCredentialRequest {
-  GUID?: string;
-  UserGUID: string;
+  Id?: string;
+  UserId: string;
   Description: string;
-  AccessKey: string;
-  SecretKey: string;
+  AccessKey?: string;
+  SecretKey?: string;
   [key: string]: any;
 }
 
 export interface UpdateCredentialRequest {
-  GUID: string;
-  UserGUID: string;
+  Id: string;
+  UserId: string;
   Description: string;
   AccessKey: string;
-  SecretKey: string;
+  SecretKey?: string;
+  Active?: boolean;
   IsBase64?: boolean;
   [key: string]: any;
 }
 
+export interface CredentialActionParams {
+  id: string;
+}
+
 export interface DeleteCredentialParams {
-  guid: string;
+  id: string;
 }
 
 export interface DeleteCredentialResponse {

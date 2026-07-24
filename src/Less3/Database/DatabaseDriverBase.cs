@@ -5,6 +5,7 @@ namespace Less3.Database
     using System.Data;
     using System.Threading;
     using System.Threading.Tasks;
+    using Less3.Database.Implementations;
     using Less3.Database.Interfaces;
 
     /// <summary>
@@ -13,6 +14,16 @@ namespace Less3.Database
     public abstract class DatabaseDriverBase
     {
         #region Public-Members
+
+        /// <summary>
+        /// SQL dialect used by the concrete database driver.
+        /// </summary>
+        internal SqlDialect Dialect { get; private protected set; } = SqlDialect.Sqlite;
+
+        /// <summary>
+        /// Tenant methods.
+        /// </summary>
+        public ITenantMethods Tenants { get; protected set; }
 
         /// <summary>
         /// User methods.
@@ -68,6 +79,31 @@ namespace Less3.Database
         /// Request history methods.
         /// </summary>
         public IRequestHistoryMethods RequestHistory { get; protected set; }
+
+        /// <summary>
+        /// Role methods.
+        /// </summary>
+        public IRoleMethods Roles { get; protected set; }
+
+        /// <summary>
+        /// Permission methods.
+        /// </summary>
+        public IPermissionMethods Permissions { get; protected set; }
+
+        /// <summary>
+        /// Role assignment methods.
+        /// </summary>
+        public IRoleAssignmentMethods RoleAssignments { get; protected set; }
+
+        /// <summary>
+        /// Auth session methods.
+        /// </summary>
+        public IAuthSessionMethods AuthSessions { get; protected set; }
+
+        /// <summary>
+        /// Authorization audit methods.
+        /// </summary>
+        public IAuthorizationAuditMethods AuthorizationAudit { get; protected set; }
 
         #endregion
 

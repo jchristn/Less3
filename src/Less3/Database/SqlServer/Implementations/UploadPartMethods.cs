@@ -4,6 +4,7 @@ namespace Less3.Database.SqlServer.Implementations
     using System.Collections.Generic;
     using System.Data;
     using Less3.Classes;
+    using Less3.Database.Implementations;
     using Less3.Database.Interfaces;
     using Less3.Database.SqlServer.Queries;
 
@@ -24,39 +25,62 @@ namespace Less3.Database.SqlServer.Implementations
         }
 
         /// <inheritdoc />
-        public List<UploadPart> GetByUploadGuid(string uploadGuid)
+        public List<UploadPart> GetByUploadId(string uploadId)
         {
-            if (String.IsNullOrEmpty(uploadGuid)) throw new ArgumentNullException(nameof(uploadGuid));
-            DataTable result = _Database.ExecuteQuery(UploadPartQueries.SelectByUploadGuid(uploadGuid)).Result;
+            if (String.IsNullOrEmpty(uploadId)) throw new ArgumentNullException(nameof(uploadId));
+            DataTable result = _Database.ExecuteQuery(UploadPartQueries.SelectByUploadId(uploadId)).Result;
             return MapList(result);
         }
 
         /// <inheritdoc />
-        public void DeleteByUploadGuid(string uploadGuid)
+        public List<UploadPart> GetByUploadId(string tenantId, string uploadId)
         {
-            if (String.IsNullOrEmpty(uploadGuid)) throw new ArgumentNullException(nameof(uploadGuid));
-            _Database.ExecuteQuery(UploadPartQueries.DeleteByUploadGuid(uploadGuid), true).Wait();
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(uploadId)) throw new ArgumentNullException(nameof(uploadId));
+            DataTable result = _Database.ExecuteQuery(UploadPartQueries.SelectByUploadId(tenantId, uploadId)).Result;
+            return MapList(result);
         }
 
         /// <inheritdoc />
-        public void DeleteByUploadGuidAndPartNumber(string uploadGuid, int partNumber)
+        public void DeleteByUploadId(string uploadId)
         {
-            if (String.IsNullOrEmpty(uploadGuid)) throw new ArgumentNullException(nameof(uploadGuid));
+            if (String.IsNullOrEmpty(uploadId)) throw new ArgumentNullException(nameof(uploadId));
+            _Database.ExecuteQuery(UploadPartQueries.DeleteByUploadId(uploadId), true).Wait();
+        }
+
+        /// <inheritdoc />
+        public void DeleteByUploadId(string tenantId, string uploadId)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(uploadId)) throw new ArgumentNullException(nameof(uploadId));
+            _Database.ExecuteQuery(UploadPartQueries.DeleteByUploadId(tenantId, uploadId), true).Wait();
+        }
+
+        /// <inheritdoc />
+        public void DeleteByUploadIdAndPartNumber(string uploadId, int partNumber)
+        {
+            if (String.IsNullOrEmpty(uploadId)) throw new ArgumentNullException(nameof(uploadId));
             if (partNumber < 1) throw new ArgumentOutOfRangeException(nameof(partNumber));
-            _Database.ExecuteQuery(UploadPartQueries.DeleteByUploadGuidAndPartNumber(uploadGuid, partNumber), true).Wait();
+            _Database.ExecuteQuery(UploadPartQueries.DeleteByUploadIdAndPartNumber(uploadId, partNumber), true).Wait();
+        }
+
+        /// <inheritdoc />
+        public void DeleteByUploadIdAndPartNumber(string tenantId, string uploadId, int partNumber)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrEmpty(uploadId)) throw new ArgumentNullException(nameof(uploadId));
+            if (partNumber < 1) throw new ArgumentOutOfRangeException(nameof(partNumber));
+            _Database.ExecuteQuery(UploadPartQueries.DeleteByUploadIdAndPartNumber(tenantId, uploadId, partNumber), true).Wait();
         }
 
         private UploadPart MapFromRow(DataRow row)
         {
             UploadPart part = new UploadPart();
-
-            int id = Convert.ToInt32(row["id"]);
-            if (id > 0) part.Id = id;
-
-            part.GUID = row["guid"] != null && row["guid"] != DBNull.Value ? row["guid"].ToString() : null;
-            part.BucketGUID = row["bucketguid"] != null && row["bucketguid"] != DBNull.Value ? row["bucketguid"].ToString() : null;
-            part.OwnerGUID = row["ownerguid"] != null && row["ownerguid"] != DBNull.Value ? row["ownerguid"].ToString() : null;
-            part.UploadGUID = row["uploadguid"] != null && row["uploadguid"] != DBNull.Value ? row["uploadguid"].ToString() : null;
+            part.Id = row["id"] != null && row["id"] != DBNull.Value ? row["id"].ToString() : null;
+            part.TenantId = ControlPlaneDataMapper.StringValue(row, "tenant_id") ?? "default";
+            part.BucketId = row["bucket_id"] != null && row["bucket_id"] != DBNull.Value ? row["bucket_id"].ToString() : null;
+            part.OwnerId = row["owner_id"] != null && row["owner_id"] != DBNull.Value ? row["owner_id"].ToString() : null;
+            part.UploadId = row["upload_id"] != null && row["upload_id"] != DBNull.Value ? row["upload_id"].ToString() : null;
             part.PartNumber = Convert.ToInt32(row["partnumber"]);
             part.PartLength = Convert.ToInt32(row["partlength"]);
             part.MD5Hash = row["md5hash"] != null && row["md5hash"] != DBNull.Value ? row["md5hash"].ToString() : null;

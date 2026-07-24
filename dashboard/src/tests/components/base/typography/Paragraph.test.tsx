@@ -23,8 +23,7 @@ describe("Paragraph", () => {
     it("should render with color prop", () => {
       render(<Paragraph color="gray">Gray Paragraph</Paragraph>);
       const paragraph = screen.getByText("Gray Paragraph");
-      expect(paragraph).toHaveStyle({ color: "gray" });
+      expect(paragraph).toHaveStyle({ color: "rgb(128, 128, 128)" });
     });
   });
 });
-

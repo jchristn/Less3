@@ -8,13 +8,14 @@ import Less3Flex from '#/components/base/flex/Flex';
 import Less3Button from '#/components/base/button/Button';
 import Less3Text from '#/components/base/typograpghy/Text';
 import Less3Title from '#/components/base/typograpghy/Title';
-import { Alert, Form, Input } from 'antd';
+import { Alert, Checkbox, Form, Input } from 'antd';
 import { ArrowRightOutlined, KeyOutlined, LinkOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
 import { useValidateConnectivityMutation } from '#/store/slice/sdkSlice';
 import {
   getInitialAdminApiKey,
   getInitialApiEndpoint,
+  getInitialRememberAdminApiKey,
   persistDashboardSession,
 } from '#/services/sdk.service';
 import { paths } from '#/constants/constant';
@@ -108,7 +109,9 @@ const LoginPage = () => {
       }).unwrap();
 
       if (response) {
-        persistDashboardSession(newURL, newApiKey);
+        persistDashboardSession(newURL, newApiKey, {
+          rememberAdminKey: form.getFieldValue('rememberAdminKey') ?? true,
+        });
         setValidationState({
           type: 'success',
           message: 'Authenticated against the Less3 admin API.',
@@ -154,6 +157,7 @@ const LoginPage = () => {
     form.setFieldsValue({
       less3APIUrl: initialUrl,
       adminApiKey: initialApiKey,
+      rememberAdminKey: getInitialRememberAdminApiKey(),
     });
 
     if (initialUrl && initialApiKey) {
@@ -229,6 +233,10 @@ const LoginPage = () => {
                 placeholder="Paste the server admin API key"
                 autoComplete="current-password"
               />
+            </Form.Item>
+
+            <Form.Item name="rememberAdminKey" valuePropName="checked">
+              <Checkbox disabled={loading}>Remember key on this device</Checkbox>
             </Form.Item>
 
             {validationState && (

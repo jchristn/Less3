@@ -1,26 +1,17 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
-exports[`dynamicBaseQuery Snapshots captures request snapshot for FormData call 1`] = `
-{
-  "hasBody": true,
-  "headers": {
-    "accept": "application/json",
-    "content-type": "<form-data>",
-    "x-api-key": "less3admin",
+exports[`dynamicBaseQuery Snapshots captures the shared-helper call contract 1`] = `
+[
+  "/snapshot-test",
+  {
+    "body": {
+      "enabled": true,
+    },
+    "cache": undefined,
+    "headers": {
+      "X-Test": "value",
+    },
+    "method": "PUT",
   },
-  "method": "POST",
-  "url": "http://api.test/snapshot-upload",
-}
-`;
-
-exports[`dynamicBaseQuery Snapshots captures request snapshot for JSON call 1`] = `
-{
-  "headers": {
-    "accept": "application/json",
-    "content-type": "application/json",
-    "x-api-key": "less3admin",
-  },
-  "method": "GET",
-  "url": "http://api.test/snapshot-test",
-}
+]
 `;

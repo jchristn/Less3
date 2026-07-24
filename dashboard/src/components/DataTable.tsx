@@ -200,7 +200,7 @@ const DataTable = <T extends Record<string, any>>({
                 }}
                 className="datatable-page-input"
               />
-              / {totalPages}
+              {` / ${totalPages}`}
             </span>
             <button
               className="datatable-page-btn"

@@ -1,8 +1,10 @@
-﻿namespace Less3
+namespace Less3
 {
     using Less3.Api.Admin;
+    using Less3.Api.Rest;
     using Less3.Api.S3;
     using Less3.Classes;
+    using Less3.Helpers;
     using Less3.Settings;
     using S3ServerLibrary;
     using SyslogLogging;
@@ -15,6 +17,7 @@
     using System.Reflection;
     using System.Runtime.Loader;
     using System.Text;
+    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using Less3.Database;
@@ -38,6 +41,7 @@
         private static BucketManager _Buckets;
         private static ApiHandler _ApiHandler;
         private static AdminApiHandler _AdminApiHandler;
+        private static RestApiHandler _RestApiHandler;
         private static AuthManager _Auth;
         private static CleanupManager _Cleanup;
 
@@ -46,7 +50,6 @@
         private static ConsoleManager _Console;
 
         private static bool _Exiting = false;
-
         static void Main(string[] args)
         {
             _Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
@@ -248,6 +251,7 @@
 
             Console.WriteLine("| Initializing configuration manager");
             _Config = new ConfigManager(_Settings, _Logging, _Database);
+            EnsureDefaultBootstrapData();
             EnsureContainerBootstrapData();
 
             Console.WriteLine("| Initializing bucket manager");
@@ -256,24 +260,27 @@
             Console.WriteLine("| Initializing authentication manager");
             _Auth = new AuthManager(_Settings, _Logging, _Config, _Buckets);
 
+            Console.WriteLine("| Initializing cleanup manager");
+            _Cleanup = new CleanupManager(_Settings, _Logging, _Config);
+
             Console.WriteLine("| Initializing API handler");
             _ApiHandler = new ApiHandler(_Settings, _Logging, _Config, _Buckets, _Auth);
 
             Console.WriteLine("| Initializing admin API handler");
-            _AdminApiHandler = new AdminApiHandler(_Settings, _Logging, _Config, _Buckets, _Auth);
+            _AdminApiHandler = new AdminApiHandler(_Settings, _Logging, _Config, _Buckets, _Auth, _Cleanup);
+
+            Console.WriteLine("| Initializing REST API handler");
+            _RestApiHandler = new RestApiHandler(_Settings, _Logging, _Config, _Buckets, _Auth);
 
             Console.WriteLine("| Initializing console manager");
             _Console = new ConsoleManager(_Settings, _Logging);
-
-            Console.WriteLine("| Initializing cleanup manager");
-            _Cleanup = new CleanupManager(_Settings, _Logging, _Config);
 
             Console.WriteLine("| Initializing S3 server interface");
             _S3Settings = new S3ServerSettings();
             _S3Settings.Logging.HttpRequests = _Settings.Logging.LogHttpRequests;
             _S3Settings.Logging.S3Requests = _Settings.Logging.LogS3Requests;
             _S3Settings.Logging.SignatureV4Validation = _Settings.Logging.LogSignatureValidation;
-            _S3Settings.Logger = Console.WriteLine;
+            _S3Settings.Logger = message => Console.WriteLine(LogSanitizer.Redact(message));
             _S3Settings.EnableSignatures = _Settings.ValidateSignatures;
             _S3Settings.Webserver = _Settings.Webserver;
 
@@ -347,13 +354,17 @@
         {
             if (!IsRunningInContainer()) return;
 
-            if (_Config.GetUsers().Count > 0) return;
-            if (_Config.GetCredentials().Count > 0) return;
-            if (_Config.GetBuckets().Count > 0) return;
+            if (_Config.BucketExists("default", "default")) return;
 
             Console.WriteLine("| Seeding default container data");
             _Logging.Info(_Header + "detected empty configuration database in container, seeding default Docker data");
             DefaultDataSeeder.Seed(_Settings, _Logging, _Database, _Config);
+        }
+
+        private static void EnsureDefaultBootstrapData()
+        {
+            Console.WriteLine("| Seeding default tenant and control plane data");
+            DefaultDataSeeder.SeedCore(_Settings, _Logging, _Database, _Config);
         }
 
         private static bool IsRunningInContainer()
@@ -423,6 +434,29 @@
             return html;
         }
 
+        private static string SwaggerUiPage()
+        {
+            return "<!doctype html>" + Environment.NewLine +
+                "<html lang=\"en\">" + Environment.NewLine +
+                "  <head>" + Environment.NewLine +
+                "    <meta charset=\"utf-8\" />" + Environment.NewLine +
+                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />" + Environment.NewLine +
+                "    <title>Less3 API Reference</title>" + Environment.NewLine +
+                "    <link rel=\"stylesheet\" href=\"https://unpkg.com/swagger-ui-dist@5/swagger-ui.css\" />" + Environment.NewLine +
+                "    <style>body{margin:0;background:#fff}.swagger-ui .topbar{display:none}</style>" + Environment.NewLine +
+                "  </head>" + Environment.NewLine +
+                "  <body>" + Environment.NewLine +
+                "    <div id=\"swagger-ui\"></div>" + Environment.NewLine +
+                "    <script src=\"https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js\"></script>" + Environment.NewLine +
+                "    <script>" + Environment.NewLine +
+                "      window.onload = function() {" + Environment.NewLine +
+                "        SwaggerUIBundle({ url: '/openapi.json', dom_id: '#swagger-ui', deepLinking: true });" + Environment.NewLine +
+                "      };" + Environment.NewLine +
+                "    </script>" + Environment.NewLine +
+                "  </body>" + Environment.NewLine +
+                "</html>";
+        }
+
         private static async Task PreflightRoute(HttpContextBase ctx)
         {
             NameValueCollection responseHeaders = new NameValueCollection(StringComparer.InvariantCultureIgnoreCase);
@@ -483,7 +517,7 @@
 
             ctx.Response.Headers.Add("Access-Control-Allow-Origin", "*");
             ctx.Response.Headers.Add("Access-Control-Allow-Methods", "OPTIONS, HEAD, GET, PUT, POST, DELETE");
-            ctx.Response.Headers.Add("Access-Control-Allow-Headers", "*, Content-Type, X-Requested-With, Authorization, x-api-key, x-amz-content-sha256, x-amz-date");
+            ctx.Response.Headers.Add("Access-Control-Allow-Headers", "*, Content-Type, X-Requested-With, Authorization, x-api-key, x-less3-session-token, x-amz-content-sha256, x-amz-date");
             ctx.Response.Headers.Add("Access-Control-Expose-Headers", "ETag, Content-Length, Content-Type, x-amz-request-id, x-amz-version-id");
 
             #endregion
@@ -492,14 +526,28 @@
 
             if (_Settings.Logging.LogHttpRequests || ctx.Http.Request.QuerystringExists("logrequest"))
             {
-                _Logging.Debug(Environment.NewLine + ctx.Http.Request.ToString());
+                _Logging.Debug(Environment.NewLine + RedactSensitiveText(ctx.Http.Request.ToString()));
             }
 
             #endregion
 
             #region Misc-URLs
-              
-            if (ctx.Http.Request.Url.Elements.Length == 1)
+
+            if (ctx.Http.Request.Method == WatsonWebserver.Core.HttpMethod.GET
+                && ctx.Http.Request.Url.Elements.Length >= 1
+                && ctx.Http.Request.Url.Elements[0].Equals("swagger", StringComparison.OrdinalIgnoreCase)
+                && (ctx.Http.Request.Url.Elements.Length == 1
+                    || (ctx.Http.Request.Url.Elements.Length == 2
+                        && ctx.Http.Request.Url.Elements[1].Equals("index.html", StringComparison.OrdinalIgnoreCase))))
+            {
+                ctx.Response.ContentType = "text/html";
+                ctx.Response.StatusCode = 200;
+                await ctx.Response.Send(SwaggerUiPage());
+                return true;
+            }
+
+            if (ctx.Http.Request.Method == WatsonWebserver.Core.HttpMethod.GET
+                && ctx.Http.Request.Url.Elements.Length == 1)
             { 
                 if (ctx.Http.Request.Url.Elements[0].Equals("favicon.ico"))
                 { 
@@ -514,6 +562,13 @@
                     ctx.Response.ContentType = "text/plain";
                     ctx.Response.StatusCode = 200;
                     await ctx.Response.Send("User-Agent: *\r\nDisallow:\r\n");
+                    return true;
+                }
+                else if (ctx.Http.Request.Url.Elements[0].Equals("openapi.json"))
+                {
+                    ctx.Response.ContentType = "application/json";
+                    ctx.Response.StatusCode = 200;
+                    await ctx.Response.Send(OpenApiDocument());
                     return true;
                 }
             }
@@ -544,6 +599,87 @@
 
             #endregion
              
+            #region Rest-Requests
+
+            if (ctx.Http.Request.Url.Elements.Length >= 3
+                && ctx.Http.Request.Url.Elements[0].Equals("api")
+                && ctx.Http.Request.Url.Elements[1].Equals("v1"))
+            {
+                if (IsPublicRestOperation(ctx))
+                {
+                    await _RestApiHandler.Process(ctx);
+                    return true;
+                }
+
+                if (ctx.Http.Request.Headers.AllKeys.Contains(_Settings.HeaderApiKey))
+                {
+                    if (!ctx.Http.Request.Headers[_Settings.HeaderApiKey].Equals(_Settings.AdminApiKey))
+                    {
+                        _Logging.Warn(header + "invalid REST API key supplied: [redacted]");
+                        ctx.Response.StatusCode = 401;
+                        ctx.Response.ContentType = "text/plain";
+                        await ctx.Response.Send();
+                        return true;
+                    }
+
+                    switch (ctx.Http.Request.Method)
+                    {
+                        case WatsonWebserver.Core.HttpMethod.GET:
+                        case WatsonWebserver.Core.HttpMethod.PUT:
+                        case WatsonWebserver.Core.HttpMethod.POST:
+                        case WatsonWebserver.Core.HttpMethod.DELETE:
+                            await _RestApiHandler.Process(ctx);
+                            return true;
+                    }
+                }
+
+                if (ctx.Http.Request.Headers.AllKeys.Contains("x-less3-session-token"))
+                {
+                    if (!_Auth.TryAuthenticateBearerToken(
+                        ctx.Http.Request.Headers["x-less3-session-token"],
+                        ctx.Http.Request.Source.IpAddress,
+                        out RequestContext requestContext,
+                        out string authenticationReason))
+                    {
+                        _Logging.Warn(header + "invalid REST session token: " + authenticationReason);
+                        ctx.Response.StatusCode = 401;
+                        ctx.Response.ContentType = "text/plain";
+                        await ctx.Response.Send(authenticationReason);
+                        return true;
+                    }
+
+                    if (!AuthorizeRestRequest(ctx, requestContext, out string authorizationReason))
+                    {
+                        _Logging.Warn(header + "REST RBAC denied: " + authorizationReason);
+                        ctx.Metadata = requestContext;
+                        ctx.Response.StatusCode = 403;
+                        ctx.Response.ContentType = "text/plain";
+                        await ctx.Response.Send(authorizationReason);
+                        return true;
+                    }
+
+                    ctx.Metadata = requestContext;
+
+                    switch (ctx.Http.Request.Method)
+                    {
+                        case WatsonWebserver.Core.HttpMethod.GET:
+                        case WatsonWebserver.Core.HttpMethod.PUT:
+                        case WatsonWebserver.Core.HttpMethod.POST:
+                        case WatsonWebserver.Core.HttpMethod.DELETE:
+                            await _RestApiHandler.Process(ctx);
+                            return true;
+                    }
+                }
+
+                _Logging.Warn(header + "missing REST API key or session token");
+                ctx.Response.StatusCode = 401;
+                ctx.Response.ContentType = "text/plain";
+                await ctx.Response.Send();
+                return true;
+            }
+
+            #endregion
+
             #region Admin-Requests
 
             if (ctx.Http.Request.Url.Elements.Length >= 2 && ctx.Http.Request.Url.Elements[0].Equals("admin"))
@@ -552,7 +688,7 @@
                 {
                     if (!ctx.Http.Request.Headers[_Settings.HeaderApiKey].Equals(_Settings.AdminApiKey))
                     {
-                        _Logging.Warn(header + "invalid admin API key supplied: " + ctx.Http.Request.Headers[_Settings.HeaderApiKey]);
+                        _Logging.Warn(header + "invalid admin API key supplied: [redacted]");
                         ctx.Response.StatusCode = 401;
                         ctx.Response.ContentType = "text/plain";
                         await ctx.Response.Send();
@@ -568,6 +704,44 @@
                             await _AdminApiHandler.Process(ctx);
                             return true;
                     } 
+                }
+
+                if (ctx.Http.Request.Headers.AllKeys.Contains("x-less3-session-token"))
+                {
+                    if (!_Auth.TryAuthenticateBearerToken(
+                        ctx.Http.Request.Headers["x-less3-session-token"],
+                        ctx.Http.Request.Source.IpAddress,
+                        out RequestContext requestContext,
+                        out string authenticationReason))
+                    {
+                        _Logging.Warn(header + "invalid admin session token: " + authenticationReason);
+                        ctx.Response.StatusCode = 401;
+                        ctx.Response.ContentType = "text/plain";
+                        await ctx.Response.Send(authenticationReason);
+                        return true;
+                    }
+
+                    if (!AuthorizeAdminRequest(ctx, requestContext, out string authorizationReason))
+                    {
+                        _Logging.Warn(header + "admin RBAC denied: " + authorizationReason);
+                        ctx.Metadata = requestContext;
+                        ctx.Response.StatusCode = 403;
+                        ctx.Response.ContentType = "text/plain";
+                        await ctx.Response.Send(authorizationReason);
+                        return true;
+                    }
+
+                    ctx.Metadata = requestContext;
+
+                    switch (ctx.Http.Request.Method)
+                    {
+                        case WatsonWebserver.Core.HttpMethod.GET:
+                        case WatsonWebserver.Core.HttpMethod.PUT:
+                        case WatsonWebserver.Core.HttpMethod.POST:
+                        case WatsonWebserver.Core.HttpMethod.DELETE:
+                            await _AdminApiHandler.Process(ctx);
+                            return true;
+                    }
                 }
 
                 _Logging.Warn(header + "missing admin API key");
@@ -684,9 +858,578 @@
             }
         }
 
+        private static bool IsPublicRestOperation(S3Context ctx)
+        {
+            if (ctx == null) return false;
+            if (ctx.Http.Request.Method != WatsonWebserver.Core.HttpMethod.POST) return false;
+            if (ctx.Http.Request.Url.Elements == null || ctx.Http.Request.Url.Elements.Length != 4) return false;
+            if (!ctx.Http.Request.Url.Elements[2].Equals("authsessions", StringComparison.OrdinalIgnoreCase)) return false;
+            if (ctx.Http.Request.Url.Elements[3].Equals("login", StringComparison.OrdinalIgnoreCase)) return true;
+            if (ctx.Http.Request.Url.Elements[3].Equals("credential-login", StringComparison.OrdinalIgnoreCase)) return true;
+            if (ctx.Http.Request.Url.Elements[3].Equals("validate", StringComparison.OrdinalIgnoreCase)) return true;
+            if (ctx.Http.Request.Url.Elements[3].Equals("revoke", StringComparison.OrdinalIgnoreCase)) return true;
+            return false;
+        }
+
+        private static bool AuthorizeRestRequest(
+            S3Context ctx,
+            RequestContext requestContext,
+            out string reason)
+        {
+            reason = null;
+            if (ctx == null)
+            {
+                reason = "Request context is missing.";
+                return false;
+            }
+
+            if (ctx.Http.Request.Url.Elements == null || ctx.Http.Request.Url.Elements.Length < 3)
+            {
+                reason = "REST resource could not be resolved.";
+                return false;
+            }
+
+            string resourceType = RestResourceType(ctx.Http.Request.Url.Elements[2]);
+            string operation = RestOperation(ctx);
+            string resourceId = RestResourceId(ctx);
+
+            if (!RestRequestedTenantIsAllowed(ctx, requestContext, resourceType, operation, resourceId, out reason))
+            {
+                return false;
+            }
+
+            return _Auth.Authorize(requestContext, resourceType, operation, resourceId, out reason);
+        }
+
+        private static bool AuthorizeAdminRequest(
+            S3Context ctx,
+            RequestContext requestContext,
+            out string reason)
+        {
+            reason = null;
+            if (ctx == null)
+            {
+                reason = "Request context is missing.";
+                return false;
+            }
+
+            if (ctx.Http.Request.Url.Elements == null || ctx.Http.Request.Url.Elements.Length < 2)
+            {
+                reason = "Admin resource could not be resolved.";
+                return false;
+            }
+
+            string resourceType = AdminResourceType(ctx.Http.Request.Url.Elements[1]);
+            string operation = AdminOperation(ctx);
+            string resourceId = AdminResourceId(ctx);
+
+            return _Auth.Authorize(requestContext, resourceType, operation, resourceId, out reason);
+        }
+
+        private static string AdminResourceType(string resourceType)
+        {
+            if (String.IsNullOrEmpty(resourceType)) return String.Empty;
+
+            string normalized = resourceType.ToLowerInvariant().Replace("-", String.Empty);
+            if (normalized.Equals("stats") || normalized.Equals("health")) return "Tenant";
+            if (normalized.Equals("reports")) return "RequestHistory";
+            if (normalized.Equals("maintenance")) return "Admin";
+            if (normalized.Equals("effectivepermissions")) return "Permission";
+            return RestResourceType(resourceType);
+        }
+
+        private static string AdminOperation(S3Context ctx)
+        {
+            if (ctx.Http.Request.Method == WatsonWebserver.Core.HttpMethod.GET)
+            {
+                if (ctx.Http.Request.Url.Elements.Length <= 2) return "Enumerate";
+                return "Read";
+            }
+
+            if (ctx.Http.Request.Method == WatsonWebserver.Core.HttpMethod.POST)
+            {
+                if (ctx.Http.Request.Url.Elements.Length >= 4
+                    && ctx.Http.Request.Url.Elements[3].Equals("rotate", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Update";
+                }
+
+                if (ctx.Http.Request.Url.Elements.Length >= 4
+                    && ctx.Http.Request.Url.Elements[3].Equals("disable", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Update";
+                }
+
+                if (ctx.Http.Request.Url.Elements.Length >= 3
+                    && ctx.Http.Request.Url.Elements[1].Equals("maintenance", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Admin";
+                }
+
+                return "Create";
+            }
+
+            if (ctx.Http.Request.Method == WatsonWebserver.Core.HttpMethod.PUT) return "Update";
+            if (ctx.Http.Request.Method == WatsonWebserver.Core.HttpMethod.DELETE) return "Delete";
+
+            return "Read";
+        }
+
+        private static string AdminResourceId(S3Context ctx)
+        {
+            if (ctx.Http.Request.Url.Elements.Length < 3) return null;
+
+            string resource = ctx.Http.Request.Url.Elements[1];
+            string candidate = ctx.Http.Request.Url.Elements[2];
+            if (resource.Equals("reports", StringComparison.OrdinalIgnoreCase)
+                || resource.Equals("maintenance", StringComparison.OrdinalIgnoreCase)
+                || resource.Equals("effectivepermissions", StringComparison.OrdinalIgnoreCase)
+                || resource.Equals("effective-permissions", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            return candidate;
+        }
+
+        private static string RestResourceType(string resourceType)
+        {
+            if (String.IsNullOrEmpty(resourceType)) return String.Empty;
+
+            string normalized = resourceType.ToLowerInvariant().Replace("-", String.Empty);
+            if (normalized.Equals("tenants")) return "Tenant";
+            if (normalized.Equals("buckets")) return "Bucket";
+            if (normalized.Equals("objects")) return "Object";
+            if (normalized.Equals("buckettags") || normalized.Equals("buckettag")) return "BucketTag";
+            if (normalized.Equals("objecttags") || normalized.Equals("objecttag")) return "ObjectTag";
+            if (normalized.Equals("bucketacls") || normalized.Equals("bucketacl")) return "BucketAcl";
+            if (normalized.Equals("objectacls") || normalized.Equals("objectacl")) return "ObjectAcl";
+            if (normalized.Equals("users")) return "User";
+            if (normalized.Equals("credentials")) return "Credential";
+            if (normalized.Equals("roles")) return "Role";
+            if (normalized.Equals("permissions")) return "Permission";
+            if (normalized.Equals("roleassignments") || normalized.Equals("assignments")) return "RoleAssignment";
+            if (normalized.Equals("authsessions") || normalized.Equals("sessions")) return "AuthSession";
+            if (normalized.Equals("authorizationaudit") || normalized.Equals("audit")) return "AuthorizationAudit";
+            if (normalized.Equals("requesthistory") || normalized.Equals("requesthistories")) return "RequestHistory";
+
+            return resourceType;
+        }
+
+        private static bool RestRequestedTenantIsAllowed(
+            S3Context ctx,
+            RequestContext requestContext,
+            string resourceType,
+            string operation,
+            string resourceId,
+            out string reason)
+        {
+            reason = null;
+            if (requestContext == null)
+            {
+                reason = "Request context is missing.";
+                return false;
+            }
+
+            if (requestContext.IsAdmin) return true;
+
+            if (String.Equals(resourceType, "Tenant", StringComparison.OrdinalIgnoreCase)
+                && String.Equals(operation, "Enumerate", StringComparison.OrdinalIgnoreCase))
+            {
+                reason = "Tenant enumeration requires a global administrator.";
+                return false;
+            }
+
+            foreach (string requestedTenantId in RestRequestedTenantIds(ctx, resourceType, resourceId))
+            {
+                if (String.IsNullOrEmpty(requestedTenantId)) continue;
+                if (String.Equals(requestedTenantId, requestContext.TenantId, StringComparison.Ordinal)) continue;
+
+                reason = "Requested tenant resource is outside the authenticated tenant.";
+                return false;
+            }
+
+            return true;
+        }
+
+        private static IEnumerable<string> RestRequestedTenantIds(S3Context ctx, string resourceType, string resourceId)
+        {
+            string queryTenantId = QueryValue(ctx, "tenantId");
+            if (!String.IsNullOrEmpty(queryTenantId)) yield return queryTenantId;
+
+            string bodyTenantId = BodyStringProperty(ctx, "TenantId");
+            if (!String.IsNullOrEmpty(bodyTenantId)) yield return bodyTenantId;
+
+            if (String.Equals(resourceType, "Tenant", StringComparison.OrdinalIgnoreCase))
+            {
+                string bodyId = BodyStringProperty(ctx, "Id");
+                if (!String.IsNullOrEmpty(bodyId)) yield return bodyId;
+            }
+
+            if (String.Equals(resourceType, "Tenant", StringComparison.OrdinalIgnoreCase)
+                && !String.IsNullOrEmpty(resourceId))
+            {
+                yield return resourceId;
+            }
+        }
+
+        private static string QueryValue(S3Context ctx, string name)
+        {
+            if (ctx?.Http?.Request?.Query?.Elements == null) return null;
+
+            foreach (string key in ctx.Http.Request.Query.Elements.AllKeys)
+            {
+                if (key != null && key.Equals(name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return ctx.Http.Request.Query.Elements[key];
+                }
+            }
+
+            return null;
+        }
+
+        private static string BodyStringProperty(S3Context ctx, string propertyName)
+        {
+            string body = ctx?.Request?.DataAsString;
+            if (String.IsNullOrWhiteSpace(body)) return null;
+
+            try
+            {
+                using JsonDocument document = JsonDocument.Parse(body);
+                if (document.RootElement.ValueKind != JsonValueKind.Object) return null;
+
+                foreach (JsonProperty property in document.RootElement.EnumerateObject())
+                {
+                    if (property.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase)
+                        && property.Value.ValueKind == JsonValueKind.String)
+                    {
+                        return property.Value.GetString();
+                    }
+                }
+            }
+            catch
+            {
+            }
+
+            return null;
+        }
+
+        private static string RestOperation(S3Context ctx)
+        {
+            if (ctx.Http.Request.Method == WatsonWebserver.Core.HttpMethod.GET)
+            {
+                if (IsRestExistsOperation(ctx)) return "Exists";
+                if (ctx.Http.Request.Url.Elements.Length == 3) return "Enumerate";
+                return "Read";
+            }
+
+            if (ctx.Http.Request.Method == WatsonWebserver.Core.HttpMethod.POST)
+            {
+                if (ctx.Http.Request.Url.Elements.Length == 4
+                    && ctx.Http.Request.Url.Elements[3].Equals("enumerate", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Enumerate";
+                }
+
+                if (ctx.Http.Request.Url.Elements.Length == 4
+                    && ctx.Http.Request.Url.Elements[3].Equals("exists", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Exists";
+                }
+
+                return "Create";
+            }
+
+            if (ctx.Http.Request.Method == WatsonWebserver.Core.HttpMethod.PUT) return "Update";
+            if (ctx.Http.Request.Method == WatsonWebserver.Core.HttpMethod.DELETE) return "Delete";
+            return "Read";
+        }
+
+        private static string RestResourceId(S3Context ctx)
+        {
+            if (ctx.Http.Request.Url.Elements == null || ctx.Http.Request.Url.Elements.Length < 4) return null;
+            string id = ctx.Http.Request.Url.Elements[3];
+            if (String.IsNullOrEmpty(id)) return null;
+            if (id.Equals("enumerate", StringComparison.OrdinalIgnoreCase)) return null;
+            if (id.Equals("exists", StringComparison.OrdinalIgnoreCase)) return null;
+            return id;
+        }
+
+        private static bool IsRestExistsOperation(S3Context ctx)
+        {
+            return ctx.Http.Request.Url.Elements != null
+                && ctx.Http.Request.Url.Elements.Length == 5
+                && ctx.Http.Request.Url.Elements[4].Equals("exists", StringComparison.OrdinalIgnoreCase);
+        }
+
         private static async Task DefaultRequestHandler(S3Context ctx)
         {
             await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest);
+        }
+
+        private static string OpenApiDocument()
+        {
+            Dictionary<string, object> response200 = new Dictionary<string, object>
+            {
+                { "description", "OK" }
+            };
+            Dictionary<string, object> response201 = new Dictionary<string, object>
+            {
+                { "description", "Created" }
+            };
+            Dictionary<string, object> response204 = new Dictionary<string, object>
+            {
+                { "description", "Deleted" }
+            };
+            Dictionary<string, object> response401 = new Dictionary<string, object>
+            {
+                { "description", "Unauthorized" }
+            };
+            Dictionary<string, object> response404 = new Dictionary<string, object>
+            {
+                { "description", "Not found" }
+            };
+
+            Dictionary<string, object> pathItem = new Dictionary<string, object>
+            {
+                {
+                    "get",
+                    new Dictionary<string, object>
+                    {
+                        { "responses", new Dictionary<string, object> { { "200", response200 } } }
+                    }
+                }
+            };
+
+            Dictionary<string, object> postPathItem = new Dictionary<string, object>
+            {
+                {
+                    "post",
+                    new Dictionary<string, object>
+                    {
+                        { "responses", new Dictionary<string, object> { { "200", response200 }, { "201", response201 }, { "401", response401 } } }
+                    }
+                }
+            };
+
+            Dictionary<string, object> collectionPathItem = new Dictionary<string, object>
+            {
+                {
+                    "get",
+                    new Dictionary<string, object>
+                    {
+                        { "responses", new Dictionary<string, object> { { "200", response200 }, { "401", response401 } } }
+                    }
+                },
+                {
+                    "post",
+                    new Dictionary<string, object>
+                    {
+                        { "responses", new Dictionary<string, object> { { "201", response201 }, { "401", response401 } } }
+                    }
+                }
+            };
+
+            Dictionary<string, object> mutablePathItem = new Dictionary<string, object>
+            {
+                {
+                    "get",
+                    new Dictionary<string, object>
+                    {
+                        { "responses", new Dictionary<string, object> { { "200", response200 }, { "401", response401 }, { "404", response404 } } }
+                    }
+                },
+                {
+                    "put",
+                    new Dictionary<string, object>
+                    {
+                        { "responses", new Dictionary<string, object> { { "200", response200 }, { "401", response401 }, { "404", response404 } } }
+                    }
+                },
+                {
+                    "delete",
+                    new Dictionary<string, object>
+                    {
+                        { "responses", new Dictionary<string, object> { { "204", response204 }, { "401", response401 }, { "404", response404 } } }
+                    }
+                }
+            };
+
+            Dictionary<string, object> paths = new Dictionary<string, object>
+            {
+                { "/openapi.json", pathItem },
+                { "/admin/health", pathItem },
+                { "/admin/stats", pathItem },
+                { "/admin/buckets", pathItem },
+                { "/admin/users", pathItem },
+                { "/admin/credentials", pathItem },
+                { "/admin/tenants", pathItem },
+                { "/admin/roles", pathItem },
+                { "/admin/permissions", pathItem },
+                { "/admin/roleassignments", pathItem },
+                { "/admin/authsessions", pathItem },
+                { "/admin/authorizationaudit", pathItem },
+                { "/admin/requesthistory", pathItem },
+                { "/admin/requesthistory/summary", pathItem },
+                { "/admin/reports/requests", pathItem },
+                { "/admin/maintenance/status", pathItem },
+                { "/admin/maintenance/settings", postPathItem },
+                { "/admin/maintenance/purge-request-history", postPathItem },
+                { "/admin/maintenance/cleanup-temp-uploads", postPathItem },
+                { "/admin/maintenance/run-cleanup", postPathItem },
+                { "/admin/maintenance/verify-objects", postPathItem },
+                { "/admin/maintenance/migration-status", pathItem },
+                { "/admin/effectivepermissions", pathItem },
+                { "/api/v1/{type}", postPathItem },
+                { "/api/v1/{type}/{id}", mutablePathItem },
+                { "/api/v1/{type}/enumerate", postPathItem },
+                { "/api/v1/{type}/{id}/exists", pathItem },
+                { "/api/v1/{type}/{operation}", postPathItem },
+                { "/{bucket}", pathItem },
+                { "/{bucket}/{key}", mutablePathItem }
+            };
+
+            string[] restResources = new string[]
+            {
+                "tenants",
+                "buckets",
+                "objects",
+                "buckettags",
+                "objecttags",
+                "bucketacls",
+                "objectacls",
+                "users",
+                "credentials",
+                "roles",
+                "permissions",
+                "roleassignments",
+                "authsessions",
+                "authorizationaudit",
+                "requesthistory"
+            };
+
+            foreach (string resource in restResources)
+            {
+                paths["/api/v1/" + resource] = collectionPathItem;
+                paths["/api/v1/" + resource + "/{id}"] = mutablePathItem;
+                paths["/api/v1/" + resource + "/enumerate"] = postPathItem;
+                paths["/api/v1/" + resource + "/{id}/exists"] = pathItem;
+            }
+
+            paths["/api/v1/authsessions/login"] = postPathItem;
+            paths["/api/v1/authsessions/credential-login"] = postPathItem;
+            paths["/api/v1/authsessions/validate"] = postPathItem;
+            paths["/api/v1/authsessions/revoke"] = postPathItem;
+
+            Dictionary<string, object> stringSchema = new Dictionary<string, object>
+            {
+                { "type", "string" }
+            };
+            Dictionary<string, object> booleanSchema = new Dictionary<string, object>
+            {
+                { "type", "boolean" }
+            };
+            Dictionary<string, object> integerSchema = new Dictionary<string, object>
+            {
+                { "type", "integer" }
+            };
+            Dictionary<string, object> dateTimeSchema = new Dictionary<string, object>
+            {
+                { "type", "string" },
+                { "format", "date-time" }
+            };
+
+            Dictionary<string, object> tenantScopedSchema = new Dictionary<string, object>
+            {
+                { "type", "object" },
+                {
+                    "properties",
+                    new Dictionary<string, object>
+                    {
+                        { "Id", stringSchema },
+                        { "TenantId", stringSchema },
+                        { "CreatedUtc", dateTimeSchema }
+                    }
+                }
+            };
+
+            Dictionary<string, object> schemas = new Dictionary<string, object>
+            {
+                {
+                    "Tenant",
+                    new Dictionary<string, object>
+                    {
+                        { "type", "object" },
+                        {
+                            "properties",
+                            new Dictionary<string, object>
+                            {
+                                { "Id", stringSchema },
+                                { "Name", stringSchema },
+                                { "Active", booleanSchema },
+                                { "CreatedUtc", dateTimeSchema }
+                            }
+                        }
+                    }
+                },
+                { "Bucket", tenantScopedSchema },
+                { "Object", tenantScopedSchema },
+                { "User", tenantScopedSchema },
+                { "Credential", tenantScopedSchema },
+                { "Role", tenantScopedSchema },
+                { "Permission", tenantScopedSchema },
+                { "RoleAssignment", tenantScopedSchema },
+                { "AuthSession", tenantScopedSchema },
+                { "AuthorizationAudit", tenantScopedSchema },
+                { "RequestHistory", tenantScopedSchema },
+                { "RequestReportingResult", tenantScopedSchema },
+                { "MaintenanceStatus", tenantScopedSchema },
+                { "MaintenanceActionResult", tenantScopedSchema },
+                { "EffectivePermissionResult", tenantScopedSchema },
+                {
+                    "EnumerationQuery",
+                    new Dictionary<string, object>
+                    {
+                        { "type", "object" },
+                        {
+                            "properties",
+                            new Dictionary<string, object>
+                            {
+                                { "TenantId", stringSchema },
+                                { "Limit", integerSchema },
+                                { "Offset", integerSchema },
+                                { "ContinuationToken", stringSchema },
+                                { "SortField", stringSchema },
+                                { "SortDirection", stringSchema }
+                            }
+                        }
+                    }
+                }
+            };
+
+            Dictionary<string, object> document = new Dictionary<string, object>
+            {
+                { "openapi", "3.1.0" },
+                {
+                    "info",
+                    new Dictionary<string, object>
+                    {
+                        { "title", "Less3 Combined API" },
+                        { "version", _Version ?? "3.0.0" },
+                        { "description", "Combined S3, Less3 REST, and administrative API document." }
+                    }
+                },
+                { "paths", paths },
+                {
+                    "components",
+                    new Dictionary<string, object>
+                    {
+                        { "schemas", schemas }
+                    }
+                }
+            };
+
+            return SerializationHelper.SerializeJson(document, true);
         }
 
         private static async Task PostRequestHandler(S3Context ctx)
@@ -696,7 +1439,7 @@
             _Logging.Debug(
                 ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " "
                 + ctx.Http.Request.Method.ToString() + " "
-                + ctx.Http.Request.Url.RawWithQuery + " "
+                + RedactSensitiveText(ctx.Http.Request.Url.RawWithQuery) + " "
                 + ctx.Request.RequestType.ToString() + " "
                 + ctx.Http.Response.StatusCode + " "
                 + ctx.Http.Timestamp.TotalMs + "ms");
@@ -705,7 +1448,7 @@
             {
                 RequestHistory entry = new RequestHistory();
                 entry.HttpMethod = ctx.Http.Request.Method.ToString();
-                entry.RequestUrl = ctx.Http.Request.Url.RawWithQuery;
+                entry.RequestUrl = RedactSensitiveText(ctx.Http.Request.Url.RawWithQuery);
                 entry.SourceIp = ctx.Http.Request.Source.IpAddress;
                 entry.StatusCode = ctx.Http.Response.StatusCode;
                 entry.Success = ctx.Http.Response.StatusCode < 400;
@@ -715,8 +1458,22 @@
                 RequestMetadata md = ctx.Metadata as RequestMetadata;
                 if (md != null)
                 {
-                    if (md.User != null) entry.UserGUID = md.User.GUID;
+                    entry.TenantId = md.TenantId;
+                    if (md.User != null) entry.UserId = md.User.Id;
                     if (md.Credential != null) entry.AccessKey = md.Credential.AccessKey;
+                }
+
+                RequestContext requestContext = ctx.Metadata as RequestContext;
+                if (requestContext != null)
+                {
+                    entry.TenantId = requestContext.TenantId;
+                    entry.UserId = requestContext.UserId;
+
+                    if (!String.IsNullOrEmpty(requestContext.CredentialId))
+                    {
+                        Credential credential = _Config.GetCredentialById(requestContext.TenantId, requestContext.CredentialId);
+                        if (credential != null) entry.AccessKey = credential.AccessKey;
+                    }
                 }
 
                 try { entry.RequestContentType = ctx.Http.Request.ContentType; } catch { }
@@ -731,7 +1488,7 @@
                         if (!String.IsNullOrEmpty(reqBody))
                         {
                             if (reqBody.Length > 16384) reqBody = reqBody.Substring(0, 16384);
-                            entry.RequestBody = reqBody;
+                            entry.RequestBody = RedactSensitiveText(reqBody);
                         }
                     }
                 }
@@ -745,7 +1502,7 @@
                         if (!String.IsNullOrEmpty(respBody))
                         {
                             if (respBody.Length > 16384) respBody = respBody.Substring(0, 16384);
-                            entry.ResponseBody = respBody;
+                            entry.ResponseBody = RedactSensitiveText(respBody);
                         }
                     }
                 }
@@ -755,7 +1512,7 @@
             }
             catch (Exception e)
             {
-                _Logging.Debug("PostRequestHandler failed to persist request history: " + e.Message);
+                _Logging.Debug("PostRequestHandler failed to persist request history: " + RedactSensitiveText(e.Message));
             }
         }
 
@@ -834,7 +1591,7 @@
         private static void LogException(Exception ex)
         {
             if (_Logging == null || ex == null) return;
-            _Logging.Warn(_Header + $"exception:{Environment.NewLine}{ex.ToString()}");
+            _Logging.Warn(_Header + $"exception:{Environment.NewLine}{RedactSensitiveText(ex.ToString())}");
         }
 
         private static bool ShouldLogException(Exception ex)
@@ -860,6 +1617,11 @@
                 || ct.Contains("application/x-www-form-urlencoded")
                 || ct.Contains("+xml")
                 || ct.Contains("+json");
+        }
+
+        private static string RedactSensitiveText(string value)
+        {
+            return LogSanitizer.Redact(value);
         }
 
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously

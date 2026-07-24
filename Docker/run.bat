@@ -1,7 +1,7 @@
 @echo off
 
 set IMG_TAG=%1
-if "%IMG_TAG%"=="" set IMG_TAG=v2.2.0
+if "%IMG_TAG%"=="" set IMG_TAG=v3.0.0
 
 if not exist db mkdir db
 if not exist logs mkdir logs

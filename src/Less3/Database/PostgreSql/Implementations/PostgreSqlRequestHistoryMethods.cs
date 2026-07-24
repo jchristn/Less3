@@ -22,10 +22,10 @@ namespace Less3.Database.PostgreSql.Implementations
             return MapRequestHistory(result);
         }
 
-        public RequestHistory GetByGuid(string guid)
+        public RequestHistory GetById(string id)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            DataTable result = _Driver.ExecuteQuery(RequestHistoryQueries.SelectByGuid(guid)).Result;
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            DataTable result = _Driver.ExecuteQuery(RequestHistoryQueries.SelectById(id)).Result;
             List<RequestHistory> entries = MapRequestHistory(result);
             if (entries.Count > 0) return entries[0];
             return null;
@@ -37,10 +37,10 @@ namespace Less3.Database.PostgreSql.Implementations
             _Driver.ExecuteQuery(RequestHistoryQueries.InsertQuery(entry), true).Wait();
         }
 
-        public void DeleteByGuid(string guid)
+        public void DeleteById(string id)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            _Driver.ExecuteQuery(RequestHistoryQueries.DeleteByGuid(guid), true).Wait();
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            _Driver.ExecuteQuery(RequestHistoryQueries.DeleteById(id), true).Wait();
         }
 
         public void DeleteOlderThan(DateTime cutoff)
@@ -62,8 +62,8 @@ namespace Less3.Database.PostgreSql.Implementations
             foreach (DataRow row in dt.Rows)
             {
                 RequestHistory entry = new RequestHistory();
-                entry.Id = Convert.ToInt32(row["id"]);
-                entry.GUID = row["guid"] != DBNull.Value ? row["guid"].ToString() : null;
+                entry.TenantId = row.Table.Columns.Contains("tenant_id") && row["tenant_id"] != DBNull.Value ? row["tenant_id"].ToString() : "default";
+                entry.Id = row["id"] != DBNull.Value ? row["id"].ToString() : null;
                 entry.HttpMethod = row["httpmethod"] != DBNull.Value ? row["httpmethod"].ToString() : null;
                 entry.RequestUrl = row["requesturl"] != DBNull.Value ? row["requesturl"].ToString() : null;
                 entry.SourceIp = row["sourceip"] != DBNull.Value ? row["sourceip"].ToString() : null;
@@ -71,7 +71,7 @@ namespace Less3.Database.PostgreSql.Implementations
                 entry.Success = Convert.ToBoolean(row["success"]);
                 entry.DurationMs = Convert.ToInt64(row["durationms"]);
                 entry.RequestType = row["requesttype"] != DBNull.Value ? row["requesttype"].ToString() : null;
-                entry.UserGUID = row["userguid"] != DBNull.Value ? row["userguid"].ToString() : null;
+                entry.UserId = row["user_id"] != DBNull.Value ? row["user_id"].ToString() : null;
                 entry.AccessKey = row["accesskey"] != DBNull.Value ? row["accesskey"].ToString() : null;
                 entry.RequestContentType = row["requestcontenttype"] != DBNull.Value ? row["requestcontenttype"].ToString() : null;
                 entry.RequestBodyLength = Convert.ToInt64(row["requestbodylength"]);

@@ -52,7 +52,7 @@ namespace Less3.Helpers
             AccessControlPolicy acp = new AccessControlPolicy();
             acp.Owner = new Owner();
             acp.Owner.DisplayName = owner.Name;
-            acp.Owner.ID = owner.GUID;
+            acp.Owner.ID = owner.Id;
 
             acp.Acl = new AccessControlList();
             acp.Acl.Grants = new List<Grant>();
@@ -64,9 +64,9 @@ namespace Less3.Helpers
 
             foreach (BucketAcl curr in acls)
             {
-                if (!String.IsNullOrEmpty(curr.UserGUID))
+                if (!String.IsNullOrEmpty(curr.UserId))
                 {
-                    AddUserGrantsToList(curr.UserGUID, curr, acp.Acl.Grants, config, logging, header);
+                    AddUserGrantsToList(curr.UserId, curr, acp.Acl.Grants, config, logging, header);
                 }
                 else if (!String.IsNullOrEmpty(curr.UserGroup))
                 {
@@ -105,7 +105,7 @@ namespace Less3.Helpers
             AccessControlPolicy acp = new AccessControlPolicy();
             acp.Owner = new Owner();
             acp.Owner.DisplayName = owner.Name;
-            acp.Owner.ID = owner.GUID;
+            acp.Owner.ID = owner.Id;
 
             acp.Acl = new AccessControlList();
             acp.Acl.Grants = new List<Grant>();
@@ -117,9 +117,9 @@ namespace Less3.Helpers
 
             foreach (ObjectAcl curr in acls)
             {
-                if (!String.IsNullOrEmpty(curr.UserGUID))
+                if (!String.IsNullOrEmpty(curr.UserId))
                 {
-                    AddUserGrantsToList(curr.UserGUID, curr, acp.Acl.Grants, config, logging, header);
+                    AddUserGrantsToList(curr.UserId, curr, acp.Acl.Grants, config, logging, header);
                 }
                 else if (!String.IsNullOrEmpty(curr.UserGroup))
                 {
@@ -140,8 +140,8 @@ namespace Less3.Helpers
         /// <param name="acp">AccessControlPolicy from request body. May be null.</param>
         /// <param name="headers">HTTP request headers containing ACL grants. May be null.</param>
         /// <param name="currentUser">User making the request.</param>
-        /// <param name="bucketGuid">GUID of the bucket.</param>
-        /// <param name="ownerGuid">GUID of the bucket owner.</param>
+        /// <param name="bucketId">Id of the bucket.</param>
+        /// <param name="ownerId">Id of the bucket owner.</param>
         /// <param name="config">Configuration manager for user lookups.</param>
         /// <param name="logging">Logging module for warnings about invalid grants.</param>
         /// <param name="header">Log header prefix for consistent log formatting.</param>
@@ -151,8 +151,8 @@ namespace Less3.Helpers
             AccessControlPolicy acp,
             NameValueCollection headers,
             User currentUser,
-            string bucketGuid,
-            string ownerGuid,
+            string bucketId,
+            string ownerId,
             ConfigManager config,
             LoggingModule logging,
             string header)
@@ -182,18 +182,18 @@ namespace Less3.Helpers
 
                 if (!String.IsNullOrEmpty(curr.Grantee.ID))
                 {
-                    User tempUser = config.GetUserByGuid(curr.Grantee.ID);
+                    User tempUser = config.GetUserById(currentUser.TenantId, curr.Grantee.ID);
                     if (tempUser == null)
                     {
-                        logging.Warn(header + "unable to find user GUID " + curr.Grantee.ID);
-                        continue;
+                        logging.Warn(header + "unable to find user Id " + curr.Grantee.ID + " in tenant " + currentUser.TenantId);
+                        throw new S3Exception(new Error(ErrorCode.InvalidRequest));
                     }
 
-                    acl = GrantToBucketUserAcl(curr, curr.Grantee.ID, ownerGuid, bucketGuid);
+                    acl = GrantToBucketUserAcl(curr, curr.Grantee.ID, ownerId, bucketId);
                 }
                 else if (!String.IsNullOrEmpty(curr.Grantee.URI))
                 {
-                    acl = GrantToBucketGroupAcl(curr, curr.Grantee.URI, ownerGuid, bucketGuid);
+                    acl = GrantToBucketGroupAcl(curr, curr.Grantee.URI, ownerId, bucketId);
                 }
 
                 if (acl != null)
@@ -211,9 +211,9 @@ namespace Less3.Helpers
         /// <param name="acp">AccessControlPolicy from request body. May be null.</param>
         /// <param name="headers">HTTP request headers containing ACL grants. May be null.</param>
         /// <param name="currentUser">User making the request.</param>
-        /// <param name="bucketGuid">GUID of the bucket containing the object.</param>
-        /// <param name="objectGuid">GUID of the object.</param>
-        /// <param name="ownerGuid">GUID of the object owner.</param>
+        /// <param name="bucketId">Id of the bucket containing the object.</param>
+        /// <param name="objectId">Id of the object.</param>
+        /// <param name="ownerId">Id of the object owner.</param>
         /// <param name="config">Configuration manager for user lookups.</param>
         /// <param name="logging">Logging module for warnings about invalid grants.</param>
         /// <param name="header">Log header prefix for consistent log formatting.</param>
@@ -223,9 +223,9 @@ namespace Less3.Helpers
             AccessControlPolicy acp,
             NameValueCollection headers,
             User currentUser,
-            string bucketGuid,
-            string objectGuid,
-            string ownerGuid,
+            string bucketId,
+            string objectId,
+            string ownerId,
             ConfigManager config,
             LoggingModule logging,
             string header)
@@ -255,18 +255,18 @@ namespace Less3.Helpers
 
                 if (!String.IsNullOrEmpty(curr.Grantee.ID))
                 {
-                    User tempUser = config.GetUserByGuid(curr.Grantee.ID);
+                    User tempUser = config.GetUserById(currentUser.TenantId, curr.Grantee.ID);
                     if (tempUser == null)
                     {
-                        logging.Warn(header + "unable to find user GUID " + curr.Grantee.ID);
-                        continue;
+                        logging.Warn(header + "unable to find user Id " + curr.Grantee.ID + " in tenant " + currentUser.TenantId);
+                        throw new S3Exception(new Error(ErrorCode.InvalidRequest));
                     }
 
-                    acl = GrantToObjectUserAcl(curr, curr.Grantee.ID, ownerGuid, bucketGuid, objectGuid);
+                    acl = GrantToObjectUserAcl(curr, curr.Grantee.ID, ownerId, bucketId, objectId);
                 }
                 else if (!String.IsNullOrEmpty(curr.Grantee.URI))
                 {
-                    acl = GrantToObjectGroupAcl(curr, curr.Grantee.URI, ownerGuid, bucketGuid, objectGuid);
+                    acl = GrantToObjectGroupAcl(curr, curr.Grantee.URI, ownerId, bucketId, objectId);
                 }
 
                 if (acl != null)
@@ -284,7 +284,7 @@ namespace Less3.Helpers
         /// </summary>
         /// <param name="user">User making the request. Used for 'private' canned ACL.</param>
         /// <param name="headers">HTTP request headers to parse. May be null.</param>
-        /// <param name="config">Configuration manager for user email/GUID lookups.</param>
+        /// <param name="config">Configuration manager for user email/Id lookups.</param>
         /// <returns>List of Grant objects parsed from headers. Empty list if no grants found.</returns>
         /// <exception cref="ArgumentNullException">Thrown when user or config is null.</exception>
         internal static List<Grant> GrantsFromHeaders(User user, NameValueCollection headers, ConfigManager config)
@@ -309,7 +309,7 @@ namespace Less3.Helpers
                         grant = new Grant();
                         grant.Permission = PermissionEnum.FullControl;
                         grant.Grantee = new CanonicalUser();
-                        grant.Grantee.ID = user.GUID;
+                        grant.Grantee.ID = user.Id;
                         grant.Grantee.DisplayName = user.Name;
                         ret.Add(grant);
                         break;
@@ -318,7 +318,7 @@ namespace Less3.Helpers
                         grant = new Grant();
                         grant.Permission = PermissionEnum.FullControl;
                         grant.Grantee = new CanonicalUser();
-                        grant.Grantee.ID = user.GUID;
+                        grant.Grantee.ID = user.Id;
                         grant.Grantee.DisplayName = user.Name;
                         ret.Add(grant);
 
@@ -333,7 +333,7 @@ namespace Less3.Helpers
                         grant = new Grant();
                         grant.Permission = PermissionEnum.FullControl;
                         grant.Grantee = new CanonicalUser();
-                        grant.Grantee.ID = user.GUID;
+                        grant.Grantee.ID = user.Id;
                         grant.Grantee.DisplayName = user.Name;
                         ret.Add(grant);
 
@@ -354,7 +354,7 @@ namespace Less3.Helpers
                         grant = new Grant();
                         grant.Permission = PermissionEnum.FullControl;
                         grant.Grantee = new CanonicalUser();
-                        grant.Grantee.ID = user.GUID;
+                        grant.Grantee.ID = user.Id;
                         grant.Grantee.DisplayName = user.Name;
                         ret.Add(grant);
 
@@ -376,7 +376,10 @@ namespace Less3.Helpers
                     foreach (string curr in grantees)
                     {
                         grant = null;
-                        if (!GrantFromString(curr, PermissionEnum.Read, config, out grant)) continue;
+                        if (!GrantFromString(curr, PermissionEnum.Read, user.TenantId, config, out grant))
+                        {
+                            throw new S3Exception(new Error(ErrorCode.InvalidRequest));
+                        }
                         ret.Add(grant);
                     }
                 }
@@ -391,7 +394,10 @@ namespace Less3.Helpers
                     foreach (string curr in grantees)
                     {
                         grant = null;
-                        if (!GrantFromString(curr, PermissionEnum.Write, config, out grant)) continue;
+                        if (!GrantFromString(curr, PermissionEnum.Write, user.TenantId, config, out grant))
+                        {
+                            throw new S3Exception(new Error(ErrorCode.InvalidRequest));
+                        }
                         ret.Add(grant);
                     }
                 }
@@ -406,7 +412,10 @@ namespace Less3.Helpers
                     foreach (string curr in grantees)
                     {
                         grant = null;
-                        if (!GrantFromString(curr, PermissionEnum.ReadAcp, config, out grant)) continue;
+                        if (!GrantFromString(curr, PermissionEnum.ReadAcp, user.TenantId, config, out grant))
+                        {
+                            throw new S3Exception(new Error(ErrorCode.InvalidRequest));
+                        }
                         ret.Add(grant);
                     }
                 }
@@ -421,7 +430,10 @@ namespace Less3.Helpers
                     foreach (string curr in grantees)
                     {
                         grant = null;
-                        if (!GrantFromString(curr, PermissionEnum.WriteAcp, config, out grant)) continue;
+                        if (!GrantFromString(curr, PermissionEnum.WriteAcp, user.TenantId, config, out grant))
+                        {
+                            throw new S3Exception(new Error(ErrorCode.InvalidRequest));
+                        }
                         ret.Add(grant);
                     }
                 }
@@ -436,7 +448,10 @@ namespace Less3.Helpers
                     foreach (string curr in grantees)
                     {
                         grant = null;
-                        if (!GrantFromString(curr, PermissionEnum.FullControl, config, out grant)) continue;
+                        if (!GrantFromString(curr, PermissionEnum.FullControl, user.TenantId, config, out grant))
+                        {
+                            throw new S3Exception(new Error(ErrorCode.InvalidRequest));
+                        }
                         ret.Add(grant);
                     }
                 }
@@ -450,17 +465,29 @@ namespace Less3.Helpers
         #region Private-Methods
 
         private static void AddUserGrantsToList<T>(
-            string userGuid,
+            string userId,
             T acl,
             List<Grant> grants,
             ConfigManager config,
             LoggingModule logging,
             string header) where T : class
         {
-            User tempUser = config.GetUserByGuid(userGuid);
+            string tenantId = null;
+            if (acl is BucketAcl tenantBucketAcl)
+            {
+                tenantId = tenantBucketAcl.TenantId;
+            }
+            else if (acl is ObjectAcl tenantObjectAcl)
+            {
+                tenantId = tenantObjectAcl.TenantId;
+            }
+
+            User tempUser = String.IsNullOrEmpty(tenantId)
+                ? config.GetUserById(userId)
+                : config.GetUserById(tenantId, userId);
             if (tempUser == null)
             {
-                int aclId = 0;
+                string aclId = null;
                 if (acl is BucketAcl bucketAcl)
                 {
                     aclId = bucketAcl.Id;
@@ -470,7 +497,7 @@ namespace Less3.Helpers
                     aclId = objectAcl.Id;
                 }
 
-                logging.Warn(header + "unlinked ACL ID " + aclId + ", could not find user GUID " + userGuid);
+                logging.Warn(header + "unlinked ACL ID " + aclId + ", could not find user Id " + userId);
                 return;
             }
 
@@ -502,7 +529,7 @@ namespace Less3.Helpers
                 Grant grant = new Grant();
                 grant.Grantee = new CanonicalUser();
                 grant.Grantee.DisplayName = tempUser.Name;
-                grant.Grantee.ID = userGuid;
+                grant.Grantee.ID = userId;
                 grant.Permission = PermissionEnum.Read;
                 grants.Add(grant);
             }
@@ -512,7 +539,7 @@ namespace Less3.Helpers
                 Grant grant = new Grant();
                 grant.Grantee = new CanonicalUser();
                 grant.Grantee.DisplayName = tempUser.Name;
-                grant.Grantee.ID = userGuid;
+                grant.Grantee.ID = userId;
                 grant.Permission = PermissionEnum.ReadAcp;
                 grants.Add(grant);
             }
@@ -522,7 +549,7 @@ namespace Less3.Helpers
                 Grant grant = new Grant();
                 grant.Grantee = new CanonicalUser();
                 grant.Grantee.DisplayName = tempUser.Name;
-                grant.Grantee.ID = userGuid;
+                grant.Grantee.ID = userId;
                 grant.Permission = PermissionEnum.Write;
                 grants.Add(grant);
             }
@@ -532,7 +559,7 @@ namespace Less3.Helpers
                 Grant grant = new Grant();
                 grant.Grantee = new CanonicalUser();
                 grant.Grantee.DisplayName = tempUser.Name;
-                grant.Grantee.ID = userGuid;
+                grant.Grantee.ID = userId;
                 grant.Permission = PermissionEnum.WriteAcp;
                 grants.Add(grant);
             }
@@ -542,7 +569,7 @@ namespace Less3.Helpers
                 Grant grant = new Grant();
                 grant.Grantee = new CanonicalUser();
                 grant.Grantee.DisplayName = tempUser.Name;
-                grant.Grantee.ID = userGuid;
+                grant.Grantee.ID = userId;
                 grant.Permission = PermissionEnum.FullControl;
                 grants.Add(grant);
             }
@@ -619,111 +646,111 @@ namespace Less3.Helpers
             }
         }
 
-        private static BucketAcl GrantToBucketUserAcl(Grant grant, string userGuid, string ownerGuid, string bucketGuid)
+        private static BucketAcl GrantToBucketUserAcl(Grant grant, string userId, string ownerId, string bucketId)
         {
             if (grant.Permission == PermissionEnum.Read)
             {
-                return BucketAcl.UserAcl(userGuid, ownerGuid, bucketGuid, true, false, false, false, false);
+                return BucketAcl.UserAcl(userId, ownerId, bucketId, true, false, false, false, false);
             }
             else if (grant.Permission == PermissionEnum.Write)
             {
-                return BucketAcl.UserAcl(userGuid, ownerGuid, bucketGuid, false, true, false, false, false);
+                return BucketAcl.UserAcl(userId, ownerId, bucketId, false, true, false, false, false);
             }
             else if (grant.Permission == PermissionEnum.ReadAcp)
             {
-                return BucketAcl.UserAcl(userGuid, ownerGuid, bucketGuid, false, false, true, false, false);
+                return BucketAcl.UserAcl(userId, ownerId, bucketId, false, false, true, false, false);
             }
             else if (grant.Permission == PermissionEnum.WriteAcp)
             {
-                return BucketAcl.UserAcl(userGuid, ownerGuid, bucketGuid, false, false, false, true, false);
+                return BucketAcl.UserAcl(userId, ownerId, bucketId, false, false, false, true, false);
             }
             else if (grant.Permission == PermissionEnum.FullControl)
             {
-                return BucketAcl.UserAcl(userGuid, ownerGuid, bucketGuid, false, false, false, false, true);
+                return BucketAcl.UserAcl(userId, ownerId, bucketId, false, false, false, false, true);
             }
 
             return null;
         }
 
-        private static BucketAcl GrantToBucketGroupAcl(Grant grant, string userGroup, string ownerGuid, string bucketGuid)
+        private static BucketAcl GrantToBucketGroupAcl(Grant grant, string userGroup, string ownerId, string bucketId)
         {
             if (grant.Permission == PermissionEnum.Read)
             {
-                return BucketAcl.GroupAcl(userGroup, ownerGuid, bucketGuid, true, false, false, false, false);
+                return BucketAcl.GroupAcl(userGroup, ownerId, bucketId, true, false, false, false, false);
             }
             else if (grant.Permission == PermissionEnum.Write)
             {
-                return BucketAcl.GroupAcl(userGroup, ownerGuid, bucketGuid, false, true, false, false, false);
+                return BucketAcl.GroupAcl(userGroup, ownerId, bucketId, false, true, false, false, false);
             }
             else if (grant.Permission == PermissionEnum.ReadAcp)
             {
-                return BucketAcl.GroupAcl(userGroup, ownerGuid, bucketGuid, false, false, true, false, false);
+                return BucketAcl.GroupAcl(userGroup, ownerId, bucketId, false, false, true, false, false);
             }
             else if (grant.Permission == PermissionEnum.WriteAcp)
             {
-                return BucketAcl.GroupAcl(userGroup, ownerGuid, bucketGuid, false, false, false, true, false);
+                return BucketAcl.GroupAcl(userGroup, ownerId, bucketId, false, false, false, true, false);
             }
             else if (grant.Permission == PermissionEnum.FullControl)
             {
-                return BucketAcl.GroupAcl(userGroup, ownerGuid, bucketGuid, false, false, false, false, true);
+                return BucketAcl.GroupAcl(userGroup, ownerId, bucketId, false, false, false, false, true);
             }
 
             return null;
         }
 
-        private static ObjectAcl GrantToObjectUserAcl(Grant grant, string userGuid, string ownerGuid, string bucketGuid, string objectGuid)
+        private static ObjectAcl GrantToObjectUserAcl(Grant grant, string userId, string ownerId, string bucketId, string objectId)
         {
             if (grant.Permission == PermissionEnum.Read)
             {
-                return ObjectAcl.UserAcl(userGuid, ownerGuid, bucketGuid, objectGuid, true, false, false, false, false);
+                return ObjectAcl.UserAcl(userId, ownerId, bucketId, objectId, true, false, false, false, false);
             }
             else if (grant.Permission == PermissionEnum.Write)
             {
-                return ObjectAcl.UserAcl(userGuid, ownerGuid, bucketGuid, objectGuid, false, true, false, false, false);
+                return ObjectAcl.UserAcl(userId, ownerId, bucketId, objectId, false, true, false, false, false);
             }
             else if (grant.Permission == PermissionEnum.ReadAcp)
             {
-                return ObjectAcl.UserAcl(userGuid, ownerGuid, bucketGuid, objectGuid, false, false, true, false, false);
+                return ObjectAcl.UserAcl(userId, ownerId, bucketId, objectId, false, false, true, false, false);
             }
             else if (grant.Permission == PermissionEnum.WriteAcp)
             {
-                return ObjectAcl.UserAcl(userGuid, ownerGuid, bucketGuid, objectGuid, false, false, false, true, false);
+                return ObjectAcl.UserAcl(userId, ownerId, bucketId, objectId, false, false, false, true, false);
             }
             else if (grant.Permission == PermissionEnum.FullControl)
             {
-                return ObjectAcl.UserAcl(userGuid, ownerGuid, bucketGuid, objectGuid, false, false, false, false, true);
+                return ObjectAcl.UserAcl(userId, ownerId, bucketId, objectId, false, false, false, false, true);
             }
 
             return null;
         }
 
-        private static ObjectAcl GrantToObjectGroupAcl(Grant grant, string userGroup, string ownerGuid, string bucketGuid, string objectGuid)
+        private static ObjectAcl GrantToObjectGroupAcl(Grant grant, string userGroup, string ownerId, string bucketId, string objectId)
         {
             if (grant.Permission == PermissionEnum.Read)
             {
-                return ObjectAcl.GroupAcl(userGroup, ownerGuid, bucketGuid, objectGuid, true, false, false, false, false);
+                return ObjectAcl.GroupAcl(userGroup, ownerId, bucketId, objectId, true, false, false, false, false);
             }
             else if (grant.Permission == PermissionEnum.Write)
             {
-                return ObjectAcl.GroupAcl(userGroup, ownerGuid, bucketGuid, objectGuid, false, true, false, false, false);
+                return ObjectAcl.GroupAcl(userGroup, ownerId, bucketId, objectId, false, true, false, false, false);
             }
             else if (grant.Permission == PermissionEnum.ReadAcp)
             {
-                return ObjectAcl.GroupAcl(userGroup, ownerGuid, bucketGuid, objectGuid, false, false, true, false, false);
+                return ObjectAcl.GroupAcl(userGroup, ownerId, bucketId, objectId, false, false, true, false, false);
             }
             else if (grant.Permission == PermissionEnum.WriteAcp)
             {
-                return ObjectAcl.GroupAcl(userGroup, ownerGuid, bucketGuid, objectGuid, false, false, false, true, false);
+                return ObjectAcl.GroupAcl(userGroup, ownerId, bucketId, objectId, false, false, false, true, false);
             }
             else if (grant.Permission == PermissionEnum.FullControl)
             {
-                return ObjectAcl.GroupAcl(userGroup, ownerGuid, bucketGuid, objectGuid, false, false, false, false, true);
+                return ObjectAcl.GroupAcl(userGroup, ownerId, bucketId, objectId, false, false, false, false, true);
             }
 
             return null;
         }
 
-        private static bool GrantFromString(string str, PermissionEnum permType, ConfigManager config, out Grant grant)
+        private static bool GrantFromString(string str, PermissionEnum permType, string tenantId, ConfigManager config, out Grant grant)
         {
             grant = null;
             if (String.IsNullOrEmpty(str)) return false;
@@ -731,14 +758,14 @@ namespace Less3.Helpers
             string[] parts = str.Split('=');
             if (parts.Length != 2) return false;
             string granteeType = parts[0];
-            string grantee = parts[1];
+            string grantee = parts[1].Trim().Trim('"');
 
             grant = new Grant();
             grant.Permission = permType;
 
             if (granteeType.Equals("emailAddress"))
             {
-                User user = config.GetUserByEmail(grantee);
+                User user = config.GetUserByEmail(tenantId, grantee);
                 if (user == null)
                 {
                     return false;
@@ -746,14 +773,14 @@ namespace Less3.Helpers
                 else
                 {
                     grant.Grantee = new CanonicalUser();
-                    grant.Grantee.ID = user.GUID;
+                    grant.Grantee.ID = user.Id;
                     grant.Grantee.DisplayName = user.Name;
                     return true;
                 }
             }
             else if (granteeType.Equals("id"))
             {
-                User user = config.GetUserByGuid(grantee);
+                User user = config.GetUserById(tenantId, grantee);
                 if (user == null)
                 {
                     return false;
@@ -761,7 +788,7 @@ namespace Less3.Helpers
                 else
                 {
                     grant.Grantee = new CanonicalUser();
-                    grant.Grantee.ID = user.GUID;
+                    grant.Grantee.ID = user.Id;
                     grant.Grantee.DisplayName = user.Name;
                     return true;
                 }

@@ -4,6 +4,7 @@ namespace Less3.Database.SqlServer.Implementations
     using System.Collections.Generic;
     using System.Data;
     using Less3.Classes;
+    using Less3.Database.Implementations;
     using Less3.Database.Interfaces;
     using Less3.Database.SqlServer.Queries;
 
@@ -24,44 +25,44 @@ namespace Less3.Database.SqlServer.Implementations
         }
 
         /// <inheritdoc />
-        public Obj GetLatestByKey(string key, string bucketGuid)
+        public Obj GetLatestByKey(string key, string bucketId)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            DataTable result = _Database.ExecuteQuery(ObjQueries.SelectLatestByKey(key, bucketGuid)).Result;
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Database.ExecuteQuery(ObjQueries.SelectLatestByKey(key, bucketId)).Result;
             if (result != null && result.Rows.Count > 0)
                 return MapFromRow(result.Rows[0]);
             return null;
         }
 
         /// <inheritdoc />
-        public Obj GetByKeyAndVersion(string key, long version, string bucketGuid)
+        public Obj GetByKeyAndVersion(string key, long version, string bucketId)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            DataTable result = _Database.ExecuteQuery(ObjQueries.SelectByKeyAndVersion(key, version, bucketGuid)).Result;
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Database.ExecuteQuery(ObjQueries.SelectByKeyAndVersion(key, version, bucketId)).Result;
             if (result != null && result.Rows.Count > 0)
                 return MapFromRow(result.Rows[0]);
             return null;
         }
 
         /// <inheritdoc />
-        public Obj GetByGuid(string guid, string bucketGuid)
+        public Obj GetById(string id, string bucketId)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            DataTable result = _Database.ExecuteQuery(ObjQueries.SelectByGuid(guid, bucketGuid)).Result;
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Database.ExecuteQuery(ObjQueries.SelectById(id, bucketId)).Result;
             if (result != null && result.Rows.Count > 0)
                 return MapFromRow(result.Rows[0]);
             return null;
         }
 
         /// <inheritdoc />
-        public long GetLatestVersion(string key, string bucketGuid)
+        public long GetLatestVersion(string key, string bucketId)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            DataTable result = _Database.ExecuteQuery(ObjQueries.SelectLatestVersion(key, bucketGuid)).Result;
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Database.ExecuteQuery(ObjQueries.SelectLatestVersion(key, bucketId)).Result;
             if (result != null && result.Rows.Count > 0)
             {
                 object val = result.Rows[0]["version"];
@@ -86,18 +87,18 @@ namespace Less3.Database.SqlServer.Implementations
         }
 
         /// <inheritdoc />
-        public List<Obj> Enumerate(string bucketGuid, int startIndex, int maxResults, bool excludeDeleteMarkers, string prefix)
+        public List<Obj> Enumerate(string bucketId, int startIndex, int maxResults, bool excludeDeleteMarkers, string prefix)
         {
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            DataTable result = _Database.ExecuteQuery(ObjQueries.Enumerate(bucketGuid, startIndex, maxResults, excludeDeleteMarkers, prefix)).Result;
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Database.ExecuteQuery(ObjQueries.Enumerate(bucketId, startIndex, maxResults, excludeDeleteMarkers, prefix)).Result;
             return MapList(result);
         }
 
         /// <inheritdoc />
-        public BucketStatistics GetStatistics(string bucketGuid)
+        public BucketStatistics GetStatistics(string bucketId)
         {
-            if (String.IsNullOrEmpty(bucketGuid)) throw new ArgumentNullException(nameof(bucketGuid));
-            DataTable result = _Database.ExecuteQuery(ObjQueries.GetStatistics(bucketGuid)).Result;
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Database.ExecuteQuery(ObjQueries.GetStatistics(bucketId)).Result;
 
             long numObjects = 0;
             long totalBytes = 0;
@@ -114,17 +115,17 @@ namespace Less3.Database.SqlServer.Implementations
                     totalBytes = Convert.ToInt64(totalObj);
             }
 
-            return new BucketStatistics("", bucketGuid, numObjects, totalBytes);
+            return new BucketStatistics("", bucketId, numObjects, totalBytes);
         }
 
         private Obj MapFromRow(DataRow row)
         {
             Obj obj = new Obj();
-            obj.Id = Convert.ToInt32(row["id"]);
-            obj.GUID = row["guid"] != null && row["guid"] != DBNull.Value ? row["guid"].ToString() : null;
-            obj.BucketGUID = row["bucketguid"] != null && row["bucketguid"] != DBNull.Value ? row["bucketguid"].ToString() : null;
-            obj.OwnerGUID = row["ownerguid"] != null && row["ownerguid"] != DBNull.Value ? row["ownerguid"].ToString() : null;
-            obj.AuthorGUID = row["authorguid"] != null && row["authorguid"] != DBNull.Value ? row["authorguid"].ToString() : null;
+            obj.Id = row["id"] != null && row["id"] != DBNull.Value ? row["id"].ToString() : null;
+            obj.TenantId = ControlPlaneDataMapper.StringValue(row, "tenant_id") ?? "default";
+            obj.BucketId = row["bucket_id"] != null && row["bucket_id"] != DBNull.Value ? row["bucket_id"].ToString() : null;
+            obj.OwnerId = row["owner_id"] != null && row["owner_id"] != DBNull.Value ? row["owner_id"].ToString() : null;
+            obj.AuthorId = row["author_id"] != null && row["author_id"] != DBNull.Value ? row["author_id"].ToString() : null;
             obj.Key = row["key"] != null && row["key"] != DBNull.Value ? row["key"].ToString() : null;
             obj.ContentType = row["contenttype"] != null && row["contenttype"] != DBNull.Value ? row["contenttype"].ToString() : null;
             obj.ContentLength = Convert.ToInt64(row["contentlength"]);
@@ -132,8 +133,8 @@ namespace Less3.Database.SqlServer.Implementations
             obj.Etag = row["etag"] != null && row["etag"] != DBNull.Value ? row["etag"].ToString() : null;
             obj.Retention = Enum.Parse<RetentionType>(row["retention"].ToString());
             obj.BlobFilename = row["blobfilename"] != null && row["blobfilename"] != DBNull.Value ? row["blobfilename"].ToString() : null;
-            obj.IsFolder = IsBitTrue(row["isfolder"]);
-            obj.DeleteMarker = IsBitTrue(row["deletemarker"]);
+            obj.IsFolder = ControlPlaneDataMapper.BoolValue(row, "isfolder");
+            obj.DeleteMarker = ControlPlaneDataMapper.BoolValue(row, "deletemarker");
             obj.Md5 = row["md5"] != null && row["md5"] != DBNull.Value ? row["md5"].ToString() : null;
             obj.CreatedUtc = DateTime.Parse(row["createdutc"].ToString());
             obj.LastUpdateUtc = DateTime.Parse(row["lastupdateutc"].ToString());
@@ -159,13 +160,6 @@ namespace Less3.Database.SqlServer.Implementations
                 }
             }
             return list;
-        }
-
-        private bool IsBitTrue(object val)
-        {
-            if (val == null || val == DBNull.Value) return false;
-            string s = val.ToString();
-            return s == "1" || s.Equals("True", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

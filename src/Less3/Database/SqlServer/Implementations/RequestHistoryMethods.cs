@@ -24,10 +24,10 @@ namespace Less3.Database.SqlServer.Implementations
         }
 
         /// <inheritdoc />
-        public RequestHistory GetByGuid(string guid)
+        public RequestHistory GetById(string id)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            DataTable result = _Database.ExecuteQuery(RequestHistoryQueries.SelectByGuid(guid)).Result;
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            DataTable result = _Database.ExecuteQuery(RequestHistoryQueries.SelectById(id)).Result;
             if (result != null && result.Rows.Count > 0)
                 return MapFromRow(result.Rows[0]);
             return null;
@@ -41,10 +41,10 @@ namespace Less3.Database.SqlServer.Implementations
         }
 
         /// <inheritdoc />
-        public void DeleteByGuid(string guid)
+        public void DeleteById(string id)
         {
-            if (String.IsNullOrEmpty(guid)) throw new ArgumentNullException(nameof(guid));
-            _Database.ExecuteQuery(RequestHistoryQueries.DeleteByGuid(guid), true).Wait();
+            if (String.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
+            _Database.ExecuteQuery(RequestHistoryQueries.DeleteById(id), true).Wait();
         }
 
         /// <inheritdoc />
@@ -63,8 +63,8 @@ namespace Less3.Database.SqlServer.Implementations
         private RequestHistory MapFromRow(DataRow row)
         {
             RequestHistory entry = new RequestHistory();
-            entry.Id = Convert.ToInt32(row["id"]);
-            entry.GUID = row["guid"] != null && row["guid"] != DBNull.Value ? row["guid"].ToString() : null;
+            entry.TenantId = row.Table.Columns.Contains("tenant_id") && row["tenant_id"] != DBNull.Value ? row["tenant_id"].ToString() : "default";
+            entry.Id = row["id"] != null && row["id"] != DBNull.Value ? row["id"].ToString() : null;
             entry.HttpMethod = row["httpmethod"] != null && row["httpmethod"] != DBNull.Value ? row["httpmethod"].ToString() : null;
             entry.RequestUrl = row["requesturl"] != null && row["requesturl"] != DBNull.Value ? row["requesturl"].ToString() : null;
             entry.SourceIp = row["sourceip"] != null && row["sourceip"] != DBNull.Value ? row["sourceip"].ToString() : null;
@@ -72,7 +72,7 @@ namespace Less3.Database.SqlServer.Implementations
             entry.Success = IsBitTrue(row["success"]);
             entry.DurationMs = Convert.ToInt64(row["durationms"]);
             entry.RequestType = row["requesttype"] != null && row["requesttype"] != DBNull.Value ? row["requesttype"].ToString() : null;
-            entry.UserGUID = row["userguid"] != null && row["userguid"] != DBNull.Value ? row["userguid"].ToString() : null;
+            entry.UserId = row["user_id"] != null && row["user_id"] != DBNull.Value ? row["user_id"].ToString() : null;
             entry.AccessKey = row["accesskey"] != null && row["accesskey"] != DBNull.Value ? row["accesskey"].ToString() : null;
             entry.RequestContentType = row["requestcontenttype"] != null && row["requestcontenttype"] != DBNull.Value ? row["requestcontenttype"].ToString() : null;
             entry.RequestBodyLength = Convert.ToInt64(row["requestbodylength"]);

@@ -663,6 +663,7 @@ namespace Test.Shared
                     Active("RequestHistoryAndReporting", "RequestHistory_Enumerate_UserId", "Request history filters by user id", RequestHistoryCapturesS3TenantCredentialAndFiltersAsync),
                     Active("RequestHistoryAndReporting", "RequestHistory_Enumerate_AccessKey", "Request history filters by access key", RequestHistoryCapturesS3TenantCredentialAndFiltersAsync),
                     Active("RequestHistoryAndReporting", "RequestHistory_Enumerate_TenantScope", "Request history enumeration is tenant scoped", RequestHistoryCapturesS3TenantCredentialAndFiltersAsync),
+                    Active("RequestHistoryAndReporting", "RequestHistory_CanonicalizesVirtualHostedS3Urls", "Request history captures virtual-hosted S3 bucket requests with canonical bucket URLs", RequestHistoryCanonicalizesVirtualHostedS3UrlsAsync),
                     Active("RequestHistoryAndReporting", "RequestHistory_DeleteSingle", "Request history delete removes a single entry", RequestHistoryRestReadEnumerateDeleteExistsAsync),
                     Active("RequestHistoryAndReporting", "RequestHistory_PurgeOlderThanRetention", "Request history purge removes entries older than a supplied cutoff", RequestHistoryPurgeOlderThanRetentionAsync),
                     Active("RequestHistoryAndReporting", "Reporting_RequestsPerMinute", "Reporting returns requests-per-minute", ReportingRequestsSummaryAsync),
@@ -3101,6 +3102,45 @@ namespace Test.Shared
             ListBucketsResponse secondBuckets = await defaultClient.ListBucketsAsync(cancellationToken).ConfigureAwait(false);
             EnsureStatus(HttpStatusCode.OK, secondBuckets.HttpStatusCode, "request history second S3 ListBuckets");
 
+            string bucketName = "hist-" + TestIds.Suffix().Substring(0, 8);
+            string objectKey = "folder/request-history.txt";
+            PutBucketResponse bucketWrite = await defaultClient.PutBucketAsync(new PutBucketRequest
+            {
+                BucketName = bucketName
+            }, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, bucketWrite.HttpStatusCode, "request history S3 BucketWrite");
+
+            await PutTextObjectAsync(defaultClient, bucketName, objectKey, "history-body", cancellationToken).ConfigureAwait(false);
+
+            HttpResponseMessage restBuckets = await server.RestGetAsync("buckets?tenantId=default", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, restBuckets.StatusCode, "request history REST buckets");
+
+            string restQueryJson = JsonSerializer.Serialize(new
+            {
+                TenantId = "default",
+                Limit = 50,
+                Offset = 0,
+                StartUtc = DateTime.UtcNow.AddMinutes(-5),
+                EndUtc = DateTime.UtcNow.AddMinutes(5),
+                Filters = new Dictionary<string, string>
+                {
+                    { "method", "GET" }
+                }
+            });
+
+            HttpResponseMessage restHistoryResponse = await server.RestPostAsync("requesthistory/enumerate?tenantId=default", restQueryJson, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, restHistoryResponse.StatusCode, "REST enumerate REST request history");
+            string restHistoryBody = await restHistoryResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            JsonElement restHistory = FindEnumerationItem(
+                restHistoryBody,
+                item =>
+                    JsonStringEquals(item, "HttpMethod", "GET")
+                    && JsonStringContains(item, "RequestUrl", "/api/v1/buckets?tenantId=default"),
+                "REST request history detail");
+
+            EnsureStringEqual("GET", ExtractElementString(restHistory, "HttpMethod", "REST request history detail"), "REST request history detail method");
+            EnsureEqual(200, (int)ExtractElementInt64(restHistory, "StatusCode", "REST request history detail"), "REST request history detail status");
+
             string secondTenantId = TestIds.Tenant();
             string secondUserId = TestIds.User();
             string secondCredentialId = TestIds.Credential();
@@ -3142,6 +3182,58 @@ namespace Test.Shared
             EnsureContains(historyBody, "\"UserId\": \"usr_default_admin\"", "REST request history");
             EnsureContains(historyBody, "\"RequestType\": \"ListBuckets\"", "REST request history");
             EnsureContains(historyBody, "\"Success\": true", "REST request history");
+
+            string s3QueryJson = JsonSerializer.Serialize(new
+            {
+                TenantId = "default",
+                Limit = 50,
+                Offset = 0,
+                StartUtc = DateTime.UtcNow.AddMinutes(-5),
+                EndUtc = DateTime.UtcNow.AddMinutes(5),
+                Filters = new Dictionary<string, string>
+                {
+                    { "accessKey", "default" }
+                }
+            });
+
+            HttpResponseMessage s3HistoryResponse = await server.RestPostAsync("requesthistory/enumerate?tenantId=default", s3QueryJson, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, s3HistoryResponse.StatusCode, "REST enumerate mixed S3 request history");
+            string s3HistoryBody = await s3HistoryResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureContains(s3HistoryBody, "\"RequestType\": \"ListBuckets\"", "mixed S3 request history list buckets");
+            EnsureContains(s3HistoryBody, "\"RequestType\": \"BucketWrite\"", "mixed S3 request history bucket write");
+            EnsureContains(s3HistoryBody, "\"RequestType\": \"ObjectWrite\"", "mixed S3 request history object write");
+            EnsureContains(s3HistoryBody, "\"RequestUrl\": \"/" + bucketName + "\"", "mixed S3 request history bucket URL");
+            EnsureContains(s3HistoryBody, "\"RequestUrl\": \"/" + bucketName + "/" + objectKey + "\"", "mixed S3 request history object URL");
+            EnsureContains(s3HistoryBody, "\"HttpMethod\": \"PUT\"", "mixed S3 request history PUT method");
+
+            JsonElement objectHistory = FindEnumerationItem(
+                s3HistoryBody,
+                item =>
+                    JsonStringEquals(item, "RequestType", "ObjectWrite")
+                    && JsonStringContains(item, "RequestUrl", "/" + bucketName + "/" + objectKey),
+                "mixed S3 request history object detail");
+
+            EnsureStringEqual("PUT", ExtractElementString(objectHistory, "HttpMethod", "mixed S3 request history object detail"), "mixed S3 request history object detail method");
+            EnsureEqual(200, (int)ExtractElementInt64(objectHistory, "StatusCode", "mixed S3 request history object detail"), "mixed S3 request history object detail status");
+            EnsureStringEqual("default", ExtractElementString(objectHistory, "AccessKey", "mixed S3 request history object detail"), "mixed S3 request history object detail access key");
+            EnsureStringEqual("usr_default_admin", ExtractElementString(objectHistory, "UserId", "mixed S3 request history object detail"), "mixed S3 request history object detail user id");
+
+            HttpResponseMessage summaryResponse = await server.AdminGetAsync("requesthistory/summary?tenantId=default&startUtc="
+                + Uri.EscapeDataString(DateTime.UtcNow.AddMinutes(-5).ToString("O"))
+                + "&endUtc="
+                + Uri.EscapeDataString(DateTime.UtcNow.AddMinutes(5).ToString("O"))
+                + "&interval=minute", cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, summaryResponse.StatusCode, "request history summary includes S3 requests");
+            string summaryBody = await summaryResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureGreaterOrEqual(4, ExtractRootInt64(summaryBody, "TotalSuccess", "request history summary includes S3 requests"), "request history summary total success");
+
+            HttpResponseMessage reportResponse = await server.AdminGetAsync("reports/requests?tenantId=default&startUtc="
+                + Uri.EscapeDataString(DateTime.UtcNow.AddMinutes(-5).ToString("O"))
+                + "&endUtc="
+                + Uri.EscapeDataString(DateTime.UtcNow.AddMinutes(5).ToString("O")), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, reportResponse.StatusCode, "request report includes S3 requests");
+            string reportBody = await reportResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureContains(reportBody, bucketName, "request report includes S3 bucket request count");
 
             string fullFilterJson = JsonSerializer.Serialize(new
             {
@@ -3222,6 +3314,59 @@ namespace Test.Shared
             string purgeBody = await purgeResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             EnsureContains(purgeBody, "\"Action\": \"purge-request-history\"", "request history purge action");
             EnsureGreaterOrEqual(1, ExtractRootInt64(purgeBody, "PurgedRequestHistoryCount", "request history purge count"), "request history purge count");
+        }
+
+        private static async Task RequestHistoryCanonicalizesVirtualHostedS3UrlsAsync(CancellationToken cancellationToken)
+        {
+            using Less3TestServer server = new Less3TestServer(baseDomain: "localhost");
+            await server.StartAsync(cancellationToken).ConfigureAwait(false);
+
+            string bucketName = "vhist-" + TestIds.Suffix().Substring(0, 8);
+            string bucketJson = JsonSerializer.Serialize(new
+            {
+                Id = TestIds.Bucket(),
+                TenantId = "default",
+                OwnerId = "usr_default_admin",
+                Name = bucketName,
+                RegionString = "us-west-1",
+                StorageType = "Disk",
+                DiskDirectory = "./disk/" + bucketName + "/Objects/",
+                EnableVersioning = false,
+                EnablePublicWrite = false,
+                EnablePublicRead = false
+            });
+
+            HttpResponseMessage createBucketResponse = await server.RestPostAsync("buckets?tenantId=default", bucketJson, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, createBucketResponse.StatusCode, "virtual-host request history create bucket");
+
+            using HttpRequestMessage virtualHostedRequest = server.CreateS3Request(HttpMethod.Get, "/?list-type=2", "default");
+            virtualHostedRequest.Headers.Host = bucketName + ".localhost:" + server.Port;
+            HttpResponseMessage virtualHostedResponse = await server.HttpClient.SendAsync(virtualHostedRequest, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, virtualHostedResponse.StatusCode, "virtual-host request history S3 bucket read");
+
+            string queryJson = JsonSerializer.Serialize(new
+            {
+                TenantId = "default",
+                Limit = 50,
+                Offset = 0,
+                StartUtc = DateTime.UtcNow.AddMinutes(-5),
+                EndUtc = DateTime.UtcNow.AddMinutes(5),
+                Filters = new Dictionary<string, string>()
+            });
+
+            HttpResponseMessage historyResponse = await server.RestPostAsync("requesthistory/enumerate?tenantId=default", queryJson, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, historyResponse.StatusCode, "virtual-host request history enumerate");
+            string historyBody = await historyResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            JsonElement historyEntry = FindEnumerationItem(
+                historyBody,
+                item =>
+                    JsonStringContains(item, "RequestUrl", "/" + bucketName + "?list-type=2"),
+                "virtual-host request history detail");
+
+            EnsureStringEqual("GET", ExtractElementString(historyEntry, "HttpMethod", "virtual-host request history detail"), "virtual-host request history detail method");
+            EnsureEqual(200, (int)ExtractElementInt64(historyEntry, "StatusCode", "virtual-host request history detail"), "virtual-host request history detail status");
+            EnsureStringEqual("default", ExtractElementString(historyEntry, "AccessKey", "virtual-host request history detail"), "virtual-host request history detail access key");
+            EnsureTrue(!String.IsNullOrWhiteSpace(ExtractElementString(historyEntry, "RequestType", "virtual-host request history detail")), "virtual-host request history detail request type");
         }
 
         private static async Task ReportingRequestsSummaryAsync(CancellationToken cancellationToken)
@@ -6053,6 +6198,37 @@ namespace Test.Shared
             }
 
             return items[0];
+        }
+
+        private static JsonElement FindEnumerationItem(string json, Func<JsonElement, bool> predicate, string operation)
+        {
+            using JsonDocument document = JsonDocument.Parse(json);
+            if (!document.RootElement.TryGetProperty("Items", out JsonElement items)
+                || items.ValueKind != JsonValueKind.Array)
+            {
+                throw new InvalidOperationException(operation + " did not include an Items array");
+            }
+
+            foreach (JsonElement item in items.EnumerateArray())
+            {
+                if (predicate(item)) return item.Clone();
+            }
+
+            throw new InvalidOperationException(operation + " did not include an expected item");
+        }
+
+        private static bool JsonStringEquals(JsonElement item, string propertyName, string expected)
+        {
+            return item.TryGetProperty(propertyName, out JsonElement element)
+                && element.ValueKind == JsonValueKind.String
+                && String.Equals(element.GetString(), expected, StringComparison.Ordinal);
+        }
+
+        private static bool JsonStringContains(JsonElement item, string propertyName, string expectedFragment)
+        {
+            return item.TryGetProperty(propertyName, out JsonElement element)
+                && element.ValueKind == JsonValueKind.String
+                && (element.GetString() ?? "").Contains(expectedFragment, StringComparison.Ordinal);
         }
 
         private static async Task<string> LoginAndExtractTokenAsync(

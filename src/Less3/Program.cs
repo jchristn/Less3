@@ -1448,7 +1448,7 @@ namespace Less3
             {
                 RequestHistory entry = new RequestHistory();
                 entry.HttpMethod = ctx.Http.Request.Method.ToString();
-                entry.RequestUrl = RedactSensitiveText(ctx.Http.Request.Url.RawWithQuery);
+                entry.RequestUrl = RequestUrlForHistory(ctx);
                 entry.SourceIp = ctx.Http.Request.Source.IpAddress;
                 entry.StatusCode = ctx.Http.Response.StatusCode;
                 entry.Success = ctx.Http.Response.StatusCode < 400;
@@ -1617,6 +1617,147 @@ namespace Less3
                 || ct.Contains("application/x-www-form-urlencoded")
                 || ct.Contains("+xml")
                 || ct.Contains("+json");
+        }
+
+        private static string RequestUrlForHistory(S3Context ctx)
+        {
+            string rawUrl = null;
+            try { rawUrl = ctx.Http.Request.Url.RawWithQuery; } catch { }
+            if (String.IsNullOrEmpty(rawUrl)) rawUrl = "/";
+
+            if (IsControlPlaneRequest(ctx)) return RedactSensitiveText(rawUrl);
+
+            string bucket = null;
+            string key = null;
+
+            try { bucket = ctx.Request.Bucket; } catch { }
+            try { key = ctx.Request.Key; } catch { }
+
+            if (String.IsNullOrEmpty(bucket))
+            {
+                bucket = BucketFromHost(ctx);
+                if (String.IsNullOrEmpty(bucket)) return RedactSensitiveText(rawUrl);
+
+                return RedactSensitiveText(BuildHostStyleRequestUrl(bucket, rawUrl));
+            }
+
+            string query = QuerySuffix(rawUrl);
+            string path = "/" + EncodePathSegment(bucket);
+            if (!String.IsNullOrEmpty(key))
+            {
+                path += "/" + EncodeS3Key(key);
+            }
+
+            return RedactSensitiveText(path + query);
+        }
+
+        private static string BucketFromHost(S3Context ctx)
+        {
+            if (_Settings == null || String.IsNullOrEmpty(_Settings.BaseDomain)) return null;
+
+            string host = null;
+            try { host = ctx.Http.Request.Headers["Host"]; } catch { }
+            if (String.IsNullOrEmpty(host)) return null;
+
+            host = HostnameWithoutPort(host);
+            string baseDomain = HostnameWithoutPort(_Settings.BaseDomain);
+            if (String.IsNullOrEmpty(host) || String.IsNullOrEmpty(baseDomain)) return null;
+            if (host.Equals(baseDomain, StringComparison.OrdinalIgnoreCase)) return null;
+
+            string suffix = "." + baseDomain;
+            if (!host.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)) return null;
+
+            string bucket = host.Substring(0, host.Length - suffix.Length);
+            return String.IsNullOrEmpty(bucket) ? null : bucket;
+        }
+
+        private static string BuildHostStyleRequestUrl(string bucket, string rawUrl)
+        {
+            string path = PathWithoutQuery(rawUrl);
+            string query = QuerySuffix(rawUrl);
+            string ret = "/" + EncodePathSegment(bucket);
+
+            string keyPath = path.TrimStart('/');
+            if (!String.IsNullOrEmpty(keyPath))
+            {
+                ret += "/" + keyPath;
+            }
+
+            return ret + query;
+        }
+
+        private static string HostnameWithoutPort(string host)
+        {
+            if (String.IsNullOrEmpty(host)) return null;
+
+            string value = host.Trim();
+            if (value.StartsWith("[", StringComparison.Ordinal))
+            {
+                int end = value.IndexOf(']');
+                if (end >= 0) return value.Substring(1, end - 1);
+            }
+
+            int colon = value.LastIndexOf(':');
+            if (colon > 0 && value.IndexOf(':') == colon)
+            {
+                return value.Substring(0, colon);
+            }
+
+            return value;
+        }
+
+        private static bool IsControlPlaneRequest(S3Context ctx)
+        {
+            try
+            {
+                if (ctx.Http.Request.Url.Elements == null || ctx.Http.Request.Url.Elements.Length < 1) return false;
+                string first = ctx.Http.Request.Url.Elements[0];
+                return first.Equals("admin", StringComparison.OrdinalIgnoreCase)
+                    || first.Equals("api", StringComparison.OrdinalIgnoreCase)
+                    || first.Equals("swagger", StringComparison.OrdinalIgnoreCase)
+                    || first.Equals("openapi.json", StringComparison.OrdinalIgnoreCase)
+                    || first.Equals("favicon.ico", StringComparison.OrdinalIgnoreCase)
+                    || first.Equals("robots.txt", StringComparison.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static string QuerySuffix(string rawUrl)
+        {
+            if (String.IsNullOrEmpty(rawUrl)) return "";
+            int index = rawUrl.IndexOf('?');
+            if (index < 0) return "";
+            return rawUrl.Substring(index);
+        }
+
+        private static string PathWithoutQuery(string rawUrl)
+        {
+            if (String.IsNullOrEmpty(rawUrl)) return "/";
+            int index = rawUrl.IndexOf('?');
+            if (index >= 0) rawUrl = rawUrl.Substring(0, index);
+            return String.IsNullOrEmpty(rawUrl) ? "/" : rawUrl;
+        }
+
+        private static string EncodeS3Key(string key)
+        {
+            if (String.IsNullOrEmpty(key)) return "";
+
+            string[] segments = key.Split('/');
+            for (int i = 0; i < segments.Length; i++)
+            {
+                segments[i] = EncodePathSegment(segments[i]);
+            }
+
+            return String.Join("/", segments);
+        }
+
+        private static string EncodePathSegment(string value)
+        {
+            if (String.IsNullOrEmpty(value)) return "";
+            return Uri.EscapeDataString(value).Replace("%2F", "/", StringComparison.OrdinalIgnoreCase);
         }
 
         private static string RedactSensitiveText(string value)

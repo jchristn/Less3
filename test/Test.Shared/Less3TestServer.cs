@@ -31,6 +31,7 @@ namespace Test.Shared
         private bool _ValidateSignatures = false;
         private bool _SimulateContainerEnvironment = false;
         private bool _OmitSystemJson = false;
+        private string? _BaseDomain = null;
         private Process? _Process;
         private bool _Disposed = false;
         private HttpClient _HttpClient;
@@ -95,13 +96,15 @@ namespace Test.Shared
         public Less3TestServer(
             bool validateSignatures = false,
             bool simulateContainerEnvironment = false,
-            bool omitSystemJson = false)
+            bool omitSystemJson = false,
+            string? baseDomain = null)
         {
             _Port = GetRandomPort();
             _TempDirectory = Path.Combine(Path.GetTempPath(), "less3-test-" + Path.GetRandomFileName().Replace(".", ""));
             _ValidateSignatures = validateSignatures;
             _SimulateContainerEnvironment = simulateContainerEnvironment;
             _OmitSystemJson = omitSystemJson;
+            _BaseDomain = baseDomain;
 
             if (_OmitSystemJson)
             {
@@ -467,7 +470,7 @@ namespace Test.Shared
             {
                 EnableConsole = false,
                 ValidateSignatures = _ValidateSignatures,
-                BaseDomain = (string?)null,
+                BaseDomain = _BaseDomain,
                 HeaderApiKey = "x-api-key",
                 AdminApiKey = _AdminApiKey,
                 RegionString = "us-west-1",

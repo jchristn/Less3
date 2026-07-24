@@ -243,6 +243,7 @@ namespace Less3.Classes
         internal BucketStatistics GetFullStatistics()
         {
             BucketStatistics ret = _Database.Objects.GetStatistics(_Bucket.Id);
+            ret.Id = _Bucket.Id;
             ret.Name = _Bucket.Name;
             return ret;
         }

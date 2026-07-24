@@ -22,14 +22,14 @@ namespace Less3.Classes
         public string Id { get; set; } = Less3.Helpers.IdGenerator.GenerateBucketId();
 
         /// <summary>
-        /// The number of objects in the bucket including all versions.
+        /// The number of latest non-delete-marked object versions in the bucket.
         /// </summary>
-        public long Objects = 0;
+        public long Objects { get; set; } = 0;
 
         /// <summary>
-        /// The number of bytes for all objects in the bucket.
+        /// The number of bytes for latest non-delete-marked object versions in the bucket.
         /// </summary>
-        public long Bytes = 0;
+        public long Bytes { get; set; } = 0;
 
         #endregion
 

@@ -53,6 +53,7 @@ import type {
   GetObjectACLParams,
   GetObjectACLResponse,
 } from './bucketsTypes';
+import { DashboardStatsSliceTags } from './dashboardStatsSlice';
 
 export enum BucketsSliceTags {
   BUCKETS = 'BUCKETS',
@@ -101,7 +102,11 @@ export type {
 };
 
 const enhancedSdk = sdkSlice.enhanceEndpoints({
-  addTagTypes: [BucketsSliceTags.BUCKETS, BucketsSliceTags.BUCKET_TAGS],
+  addTagTypes: [
+    BucketsSliceTags.BUCKETS,
+    BucketsSliceTags.BUCKET_TAGS,
+    DashboardStatsSliceTags.DASHBOARD_STATS,
+  ],
 });
 
 // Helper functions
@@ -132,9 +137,20 @@ const getBucketTagsCacheTag = (bucketName: string) => ({
   id: bucketName,
 });
 
+const getDashboardStatsInvalidationTags = () => [
+  { type: DashboardStatsSliceTags.DASHBOARD_STATS as const, id: 'SUMMARY' },
+  { type: DashboardStatsSliceTags.DASHBOARD_STATS as const, id: 'REPORT' },
+];
+
 const bucketsSliceInstance = enhancedSdk.injectEndpoints({
   overrideExisting: true,
-  endpoints: (build: EndpointBuilder<BaseQueryFn<ApiBaseQueryArgs, unknown, unknown>, BucketsSliceTags, 'sdk'>) => ({
+  endpoints: (
+    build: EndpointBuilder<
+      BaseQueryFn<ApiBaseQueryArgs, unknown, unknown>,
+      BucketsSliceTags | DashboardStatsSliceTags,
+      'sdk'
+    >
+  ) => ({
     getBuckets: build.query<BucketListResponse, void>({
       async queryFn() {
         try {
@@ -186,7 +202,10 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
           };
         }
       },
-      invalidatesTags: [{ type: BucketsSliceTags.BUCKETS, id: 'LIST' }],
+      invalidatesTags: [
+        { type: BucketsSliceTags.BUCKETS, id: 'LIST' },
+        ...getDashboardStatsInvalidationTags(),
+      ],
     }),
 
     deleteBucket: build.mutation<DeleteBucketResponse, DeleteBucketParams>({
@@ -211,7 +230,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
         _result: DeleteBucketResponse | undefined,
         _error: unknown,
         { id }: DeleteBucketParams
-      ) => getBucketTags(id),
+      ) => [...getBucketTags(id), ...getDashboardStatsInvalidationTags()],
     }),
 
     listBucketObjects: build.query<ListBucketResult, ListBucketObjectsParams>({
@@ -308,6 +327,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
           };
         }
       },
+      invalidatesTags: getDashboardStatsInvalidationTags,
     }),
 
     uploadBucketObject: build.mutation<UploadBucketObjectResponse, UploadBucketObjectParams>({
@@ -341,6 +361,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
           };
         }
       },
+      invalidatesTags: getDashboardStatsInvalidationTags,
     }),
 
     deleteBucketObject: build.mutation<DeleteBucketObjectResponse, DeleteBucketObjectParams>({
@@ -370,6 +391,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
           };
         }
       },
+      invalidatesTags: getDashboardStatsInvalidationTags,
     }),
 
     deleteMultipleObjects: build.mutation<
@@ -430,6 +452,7 @@ const bucketsSliceInstance = enhancedSdk.injectEndpoints({
           };
         }
       },
+      invalidatesTags: getDashboardStatsInvalidationTags,
     }),
 
     writeBucketTags: build.mutation<WriteBucketTagsResponse, WriteBucketTagsParams>({

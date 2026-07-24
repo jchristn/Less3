@@ -2182,7 +2182,12 @@ namespace Test.Shared
         {
             await WithDefaultBucketAsync("admin-stats", async (server, client, bucketName) =>
             {
-                await PutTextObjectAsync(client, bucketName, "stats.txt", "statistics", cancellationToken).ConfigureAwait(false);
+                await PutTextObjectAsync(client, bucketName, "first.txt", "abc", cancellationToken).ConfigureAwait(false);
+                await PutTextObjectAsync(client, bucketName, "overwrite.txt", "12", cancellationToken).ConfigureAwait(false);
+                await PutTextObjectAsync(client, bucketName, "overwrite.txt", "12345", cancellationToken).ConfigureAwait(false);
+                await EnableVersioningAsync(client, bucketName, cancellationToken).ConfigureAwait(false);
+                await PutTextObjectAsync(client, bucketName, "versioned.txt", "old", cancellationToken).ConfigureAwait(false);
+                PutObjectResponse newestVersion = await PutTextObjectAsync(client, bucketName, "versioned.txt", "newer", cancellationToken).ConfigureAwait(false);
 
                 HttpResponseMessage statsResponse = await server.AdminGetAsync("stats", cancellationToken).ConfigureAwait(false);
                 EnsureStatus(HttpStatusCode.OK, statsResponse.StatusCode, "admin stats");
@@ -2191,6 +2196,25 @@ namespace Test.Shared
                 EnsureContains(body, "\"TotalObjectCount\":", "admin stats object count");
                 EnsureContains(body, "\"TotalBytes\":", "admin stats bytes");
                 EnsureContains(body, bucketName, "admin stats bucket name");
+                (string bucketId, long objects, long bytes) = ExtractBucketStatistics(body, bucketName, "admin stats bucket");
+                EnsureTrue(!String.IsNullOrEmpty(bucketId), "admin stats bucket id");
+                EnsureStringEqual("3", objects.ToString(), "admin stats current object count");
+                EnsureStringEqual("13", bytes.ToString(), "admin stats current object bytes");
+
+                await client.DeleteObjectAsync(new DeleteObjectRequest
+                {
+                    BucketName = bucketName,
+                    Key = "versioned.txt",
+                    VersionId = newestVersion.VersionId
+                }, cancellationToken).ConfigureAwait(false);
+
+                HttpResponseMessage updatedStatsResponse = await server.AdminGetAsync("stats", cancellationToken).ConfigureAwait(false);
+                EnsureStatus(HttpStatusCode.OK, updatedStatsResponse.StatusCode, "admin stats after delete marker");
+                string updatedBody = await updatedStatsResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                (string updatedBucketId, long updatedObjects, long updatedBytes) = ExtractBucketStatistics(updatedBody, bucketName, "admin stats bucket after delete marker");
+                EnsureStringEqual(bucketId, updatedBucketId, "admin stats stable bucket id");
+                EnsureStringEqual("3", updatedObjects.ToString(), "admin stats uses latest non-delete-marked object count");
+                EnsureStringEqual("11", updatedBytes.ToString(), "admin stats uses latest non-delete-marked object bytes");
             }, cancellationToken).ConfigureAwait(false);
         }
 
@@ -5882,6 +5906,65 @@ namespace Test.Shared
             }
 
             if (element.ValueKind == JsonValueKind.Number && element.TryGetInt64(out long value))
+            {
+                return value;
+            }
+
+            throw new InvalidOperationException(operation + " property " + propertyName + " was not an integer");
+        }
+
+        private static (string Id, long Objects, long Bytes) ExtractBucketStatistics(string json, string bucketName, string operation)
+        {
+            using JsonDocument document = JsonDocument.Parse(json);
+            if (!document.RootElement.TryGetProperty("Buckets", out JsonElement buckets)
+                || buckets.ValueKind != JsonValueKind.Array)
+            {
+                throw new InvalidOperationException(operation + " did not include a Buckets array");
+            }
+
+            foreach (JsonElement bucket in buckets.EnumerateArray())
+            {
+                if (!bucket.TryGetProperty("Name", out JsonElement nameElement)
+                    || nameElement.ValueKind != JsonValueKind.String
+                    || !String.Equals(nameElement.GetString(), bucketName, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                return (
+                    ExtractElementString(bucket, "Id", operation),
+                    ExtractElementInt64(bucket, "Objects", operation),
+                    ExtractElementInt64(bucket, "Bytes", operation));
+            }
+
+            throw new InvalidOperationException(operation + " did not include bucket " + bucketName);
+        }
+
+        private static string ExtractElementString(JsonElement parent, string propertyName, string operation)
+        {
+            if (!parent.TryGetProperty(propertyName, out JsonElement element)
+                || element.ValueKind != JsonValueKind.String)
+            {
+                throw new InvalidOperationException(operation + " property " + propertyName + " was not a string");
+            }
+
+            return element.GetString() ?? String.Empty;
+        }
+
+        private static long ExtractElementInt64(JsonElement parent, string propertyName, string operation)
+        {
+            if (!parent.TryGetProperty(propertyName, out JsonElement element))
+            {
+                throw new InvalidOperationException(operation + " did not include property " + propertyName);
+            }
+
+            if (element.ValueKind == JsonValueKind.Number && element.TryGetInt64(out long value))
+            {
+                return value;
+            }
+
+            if (element.ValueKind == JsonValueKind.String
+                && Int64.TryParse(element.GetString(), out value))
             {
                 return value;
             }

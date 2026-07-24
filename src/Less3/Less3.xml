@@ -596,14 +596,14 @@
             Id of the bucket.
             </summary>
         </member>
-        <member name="F:Less3.Classes.BucketStatistics.Objects">
+        <member name="P:Less3.Classes.BucketStatistics.Objects">
             <summary>
-            The number of objects in the bucket including all versions.
+            The number of latest non-delete-marked object versions in the bucket.
             </summary>
         </member>
-        <member name="F:Less3.Classes.BucketStatistics.Bytes">
+        <member name="P:Less3.Classes.BucketStatistics.Bytes">
             <summary>
-            The number of bytes for all objects in the bucket.
+            The number of bytes for latest non-delete-marked object versions in the bucket.
             </summary>
         </member>
         <member name="M:Less3.Classes.BucketStatistics.#ctor">

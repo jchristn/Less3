@@ -113,7 +113,14 @@ namespace Less3.Database.PostgreSql.Queries
 
         internal static string GetStatistics(string bucketId)
         {
-            return "SELECT COUNT(*) AS objectcount, COALESCE(SUM(contentlength), 0) AS totalbytes FROM objects WHERE bucket_id = '" + Sanitizer.SanitizeString(bucketId) + "';";
+            return "SELECT COUNT(*) AS numobjects, COALESCE(SUM(contentlength), 0) AS totalbytes "
+                + "FROM objects o "
+                + "WHERE o.bucket_id = '" + Sanitizer.SanitizeString(bucketId) + "' "
+                + "AND o.deletemarker = FALSE "
+                + "AND o.version = ("
+                + "SELECT MAX(i.version) FROM objects i "
+                + "WHERE i.bucket_id = o.bucket_id AND i.key = o.key AND i.deletemarker = FALSE"
+                + ");";
         }
     }
 }

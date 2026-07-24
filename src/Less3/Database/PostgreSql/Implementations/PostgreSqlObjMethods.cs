@@ -87,9 +87,10 @@ namespace Less3.Database.PostgreSql.Implementations
             if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
             DataTable result = _Driver.ExecuteQuery(ObjQueries.GetStatistics(bucketId)).Result;
             BucketStatistics stats = new BucketStatistics();
+            stats.Id = bucketId;
             if (result != null && result.Rows.Count > 0)
             {
-                stats.Objects = Convert.ToInt64(result.Rows[0]["objectcount"]);
+                stats.Objects = Convert.ToInt64(result.Rows[0]["numobjects"]);
                 stats.Bytes = Convert.ToInt64(result.Rows[0]["totalbytes"]);
             }
             return stats;

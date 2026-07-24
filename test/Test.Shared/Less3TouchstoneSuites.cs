@@ -379,10 +379,15 @@ namespace Test.Shared
                     Active("Rbac", "Rbac_AssignmentCanBeScopedToBucket", "RBAC object-scope assignments permit only the assigned object", SecurityS3ObjectScopedRbacPermitsOnlyAssignedObjectAsync),
                     Active("Rbac", "Rbac_AssignmentCanBeScopedToObjectPrefix", "RBAC object-scope assignments deny unassigned objects and bucket enumeration", SecurityS3ObjectScopedRbacPermitsOnlyAssignedObjectAsync),
                     Active("Rbac", "Rbac_ExplicitDenyOverridesPermit", "RBAC explicit deny overrides permit", RestBearerSessionEnforcesRbacPermitAndDenyAsync),
+                    Active("Rbac", "Rbac_CredentialExplicitDenyOverridesPermit", "Credential-scoped explicit deny overrides a credential permit", SecurityRbacCredentialExplicitDenyOverridesPermitAsync),
+                    Active("Rbac", "Rbac_InactiveRolePermissionAssignmentIgnored", "Inactive roles, permissions, and assignments are ignored by authorization", SecurityRbacInactiveRolePermissionAssignmentIgnoredAsync),
                     Active("Rbac", "Rbac_SystemAdminBypassWorksOnlyForSystemAdmin", "Admin session bypass permits only administrator principals", RbacAdminBypassAuditAndEffectivePermissionsAsync),
                     Active("Rbac", "Rbac_TenantAdminLimitedToTenant", "Tenant admin REST sessions cannot access another tenant by query or body TenantId", SecurityRestTenantIdSpoofingDeniedAsync),
-                    Active("Rbac", "Rbac_AuditorReadOnly", "Tenant member read permission does not grant write access", SecurityRestNoRoleAndTenantMemberRbacBoundariesAsync),
-                    Active("Rbac", "Rbac_OperatorCanOperateButCannotManageSecurity", "Resource-scoped REST RBAC grants only the assigned resource", SecurityRestResourceScopedRbacPermitsOnlyAssignedResourceAsync),
+                    Active("Rbac", "Rbac_BuiltInRolePermissionMatrix", "Built-in REST roles enforce their positive and negative permission boundaries", SecurityRestBuiltInRolePermissionMatrixAsync),
+                    Active("Rbac", "Rbac_BuiltInCredentialRoleMatrix", "Built-in credential roles enforce S3 storage boundaries", SecurityS3BuiltInCredentialRoleMatrixAsync),
+                    Active("Rbac", "Rbac_EffectivePermissionsBuiltInRoleMatrix", "Effective permission reports match built-in role expectations", SecurityRestEffectivePermissionsBuiltInRoleMatrixAsync),
+                    Active("Rbac", "Rbac_AuditorReadOnly", "Auditor can read tenant resources and cannot write them", SecurityRestBuiltInRolePermissionMatrixAsync),
+                    Active("Rbac", "Rbac_OperatorCanOperateButCannotManageSecurity", "Operator can write storage metadata and cannot manage security", SecurityRestBuiltInRolePermissionMatrixAsync),
                     Active("Rbac", "Rbac_CustomRolePermissionSetControlsAccess", "Custom role permissions control REST access", RestBearerSessionEnforcesRbacPermitAndDenyAsync),
                     Active("Rbac", "Rbac_AuthorizationFailureAudited", "RBAC authorization failures are audited", RestBearerSessionEnforcesRbacPermitAndDenyAsync),
                     Active("Rbac", "Rbac_SensitiveAdminOperationAudited", "Sensitive admin mutations are written to authorization audit", RbacAdminBypassAuditAndEffectivePermissionsAsync),
@@ -398,6 +403,7 @@ namespace Test.Shared
                 cases: new List<TestCaseDescriptor>
                 {
                     Active("S3ServiceAndBuckets", "S3_ListBuckets_ReturnsOnlyCredentialTenantBuckets", "S3 ListBuckets returns only buckets in the authenticated credential tenant", S3ListBucketsReturnsOnlyCredentialTenantBucketsAsync),
+                    Active("S3ServiceAndBuckets", "S3_ListBuckets_ReturnsTenantBucketsForAuthorizedPrincipal", "S3 ListBuckets returns tenant-owned buckets for any authorized tenant credential", SecurityS3ListBucketsMatchesAwsTenantAccountScopeAsync),
                     Active("S3ServiceAndBuckets", "S3_ListBuckets_EmptyTenantReturnsEmptyList", "S3 ListBuckets returns an empty set for a tenant without buckets", S3ListBucketsEmptyTenantReturnsEmptyListAsync),
                     Active("S3ServiceAndBuckets", "S3_CreateBucket_SucceedsForAuthorizedTenant", "S3 CreateBucket succeeds for an authorized tenant credential", S3CreateBucketSucceedsForAuthorizedTenantAsync),
                     Active("S3ServiceAndBuckets", "S3_CreateBucket_DuplicateNameSameTenantFails", "S3 CreateBucket rejects duplicate bucket names in the same tenant", S3CreateBucketDuplicateNameSameTenantFailsAsync),
@@ -748,12 +754,19 @@ namespace Test.Shared
                     Planned("SecurityAndAudit", "Security_InvalidTenantIdCannotInjectSql", "SQL injection guard coverage pending provider-level assertions."),
                     Planned("SecurityAndAudit", "Security_InvalidSortFieldCannotInjectSql", "SQL injection guard coverage pending provider-level assertions."),
                     Active("SecurityAndAudit", "Security_S3TenantCredentialsOnlySeeOwnBucketsAndObjects", "S3 access keys resolve to one tenant and cannot see other tenant buckets or objects", SecurityS3TenantCredentialsOnlySeeOwnBucketsAndObjectsAsync),
+                    Active("SecurityAndAudit", "Security_S3ListBucketsMatchesAwsTenantAccountScope", "S3 ListBuckets enumerates tenant-owned buckets for authorized tenant credentials", SecurityS3ListBucketsMatchesAwsTenantAccountScopeAsync),
                     Active("SecurityAndAudit", "Security_S3NoRoleCredentialDenied", "S3 credentials without RBAC permissions cannot list, create, read, write, or delete", SecurityS3NoRoleCredentialDeniedServiceBucketAndObjectAccessAsync),
                     Active("SecurityAndAudit", "Security_S3ObjectScopedRbac", "S3 object-scoped RBAC grants only the assigned object", SecurityS3ObjectScopedRbacPermitsOnlyAssignedObjectAsync),
+                    Active("SecurityAndAudit", "Security_S3BuiltInCredentialRoleMatrix", "Built-in credential roles enforce S3 positive and negative storage boundaries", SecurityS3BuiltInCredentialRoleMatrixAsync),
                     Active("SecurityAndAudit", "Security_RestNoRoleAndTenantMemberBoundaries", "REST no-role and tenant-member sessions enforce least privilege", SecurityRestNoRoleAndTenantMemberRbacBoundariesAsync),
+                    Active("SecurityAndAudit", "Security_RestBuiltInRolePermissionMatrix", "Built-in REST roles enforce cross-resource permission boundaries", SecurityRestBuiltInRolePermissionMatrixAsync),
                     Active("SecurityAndAudit", "Security_RestResourceScopedRbac", "REST resource-scoped RBAC grants only the assigned resource", SecurityRestResourceScopedRbacPermitsOnlyAssignedResourceAsync),
+                    Active("SecurityAndAudit", "Security_RestEffectivePermissionsBuiltInRoleMatrix", "Effective permissions reflect built-in role boundaries", SecurityRestEffectivePermissionsBuiltInRoleMatrixAsync),
                     Active("SecurityAndAudit", "Security_RestTenantIdQuerySpoofingDenied", "REST bearer sessions cannot override tenant scope through query TenantId", SecurityRestTenantIdQuerySpoofingDeniedAsync),
                     Active("SecurityAndAudit", "Security_RestTenantIdBodySpoofingDenied", "REST bearer sessions cannot override tenant scope through body TenantId", SecurityRestTenantIdBodySpoofingDeniedAsync),
+                    Active("SecurityAndAudit", "Security_RestCrossTenantSecurityMutationSpoofingDenied", "REST sessions cannot spoof tenant IDs for IAM and security mutations", SecurityRestCrossTenantSecurityMutationSpoofingDeniedAsync),
+                    Active("SecurityAndAudit", "Security_RbacInactiveRolePermissionAssignmentIgnored", "Inactive RBAC records do not authorize access", SecurityRbacInactiveRolePermissionAssignmentIgnoredAsync),
+                    Active("SecurityAndAudit", "Security_RbacCredentialExplicitDenyOverridesPermit", "Credential deny permissions override matching permits", SecurityRbacCredentialExplicitDenyOverridesPermitAsync),
                     Active("SecurityAndAudit", "Security_AuditRecordsSensitiveAdminMutations", "Sensitive admin mutations are audited", RbacAdminBypassAuditAndEffectivePermissionsAsync),
                     Active("SecurityAndAudit", "Security_AuditRecordsDeniedRequests", "Denied RBAC requests are audited", RestBearerSessionEnforcesRbacPermitAndDenyAsync),
                     Active("SecurityAndAudit", "Security_AuditTenantScopeEnforced", "Authorization audit is tenant scoped", AuthorizationAuditRestReadEnumerateDeleteExistsAsync)
@@ -5712,6 +5725,13 @@ namespace Test.Shared
                 cancellationToken);
         }
 
+        private static Task SecurityS3ListBucketsMatchesAwsTenantAccountScopeAsync(CancellationToken cancellationToken)
+        {
+            return RunSecurityBoundaryCaseAsync(
+                SecurityBoundaryTestCases.S3ListBucketsMatchesAwsTenantAccountScopeAsync,
+                cancellationToken);
+        }
+
         private static Task SecurityS3NoRoleCredentialDeniedServiceBucketAndObjectAccessAsync(CancellationToken cancellationToken)
         {
             return RunSecurityBoundaryCaseAsync(
@@ -5726,6 +5746,13 @@ namespace Test.Shared
                 cancellationToken);
         }
 
+        private static Task SecurityS3BuiltInCredentialRoleMatrixAsync(CancellationToken cancellationToken)
+        {
+            return RunSecurityBoundaryCaseAsync(
+                SecurityBoundaryTestCases.S3BuiltInCredentialRoleMatrixAsync,
+                cancellationToken);
+        }
+
         private static Task SecurityRestNoRoleAndTenantMemberRbacBoundariesAsync(CancellationToken cancellationToken)
         {
             return RunSecurityBoundaryCaseAsync(
@@ -5733,10 +5760,24 @@ namespace Test.Shared
                 cancellationToken);
         }
 
+        private static Task SecurityRestBuiltInRolePermissionMatrixAsync(CancellationToken cancellationToken)
+        {
+            return RunSecurityBoundaryCaseAsync(
+                SecurityBoundaryTestCases.RestBuiltInRolePermissionMatrixAsync,
+                cancellationToken);
+        }
+
         private static Task SecurityRestResourceScopedRbacPermitsOnlyAssignedResourceAsync(CancellationToken cancellationToken)
         {
             return RunSecurityBoundaryCaseAsync(
                 SecurityBoundaryTestCases.RestResourceScopedRbacPermitsOnlyAssignedResourceAsync,
+                cancellationToken);
+        }
+
+        private static Task SecurityRestEffectivePermissionsBuiltInRoleMatrixAsync(CancellationToken cancellationToken)
+        {
+            return RunSecurityBoundaryCaseAsync(
+                SecurityBoundaryTestCases.RestEffectivePermissionsBuiltInRoleMatrixAsync,
                 cancellationToken);
         }
 
@@ -5754,6 +5795,13 @@ namespace Test.Shared
                 cancellationToken);
         }
 
+        private static Task SecurityRestCrossTenantSecurityMutationSpoofingDeniedAsync(CancellationToken cancellationToken)
+        {
+            return RunSecurityBoundaryCaseAsync(
+                SecurityBoundaryTestCases.RestCrossTenantSecurityMutationSpoofingDeniedAsync,
+                cancellationToken);
+        }
+
         private static async Task SecurityRestTenantIdSpoofingDeniedAsync(CancellationToken cancellationToken)
         {
             using Less3TestServer server = new Less3TestServer();
@@ -5766,6 +5814,20 @@ namespace Test.Shared
         {
             return RunSecurityBoundaryCaseAsync(
                 SecurityBoundaryTestCases.RestAdminApiKeyCanManageAcrossTenantsAsync,
+                cancellationToken);
+        }
+
+        private static Task SecurityRbacInactiveRolePermissionAssignmentIgnoredAsync(CancellationToken cancellationToken)
+        {
+            return RunSecurityBoundaryCaseAsync(
+                SecurityBoundaryTestCases.RbacInactiveRolePermissionAssignmentIgnoredAsync,
+                cancellationToken);
+        }
+
+        private static Task SecurityRbacCredentialExplicitDenyOverridesPermitAsync(CancellationToken cancellationToken)
+        {
+            return RunSecurityBoundaryCaseAsync(
+                SecurityBoundaryTestCases.RbacCredentialExplicitDenyOverridesPermitAsync,
                 cancellationToken);
         }
 

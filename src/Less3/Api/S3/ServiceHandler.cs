@@ -80,12 +80,13 @@ namespace Less3.Api.S3
 
             RequestValidator.ValidateAuthorization(md, _Logging, header);
 
-            List<Classes.Bucket> buckets = _Buckets.GetUserBuckets(md.TenantId, md.User.Id);
+            List<Classes.Bucket> buckets = _Buckets.GetTenantBuckets(md.TenantId);
+            Tenant tenant = _Config.GetTenantById(md.TenantId);
 
             ListAllMyBucketsResult listBucketsResult = new ListAllMyBucketsResult();
             listBucketsResult.Owner = new S3ServerLibrary.S3Objects.Owner();
-            listBucketsResult.Owner.DisplayName = md.User.Name;
-            listBucketsResult.Owner.ID = md.User.Id;
+            listBucketsResult.Owner.DisplayName = tenant != null ? tenant.Name : md.TenantId;
+            listBucketsResult.Owner.ID = md.TenantId;
 
             listBucketsResult.Buckets = new Buckets();
             listBucketsResult.Buckets.BucketList = new List<S3ServerLibrary.S3Objects.Bucket>();

@@ -58,6 +58,10 @@ namespace Test.Shared.Suites
                 () => SecurityBoundaryTestCases.S3TenantCredentialsOnlySeeOwnBucketsAndObjectsAsync(_Server, CancellationToken.None)).ConfigureAwait(false);
 
             await RunTest(
+                "SecurityBoundary_S3_ListBucketsMatchesAwsTenantAccountScope",
+                () => SecurityBoundaryTestCases.S3ListBucketsMatchesAwsTenantAccountScopeAsync(_Server, CancellationToken.None)).ConfigureAwait(false);
+
+            await RunTest(
                 "SecurityBoundary_S3_NoRoleCredentialDeniedServiceBucketAndObjectAccess",
                 () => SecurityBoundaryTestCases.S3NoRoleCredentialDeniedServiceBucketAndObjectAccessAsync(_Server, CancellationToken.None)).ConfigureAwait(false);
 
@@ -66,12 +70,24 @@ namespace Test.Shared.Suites
                 () => SecurityBoundaryTestCases.S3ObjectScopedRbacPermitsOnlyAssignedObjectAsync(_Server, CancellationToken.None)).ConfigureAwait(false);
 
             await RunTest(
+                "SecurityBoundary_S3_BuiltInCredentialRoleMatrix",
+                () => SecurityBoundaryTestCases.S3BuiltInCredentialRoleMatrixAsync(_Server, CancellationToken.None)).ConfigureAwait(false);
+
+            await RunTest(
                 "SecurityBoundary_REST_NoRoleAndTenantMemberRbacBoundaries",
                 () => SecurityBoundaryTestCases.RestNoRoleAndTenantMemberRbacBoundariesAsync(_Server, CancellationToken.None)).ConfigureAwait(false);
 
             await RunTest(
+                "SecurityBoundary_REST_BuiltInRolePermissionMatrix",
+                () => SecurityBoundaryTestCases.RestBuiltInRolePermissionMatrixAsync(_Server, CancellationToken.None)).ConfigureAwait(false);
+
+            await RunTest(
                 "SecurityBoundary_REST_ResourceScopedRbacPermitsOnlyAssignedResource",
                 () => SecurityBoundaryTestCases.RestResourceScopedRbacPermitsOnlyAssignedResourceAsync(_Server, CancellationToken.None)).ConfigureAwait(false);
+
+            await RunTest(
+                "SecurityBoundary_REST_EffectivePermissionsBuiltInRoleMatrix",
+                () => SecurityBoundaryTestCases.RestEffectivePermissionsBuiltInRoleMatrixAsync(_Server, CancellationToken.None)).ConfigureAwait(false);
 
             await RunTest(
                 "SecurityBoundary_REST_TenantIdQuerySpoofingDenied",
@@ -82,8 +98,20 @@ namespace Test.Shared.Suites
                 () => SecurityBoundaryTestCases.RestTenantIdBodySpoofingDeniedAsync(_Server, CancellationToken.None)).ConfigureAwait(false);
 
             await RunTest(
+                "SecurityBoundary_REST_CrossTenantSecurityMutationSpoofingDenied",
+                () => SecurityBoundaryTestCases.RestCrossTenantSecurityMutationSpoofingDeniedAsync(_Server, CancellationToken.None)).ConfigureAwait(false);
+
+            await RunTest(
                 "SecurityBoundary_REST_AdminApiKeyCanManageAcrossTenants",
                 () => SecurityBoundaryTestCases.RestAdminApiKeyCanManageAcrossTenantsAsync(_Server, CancellationToken.None)).ConfigureAwait(false);
+
+            await RunTest(
+                "SecurityBoundary_RBAC_InactiveRolePermissionAssignmentIgnored",
+                () => SecurityBoundaryTestCases.RbacInactiveRolePermissionAssignmentIgnoredAsync(_Server, CancellationToken.None)).ConfigureAwait(false);
+
+            await RunTest(
+                "SecurityBoundary_RBAC_CredentialExplicitDenyOverridesPermit",
+                () => SecurityBoundaryTestCases.RbacCredentialExplicitDenyOverridesPermitAsync(_Server, CancellationToken.None)).ConfigureAwait(false);
         }
 
         #endregion
@@ -155,6 +183,47 @@ namespace Test.Shared.Suites
                     ContentBody = "blocked"
                 }, cancellationToken),
                 "tenant B write to tenant A unique bucket").ConfigureAwait(false);
+        }
+
+        internal static async Task S3ListBucketsMatchesAwsTenantAccountScopeAsync(
+            Less3TestServer server,
+            CancellationToken cancellationToken)
+        {
+            TenantPrincipal tenantAdmin = await CreateTenantPrincipalAsync(server, "s3-list-admin", true, cancellationToken).ConfigureAwait(false);
+            TenantPrincipal tenantReader = await CreateTenantPrincipalAsync(server, "s3-list-reader", false, cancellationToken, tenantAdmin.TenantId).ConfigureAwait(false);
+            TenantPrincipal otherTenantAdmin = await CreateTenantPrincipalAsync(server, "s3-list-other", true, cancellationToken).ConfigureAwait(false);
+
+            await GrantCustomRoleAsync(
+                server,
+                tenantAdmin.TenantId,
+                tenantReader.CredentialId,
+                "Credential",
+                "Storage",
+                "Read",
+                true,
+                "Tenant",
+                tenantAdmin.TenantId,
+                cancellationToken).ConfigureAwait(false);
+
+            string adminBucketA = "list-a-" + TestIds.Suffix().Substring(0, 8);
+            string adminBucketB = "list-b-" + TestIds.Suffix().Substring(0, 8);
+            string otherTenantBucket = "list-o-" + TestIds.Suffix().Substring(0, 8);
+
+            using IAmazonS3 tenantAdminClient = server.CreateS3Client(tenantAdmin.AccessKey, tenantAdmin.SecretKey);
+            using IAmazonS3 tenantReaderClient = server.CreateS3Client(tenantReader.AccessKey, tenantReader.SecretKey);
+            using IAmazonS3 otherTenantClient = server.CreateS3Client(otherTenantAdmin.AccessKey, otherTenantAdmin.SecretKey);
+
+            await PutBucketAsync(tenantAdminClient, adminBucketA, cancellationToken).ConfigureAwait(false);
+            await PutBucketAsync(tenantAdminClient, adminBucketB, cancellationToken).ConfigureAwait(false);
+            await PutBucketAsync(otherTenantClient, otherTenantBucket, cancellationToken).ConfigureAwait(false);
+
+            ListBucketsResponse readerBuckets = await tenantReaderClient.ListBucketsAsync(cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, readerBuckets.HttpStatusCode, "same-tenant reader ListBuckets");
+            EnsureEqual(tenantAdmin.TenantId, readerBuckets.Owner?.Id, "same-tenant reader ListBuckets owner id");
+            EnsureEqual(2, CountBuckets(readerBuckets), "same-tenant reader bucket count");
+            EnsureEqual(1, CountBucket(readerBuckets, adminBucketA), "same-tenant reader sees first tenant bucket");
+            EnsureEqual(1, CountBucket(readerBuckets, adminBucketB), "same-tenant reader sees second tenant bucket");
+            EnsureEqual(0, CountBucket(readerBuckets, otherTenantBucket), "same-tenant reader must not see other tenant bucket");
         }
 
         internal static async Task S3NoRoleCredentialDeniedServiceBucketAndObjectAccessAsync(
@@ -255,6 +324,96 @@ namespace Test.Shared.Suites
                 "read-only object-scoped credential object update").ConfigureAwait(false);
         }
 
+        internal static async Task S3BuiltInCredentialRoleMatrixAsync(
+            Less3TestServer server,
+            CancellationToken cancellationToken)
+        {
+            TenantPrincipal admin = await CreateTenantPrincipalAsync(server, "s3-role-admin", true, cancellationToken).ConfigureAwait(false);
+            TenantPrincipal member = await CreateTenantPrincipalAsync(server, "s3-role-member", false, cancellationToken, admin.TenantId).ConfigureAwait(false);
+            TenantPrincipal securityAdmin = await CreateTenantPrincipalAsync(server, "s3-role-security", false, cancellationToken, admin.TenantId).ConfigureAwait(false);
+            TenantPrincipal auditor = await CreateTenantPrincipalAsync(server, "s3-role-auditor", false, cancellationToken, admin.TenantId).ConfigureAwait(false);
+            TenantPrincipal operatorPrincipal = await CreateTenantPrincipalAsync(server, "s3-role-operator", false, cancellationToken, admin.TenantId).ConfigureAwait(false);
+            TenantPrincipal noRole = await CreateTenantPrincipalAsync(server, "s3-role-norole", false, cancellationToken, admin.TenantId).ConfigureAwait(false);
+
+            await GrantBuiltInRoleAsync(server, admin.TenantId, "rol_builtin_tenantmember", "Credential", member.CredentialId, "Tenant", admin.TenantId, cancellationToken).ConfigureAwait(false);
+            await GrantBuiltInRoleAsync(server, admin.TenantId, "rol_builtin_securityadmin", "Credential", securityAdmin.CredentialId, "Tenant", admin.TenantId, cancellationToken).ConfigureAwait(false);
+            await GrantBuiltInRoleAsync(server, admin.TenantId, "rol_builtin_auditor", "Credential", auditor.CredentialId, "Tenant", admin.TenantId, cancellationToken).ConfigureAwait(false);
+            await GrantBuiltInRoleAsync(server, admin.TenantId, "rol_builtin_operator", "Credential", operatorPrincipal.CredentialId, "Tenant", admin.TenantId, cancellationToken).ConfigureAwait(false);
+
+            string bucketName = "s3role-" + TestIds.Suffix().Substring(0, 8);
+            string adminKey = "admin-owned.txt";
+            string operatorBucket = "oprole-" + TestIds.Suffix().Substring(0, 8);
+
+            using IAmazonS3 adminClient = server.CreateS3Client(admin.AccessKey, admin.SecretKey);
+            using IAmazonS3 memberClient = server.CreateS3Client(member.AccessKey, member.SecretKey);
+            using IAmazonS3 securityClient = server.CreateS3Client(securityAdmin.AccessKey, securityAdmin.SecretKey);
+            using IAmazonS3 auditorClient = server.CreateS3Client(auditor.AccessKey, auditor.SecretKey);
+            using IAmazonS3 operatorClient = server.CreateS3Client(operatorPrincipal.AccessKey, operatorPrincipal.SecretKey);
+            using IAmazonS3 noRoleClient = server.CreateS3Client(noRole.AccessKey, noRole.SecretKey);
+
+            await PutBucketAsync(adminClient, bucketName, cancellationToken).ConfigureAwait(false);
+            await PutTextObjectAsync(adminClient, bucketName, adminKey, "admin-owned", cancellationToken).ConfigureAwait(false);
+
+            ListBucketsResponse auditorBuckets = await auditorClient.ListBucketsAsync(cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, auditorBuckets.HttpStatusCode, "auditor credential ListBuckets");
+            EnsureEqual(1, CountBucket(auditorBuckets, bucketName), "auditor credential sees tenant admin bucket");
+            EnsureEqual(
+                "admin-owned",
+                await ReadObjectBodyAsync(auditorClient, bucketName, adminKey, cancellationToken).ConfigureAwait(false),
+                "auditor reads tenant object");
+            await EnsureS3FailureAsync(
+                () => auditorClient.PutBucketAsync(new PutBucketRequest { BucketName = "auditor-create-" + TestIds.Suffix().Substring(0, 8) }, cancellationToken),
+                "auditor credential CreateBucket").ConfigureAwait(false);
+            await EnsureS3FailureAsync(
+                () => auditorClient.PutObjectAsync(new PutObjectRequest
+                {
+                    BucketName = bucketName,
+                    Key = "auditor-write.txt",
+                    ContentBody = "blocked"
+                }, cancellationToken),
+                "auditor credential PutObject").ConfigureAwait(false);
+            await EnsureS3FailureAsync(
+                () => auditorClient.DeleteObjectAsync(bucketName, adminKey, cancellationToken),
+                "auditor credential DeleteObject").ConfigureAwait(false);
+
+            await PutBucketAsync(operatorClient, operatorBucket, cancellationToken).ConfigureAwait(false);
+            await PutTextObjectAsync(operatorClient, bucketName, "operator-write.txt", "operator-write", cancellationToken).ConfigureAwait(false);
+            ListBucketsResponse auditorBucketsAfterOperatorCreate = await auditorClient.ListBucketsAsync(cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, auditorBucketsAfterOperatorCreate.HttpStatusCode, "auditor credential ListBuckets after operator bucket create");
+            EnsureEqual(1, CountBucket(auditorBucketsAfterOperatorCreate, bucketName), "auditor credential still sees tenant admin bucket");
+            EnsureEqual(1, CountBucket(auditorBucketsAfterOperatorCreate, operatorBucket), "auditor credential sees operator-created tenant bucket");
+            await EnsureS3FailureAsync(
+                () => operatorClient.ListBucketsAsync(cancellationToken),
+                "operator credential ListBuckets").ConfigureAwait(false);
+            await EnsureS3FailureAsync(
+                () => operatorClient.GetObjectAsync(bucketName, adminKey, cancellationToken),
+                "operator credential read of admin-owned object").ConfigureAwait(false);
+
+            await EnsureS3FailureAsync(
+                () => securityClient.ListBucketsAsync(cancellationToken),
+                "security admin credential ListBuckets").ConfigureAwait(false);
+            await EnsureS3FailureAsync(
+                () => securityClient.PutBucketAsync(new PutBucketRequest { BucketName = "security-create-" + TestIds.Suffix().Substring(0, 8) }, cancellationToken),
+                "security admin credential CreateBucket").ConfigureAwait(false);
+            await EnsureS3FailureAsync(
+                () => securityClient.GetObjectAsync(bucketName, adminKey, cancellationToken),
+                "security admin credential GetObject").ConfigureAwait(false);
+
+            await EnsureS3FailureAsync(
+                () => memberClient.ListBucketsAsync(cancellationToken),
+                "tenant member credential ListBuckets").ConfigureAwait(false);
+            await EnsureS3FailureAsync(
+                () => memberClient.GetObjectAsync(bucketName, adminKey, cancellationToken),
+                "tenant member credential GetObject").ConfigureAwait(false);
+
+            await EnsureS3FailureAsync(
+                () => noRoleClient.ListBucketsAsync(cancellationToken),
+                "no-role credential ListBuckets in built-in role matrix").ConfigureAwait(false);
+            await EnsureS3FailureAsync(
+                () => noRoleClient.GetObjectAsync(bucketName, adminKey, cancellationToken),
+                "no-role credential GetObject in built-in role matrix").ConfigureAwait(false);
+        }
+
         internal static async Task RestNoRoleAndTenantMemberRbacBoundariesAsync(
             Less3TestServer server,
             CancellationToken cancellationToken)
@@ -301,6 +460,94 @@ namespace Test.Shared.Suites
             EnsureStatus(HttpStatusCode.Forbidden, memberUserCreate.StatusCode, "tenant member REST user create denied");
         }
 
+        internal static async Task RestBuiltInRolePermissionMatrixAsync(
+            Less3TestServer server,
+            CancellationToken cancellationToken)
+        {
+            TenantPrincipal admin = await CreateTenantPrincipalAsync(server, "rest-role-admin", true, cancellationToken).ConfigureAwait(false);
+            TenantPrincipal noRole = await CreateTenantPrincipalAsync(server, "rest-role-norole", false, cancellationToken, admin.TenantId).ConfigureAwait(false);
+            TenantPrincipal member = await CreateTenantPrincipalAsync(server, "rest-role-member", false, cancellationToken, admin.TenantId).ConfigureAwait(false);
+            TenantPrincipal securityAdmin = await CreateTenantPrincipalAsync(server, "rest-role-security", false, cancellationToken, admin.TenantId).ConfigureAwait(false);
+            TenantPrincipal auditor = await CreateTenantPrincipalAsync(server, "rest-role-auditor", false, cancellationToken, admin.TenantId).ConfigureAwait(false);
+            TenantPrincipal operatorPrincipal = await CreateTenantPrincipalAsync(server, "rest-role-operator", false, cancellationToken, admin.TenantId).ConfigureAwait(false);
+
+            await GrantBuiltInRoleAsync(server, admin.TenantId, "rol_builtin_tenantmember", "User", member.UserId, "Tenant", admin.TenantId, cancellationToken).ConfigureAwait(false);
+            await GrantBuiltInRoleAsync(server, admin.TenantId, "rol_builtin_securityadmin", "User", securityAdmin.UserId, "Tenant", admin.TenantId, cancellationToken).ConfigureAwait(false);
+            await GrantBuiltInRoleAsync(server, admin.TenantId, "rol_builtin_auditor", "User", auditor.UserId, "Tenant", admin.TenantId, cancellationToken).ConfigureAwait(false);
+            await GrantBuiltInRoleAsync(server, admin.TenantId, "rol_builtin_operator", "User", operatorPrincipal.UserId, "Tenant", admin.TenantId, cancellationToken).ConfigureAwait(false);
+
+            string targetUserId = TestIds.User();
+            string deleteDeniedUserId = TestIds.User();
+            await CreateUserAsync(server, admin.TenantId, targetUserId, "target-" + targetUserId + "@example.com", cancellationToken).ConfigureAwait(false);
+            await CreateUserAsync(server, admin.TenantId, deleteDeniedUserId, "delete-denied-" + deleteDeniedUserId + "@example.com", cancellationToken).ConfigureAwait(false);
+
+            string bucketName = "restrole-" + TestIds.Suffix().Substring(0, 8);
+            string objectKey = "role-matrix.txt";
+            using (IAmazonS3 adminClient = server.CreateS3Client(admin.AccessKey, admin.SecretKey))
+            {
+                await PutBucketAsync(adminClient, bucketName, cancellationToken).ConfigureAwait(false);
+                await PutTextObjectAsync(adminClient, bucketName, objectKey, "role-matrix", cancellationToken).ConfigureAwait(false);
+            }
+
+            string bucketId = await ReadBucketIdByNameAsync(server, admin.TenantId, bucketName, cancellationToken).ConfigureAwait(false);
+            string objectId = await ReadObjectIdByKeyAsync(server, admin.TenantId, bucketId, objectKey, cancellationToken).ConfigureAwait(false);
+
+            string noRoleToken = await LoginAsync(server, admin.TenantId, noRole.Email, "password", cancellationToken).ConfigureAwait(false);
+            string memberToken = await LoginAsync(server, admin.TenantId, member.Email, "password", cancellationToken).ConfigureAwait(false);
+            string securityToken = await LoginAsync(server, admin.TenantId, securityAdmin.Email, "password", cancellationToken).ConfigureAwait(false);
+            string auditorToken = await LoginAsync(server, admin.TenantId, auditor.Email, "password", cancellationToken).ConfigureAwait(false);
+            string operatorToken = await LoginAsync(server, admin.TenantId, operatorPrincipal.Email, "password", cancellationToken).ConfigureAwait(false);
+
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "tenants/" + admin.TenantId, noRoleToken, null, HttpStatusCode.Forbidden, "no-role own tenant read", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "users/" + targetUserId, noRoleToken, null, HttpStatusCode.Forbidden, "no-role user read", cancellationToken).ConfigureAwait(false);
+
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "tenants/" + admin.TenantId, memberToken, null, HttpStatusCode.OK, "TenantMember own tenant read", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "tenants/" + admin.TenantId + "/exists", memberToken, null, HttpStatusCode.OK, "TenantMember own tenant exists", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "tenants", memberToken, null, HttpStatusCode.Forbidden, "TenantMember tenant enumeration denied", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "users/" + targetUserId, memberToken, null, HttpStatusCode.Forbidden, "TenantMember user read denied", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Post, "users", memberToken, NewUserJson(admin.TenantId, TestIds.User(), "blocked-member"), HttpStatusCode.Forbidden, "TenantMember user create denied", cancellationToken).ConfigureAwait(false);
+
+            string auditorUserBody = await EnsureBearerStatusAsync(server, HttpMethod.Get, "users/" + targetUserId, auditorToken, null, HttpStatusCode.OK, "Auditor user read", cancellationToken).ConfigureAwait(false);
+            EnsureContains(auditorUserBody, targetUserId, "Auditor user read body");
+            string auditorUsersBody = await EnsureBearerStatusAsync(server, HttpMethod.Get, "users?tenantId=" + admin.TenantId, auditorToken, null, HttpStatusCode.OK, "Auditor user enumerate", cancellationToken).ConfigureAwait(false);
+            EnsureContains(auditorUsersBody, targetUserId, "Auditor user enumerate body");
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "buckets/" + bucketId + "?tenantId=" + admin.TenantId, auditorToken, null, HttpStatusCode.OK, "Auditor bucket read", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "objects/" + objectId + "?tenantId=" + admin.TenantId + "&bucketId=" + bucketId, auditorToken, null, HttpStatusCode.OK, "Auditor object read", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "authorizationaudit?tenantId=" + admin.TenantId, auditorToken, null, HttpStatusCode.OK, "Auditor authorization audit enumerate", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Post, "users", auditorToken, NewUserJson(admin.TenantId, TestIds.User(), "blocked-auditor"), HttpStatusCode.Forbidden, "Auditor user create denied", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Put, "users/" + targetUserId, auditorToken, NewUserJson(admin.TenantId, targetUserId, "blocked-auditor-update"), HttpStatusCode.Forbidden, "Auditor user update denied", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Delete, "users/" + deleteDeniedUserId + "?tenantId=" + admin.TenantId, auditorToken, null, HttpStatusCode.Forbidden, "Auditor user delete denied", cancellationToken).ConfigureAwait(false);
+
+            string securityCreatedUserId = TestIds.User();
+            string securityRoleId = TestIds.Role();
+            string securityPermissionId = TestIds.Permission();
+            string securityAssignmentId = TestIds.Assignment();
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "users/" + targetUserId, securityToken, null, HttpStatusCode.OK, "SecurityAdmin user read", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Post, "users", securityToken, NewUserJson(admin.TenantId, securityCreatedUserId, "security-created"), HttpStatusCode.Created, "SecurityAdmin user create", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Post, "roles?tenantId=" + admin.TenantId, securityToken, RoleJson(admin.TenantId, securityRoleId, "Security matrix role", true), HttpStatusCode.Created, "SecurityAdmin role create", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Post, "permissions?tenantId=" + admin.TenantId, securityToken, PermissionJson(admin.TenantId, securityPermissionId, securityRoleId, "Tenant", "Read", true, true), HttpStatusCode.Created, "SecurityAdmin permission create", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Post, "roleassignments?tenantId=" + admin.TenantId, securityToken, AssignmentJson(admin.TenantId, securityAssignmentId, securityRoleId, "User", noRole.UserId, "Tenant", admin.TenantId, true), HttpStatusCode.Created, "SecurityAdmin assignment create", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "authorizationaudit?tenantId=" + admin.TenantId, securityToken, null, HttpStatusCode.OK, "SecurityAdmin authorization audit enumerate", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "tenants/" + admin.TenantId, securityToken, null, HttpStatusCode.Forbidden, "SecurityAdmin tenant read denied", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "buckets/" + bucketId + "?tenantId=" + admin.TenantId, securityToken, null, HttpStatusCode.Forbidden, "SecurityAdmin bucket read denied", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Post, "buckets?tenantId=" + admin.TenantId, securityToken, BucketJson(admin.TenantId, TestIds.Bucket(), securityAdmin.UserId, "blocked-security-" + TestIds.Suffix().Substring(0, 8)), HttpStatusCode.Forbidden, "SecurityAdmin bucket create denied", cancellationToken).ConfigureAwait(false);
+
+            string operatorTagId = TestIds.BucketTag();
+            await EnsureBearerStatusAsync(server, HttpMethod.Post, "buckettags?tenantId=" + admin.TenantId + "&bucketId=" + bucketId, operatorToken, JsonSerializer.Serialize(new
+            {
+                Id = operatorTagId,
+                TenantId = admin.TenantId,
+                BucketId = bucketId,
+                Key = "operator",
+                Value = "write"
+            }), HttpStatusCode.Created, "Operator bucket tag create", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "buckettags/" + operatorTagId + "?tenantId=" + admin.TenantId + "&bucketId=" + bucketId, operatorToken, null, HttpStatusCode.Forbidden, "Operator bucket tag read denied", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "buckets/" + bucketId + "?tenantId=" + admin.TenantId, operatorToken, null, HttpStatusCode.Forbidden, "Operator bucket read denied", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "users/" + targetUserId, operatorToken, null, HttpStatusCode.Forbidden, "Operator user read denied", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Post, "roles?tenantId=" + admin.TenantId, operatorToken, RoleJson(admin.TenantId, TestIds.Role(), "Blocked operator role", true), HttpStatusCode.Forbidden, "Operator role create denied", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "tenants/" + admin.TenantId, operatorToken, null, HttpStatusCode.Forbidden, "Operator tenant read denied", cancellationToken).ConfigureAwait(false);
+        }
+
         internal static async Task RestResourceScopedRbacPermitsOnlyAssignedResourceAsync(
             Less3TestServer server,
             CancellationToken cancellationToken)
@@ -336,6 +583,43 @@ namespace Test.Shared.Suites
 
             HttpResponseMessage enumerate = await SendBearerRestAsync(server, HttpMethod.Get, "users", scopedToken, null, cancellationToken).ConfigureAwait(false);
             EnsureStatus(HttpStatusCode.Forbidden, enumerate.StatusCode, "resource-scoped REST collection enumerate denied");
+        }
+
+        internal static async Task RestEffectivePermissionsBuiltInRoleMatrixAsync(
+            Less3TestServer server,
+            CancellationToken cancellationToken)
+        {
+            TenantPrincipal admin = await CreateTenantPrincipalAsync(server, "eff-role-admin", true, cancellationToken).ConfigureAwait(false);
+            TenantPrincipal member = await CreateTenantPrincipalAsync(server, "eff-role-member", false, cancellationToken, admin.TenantId).ConfigureAwait(false);
+            TenantPrincipal securityAdmin = await CreateTenantPrincipalAsync(server, "eff-role-security", false, cancellationToken, admin.TenantId).ConfigureAwait(false);
+            TenantPrincipal auditor = await CreateTenantPrincipalAsync(server, "eff-role-auditor", false, cancellationToken, admin.TenantId).ConfigureAwait(false);
+            TenantPrincipal operatorPrincipal = await CreateTenantPrincipalAsync(server, "eff-role-operator", false, cancellationToken, admin.TenantId).ConfigureAwait(false);
+            TenantPrincipal noRole = await CreateTenantPrincipalAsync(server, "eff-role-norole", false, cancellationToken, admin.TenantId).ConfigureAwait(false);
+
+            await GrantBuiltInRoleAsync(server, admin.TenantId, "rol_builtin_tenantmember", "User", member.UserId, "Tenant", admin.TenantId, cancellationToken).ConfigureAwait(false);
+            await GrantBuiltInRoleAsync(server, admin.TenantId, "rol_builtin_securityadmin", "User", securityAdmin.UserId, "Tenant", admin.TenantId, cancellationToken).ConfigureAwait(false);
+            await GrantBuiltInRoleAsync(server, admin.TenantId, "rol_builtin_auditor", "User", auditor.UserId, "Tenant", admin.TenantId, cancellationToken).ConfigureAwait(false);
+            await GrantBuiltInRoleAsync(server, admin.TenantId, "rol_builtin_operator", "Credential", operatorPrincipal.CredentialId, "Tenant", admin.TenantId, cancellationToken).ConfigureAwait(false);
+
+            await EnsureEffectivePermissionAsync(server, admin.TenantId, "User", member.UserId, "Tenant", admin.TenantId, "Read", true, "TenantMember tenant read", cancellationToken).ConfigureAwait(false);
+            await EnsureEffectivePermissionAsync(server, admin.TenantId, "User", member.UserId, "User", noRole.UserId, "Read", false, "TenantMember user read denied", cancellationToken).ConfigureAwait(false);
+            await EnsureEffectivePermissionAsync(server, admin.TenantId, "User", member.UserId, "Tenant", admin.TenantId, "Create", false, "TenantMember tenant create denied", cancellationToken).ConfigureAwait(false);
+
+            await EnsureEffectivePermissionAsync(server, admin.TenantId, "User", auditor.UserId, "User", noRole.UserId, "Read", true, "Auditor user read", cancellationToken).ConfigureAwait(false);
+            await EnsureEffectivePermissionAsync(server, admin.TenantId, "User", auditor.UserId, "Bucket", null, "Enumerate", true, "Auditor bucket enumerate", cancellationToken).ConfigureAwait(false);
+            await EnsureEffectivePermissionAsync(server, admin.TenantId, "User", auditor.UserId, "User", noRole.UserId, "Create", false, "Auditor user create denied", cancellationToken).ConfigureAwait(false);
+            await EnsureEffectivePermissionAsync(server, admin.TenantId, "User", auditor.UserId, "Object", null, "Delete", false, "Auditor object delete denied", cancellationToken).ConfigureAwait(false);
+
+            await EnsureEffectivePermissionAsync(server, admin.TenantId, "Credential", operatorPrincipal.CredentialId, "Bucket", null, "Create", true, "Operator bucket create", cancellationToken).ConfigureAwait(false);
+            await EnsureEffectivePermissionAsync(server, admin.TenantId, "Credential", operatorPrincipal.CredentialId, "Object", null, "Create", true, "Operator object create", cancellationToken).ConfigureAwait(false);
+            await EnsureEffectivePermissionAsync(server, admin.TenantId, "Credential", operatorPrincipal.CredentialId, "Storage", null, "Read", false, "Operator storage read denied", cancellationToken).ConfigureAwait(false);
+            await EnsureEffectivePermissionAsync(server, admin.TenantId, "Credential", operatorPrincipal.CredentialId, "Object", null, "Read", false, "Operator object read denied", cancellationToken).ConfigureAwait(false);
+
+            await EnsureEffectivePermissionAsync(server, admin.TenantId, "User", securityAdmin.UserId, "User", noRole.UserId, "Create", true, "SecurityAdmin user create", cancellationToken).ConfigureAwait(false);
+            await EnsureEffectivePermissionAsync(server, admin.TenantId, "User", securityAdmin.UserId, "Role", "rol_builtin_tenantmember", "Read", true, "SecurityAdmin role read", cancellationToken).ConfigureAwait(false);
+            await EnsureEffectivePermissionAsync(server, admin.TenantId, "User", securityAdmin.UserId, "AuthorizationAudit", null, "Enumerate", true, "SecurityAdmin audit enumerate", cancellationToken).ConfigureAwait(false);
+            await EnsureEffectivePermissionAsync(server, admin.TenantId, "User", securityAdmin.UserId, "Bucket", null, "Create", false, "SecurityAdmin bucket create denied", cancellationToken).ConfigureAwait(false);
+            await EnsureEffectivePermissionAsync(server, admin.TenantId, "User", securityAdmin.UserId, "Tenant", admin.TenantId, "Read", false, "SecurityAdmin tenant read denied", cancellationToken).ConfigureAwait(false);
         }
 
         internal static async Task RestTenantIdQuerySpoofingDeniedAsync(
@@ -524,6 +808,49 @@ namespace Test.Shared.Suites
             EnsureStatus(HttpStatusCode.Forbidden, bodySpoofEnumerate.StatusCode, "tenant A token enumerate tenant B users through body TenantId");
         }
 
+        internal static async Task RestCrossTenantSecurityMutationSpoofingDeniedAsync(
+            Less3TestServer server,
+            CancellationToken cancellationToken)
+        {
+            TenantPrincipal tenantA = await CreateTenantPrincipalAsync(server, "rest-sec-a", true, cancellationToken).ConfigureAwait(false);
+            TenantPrincipal tenantB = await CreateTenantPrincipalAsync(server, "rest-sec-b", true, cancellationToken).ConfigureAwait(false);
+            string tokenA = await LoginAsync(server, tenantA.TenantId, tenantA.Email, "password", cancellationToken).ConfigureAwait(false);
+
+            string spoofedRoleId = TestIds.Role();
+            string spoofedPermissionId = TestIds.Permission();
+            string spoofedAssignmentId = TestIds.Assignment();
+            string spoofedCredentialId = TestIds.Credential();
+
+            await EnsureBearerStatusAsync(server, HttpMethod.Post, "roles", tokenA, RoleJson(tenantB.TenantId, spoofedRoleId, "Spoofed role", true), HttpStatusCode.Forbidden, "tenant A token create tenant B role through body TenantId", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Post, "permissions", tokenA, PermissionJson(tenantB.TenantId, spoofedPermissionId, "rol_builtin_tenantmember", "Tenant", "Read", true, true), HttpStatusCode.Forbidden, "tenant A token create tenant B permission through body TenantId", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Post, "roleassignments", tokenA, AssignmentJson(tenantB.TenantId, spoofedAssignmentId, "rol_builtin_tenantmember", "User", tenantB.UserId, "Tenant", tenantB.TenantId, true), HttpStatusCode.Forbidden, "tenant A token create tenant B assignment through body TenantId", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Post, "credentials", tokenA, JsonSerializer.Serialize(new
+            {
+                Id = spoofedCredentialId,
+                TenantId = tenantB.TenantId,
+                UserId = tenantB.UserId,
+                Description = "spoofed credential",
+                AccessKey = "spoof-" + TestIds.Suffix(),
+                SecretKey = "secret-" + TestIds.Suffix(),
+                IsBase64 = false,
+                Active = true
+            }), HttpStatusCode.Forbidden, "tenant A token create tenant B credential through body TenantId", cancellationToken).ConfigureAwait(false);
+
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "roles?tenantId=" + tenantB.TenantId, tokenA, null, HttpStatusCode.Forbidden, "tenant A token enumerate tenant B roles", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "permissions?tenantId=" + tenantB.TenantId, tokenA, null, HttpStatusCode.Forbidden, "tenant A token enumerate tenant B permissions", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "roleassignments?tenantId=" + tenantB.TenantId, tokenA, null, HttpStatusCode.Forbidden, "tenant A token enumerate tenant B assignments", cancellationToken).ConfigureAwait(false);
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "credentials/" + tenantB.CredentialId + "?tenantId=" + tenantB.TenantId, tokenA, null, HttpStatusCode.Forbidden, "tenant A token read tenant B credential", cancellationToken).ConfigureAwait(false);
+
+            HttpResponseMessage verifyRole = await server.RestGetAsync("roles/" + spoofedRoleId + "?tenantId=" + tenantB.TenantId, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.NotFound, verifyRole.StatusCode, "spoofed tenant B role must not exist");
+            HttpResponseMessage verifyPermission = await server.RestGetAsync("permissions/" + spoofedPermissionId + "?tenantId=" + tenantB.TenantId, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.NotFound, verifyPermission.StatusCode, "spoofed tenant B permission must not exist");
+            HttpResponseMessage verifyAssignment = await server.RestGetAsync("roleassignments/" + spoofedAssignmentId + "?tenantId=" + tenantB.TenantId, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.NotFound, verifyAssignment.StatusCode, "spoofed tenant B assignment must not exist");
+            HttpResponseMessage verifyCredential = await server.RestGetAsync("credentials/" + spoofedCredentialId + "?tenantId=" + tenantB.TenantId, cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.NotFound, verifyCredential.StatusCode, "spoofed tenant B credential must not exist");
+        }
+
         internal static async Task RestAdminApiKeyCanManageAcrossTenantsAsync(
             Less3TestServer server,
             CancellationToken cancellationToken)
@@ -544,6 +871,96 @@ namespace Test.Shared.Suites
             string tenantsBody = await tenants.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             EnsureContains(tenantsBody, tenantA.TenantId, "admin API key tenant A enumerate body");
             EnsureContains(tenantsBody, tenantB.TenantId, "admin API key tenant B enumerate body");
+        }
+
+        internal static async Task RbacInactiveRolePermissionAssignmentIgnoredAsync(
+            Less3TestServer server,
+            CancellationToken cancellationToken)
+        {
+            TenantPrincipal admin = await CreateTenantPrincipalAsync(server, "inactive-admin", true, cancellationToken).ConfigureAwait(false);
+            TenantPrincipal scoped = await CreateTenantPrincipalAsync(server, "inactive-user", false, cancellationToken, admin.TenantId).ConfigureAwait(false);
+
+            string roleId = TestIds.Role();
+            string permissionId = TestIds.Permission();
+            string assignmentId = TestIds.Assignment();
+            string token = await LoginAsync(server, admin.TenantId, scoped.Email, "password", cancellationToken).ConfigureAwait(false);
+
+            HttpResponseMessage roleCreate = await server.RestPostAsync("roles?tenantId=" + admin.TenantId, RoleJson(admin.TenantId, roleId, "Inactive matrix role", true), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, roleCreate.StatusCode, "create inactive matrix role");
+            HttpResponseMessage permissionCreate = await server.RestPostAsync("permissions?tenantId=" + admin.TenantId, PermissionJson(admin.TenantId, permissionId, roleId, "Tenant", "Read", true, true), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, permissionCreate.StatusCode, "create inactive matrix permission");
+            HttpResponseMessage assignmentCreate = await server.RestPostAsync("roleassignments?tenantId=" + admin.TenantId, AssignmentJson(admin.TenantId, assignmentId, roleId, "User", scoped.UserId, "Tenant", admin.TenantId, false), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.Created, assignmentCreate.StatusCode, "create inactive matrix assignment");
+
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "tenants/" + admin.TenantId, token, null, HttpStatusCode.Forbidden, "inactive assignment denied", cancellationToken).ConfigureAwait(false);
+
+            HttpResponseMessage assignmentUpdate = await server.RestPutAsync("roleassignments/" + assignmentId + "?tenantId=" + admin.TenantId, AssignmentJson(admin.TenantId, assignmentId, roleId, "User", scoped.UserId, "Tenant", admin.TenantId, true), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, assignmentUpdate.StatusCode, "activate assignment");
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "tenants/" + admin.TenantId, token, null, HttpStatusCode.OK, "active assignment permits", cancellationToken).ConfigureAwait(false);
+
+            HttpResponseMessage permissionDeactivate = await server.RestPutAsync("permissions/" + permissionId + "?tenantId=" + admin.TenantId, PermissionJson(admin.TenantId, permissionId, roleId, "Tenant", "Read", true, false), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, permissionDeactivate.StatusCode, "deactivate permission");
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "tenants/" + admin.TenantId, token, null, HttpStatusCode.Forbidden, "inactive permission denied", cancellationToken).ConfigureAwait(false);
+
+            HttpResponseMessage permissionReactivate = await server.RestPutAsync("permissions/" + permissionId + "?tenantId=" + admin.TenantId, PermissionJson(admin.TenantId, permissionId, roleId, "Tenant", "Read", true, true), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, permissionReactivate.StatusCode, "reactivate permission");
+            HttpResponseMessage roleDeactivate = await server.RestPutAsync("roles/" + roleId + "?tenantId=" + admin.TenantId, RoleJson(admin.TenantId, roleId, "Inactive matrix role", false), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, roleDeactivate.StatusCode, "deactivate role");
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "tenants/" + admin.TenantId, token, null, HttpStatusCode.Forbidden, "inactive role denied", cancellationToken).ConfigureAwait(false);
+
+            HttpResponseMessage roleReactivate = await server.RestPutAsync("roles/" + roleId + "?tenantId=" + admin.TenantId, RoleJson(admin.TenantId, roleId, "Inactive matrix role", true), cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, roleReactivate.StatusCode, "reactivate role");
+            await EnsureBearerStatusAsync(server, HttpMethod.Get, "tenants/" + admin.TenantId, token, null, HttpStatusCode.OK, "reactivated role permission assignment permits", cancellationToken).ConfigureAwait(false);
+        }
+
+        internal static async Task RbacCredentialExplicitDenyOverridesPermitAsync(
+            Less3TestServer server,
+            CancellationToken cancellationToken)
+        {
+            TenantPrincipal admin = await CreateTenantPrincipalAsync(server, "deny-admin", true, cancellationToken).ConfigureAwait(false);
+            TenantPrincipal scoped = await CreateTenantPrincipalAsync(server, "deny-credential", false, cancellationToken, admin.TenantId).ConfigureAwait(false);
+
+            string bucketName = "creddeny-" + TestIds.Suffix().Substring(0, 8);
+            using IAmazonS3 adminClient = server.CreateS3Client(admin.AccessKey, admin.SecretKey);
+            using IAmazonS3 scopedClient = server.CreateS3Client(scoped.AccessKey, scoped.SecretKey);
+
+            await PutBucketAsync(adminClient, bucketName, cancellationToken).ConfigureAwait(false);
+
+            await GrantCustomRoleAsync(
+                server,
+                admin.TenantId,
+                scoped.CredentialId,
+                "Credential",
+                "Storage",
+                "Read",
+                true,
+                "Tenant",
+                admin.TenantId,
+                cancellationToken).ConfigureAwait(false);
+
+            ListBucketsResponse permittedBuckets = await scopedClient.ListBucketsAsync(cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, permittedBuckets.HttpStatusCode, "credential storage read permit ListBuckets");
+            await PutTextObjectAsync(adminClient, bucketName, "permit-read.txt", "permit-read", cancellationToken).ConfigureAwait(false);
+            EnsureEqual(
+                "permit-read",
+                await ReadObjectBodyAsync(scopedClient, bucketName, "permit-read.txt", cancellationToken).ConfigureAwait(false),
+                "credential storage read permit reads object");
+
+            await GrantCustomRoleAsync(
+                server,
+                admin.TenantId,
+                scoped.CredentialId,
+                "Credential",
+                "Storage",
+                "Read",
+                false,
+                "Tenant",
+                admin.TenantId,
+                cancellationToken).ConfigureAwait(false);
+
+            await EnsureS3FailureAsync(
+                () => scopedClient.GetObjectAsync(bucketName, "permit-read.txt", cancellationToken),
+                "credential explicit deny overrides storage read object permit").ConfigureAwait(false);
         }
 
         #endregion
@@ -757,6 +1174,147 @@ namespace Test.Shared.Suites
             return await server.HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         }
 
+        private static async Task<string> EnsureBearerStatusAsync(
+            Less3TestServer server,
+            HttpMethod method,
+            string path,
+            string token,
+            string? body,
+            HttpStatusCode expected,
+            string operation,
+            CancellationToken cancellationToken)
+        {
+            using HttpResponseMessage response = await SendBearerRestAsync(server, method, path, token, body, cancellationToken).ConfigureAwait(false);
+            string responseBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            if (response.StatusCode != expected)
+            {
+                throw new InvalidOperationException(
+                    operation + " expected HTTP " + (int)expected + " but received HTTP " + (int)response.StatusCode + ". Body: " + responseBody);
+            }
+
+            return responseBody;
+        }
+
+        private static async Task EnsureEffectivePermissionAsync(
+            Less3TestServer server,
+            string tenantId,
+            string principalType,
+            string principalId,
+            string resourceType,
+            string? resourceId,
+            string operation,
+            bool expectedPermitted,
+            string assertion,
+            CancellationToken cancellationToken)
+        {
+            string path = "effectivepermissions?tenantId=" + tenantId
+                + "&principalType=" + principalType
+                + "&principalId=" + principalId
+                + "&resourceType=" + resourceType
+                + "&operation=" + operation;
+            if (!String.IsNullOrEmpty(resourceId))
+            {
+                path += "&resourceId=" + resourceId;
+            }
+
+            HttpResponseMessage response = await server.AdminGetAsync(path, cancellationToken).ConfigureAwait(false);
+            string body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureStatus(HttpStatusCode.OK, response.StatusCode, assertion + " effective permission response");
+
+            using JsonDocument document = JsonDocument.Parse(body);
+            bool permitted = document.RootElement.GetProperty("Permitted").GetBoolean();
+            EnsureEqual(expectedPermitted, permitted, assertion + " effective permission permitted flag");
+        }
+
+        private static string NewUserJson(string tenantId, string userId, string label)
+        {
+            return JsonSerializer.Serialize(new
+            {
+                Id = userId,
+                TenantId = tenantId,
+                Name = label + " " + userId,
+                Email = label + "-" + userId + "@example.com",
+                PasswordHash = "password",
+                IsAdmin = false,
+                IsTenantAdmin = false,
+                Active = true
+            });
+        }
+
+        private static string RoleJson(string tenantId, string roleId, string name, bool active)
+        {
+            return JsonSerializer.Serialize(new
+            {
+                Id = roleId,
+                TenantId = tenantId,
+                Name = name,
+                Description = name,
+                InheritsToChildren = true,
+                Active = active
+            });
+        }
+
+        private static string PermissionJson(
+            string tenantId,
+            string permissionId,
+            string roleId,
+            string resourceType,
+            string operation,
+            bool permit,
+            bool active)
+        {
+            return JsonSerializer.Serialize(new
+            {
+                Id = permissionId,
+                TenantId = tenantId,
+                RoleId = roleId,
+                ResourceType = resourceType,
+                Operation = operation,
+                Permit = permit,
+                Active = active
+            });
+        }
+
+        private static string AssignmentJson(
+            string tenantId,
+            string assignmentId,
+            string roleId,
+            string principalType,
+            string principalId,
+            string resourceType,
+            string resourceId,
+            bool active)
+        {
+            return JsonSerializer.Serialize(new
+            {
+                Id = assignmentId,
+                TenantId = tenantId,
+                RoleId = roleId,
+                PrincipalType = principalType,
+                PrincipalId = principalId,
+                ResourceType = resourceType,
+                ResourceId = resourceId,
+                Active = active
+            });
+        }
+
+        private static string BucketJson(string tenantId, string bucketId, string ownerId, string name)
+        {
+            return JsonSerializer.Serialize(new
+            {
+                Id = bucketId,
+                TenantId = tenantId,
+                OwnerId = ownerId,
+                Name = name,
+                RegionString = "us-west-1",
+                StorageType = "Disk",
+                DiskDirectory = "./disk/" + name + "/Objects/",
+                EnableVersioning = false,
+                EnablePublicWrite = false,
+                EnablePublicRead = false
+            });
+        }
+
         private static async Task PutBucketAsync(IAmazonS3 client, string bucketName, CancellationToken cancellationToken)
         {
             PutBucketResponse response = await client.PutBucketAsync(new PutBucketRequest
@@ -864,6 +1422,12 @@ namespace Test.Shared.Suites
         {
             if (response.Buckets == null) return 0;
             return response.Buckets.Count(bucket => String.Equals(bucket.BucketName, bucketName, StringComparison.Ordinal));
+        }
+
+        private static int CountBuckets(ListBucketsResponse response)
+        {
+            if (response.Buckets == null) return 0;
+            return response.Buckets.Count;
         }
 
         private static void EnsureStatus(HttpStatusCode expected, HttpStatusCode actual, string operation)

@@ -168,6 +168,12 @@ namespace Less3.Classes
             return _Config.GetBucketsByUser(tenantId, userId);
         }
 
+        internal List<Bucket> GetTenantBuckets(string tenantId)
+        {
+            if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            return _Config.GetBuckets(tenantId);
+        }
+
         #endregion
 
         #region Private-Methods

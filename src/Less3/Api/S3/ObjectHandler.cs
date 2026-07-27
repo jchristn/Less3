@@ -343,14 +343,18 @@ namespace Less3.Api.S3
                     }
                 }
 
-                ctx.Response.Headers.Add("Content-Range", "bytes " + ctx.Request.RangeStart.Value + "-" + ctx.Request.RangeEnd.Value + "/" + md.Obj.ContentLength);
                 ctx.Response.Headers.Add("Accept-Ranges", "bytes");
                 ctx.Response.Headers.Add("ETag", "\"" + md.Obj.Etag + "\"");
 
                 if (md.Bucket.EnableVersioning)
                     ctx.Response.Headers.Add("x-amz-version-id", md.Obj.Version.ToString());
 
-                return new S3Object(md.Obj.Key, md.Obj.Version.ToString(), isLatest, md.Obj.LastUpdateUtc, md.Obj.Etag, readLen, GetOwnerFromUserId(md.Obj.OwnerId), data, md.Obj.ContentType);
+                // S3Server (7.3.1+) emits Content-Range: bytes start-end/total from S3Object.TotalSize.
+                // Setting the full object size here lets ranged/multipart download clients (for example the
+                // AWS CLI) parse the object size; the manually-added Content-Range header is no longer needed.
+                S3Object obj = new S3Object(md.Obj.Key, md.Obj.Version.ToString(), isLatest, md.Obj.LastUpdateUtc, md.Obj.Etag, readLen, GetOwnerFromUserId(md.Obj.OwnerId), data, md.Obj.ContentType);
+                obj.TotalSize = md.Obj.ContentLength;
+                return obj;
             }
         }
 

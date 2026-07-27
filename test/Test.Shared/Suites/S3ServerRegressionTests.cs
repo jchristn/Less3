@@ -94,6 +94,56 @@ namespace Test.Shared.Suites
                 }
             });
 
+            await RunTest("S3Server_ObjectReadRange_TotalSize_EmitsNumericTotal", async () =>
+            {
+                int port = GetRandomPort();
+                S3ServerSettings settings = CreateServerSettings(port);
+                using S3Server server = new S3Server(settings);
+                using HttpClient client = CreateHttpClient();
+
+                server.Object.ReadRange = ctx =>
+                {
+                    S3Object obj = new S3Object(
+                        ctx.Request.Key,
+                        "1",
+                        true,
+                        DateTime.UtcNow,
+                        "\"etag-123\"",
+                        5,
+                        new Owner("owner-1", "owner"),
+                        "ABCDE",
+                        "text/plain");
+                    obj.TotalSize = 26;
+                    return Task.FromResult(obj);
+                };
+
+                server.Start();
+
+                try
+                {
+                    await WaitForServerReadyAsync(client, port).ConfigureAwait(false);
+
+                    HttpRequestMessage request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, $"http://127.0.0.1:{port}/bucket/range.txt");
+                    request.Headers.Range = new RangeHeaderValue(0, 4);
+
+                    HttpResponseMessage response = await client.SendAsync(request).ConfigureAwait(false);
+                    AssertEqual(HttpStatusCode.PartialContent, response.StatusCode);
+
+                    string? contentRange = response.Content.Headers.TryGetValues("Content-Range", out var values)
+                        ? values.FirstOrDefault()
+                        : null;
+                    AssertNotNull(contentRange);
+                    AssertEqual("bytes 0-4/26", contentRange!);
+
+                    string body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    AssertEqual("ABCDE", body);
+                }
+                finally
+                {
+                    server.Stop();
+                }
+            });
+
             await RunTest("S3Server_UnwiredRecognizedRequest_ReturnsNotImplemented", async () =>
             {
                 int port = GetRandomPort();

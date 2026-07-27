@@ -5581,7 +5581,7 @@
             Read an object.
             Your code must close the stream when complete.
             </summary>
-            <param name="key">Key.</param>
+            <param name="key">Key.</param> 
             <returns>ObjectStream.</returns>
         </member>
         <member name="M:Less3.Storage.DiskStorageDriver.ReadRange(System.String,System.Int64,System.Int64)">
@@ -5590,7 +5590,7 @@
             </summary>
             <param name="key">Key.</param>
             <param name="indexStart">Starting position.</param>
-            <param name="count">Number of bytes to read.</param>
+            <param name="count">Number of bytes to read.</param> 
             <returns>Data.</returns>
         </member>
         <member name="M:Less3.Storage.DiskStorageDriver.ReadRangeAsync(System.String,System.Int64,System.Int64)">
@@ -5599,7 +5599,7 @@
             </summary>
             <param name="key">Key.</param>
             <param name="indexStart">Starting position.</param>
-            <param name="count">Number of bytes to read.</param>
+            <param name="count">Number of bytes to read.</param> 
             <returns>Data.</returns>
         </member>
         <member name="M:Less3.Storage.DiskStorageDriver.ReadRangeStream(System.String,System.Int64,System.Int64)">
@@ -5627,7 +5627,7 @@
             Write an object.
             </summary>
             <param name="key">Key.</param>
-            <param name="data">Data.</param>
+            <param name="data">Data.</param> 
             <returns>MD5 hash.</returns>
         </member>
         <member name="M:Less3.Storage.DiskStorageDriver.WriteAsync(System.String,System.Byte[])">
@@ -5635,7 +5635,7 @@
             Write an object asynchronously.
             </summary>
             <param name="key">Key.</param>
-            <param name="data">Data.</param>
+            <param name="data">Data.</param> 
             <returns>MD5 hash.</returns>
         </member>
         <member name="M:Less3.Storage.DiskStorageDriver.Write(System.String,System.Int64,System.IO.Stream)">
@@ -5776,7 +5776,7 @@
             Write an object.
             </summary>
             <param name="key">Key.</param>
-            <param name="data">Data.</param>
+            <param name="data">Data.</param> 
             <returns>MD5 hash.</returns>
         </member>
         <member name="M:Less3.Storage.StorageDriverBase.WriteAsync(System.String,System.Byte[])">
@@ -5784,7 +5784,7 @@
             Write an object asynchronously.
             </summary>
             <param name="key">Key.</param>
-            <param name="data">Data.</param>
+            <param name="data">Data.</param> 
             <returns>MD5 hash.</returns>
         </member>
         <member name="M:Less3.Storage.StorageDriverBase.Write(System.String,System.Int64,System.IO.Stream)">
@@ -5793,7 +5793,7 @@
             </summary>
             <param name="key">Key.</param>
             <param name="contentLength">Number of bytes to read from the stream.</param>
-            <param name="stream">Stream.</param>
+            <param name="stream">Stream.</param> 
             <returns>MD5 hash.</returns>
         </member>
         <member name="M:Less3.Storage.StorageDriverBase.WriteAsync(System.String,System.Int64,System.IO.Stream)">
@@ -5802,7 +5802,7 @@
             </summary>
             <param name="key">Key.</param>
             <param name="contentLength">Number of bytes to read from the stream.</param>
-            <param name="stream">Stream.</param>
+            <param name="stream">Stream.</param> 
             <returns>MD5 hash.</returns>
         </member>
         <member name="T:Less3.Storage.StorageDriverType">

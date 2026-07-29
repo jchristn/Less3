@@ -1,4 +1,4 @@
-![alt tag](https://github.com/jchristn/less3/blob/main/assets/heart.png)
+<img src="assets/heart.png" alt="Less3 logo" width="128" height="128">
 
 # Less3 :: S3-Compatible Object Storage
 
@@ -28,9 +28,68 @@ v3.0.0
 - Added dashboard navigation and management pages for tenants, credentials, roles, permissions, reporting KPIs, and maintenance
 - See `CHANGELOG.md` for release details
 
+<details>
+<summary><strong>Screenshots</strong></summary>
+
+<details>
+<summary>Dashboard home</summary>
+
+The dashboard home summarizes tenant, bucket, object, storage, credential, request, failure-rate, and latency metrics, with quick actions and a request summary chart.
+
+<a href="assets/ss1.png"><img src="assets/ss1.png" alt="Dashboard home with metrics, quick actions, and a request summary chart"></a>
+
+</details>
+
+<details>
+<summary>Object details</summary>
+
+The object browser exposes bucket contents and object metadata, including identifiers, size, storage class, delete marker state, and download URL.
+
+<a href="assets/ss2.png"><img src="assets/ss2.png" alt="Object details modal showing metadata for README.md"></a>
+
+</details>
+
+<details>
+<summary>Object contents</summary>
+
+The object contents view lets users inspect and edit text objects directly from the dashboard.
+
+<a href="assets/ss3.png"><img src="assets/ss3.png" alt="Object contents modal showing README.md text"></a>
+
+</details>
+
+<details>
+<summary>Request history detail</summary>
+
+Request history detail shows routing, tenant, status, timing, authentication, metadata, and request/response bodies, with cURL export support.
+
+<a href="assets/ss4.png"><img src="assets/ss4.png" alt="Request detail view with request and response payload panels"></a>
+
+</details>
+
+<details>
+<summary>Maintenance settings</summary>
+
+Maintenance settings centralize core server, database, webserver, and IO configuration with restart-required indicators.
+
+<a href="assets/ss5.png"><img src="assets/ss5.png" alt="Maintenance settings page with core, database, webserver, and IO fields"></a>
+
+</details>
+
+<details>
+<summary>API explorer</summary>
+
+The API explorer builds authenticated admin and S3 requests, sends them from the dashboard, and displays body, headers, cURL, and example responses.
+
+<a href="assets/ss6.png"><img src="assets/ss6.png" alt="API explorer showing a list buckets request and JSON response"></a>
+
+</details>
+
+</details>
+
 ## Help and Feedback
 
-First things first - do you need help or have feedback?  Please file an issue here. 
+First things first - do you need help or have feedback?  Please file an issue here.
 
 ## Special Thanks
 

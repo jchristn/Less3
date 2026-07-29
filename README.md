@@ -1,4 +1,4 @@
-![alt tag](https://github.com/jchristn/less3/blob/main/assets/logo.png)
+![alt tag](https://github.com/jchristn/less3/blob/main/assets/heart.png)
 
 # Less3 :: S3-Compatible Object Storage
 

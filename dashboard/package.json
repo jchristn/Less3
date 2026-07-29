@@ -58,7 +58,7 @@
       "react": "$react",
       "react-dom": "$react-dom"
     },
-    "postcss": "^8.5.14",
+    "postcss": "^8.5.25",
     "picomatch": "^4.0.4",
     "flatted": "^3.4.2",
     "@tootallnate/once": "^3.0.1",

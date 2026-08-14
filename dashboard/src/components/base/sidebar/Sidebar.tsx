@@ -16,6 +16,9 @@ import {
   SafetyCertificateOutlined,
   TeamOutlined,
   UnlockOutlined,
+  ClusterOutlined,
+  LockOutlined,
+  LineChartOutlined,
 } from '@ant-design/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -48,6 +51,9 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onCollapse, showLo
     if (pathname.startsWith('/admin/request-history')) return ['request-history'];
     if (pathname.startsWith('/admin/maintenance')) return ['maintenance'];
     if (pathname.startsWith('/admin/api-explorer')) return ['api-explorer'];
+    if (pathname.startsWith('/admin/cluster')) return ['cluster'];
+    if (pathname.startsWith('/admin/locks')) return ['locks'];
+    if (pathname.startsWith('/admin/observability')) return ['observability'];
     return [];
   };
 
@@ -133,6 +139,27 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onCollapse, showLo
           key: 'api-explorer',
           icon: <ApiOutlined />,
           label: <Link href="/admin/api-explorer">API Explorer</Link>,
+        },
+      ],
+    },
+    {
+      type: 'group',
+      label: 'OBSERVABILITY',
+      children: [
+        {
+          key: 'cluster',
+          icon: <ClusterOutlined />,
+          label: <Link href="/admin/cluster">Cluster</Link>,
+        },
+        {
+          key: 'locks',
+          icon: <LockOutlined />,
+          label: <Link href="/admin/locks">Locks</Link>,
+        },
+        {
+          key: 'observability',
+          icon: <LineChartOutlined />,
+          label: <Link href="/admin/observability">Observability</Link>,
         },
       ],
     },

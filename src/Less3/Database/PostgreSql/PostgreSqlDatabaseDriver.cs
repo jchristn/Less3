@@ -64,12 +64,22 @@ namespace Less3.Database.PostgreSql
 
             PostgreSqlLegacyV2Migrator.RunIfNeeded(_ConnectionString, _Logging, _Header);
 
-            string setupQuery = SetupQueries.CreateTablesAndIndices();
-            ExecuteQuery(setupQuery, false).Wait();
-
-            RunMigrations();
-
-            ExecuteQuery("ANALYZE;", false).Wait();
+            // Serialize schema creation across nodes. In a multi-node cluster every node runs this
+            // setup at boot against the same database; PostgreSQL's "CREATE TABLE/TYPE IF NOT EXISTS"
+            // is NOT safe under concurrency (two sessions creating the same object race on the
+            // pg_type/pg_class unique indexes and one fails with 23505). Hold a database advisory
+            // lock on a dedicated connection for the whole schema + migration phase, so exactly one
+            // node creates the schema while the others wait and then find everything already present
+            // (archive/MULTINODE_PLAN.md R16). The lock is taken on its own connection before any DDL runs,
+            // which serializes reliably — embedding the lock inside the multi-statement setup command
+            // does not, because the statements can begin executing before the lock takes effect.
+            RunExclusiveBootstrap(() =>
+            {
+                string setupQuery = SetupQueries.CreateTablesAndIndices();
+                ExecuteQuery(setupQuery, false).Wait();
+                RunMigrations();
+                ExecuteQuery("ANALYZE;", false).Wait();
+            });
 
             _Logging.Info("PostgreSqlDatabaseDriver initialized successfully");
         }
@@ -184,6 +194,47 @@ namespace Less3.Database.PostgreSql
             }
 
             return lastResult;
+        }
+
+        /// <summary>
+        /// Run a bootstrap action while holding a PostgreSQL advisory lock on a dedicated connection,
+        /// so concurrent node startups seed the database exactly once.
+        /// </summary>
+        /// <param name="action">The bootstrap action to run exclusively.</param>
+        /// <exception cref="ArgumentNullException">Thrown when action is null.</exception>
+        public override void RunExclusiveBootstrap(Action action)
+        {
+            if (action == null) throw new ArgumentNullException(nameof(action));
+
+            using (NpgsqlConnection conn = new NpgsqlConnection(_ConnectionString))
+            {
+                conn.Open();
+
+                using (NpgsqlCommand lockCmd = new NpgsqlCommand("SELECT pg_advisory_lock(hashtext('less3_bootstrap_seed'))", conn))
+                {
+                    lockCmd.CommandTimeout = 300;
+                    lockCmd.ExecuteScalar();
+                }
+
+                try
+                {
+                    action();
+                }
+                finally
+                {
+                    try
+                    {
+                        using (NpgsqlCommand unlockCmd = new NpgsqlCommand("SELECT pg_advisory_unlock(hashtext('less3_bootstrap_seed'))", conn))
+                        {
+                            unlockCmd.ExecuteScalar();
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        _Logging.Warn(_Header + "failed to release bootstrap advisory lock: " + e.Message);
+                    }
+                }
+            }
         }
 
         #endregion

@@ -2,12 +2,16 @@ namespace Less3.Classes
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Threading;
 
     using Less3.Database;
+    using Less3.Locking;
     using Less3.Settings;
     using Less3.Storage;
+    using Less3.Telemetry;
     using SyslogLogging;
 
     /// <summary>
@@ -62,6 +66,7 @@ namespace Less3.Classes
         private LoggingModule _Logging = null;
         private Bucket _Bucket = null;
         private DatabaseDriverBase _Database = null;
+        private ILockManager _LockManager = null;
         private long _StreamReadBufferSize = 65536;
         private StorageDriverBase _StorageDriver = null;
 
@@ -74,14 +79,34 @@ namespace Less3.Classes
 
         }
 
-        internal BucketClient(SettingsBase settings, LoggingModule logging, Bucket bucket, DatabaseDriverBase database)
+        internal BucketClient(SettingsBase settings, LoggingModule logging, Bucket bucket, DatabaseDriverBase database, ILockManager lockManager)
         {
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _Logging = logging ?? throw new ArgumentNullException(nameof(logging));
             _Bucket = bucket ?? throw new ArgumentNullException(nameof(bucket));
             _Database = database ?? throw new ArgumentNullException(nameof(database));
+            _LockManager = lockManager ?? throw new ArgumentNullException(nameof(lockManager));
 
             InitializeStorageDriver();
+        }
+
+        internal void UpdateBucket(Bucket bucket)
+        {
+            if (bucket == null) throw new ArgumentNullException(nameof(bucket));
+
+            bool storageChanged =
+                _Bucket == null ||
+                _Bucket.StorageType != bucket.StorageType ||
+                !String.Equals(_Bucket.DiskDirectory, bucket.DiskDirectory, StringComparison.Ordinal);
+
+            _Bucket = bucket;
+
+            if (storageChanged)
+            {
+                if (_StorageDriver is IDisposable disposable) disposable.Dispose();
+                _StorageDriver = null;
+                InitializeStorageDriver();
+            }
         }
 
         #endregion
@@ -127,36 +152,92 @@ namespace Less3.Classes
             if (String.IsNullOrEmpty(obj.Id)) obj.Id = Less3.Helpers.IdGenerator.GenerateObjectId();
             obj.BucketId = _Bucket.Id;
 
-            Obj test = GetObjectLatestMetadata(obj.Key);
-            if (test != null)
+            // Serialize the entire read-modify-write on this object key across all nodes. The
+            // exclusive Write lock prevents two writers from both computing the next version, and
+            // the fencing token re-checked before the commit rejects a holder whose lease lapsed.
+            string lockKey = LockKeys.Object(_Bucket.TenantId, _Bucket.Name, obj.Key);
+            Activity activity = Less3Telemetry.StartObjectOperation("PutObject");
+            Stopwatch sw = Stopwatch.StartNew();
+            LockHandle handle = _LockManager.AcquireAsync(lockKey, LockMode.Write, new AcquireOptions(_Settings.Cluster.Lock.AcquireTimeoutMs), CancellationToken.None).GetAwaiter().GetResult();
+            Less3Telemetry.ObjectStage(activity, "PutObject", "lock_acquire", sw.Elapsed.TotalMilliseconds);
+            sw.Restart();
+
+            string supersededBlob = null;
+            bool blobWritten = false;
+
+            try
             {
-                if (!_Bucket.EnableVersioning)
+                Obj test = GetObjectLatestMetadata(obj.Key);
+                Less3Telemetry.ObjectStage(activity, "PutObject", "metadata_read", sw.Elapsed.TotalMilliseconds);
+                sw.Restart();
+                if (test != null)
                 {
-                    ReplaceLatestUnversionedObject(test);
-                    obj.Version = 1;
+                    if (!_Bucket.EnableVersioning)
+                    {
+                        supersededBlob = RemoveSupersededUnversionedObject(test);
+                        obj.Version = 1;
+                    }
+                    else
+                    {
+                        obj.Version = (test.Version + 1);
+                    }
                 }
                 else
                 {
-                    obj.Version = (test.Version + 1);
+                    obj.Version = 1;
                 }
+
+                obj.Md5 = Common.BytesToHexString(_StorageDriver.Write(obj.BlobFilename, obj.ContentLength, stream)).ToLowerInvariant();
+                blobWritten = true;
+                Less3Telemetry.BlobWritten(obj.ContentLength);
+                Less3Telemetry.ObjectStage(activity, "PutObject", "storage_write", sw.Elapsed.TotalMilliseconds);
+                sw.Restart();
+
+                if (String.IsNullOrEmpty(obj.Etag)) obj.Etag = obj.Md5;
+
+                DateTime ts = DateTime.Now.ToUniversalTime();
+                obj.CreatedUtc = ts;
+                obj.LastAccessUtc = ts;
+                obj.LastUpdateUtc = ts;
+                obj.ExpirationUtc = null;
+
+                if (!_LockManager.ValidateAsync(handle, CancellationToken.None).GetAwaiter().GetResult())
+                {
+                    Less3.Telemetry.Less3Telemetry.FencingConflict("AddObject");
+                    throw new LockLostException(lockKey, handle.HolderId);
+                }
+
+                _Database.Objects.Insert(obj);
+                Less3Telemetry.ObjectStage(activity, "PutObject", "db_commit", sw.Elapsed.TotalMilliseconds);
+                sw.Restart();
+
+                // Delete the superseded blob only after the new metadata is committed (R15). A
+                // crash before this point leaves the superseded blob in place, never data loss.
+                if (!String.IsNullOrEmpty(supersededBlob) && _StorageDriver.Exists(supersededBlob))
+                {
+                    try { _StorageDriver.Delete(supersededBlob); }
+                    catch (Exception e) { _Logging.Warn("AddObject failed to delete superseded blob " + supersededBlob + ": " + e.Message); }
+                    Less3Telemetry.ObjectStage(activity, "PutObject", "blob_delete", sw.Elapsed.TotalMilliseconds);
+                }
+
+                return true;
             }
-            else
+            catch (Exception)
             {
-                obj.Version = 1;
+                // A new blob's filename is its unique object id, so a failed commit leaves only a
+                // harmless orphan; remove it eagerly.
+                if (blobWritten)
+                {
+                    try { if (_StorageDriver.Exists(obj.BlobFilename)) _StorageDriver.Delete(obj.BlobFilename); }
+                    catch (Exception) { }
+                }
+                throw;
             }
-
-            obj.Md5 = Common.BytesToHexString(_StorageDriver.Write(obj.BlobFilename, obj.ContentLength, stream)).ToLowerInvariant();
-
-            if (String.IsNullOrEmpty(obj.Etag)) obj.Etag = obj.Md5;
-
-            DateTime ts = DateTime.Now.ToUniversalTime();
-            obj.CreatedUtc = ts;
-            obj.LastAccessUtc = ts;
-            obj.LastUpdateUtc = ts;
-            obj.ExpirationUtc = null;
-
-            _Database.Objects.Insert(obj);
-            return true;
+            finally
+            {
+                _LockManager.ReleaseAsync(handle, CancellationToken.None).GetAwaiter().GetResult();
+                activity?.Dispose();
+            }
         }
 
         internal bool AddObjectMetadata(Obj obj)
@@ -164,32 +245,43 @@ namespace Less3.Classes
             if (obj == null) throw new ArgumentNullException(nameof(obj));
             obj.BucketId = _Bucket.Id;
 
-            Obj test = GetObjectLatestMetadata(obj.Key);
-            if (test != null)
+            LockHandle handle = AcquireObjectLock(obj.Key, LockMode.Write);
+            try
             {
-                if (!_Bucket.EnableVersioning)
+                Obj test = GetObjectLatestMetadata(obj.Key);
+                if (test != null)
                 {
-                    ReplaceLatestUnversionedObject(test);
-                    obj.Version = 1;
+                    if (!_Bucket.EnableVersioning)
+                    {
+                        ReplaceLatestUnversionedObject(test);
+                        obj.Version = 1;
+                    }
+                    else
+                    {
+                        obj.Version = (test.Version + 1);
+                    }
                 }
                 else
                 {
-                    obj.Version = (test.Version + 1);
+                    obj.Version = 1;
                 }
+
+                DateTime ts = DateTime.Now.ToUniversalTime();
+                obj.CreatedUtc = ts;
+                obj.LastAccessUtc = ts;
+                obj.LastUpdateUtc = ts;
+                obj.ExpirationUtc = null;
+
+                if (!_LockManager.ValidateAsync(handle, CancellationToken.None).GetAwaiter().GetResult())
+                    throw new LockLostException(LockKeys.Object(_Bucket.TenantId, _Bucket.Name, obj.Key), handle.HolderId);
+
+                _Database.Objects.Insert(obj);
+                return true;
             }
-            else
+            finally
             {
-                obj.Version = 1;
+                _LockManager.ReleaseAsync(handle, CancellationToken.None).GetAwaiter().GetResult();
             }
-
-            DateTime ts = DateTime.Now.ToUniversalTime();
-            obj.CreatedUtc = ts;
-            obj.LastAccessUtc = ts;
-            obj.LastUpdateUtc = ts;
-            obj.ExpirationUtc = null;
-
-            _Database.Objects.Insert(obj);
-            return true;
         }
 
         internal bool GetObjectLatest(string key, out byte[] data)
@@ -197,11 +289,21 @@ namespace Less3.Classes
             data = null;
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            Obj obj = GetObjectLatestMetadata(key);
-            if (obj == null) return false;
+            // Shared read lock: any number of reads run concurrently, but a write or delete on this
+            // key waits until in-flight reads flush.
+            LockHandle handle = AcquireObjectLock(key, LockMode.Read);
+            try
+            {
+                Obj obj = GetObjectLatestMetadata(key);
+                if (obj == null) return false;
 
-            data = _StorageDriver.Read(obj.BlobFilename);
-            return true;
+                data = _StorageDriver.Read(obj.BlobFilename);
+                return true;
+            }
+            finally
+            {
+                _LockManager.ReleaseAsync(handle, CancellationToken.None).GetAwaiter().GetResult();
+            }
         }
 
         internal bool GetObjectLatest(string key, out long contentLength, out Stream stream)
@@ -210,13 +312,33 @@ namespace Less3.Classes
             stream = null;
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            Obj obj = GetObjectLatestMetadata(key);
-            if (obj == null) return false;
+            // The shared read lock is held for the whole streamed response and released when the
+            // returned stream is disposed (see LockReleasingStream).
+            Activity activity = Less3Telemetry.StartObjectOperation("GetObject");
+            Stopwatch sw = Stopwatch.StartNew();
+            LockHandle handle = AcquireObjectLock(key, LockMode.Read);
+            Less3Telemetry.ObjectStage(activity, "GetObject", "lock_acquire", sw.Elapsed.TotalMilliseconds);
+            sw.Restart();
+            bool handedOff = false;
+            try
+            {
+                Obj obj = GetObjectLatestMetadata(key);
+                Less3Telemetry.ObjectStage(activity, "GetObject", "metadata_read", sw.Elapsed.TotalMilliseconds);
+                sw.Restart();
+                if (obj == null) return false;
 
-            ObjectStream objStream = _StorageDriver.ReadStream(obj.BlobFilename);
-            contentLength = objStream.ContentLength;
-            stream = objStream.Data;
-            return true;
+                ObjectStream objStream = _StorageDriver.ReadStream(obj.BlobFilename);
+                Less3Telemetry.ObjectStage(activity, "GetObject", "storage_open", sw.Elapsed.TotalMilliseconds);
+                contentLength = objStream.ContentLength;
+                stream = new LockReleasingStream(objStream.Data, _LockManager, handle);
+                handedOff = true;
+                return true;
+            }
+            finally
+            {
+                if (!handedOff) _LockManager.ReleaseAsync(handle, CancellationToken.None).GetAwaiter().GetResult();
+                activity?.Dispose();
+            }
         }
 
         internal bool GetObjectLatestRange(string key, long startPosition, long length, out Stream stream)
@@ -226,12 +348,22 @@ namespace Less3.Classes
             if (startPosition < 0) throw new ArgumentNullException(nameof(startPosition));
             if (length < 0) throw new ArgumentNullException(nameof(length));
 
-            Obj obj = GetObjectLatestMetadata(key);
-            if (obj == null) return false;
+            LockHandle handle = AcquireObjectLock(key, LockMode.Read);
+            bool handedOff = false;
+            try
+            {
+                Obj obj = GetObjectLatestMetadata(key);
+                if (obj == null) return false;
 
-            ObjectStream objStream = _StorageDriver.ReadRangeStream(obj.BlobFilename, startPosition, length);
-            stream = objStream.Data;
-            return true;
+                ObjectStream objStream = _StorageDriver.ReadRangeStream(obj.BlobFilename, startPosition, length);
+                stream = new LockReleasingStream(objStream.Data, _LockManager, handle);
+                handedOff = true;
+                return true;
+            }
+            finally
+            {
+                if (!handedOff) _LockManager.ReleaseAsync(handle, CancellationToken.None).GetAwaiter().GetResult();
+            }
         }
 
         internal long GetObjectLatestVersion(string key)
@@ -299,26 +431,48 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            Obj obj = GetObjectLatestMetadata(key);
-            if (obj == null)
+            Activity activity = Less3Telemetry.StartObjectOperation("DeleteObject");
+            Stopwatch sw = Stopwatch.StartNew();
+            LockHandle handle = AcquireObjectLock(key, LockMode.Delete);
+            Less3Telemetry.ObjectStage(activity, "DeleteObject", "lock_acquire", sw.Elapsed.TotalMilliseconds);
+            sw.Restart();
+            try
             {
-                _Logging.Debug("Delete unable to find key " + _Bucket.Name + "/" + key);
-                return false;
-            }
+                Obj obj = GetObjectLatestMetadata(key);
+                Less3Telemetry.ObjectStage(activity, "DeleteObject", "metadata_read", sw.Elapsed.TotalMilliseconds);
+                sw.Restart();
+                if (obj == null)
+                {
+                    _Logging.Debug("Delete unable to find key " + _Bucket.Name + "/" + key);
+                    return false;
+                }
 
-            if (_Bucket.EnableVersioning)
-            {
-                _Logging.Info("Delete marking key " + _Bucket.Name + "/" + key + " as deleted");
-                obj.DeleteMarker = true;
-                _Database.Objects.Update(obj);
-                return true;
+                if (!_LockManager.ValidateAsync(handle, CancellationToken.None).GetAwaiter().GetResult())
+                    throw new LockLostException(LockKeys.Object(_Bucket.TenantId, _Bucket.Name, key), handle.HolderId);
+
+                if (_Bucket.EnableVersioning)
+                {
+                    _Logging.Info("Delete marking key " + _Bucket.Name + "/" + key + " as deleted");
+                    obj.DeleteMarker = true;
+                    _Database.Objects.Update(obj);
+                    Less3Telemetry.ObjectStage(activity, "DeleteObject", "db_commit", sw.Elapsed.TotalMilliseconds);
+                    return true;
+                }
+                else
+                {
+                    _Logging.Info("Delete deleting key " + _Bucket.Name + "/" + key);
+                    _Database.Objects.Delete(obj);
+                    Less3Telemetry.ObjectStage(activity, "DeleteObject", "db_commit", sw.Elapsed.TotalMilliseconds);
+                    sw.Restart();
+                    _StorageDriver.Delete(obj.BlobFilename);
+                    Less3Telemetry.ObjectStage(activity, "DeleteObject", "blob_delete", sw.Elapsed.TotalMilliseconds);
+                    return true;
+                }
             }
-            else
+            finally
             {
-                _Logging.Info("Delete deleting key " + _Bucket.Name + "/" + key);
-                _Database.Objects.Delete(obj);
-                _StorageDriver.Delete(obj.BlobFilename);
-                return true;
+                _LockManager.ReleaseAsync(handle, CancellationToken.None).GetAwaiter().GetResult();
+                activity?.Dispose();
             }
         }
 
@@ -326,26 +480,37 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            Obj obj = GetObjectVersionMetadata(key, version);
-            if (obj == null)
+            LockHandle handle = AcquireObjectLock(key, LockMode.Delete);
+            try
             {
-                _Logging.Debug("Delete unable to find key " + _Bucket.Name + "/" + key + " version " + version);
-                return false;
-            }
+                Obj obj = GetObjectVersionMetadata(key, version);
+                if (obj == null)
+                {
+                    _Logging.Debug("Delete unable to find key " + _Bucket.Name + "/" + key + " version " + version);
+                    return false;
+                }
 
-            if (_Bucket.EnableVersioning)
-            {
-                _Logging.Info("Delete marking key " + _Bucket.Name + "/" + key + " version " + version + " as deleted");
-                obj.DeleteMarker = true;
-                _Database.Objects.Update(obj);
-                return true;
+                if (!_LockManager.ValidateAsync(handle, CancellationToken.None).GetAwaiter().GetResult())
+                    throw new LockLostException(LockKeys.Object(_Bucket.TenantId, _Bucket.Name, key), handle.HolderId);
+
+                if (_Bucket.EnableVersioning)
+                {
+                    _Logging.Info("Delete marking key " + _Bucket.Name + "/" + key + " version " + version + " as deleted");
+                    obj.DeleteMarker = true;
+                    _Database.Objects.Update(obj);
+                    return true;
+                }
+                else
+                {
+                    _Logging.Info("Delete deleting key " + _Bucket.Name + "/" + key + " version " + version);
+                    _Database.Objects.Delete(obj);
+                    _StorageDriver.Delete(obj.BlobFilename);
+                    return true;
+                }
             }
-            else
+            finally
             {
-                _Logging.Info("Delete deleting key " + _Bucket.Name + "/" + key + " version " + version);
-                _Database.Objects.Delete(obj);
-                _StorageDriver.Delete(obj.BlobFilename);
-                return true;
+                _LockManager.ReleaseAsync(handle, CancellationToken.None).GetAwaiter().GetResult();
             }
         }
 
@@ -764,6 +929,12 @@ namespace Less3.Classes
 
         #region Private-Methods
 
+        private LockHandle AcquireObjectLock(string key, LockMode mode)
+        {
+            string lockKey = LockKeys.Object(_Bucket.TenantId, _Bucket.Name, key);
+            return _LockManager.AcquireAsync(lockKey, mode, new AcquireOptions(_Settings.Cluster.Lock.AcquireTimeoutMs), CancellationToken.None).GetAwaiter().GetResult();
+        }
+
         private void InitializeStorageDriver()
         {
             switch (_Bucket.StorageType)
@@ -790,6 +961,20 @@ namespace Less3.Classes
             {
                 _StorageDriver.Delete(obj.BlobFilename);
             }
+        }
+
+        private string RemoveSupersededUnversionedObject(Obj obj)
+        {
+            if (obj == null) throw new ArgumentNullException(nameof(obj));
+
+            DeleteObjectVersionAcl(obj.Key, obj.Version);
+            DeleteObjectVersionTags(obj.Key, obj.Version);
+            _Database.Objects.Delete(obj);
+
+            // Return the blob to delete after the replacement is committed, rather than deleting it
+            // now, so a mid-operation crash never destroys the only copy.
+            if (!obj.DeleteMarker) return obj.BlobFilename;
+            return null;
         }
 
         #endregion

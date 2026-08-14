@@ -1,0 +1,48 @@
+{
+  "EnableConsole": false,
+  "ValidateSignatures": false,
+  "HeaderApiKey": "x-api-key",
+  "AdminApiKey": "less3admin",
+  "RegionString": "us-west-1",
+  "Database": {
+    "Type": "Postgresql",
+    "Hostname": "postgres",
+    "Port": 5432,
+    "Username": "postgres",
+    "Password": "postgres",
+    "DatabaseName": "less3",
+    "RequireEncryption": false,
+    "LogQueries": false
+  },
+  "Cluster": {
+    "Enabled": false,
+    "LockProvider": "Local"
+  },
+  "Observability": {
+    "Enabled": true,
+    "ServiceName": "less3",
+    "PrometheusEnabled": true,
+    "PrometheusHostname": "localhost",
+    "PrometheusPort": 9464,
+    "OtlpEnabled": false
+  },
+  "Webserver": {
+    "Hostname": "*",
+    "Port": 8000,
+    "AccessControl": { "Mode": "DefaultPermit" }
+  },
+  "Storage": {
+    "TempDirectory": "/less3/temp/",
+    "PartsDirectory": "/less3/temp/parts/",
+    "StorageType": "Disk",
+    "DiskDirectory": "/less3/disk/"
+  },
+  "Logging": {
+    "SyslogServerIp": "127.0.0.1",
+    "SyslogServerPort": 514,
+    "MinimumLevel": "Info",
+    "ConsoleLogging": true,
+    "DiskLogging": true,
+    "DiskDirectory": "./logs/"
+  }
+}

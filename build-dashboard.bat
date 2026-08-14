@@ -8,7 +8,7 @@ GOTO :Done
 :Usage
 ECHO.
 ECHO Provide a tag argument.
-ECHO Example: build-dashboard.bat v3.0.0
+ECHO Example: build-dashboard.bat v4.0.0
 
 :Done
 ECHO.

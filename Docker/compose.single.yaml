@@ -1,0 +1,63 @@
+#
+# Less3 v4.0.0 - single node on PostgreSQL (durable, no load balancer, no scale-out).
+#
+# For users who want a Postgres control plane without running a cluster. The native binary OOBE
+# still defaults to SQLite; this is the Docker "one node, real database" option.
+#
+# Build and tag the images first (from the repo root: build-all.bat v4.0.0), then bring it up:
+#   docker compose -f compose.single.yaml up -d
+#
+
+name: less3-single
+
+services:
+
+  postgres:
+    container_name: 'less3-postgres'
+    image: 'postgres:17'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=less3
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d less3"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  less3:
+    container_name: 'less3'
+    image: 'jchristn77/less3:v4.0.0'
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./system.single.json:/app/system.json
+      - less3-data:/less3
+      - ./logs/:/app/logs/
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/healthz || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  less3-ui:
+    container_name: 'less3-ui'
+    image: 'jchristn77/less3-ui:v4.0.0'
+    ports:
+      - "3000:3000"
+    environment:
+      - LESS3_SERVER_URL=http://localhost:8000
+    depends_on:
+      less3:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  less3-data:

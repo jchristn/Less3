@@ -682,13 +682,15 @@
             Cleanup manager for expired multipart uploads and other maintenance tasks.
             </summary>
         </member>
-        <member name="M:Less3.Classes.CleanupManager.#ctor(Less3.Settings.SettingsBase,SyslogLogging.LoggingModule,Less3.Classes.ConfigManager)">
+        <member name="M:Less3.Classes.CleanupManager.#ctor(Less3.Settings.SettingsBase,SyslogLogging.LoggingModule,Less3.Classes.ConfigManager,Less3.Locking.ILockManager,System.String)">
             <summary>
             Instantiate the cleanup manager.
             </summary>
             <param name="settings">Settings.</param>
             <param name="logging">Logging module.</param>
             <param name="config">Configuration manager.</param>
+            <param name="lockManager">Lock manager, used to elect a single cleanup leader per cluster.</param>
+            <param name="nodeId">Identifier of this node.</param>
             <exception cref="T:System.ArgumentNullException">Thrown when required parameters are null.</exception>
         </member>
         <member name="P:Less3.Classes.CleanupManager.CleanupIntervalMs">
@@ -701,6 +703,14 @@
         <member name="P:Less3.Classes.CleanupManager.LastCleanupRunUtc">
             <summary>
             Last cleanup run timestamp in UTC.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.CleanupManager.OrphanGraceMs">
+            <summary>
+            Grace period, in milliseconds, below which a temporary or part file is never deleted as
+            an orphan even if no active upload row references it. Protects files that are being
+            staged right now on this or another node while their database rows are not yet committed.
+            Default value is 900000 (15 minutes). Minimum value is 60000 (1 minute).
             </summary>
         </member>
         <member name="M:Less3.Classes.CleanupManager.RunCleanupCycle">
@@ -732,6 +742,96 @@
             Dispose of the cleanup manager.
             </summary>
             <param name="disposing">Disposing.</param>
+        </member>
+        <member name="T:Less3.Classes.ClusterHealthResult">
+            <summary>
+            Aggregate health of a Less3 deployment, suitable for a dashboard or an orchestrator probe.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ClusterHealthResult.ClusterEnabled">
+            <summary>
+            True when the deployment is running as a multi-node cluster.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ClusterHealthResult.LockProvider">
+            <summary>
+            Configured lock provider (Local, Postgres, or Clutch).
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ClusterHealthResult.SelfNodeId">
+            <summary>
+            Identifier of the node that answered this request.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ClusterHealthResult.TotalNodes">
+            <summary>
+            Total number of known nodes.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ClusterHealthResult.HealthyNodes">
+            <summary>
+            Number of nodes considered healthy.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ClusterHealthResult.Nodes">
+            <summary>
+            Per-node membership detail.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ClusterHealthResult.GeneratedUtc">
+            <summary>
+            UTC time this result was generated.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.ClusterHealthResult.#ctor">
+            <summary>
+            Instantiate.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.ClusterNodeInfo">
+            <summary>
+            Membership and health information for a single node in a Less3 cluster.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ClusterNodeInfo.NodeId">
+            <summary>
+            Stable node identifier.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ClusterNodeInfo.Hostname">
+            <summary>
+            Machine hostname reported by the node.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ClusterNodeInfo.Version">
+            <summary>
+            Less3 version the node is running.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ClusterNodeInfo.StartedUtc">
+            <summary>
+            UTC time the node started.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ClusterNodeInfo.LastSeenUtc">
+            <summary>
+            UTC time the node last refreshed its membership row.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ClusterNodeInfo.Healthy">
+            <summary>
+            True when the node has refreshed its membership within the staleness window.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ClusterNodeInfo.IsSelf">
+            <summary>
+            True when this row represents the node serving the current request.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.ClusterNodeInfo.#ctor">
+            <summary>
+            Instantiate.
+            </summary>
         </member>
         <member name="T:Less3.Classes.ConfigManager">
             <summary>
@@ -969,6 +1069,52 @@
             Instantiate.
             </summary>
         </member>
+        <member name="T:Less3.Classes.LockInfo">
+            <summary>
+            A currently-held distributed lock, for operational visibility. Read-only; observing locks
+            never affects them.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.LockInfo.LockKey">
+            <summary>
+            Lock key.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.LockInfo.Mode">
+            <summary>
+            Mode in which the lock is held.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.LockInfo.HolderId">
+            <summary>
+            Current holder identifier.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.LockInfo.FencingToken">
+            <summary>
+            Current per-key fencing token.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.LockInfo.NodeId">
+            <summary>
+            Node that holds the lock.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.LockInfo.AcquiredUtc">
+            <summary>
+            UTC time the lock was acquired.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.LockInfo.LeaseExpiresUtc">
+            <summary>
+            UTC time the lease expires.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.LockInfo.#ctor">
+            <summary>
+            Instantiate.
+            </summary>
+        </member>
         <member name="T:Less3.Classes.MaintenanceActionResult">
             <summary>
             Result returned from maintenance actions.
@@ -1092,6 +1238,56 @@
         <member name="P:Less3.Classes.MaintenanceStatus.GeneratedUtc">
             <summary>
             UTC timestamp when the status was generated.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.NodeManager">
+            <summary>
+            Tracks cluster membership. In a PostgreSQL-backed cluster each node registers itself in the
+            less3_node table and refreshes a heartbeat; a node whose heartbeat is older than the
+            staleness window is reported unhealthy. In single-node deployments there is exactly one node
+            (this one) and no database rows are written.
+            Thread-safe.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.NodeManager.#ctor(Less3.Settings.SettingsBase,SyslogLogging.LoggingModule,Less3.Database.DatabaseDriverBase,System.String,System.String)">
+            <summary>
+            Instantiate. Registers this node and starts its heartbeat when running as a PostgreSQL
+            cluster.
+            </summary>
+            <param name="settings">Settings.</param>
+            <param name="logging">Logging module.</param>
+            <param name="database">Database driver.</param>
+            <param name="nodeId">This node's identifier.</param>
+            <param name="version">Less3 version string.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when a required argument is null.</exception>
+        </member>
+        <member name="M:Less3.Classes.NodeManager.GetNodes">
+            <summary>
+            List known nodes with health computed against the staleness window.
+            </summary>
+            <returns>Node list.</returns>
+        </member>
+        <member name="M:Less3.Classes.NodeManager.GetHealth">
+            <summary>
+            Build an aggregate cluster health result.
+            </summary>
+            <returns>Cluster health.</returns>
+        </member>
+        <member name="M:Less3.Classes.NodeManager.GetActiveLocks">
+            <summary>
+            List currently-held distributed locks (PostgreSQL clusters only; empty otherwise).
+            </summary>
+            <returns>Held locks.</returns>
+        </member>
+        <member name="M:Less3.Classes.NodeManager.GetLeaderNodeId">
+            <summary>
+            Identify the node currently holding the cleanup leader lease, or null if none.
+            </summary>
+            <returns>Leader node id, or null.</returns>
+        </member>
+        <member name="M:Less3.Classes.NodeManager.Dispose">
+            <summary>
+            Dispose. Deregisters this node.
             </summary>
         </member>
         <member name="T:Less3.Classes.Obj">
@@ -2332,6 +2528,18 @@
             <param name="isTransaction">Boolean to indicate if it should be within a transaction.</param>
             <param name="token">Cancellation token.</param>
             <returns>Data table.</returns>
+        </member>
+        <member name="M:Less3.Database.DatabaseDriverBase.RunExclusiveBootstrap(System.Action)">
+            <summary>
+            Run a bootstrap action (schema seeding, default data) under a cluster-wide mutual
+            exclusion so that when multiple nodes start against the same database at once, exactly
+            one performs the seed while the others wait and then observe the data already present.
+            The default implementation simply runs the action (single-node engines need no
+            coordination); the PostgreSQL driver overrides it to hold a database advisory lock for
+            the duration of the action.
+            </summary>
+            <param name="action">The bootstrap action to run exclusively.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when action is null.</exception>
         </member>
         <member name="T:Less3.Database.DatabaseDriverFactory">
             <summary>
@@ -3985,6 +4193,14 @@
             <param name="token">Cancellation token.</param>
             <returns>Data table from the last query.</returns>
         </member>
+        <member name="M:Less3.Database.PostgreSql.PostgreSqlDatabaseDriver.RunExclusiveBootstrap(System.Action)">
+            <summary>
+            Run a bootstrap action while holding a PostgreSQL advisory lock on a dedicated connection,
+            so concurrent node startups seed the database exactly once.
+            </summary>
+            <param name="action">The bootstrap action to run exclusively.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when action is null.</exception>
+        </member>
         <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.ExistsByGroupName(System.String,System.String)">
             <inheritdoc />
         </member>
@@ -5121,6 +5337,646 @@
             Shared S3 tag validation.
             </summary>
         </member>
+        <member name="T:Less3.Locking.AcquireOptions">
+            <summary>
+            Options controlling a single lock acquisition. All values are optional; unset values fall
+            back to the lock manager's configured defaults.
+            </summary>
+        </member>
+        <member name="P:Less3.Locking.AcquireOptions.Behavior">
+            <summary>
+            Behavior when the lock is contended. Default value is <see cref="F:Less3.Locking.LockBehavior.FailFast"/>.
+            </summary>
+        </member>
+        <member name="P:Less3.Locking.AcquireOptions.TimeoutMs">
+            <summary>
+            Maximum time to wait for a contended lock when <see cref="P:Less3.Locking.AcquireOptions.Behavior"/> is
+            <see cref="F:Less3.Locking.LockBehavior.Wait"/>, in milliseconds. Null uses the configured default.
+            Ignored for fail-fast acquisition.
+            </summary>
+        </member>
+        <member name="P:Less3.Locking.AcquireOptions.LeaseMs">
+            <summary>
+            Lease duration to request, in milliseconds. Null uses the configured default. The lease
+            is renewed automatically while the handle is held.
+            </summary>
+        </member>
+        <member name="M:Less3.Locking.AcquireOptions.#ctor">
+            <summary>
+            Instantiate with default (fail-fast) options.
+            </summary>
+        </member>
+        <member name="M:Less3.Locking.AcquireOptions.#ctor(System.Int32)">
+            <summary>
+            Instantiate wait-behavior options with a timeout.
+            </summary>
+            <param name="timeoutMs">Maximum time to wait, in milliseconds.</param>
+        </member>
+        <member name="T:Less3.Locking.AcquireResult">
+            <summary>
+            Outcome of a lock acquisition attempt, surfaced on <see cref="T:Less3.Locking.LockDeniedException"/> when a
+            lock could not be granted.
+            </summary>
+        </member>
+        <member name="F:Less3.Locking.AcquireResult.Granted">
+            <summary>
+            The lock was granted.
+            </summary>
+        </member>
+        <member name="F:Less3.Locking.AcquireResult.Denied">
+            <summary>
+            The lock is held by another holder and fail-fast behavior was requested.
+            </summary>
+        </member>
+        <member name="F:Less3.Locking.AcquireResult.Timeout">
+            <summary>
+            The wait timeout elapsed before the lock became free.
+            </summary>
+        </member>
+        <member name="F:Less3.Locking.AcquireResult.Error">
+            <summary>
+            The lock provider reported an error while attempting acquisition.
+            </summary>
+        </member>
+        <member name="T:Less3.Locking.ClutchLockManager">
+            <summary>
+            Optional distributed lock manager backed by a Clutch server over its native WebSocket lock
+            protocol (<c>/v1.0/lock/connect</c>). One connection is maintained per node; every lock the
+            connection holds is released automatically by Clutch when the socket closes, so a crashed
+            node cannot leave a lock stranded until its lease lapses — the socket is the lease of last
+            resort. Clutch performs the fair read/write/delete queueing and drain server-side, and shares
+            the same PostgreSQL database via bring-your-own-database, so the database remains the lock
+            authority. Clutch is alpha; this provider is opt-in and never the default.
+            Thread-safe.
+            </summary>
+        </member>
+        <member name="P:Less3.Locking.ClutchLockManager.Provider">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Locking.ClutchLockManager.#ctor(Less3.Settings.ClutchSettings,Less3.Settings.LockSettings,SyslogLogging.LoggingModule)">
+            <summary>
+            Instantiate.
+            </summary>
+            <param name="clutchSettings">Clutch connection settings.</param>
+            <param name="lockConfig">Lock manager tuning.</param>
+            <param name="logging">Logging module.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when a required argument is null.</exception>
+            <exception cref="T:System.ArgumentException">Thrown when the Clutch endpoint or access key is not configured.</exception>
+        </member>
+        <member name="M:Less3.Locking.ClutchLockManager.AcquireCoreAsync(System.String,Less3.Locking.LockMode,System.Int32,System.Int32,Less3.Locking.LockBehavior,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Locking.ClutchLockManager.HeartbeatCoreAsync(Less3.Locking.LockHandle,System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Locking.ClutchLockManager.ReleaseCoreAsync(Less3.Locking.LockHandle,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Locking.ClutchLockManager.ValidateCoreAsync(Less3.Locking.LockHandle,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Locking.ClutchLockManager.Dispose(System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="T:Less3.Locking.ILockManager">
+            <summary>
+            Distributed lock manager. Implementations coordinate mutating access to object state across
+            one or many Less3 nodes. The database is the authority for lock state; fencing tokens make a
+            lapsed lease safe by letting a downstream mutation reject a stale holder.
+            Implementations are thread-safe.
+            </summary>
+        </member>
+        <member name="P:Less3.Locking.ILockManager.Provider">
+            <summary>
+            Name of this provider (for example "Local", "Postgres", "Clutch").
+            </summary>
+        </member>
+        <member name="M:Less3.Locking.ILockManager.AcquireAsync(System.String,Less3.Locking.LockMode,Less3.Locking.AcquireOptions,System.Threading.CancellationToken)">
+            <summary>
+            Acquire a lock on a key. With fail-fast behavior, throws immediately when contended;
+            with wait behavior, retries until the timeout elapses.
+            </summary>
+            <param name="key">Lock key, for example "obj:{tenant}:{bucket}:{objectKey}".</param>
+            <param name="mode">Requested mode.</param>
+            <param name="options">Acquisition options, or null for defaults.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>A granted lock handle.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when key is null or empty.</exception>
+            <exception cref="T:Less3.Locking.LockDeniedException">Thrown when the lock is contended (fail-fast) or the wait timeout elapses.</exception>
+        </member>
+        <member name="M:Less3.Locking.ILockManager.HeartbeatAsync(Less3.Locking.LockHandle,System.Threading.CancellationToken)">
+            <summary>
+            Renew the lease on a held lock. Called automatically by the manager's heartbeat loop;
+            callers rarely invoke it directly.
+            </summary>
+            <param name="handle">The held handle.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>True if the lease was renewed; false if the lease was lost.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when handle is null.</exception>
+        </member>
+        <member name="M:Less3.Locking.ILockManager.ReleaseAsync(Less3.Locking.LockHandle,System.Threading.CancellationToken)">
+            <summary>
+            Release a held lock. Idempotent: releasing an already-released or expired lock is a no-op.
+            </summary>
+            <param name="handle">The held handle.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>True if a lock row was removed; false if nothing was held.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when handle is null.</exception>
+        </member>
+        <member name="M:Less3.Locking.ILockManager.ValidateAsync(Less3.Locking.LockHandle,System.Threading.CancellationToken)">
+            <summary>
+            Confirm the handle still owns the key with a live lease and current fencing token. A
+            mutating operation calls this immediately before committing; a false result means the
+            operation must be abandoned to preserve data integrity.
+            </summary>
+            <param name="handle">The held handle.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>True if the handle is still valid; otherwise false.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when handle is null.</exception>
+        </member>
+        <member name="T:Less3.Locking.LocalLockManager">
+            <summary>
+            In-process fair read/write/delete lock manager for standalone single-node deployments. Reads
+            are shared and unbounded; writes and deletes are exclusive and are granted in arrival order
+            once every earlier holder has released. There is no lease — a single process is the only
+            holder, so if it exits all locks vanish with it. This is the default provider and the only
+            supported provider when the database is SQLite.
+            Thread-safe.
+            </summary>
+        </member>
+        <member name="P:Less3.Locking.LocalLockManager.Provider">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Locking.LocalLockManager.#ctor(Less3.Settings.LockSettings,SyslogLogging.LoggingModule)">
+            <summary>
+            Instantiate.
+            </summary>
+            <param name="lockConfig">Lock manager tuning.</param>
+            <param name="logging">Logging module.</param>
+        </member>
+        <member name="M:Less3.Locking.LocalLockManager.AcquireCoreAsync(System.String,Less3.Locking.LockMode,System.Int32,System.Int32,Less3.Locking.LockBehavior,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Locking.LocalLockManager.HeartbeatCoreAsync(Less3.Locking.LockHandle,System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Locking.LocalLockManager.ReleaseCoreAsync(Less3.Locking.LockHandle,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Locking.LocalLockManager.ValidateCoreAsync(Less3.Locking.LockHandle,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:Less3.Locking.LocalLockQueue">
+            <summary>
+            In-process fair FIFO read/write/delete queue for a single lock key. Reads are shared and
+            unbounded; writes and deletes are exclusive and are granted only once every earlier-arrived
+            holder has released. The per-key fencing counter persists across acquisitions so tokens are
+            strictly increasing for the life of the process.
+            Thread-safe.
+            </summary>
+        </member>
+        <member name="T:Less3.Locking.LockBehavior">
+            <summary>
+            Behavior when a requested lock is currently held by someone else.
+            </summary>
+        </member>
+        <member name="F:Less3.Locking.LockBehavior.FailFast">
+            <summary>
+            Return immediately with a denial if the lock cannot be granted. This is the default and
+            the correct choice for request-scoped object operations, which should fail fast rather
+            than queue.
+            </summary>
+        </member>
+        <member name="F:Less3.Locking.LockBehavior.Wait">
+            <summary>
+            Wait up to the configured timeout, retrying on a poll interval, before giving up.
+            </summary>
+        </member>
+        <member name="T:Less3.Locking.LockDeniedException">
+            <summary>
+            Thrown when a distributed lock cannot be granted, either because it is held by another
+            holder (fail-fast) or because the wait timeout elapsed.
+            </summary>
+        </member>
+        <member name="P:Less3.Locking.LockDeniedException.Key">
+            <summary>
+            The lock key that was requested.
+            </summary>
+        </member>
+        <member name="P:Less3.Locking.LockDeniedException.Result">
+            <summary>
+            The reason the lock was not granted.
+            </summary>
+        </member>
+        <member name="M:Less3.Locking.LockDeniedException.#ctor(System.String,Less3.Locking.AcquireResult)">
+            <summary>
+            Instantiate.
+            </summary>
+            <param name="key">Lock key.</param>
+            <param name="result">Denial reason.</param>
+        </member>
+        <member name="M:Less3.Locking.LockDeniedException.#ctor(System.String,Less3.Locking.AcquireResult,System.Exception)">
+            <summary>
+            Instantiate with an inner exception.
+            </summary>
+            <param name="key">Lock key.</param>
+            <param name="result">Denial reason.</param>
+            <param name="innerException">Inner exception.</param>
+        </member>
+        <member name="T:Less3.Locking.LockHandle">
+            <summary>
+            A granted lock. The handle is the caller's proof of ownership; it carries the fencing token
+            that a downstream mutation re-checks so a holder whose lease has expired cannot corrupt data.
+            A handle is single-use: acquire, optionally validate before committing a mutation, then
+            release.
+            </summary>
+        </member>
+        <member name="P:Less3.Locking.LockHandle.Key">
+            <summary>
+            The lock key that was acquired.
+            </summary>
+        </member>
+        <member name="P:Less3.Locking.LockHandle.Mode">
+            <summary>
+            The mode in which the lock was granted.
+            </summary>
+        </member>
+        <member name="P:Less3.Locking.LockHandle.HolderId">
+            <summary>
+            Unique identifier for this specific acquisition. Used to release and renew, and to
+            prove ownership at the point of a guarded mutation.
+            </summary>
+        </member>
+        <member name="P:Less3.Locking.LockHandle.FencingToken">
+            <summary>
+            Per-key monotonically increasing fencing token. A larger token supersedes a smaller one.
+            A mutation carrying a stale token (because the lease lapsed and another holder took over)
+            is rejected. Zero indicates a non-fencing handle (for example a non-blocking read).
+            </summary>
+        </member>
+        <member name="P:Less3.Locking.LockHandle.Provider">
+            <summary>
+            The lock provider that issued this handle (for example "Local", "Postgres", "Clutch").
+            </summary>
+        </member>
+        <member name="P:Less3.Locking.LockHandle.LeaseExpiresUtc">
+            <summary>
+            Absolute UTC time at which the lease currently expires, as computed by the lock
+            authority. Updated as the handle is renewed.
+            </summary>
+        </member>
+        <member name="P:Less3.Locking.LockHandle.IsLost">
+            <summary>
+            True once the lock manager has determined the lease was lost (renewal failed or the key
+            was taken over). A lost handle must not be used to commit a mutation.
+            </summary>
+        </member>
+        <member name="P:Less3.Locking.LockHandle.ProviderState">
+            <summary>
+            Opaque provider-specific state carried with the handle (for example a Clutch session
+            identifier). Not meaningful to callers.
+            </summary>
+        </member>
+        <member name="M:Less3.Locking.LockHandle.#ctor(System.String,Less3.Locking.LockMode,System.String,System.Int64,System.DateTime,System.String)">
+            <summary>
+            Instantiate a lock handle.
+            </summary>
+            <param name="key">Lock key.</param>
+            <param name="mode">Granted mode.</param>
+            <param name="holderId">Unique holder identifier.</param>
+            <param name="fencingToken">Per-key monotonic fencing token.</param>
+            <param name="leaseExpiresUtc">Absolute UTC lease expiry.</param>
+            <param name="provider">Issuing provider name.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when key, holderId, or provider is null or empty.</exception>
+        </member>
+        <member name="T:Less3.Locking.LockKeys">
+            <summary>
+            Builds the canonical string keys used for distributed locks so every code path locks the
+            same key for the same resource. Keys are namespaced by resource type.
+            </summary>
+        </member>
+        <member name="M:Less3.Locking.LockKeys.Object(System.String,System.String,System.String)">
+            <summary>
+            Lock key for a specific object within a bucket. Serializes the read-modify-write on an
+            object's version chain (create, overwrite, delete).
+            </summary>
+            <param name="tenantId">Tenant identifier.</param>
+            <param name="bucketName">Bucket name.</param>
+            <param name="objectKey">Object key.</param>
+            <returns>Lock key.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when a required argument is null or empty.</exception>
+        </member>
+        <member name="M:Less3.Locking.LockKeys.Upload(System.String)">
+            <summary>
+            Lock key for a multipart upload's lifecycle (complete/abort). Guards assembly of the
+            final object from its parts.
+            </summary>
+            <param name="uploadId">Upload identifier.</param>
+            <returns>Lock key.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when uploadId is null or empty.</exception>
+        </member>
+        <member name="M:Less3.Locking.LockKeys.Bucket(System.String,System.String)">
+            <summary>
+            Lock key for a bucket-level mutation (create/delete/config change).
+            </summary>
+            <param name="tenantId">Tenant identifier.</param>
+            <param name="bucketName">Bucket name.</param>
+            <returns>Lock key.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when bucketName is null or empty.</exception>
+        </member>
+        <member name="F:Less3.Locking.LockKeys.ClusterCleanup">
+            <summary>
+            Well-known lease key elected among nodes to run temp/part cleanup exactly once per
+            cluster.
+            </summary>
+        </member>
+        <member name="F:Less3.Locking.LockKeys.ClusterMaintenance">
+            <summary>
+            Well-known lease key elected among nodes to run leader-only maintenance (for example
+            request-history purge).
+            </summary>
+        </member>
+        <member name="T:Less3.Locking.LockLostException">
+            <summary>
+            Thrown when an operation attempts to use a lock handle whose lease has been lost — because a
+            renewal failed or another holder took the key over after the lease lapsed. A caller that
+            sees this must abandon the in-flight mutation; committing it would risk data corruption.
+            </summary>
+        </member>
+        <member name="P:Less3.Locking.LockLostException.Key">
+            <summary>
+            The lock key whose lease was lost.
+            </summary>
+        </member>
+        <member name="P:Less3.Locking.LockLostException.HolderId">
+            <summary>
+            The holder identifier that lost the lease.
+            </summary>
+        </member>
+        <member name="M:Less3.Locking.LockLostException.#ctor(System.String,System.String)">
+            <summary>
+            Instantiate.
+            </summary>
+            <param name="key">Lock key.</param>
+            <param name="holderId">Holder identifier.</param>
+        </member>
+        <member name="T:Less3.Locking.LockManagerBase">
+             <summary>
+             Shared behavior for lock managers: automatic lease renewal for all held handles, lost-lease
+             detection, metrics, and a fair FIFO acquisition loop for queue-backed providers.
+            
+             The lock is a fair, arrival-ordered read/write/delete lock:
+             <list type="bullet">
+             <item>Reads take a shared lock. Any number run concurrently — there is no cap.</item>
+             <item>Writes are exclusive. A write is granted only after every request that arrived before
+             it (the pending reads it must let flush, and any earlier write/delete) has released.</item>
+             <item>Deletes are exclusive and drain everything. Like a write, a delete is granted only
+             after all locks that arrived before it release.</item>
+             </list>
+             Fairness is by arrival order, so a steady stream of readers cannot starve a waiting writer or
+             deleter: a request that arrives after a queued exclusive waits behind it.
+             Thread-safe.
+             </summary>
+        </member>
+        <member name="P:Less3.Locking.LockManagerBase.Provider">
+            <inheritdoc />
+        </member>
+        <member name="F:Less3.Locking.LockManagerBase._LockConfig">
+            <summary>
+            Lock manager tuning.
+            </summary>
+        </member>
+        <member name="F:Less3.Locking.LockManagerBase._Logging">
+            <summary>
+            Logging module.
+            </summary>
+        </member>
+        <member name="M:Less3.Locking.LockManagerBase.#ctor(Less3.Settings.LockSettings,SyslogLogging.LoggingModule)">
+            <summary>
+            Instantiate.
+            </summary>
+            <param name="lockConfig">Lock manager tuning.</param>
+            <param name="logging">Logging module.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when a required argument is null.</exception>
+        </member>
+        <member name="M:Less3.Locking.LockManagerBase.AcquireAsync(System.String,Less3.Locking.LockMode,Less3.Locking.AcquireOptions,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Locking.LockManagerBase.HeartbeatAsync(Less3.Locking.LockHandle,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Locking.LockManagerBase.ReleaseAsync(Less3.Locking.LockHandle,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Locking.LockManagerBase.ValidateAsync(Less3.Locking.LockHandle,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Locking.LockManagerBase.Dispose">
+            <summary>
+            Dispose.
+            </summary>
+        </member>
+        <member name="M:Less3.Locking.LockManagerBase.NewHolderId">
+            <summary>
+            Generate a unique holder identifier.
+            </summary>
+            <returns>Holder identifier.</returns>
+        </member>
+        <member name="M:Less3.Locking.LockManagerBase.RunFairAcquireAsync(System.String,Less3.Locking.LockMode,System.Int32,System.Int32,Less3.Locking.LockBehavior,System.Func{System.String,System.Threading.Tasks.Task{System.Int64}},System.Func{System.String,System.Int64,System.Threading.Tasks.Task{Less3.Locking.LockHandle}},System.Func{System.String,System.Threading.Tasks.Task},System.Threading.CancellationToken)">
+            <summary>
+            Fair FIFO acquisition loop for queue-backed providers. Enqueues the caller at the tail of
+            the key's queue, then polls the provider's grant function until the caller reaches the
+            front under the read/write/delete rules, the wait times out, or fail-fast gives up.
+            </summary>
+            <param name="key">Lock key.</param>
+            <param name="mode">Requested mode.</param>
+            <param name="leaseMs">Requested lease duration in milliseconds.</param>
+            <param name="timeoutMs">Maximum wait in milliseconds.</param>
+            <param name="behavior">Fail-fast or wait.</param>
+            <param name="enqueue">Adds the holder to the queue and returns its arrival sequence.</param>
+            <param name="tryGrant">Attempts to grant the holder; returns a handle or null if not yet its turn.</param>
+            <param name="dequeue">Removes the holder from the queue on give-up.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>A granted handle.</returns>
+            <exception cref="T:Less3.Locking.LockDeniedException">Thrown when the lock is contended (fail-fast) or the wait times out.</exception>
+        </member>
+        <member name="M:Less3.Locking.LockManagerBase.AcquireCoreAsync(System.String,Less3.Locking.LockMode,System.Int32,System.Int32,Less3.Locking.LockBehavior,System.Threading.CancellationToken)">
+            <summary>
+            Provider-specific acquisition, including any waiting. Returns a granted handle or throws
+            <see cref="T:Less3.Locking.LockDeniedException"/>. Queue-backed providers implement this by calling
+            <see cref="M:Less3.Locking.LockManagerBase.RunFairAcquireAsync(System.String,Less3.Locking.LockMode,System.Int32,System.Int32,Less3.Locking.LockBehavior,System.Func{System.String,System.Threading.Tasks.Task{System.Int64}},System.Func{System.String,System.Int64,System.Threading.Tasks.Task{Less3.Locking.LockHandle}},System.Func{System.String,System.Threading.Tasks.Task},System.Threading.CancellationToken)"/>.
+            </summary>
+            <param name="key">Lock key.</param>
+            <param name="mode">Requested mode.</param>
+            <param name="leaseMs">Requested lease duration in milliseconds.</param>
+            <param name="timeoutMs">Maximum wait in milliseconds.</param>
+            <param name="behavior">Fail-fast or wait.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>A granted handle.</returns>
+        </member>
+        <member name="M:Less3.Locking.LockManagerBase.HeartbeatCoreAsync(Less3.Locking.LockHandle,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Provider-specific lease renewal. Returns false when the lease can no longer be renewed.
+            On success, updates the handle's lease expiry.
+            </summary>
+            <param name="handle">Held handle.</param>
+            <param name="leaseMs">Requested lease extension in milliseconds.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>True if renewed; otherwise false.</returns>
+        </member>
+        <member name="M:Less3.Locking.LockManagerBase.ReleaseCoreAsync(Less3.Locking.LockHandle,System.Threading.CancellationToken)">
+            <summary>
+            Provider-specific release. Idempotent.
+            </summary>
+            <param name="handle">Held handle.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>True if a holder was removed; otherwise false.</returns>
+        </member>
+        <member name="M:Less3.Locking.LockManagerBase.ValidateCoreAsync(Less3.Locking.LockHandle,System.Threading.CancellationToken)">
+            <summary>
+            Provider-specific ownership validation.
+            </summary>
+            <param name="handle">Held handle.</param>
+            <param name="token">Cancellation token.</param>
+            <returns>True if still owned with a live lease; otherwise false.</returns>
+        </member>
+        <member name="M:Less3.Locking.LockManagerBase.Dispose(System.Boolean)">
+            <summary>
+            Dispose.
+            </summary>
+            <param name="disposing">Whether managed resources should be disposed.</param>
+        </member>
+        <member name="T:Less3.Locking.LockManagerFactory">
+            <summary>
+            Creates the configured <see cref="T:Less3.Locking.ILockManager"/> for the deployment.
+            </summary>
+        </member>
+        <member name="M:Less3.Locking.LockManagerFactory.Create(Less3.Settings.SettingsBase,Less3.Database.DatabaseDriverBase,System.String,SyslogLogging.LoggingModule)">
+            <summary>
+            Create a lock manager from settings.
+            </summary>
+            <param name="settings">Settings.</param>
+            <param name="database">Database driver (used by the Postgres provider).</param>
+            <param name="nodeId">Resolved node identifier.</param>
+            <param name="logging">Logging module.</param>
+            <returns>A lock manager.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when a required argument is null.</exception>
+            <exception cref="T:System.InvalidOperationException">Thrown when the selected provider is incompatible with the database type.</exception>
+        </member>
+        <member name="T:Less3.Locking.LockMode">
+            <summary>
+            Access mode requested when acquiring a distributed lock. Modes map onto S3 object access
+            semantics. Because object blobs are immutable (each write produces a new object identifier),
+            reads do not contend with writes and <see cref="F:Less3.Locking.LockMode.Read"/> is non-blocking; the exclusivity
+            that protects data integrity is between writers and deleters.
+            </summary>
+        </member>
+        <member name="F:Less3.Locking.LockMode.Read">
+            <summary>
+            Shared, non-mutating access. Non-blocking against the immutable-blob model; provided for
+            API completeness and future use.
+            </summary>
+        </member>
+        <member name="F:Less3.Locking.LockMode.Write">
+            <summary>
+            Exclusive access for a mutating writer. Only one holder at a time for a given key.
+            </summary>
+        </member>
+        <member name="F:Less3.Locking.LockMode.Delete">
+            <summary>
+            Fully exclusive access for a deleter. Behaves exclusively like <see cref="F:Less3.Locking.LockMode.Write"/>.
+            </summary>
+        </member>
+        <member name="T:Less3.Locking.LockReleasingStream">
+            <summary>
+            Wraps an object read stream and holds a shared read lock for the stream's lifetime. When the
+            stream is disposed — after the response has been fully sent — the read lock is released. This
+            is what makes a write or delete on the same key wait for in-flight reads to flush.
+            </summary>
+        </member>
+        <member name="M:Less3.Locking.LockReleasingStream.#ctor(System.IO.Stream,Less3.Locking.ILockManager,Less3.Locking.LockHandle)">
+            <summary>
+            Instantiate.
+            </summary>
+            <param name="inner">Underlying object stream.</param>
+            <param name="lockManager">Lock manager that issued the handle.</param>
+            <param name="handle">Held shared read lock, released on dispose.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when a required argument is null.</exception>
+        </member>
+        <member name="P:Less3.Locking.LockReleasingStream.CanRead">
+            <inheritdoc />
+        </member>
+        <member name="P:Less3.Locking.LockReleasingStream.CanSeek">
+            <inheritdoc />
+        </member>
+        <member name="P:Less3.Locking.LockReleasingStream.CanWrite">
+            <inheritdoc />
+        </member>
+        <member name="P:Less3.Locking.LockReleasingStream.Length">
+            <inheritdoc />
+        </member>
+        <member name="P:Less3.Locking.LockReleasingStream.Position">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Locking.LockReleasingStream.Flush">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Locking.LockReleasingStream.Read(System.Byte[],System.Int32,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Locking.LockReleasingStream.ReadAsync(System.Byte[],System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Locking.LockReleasingStream.Seek(System.Int64,System.IO.SeekOrigin)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Locking.LockReleasingStream.SetLength(System.Int64)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Locking.LockReleasingStream.Write(System.Byte[],System.Int32,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Locking.LockReleasingStream.Dispose(System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="T:Less3.Locking.PostgresLockManager">
+            <summary>
+            PostgreSQL-backed fair read/write/delete lock manager. The database is the single authority.
+            Each request is appended to a per-key FIFO queue (less3_lock_queue). The grant decision runs
+            inside a per-key advisory-locked transaction (less3_lock_try_grant), so exactly one node
+            decides at a time and two nodes can never both hold an exclusive lock. Reads are shared and
+            unbounded; a write or delete is granted only when it is the oldest waiter and every earlier
+            holder has released. Lease expiry uses the database clock, and each grant bumps a per-key
+            monotonic fencing token that a mutation re-checks before it commits.
+            Thread-safe.
+            </summary>
+        </member>
+        <member name="P:Less3.Locking.PostgresLockManager.Provider">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Locking.PostgresLockManager.#ctor(Less3.Database.DatabaseDriverBase,System.String,Less3.Settings.LockSettings,SyslogLogging.LoggingModule)">
+            <summary>
+            Instantiate. Ensures the queue tables and the grant function exist (idempotent, guarded
+            by a Postgres advisory lock so concurrent node startups create them exactly once).
+            </summary>
+            <param name="database">Database driver (must be a PostgreSQL driver in cluster mode).</param>
+            <param name="nodeId">Identifier of this node, stamped on held locks for observability.</param>
+            <param name="lockConfig">Lock manager tuning.</param>
+            <param name="logging">Logging module.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when a required argument is null.</exception>
+        </member>
+        <member name="M:Less3.Locking.PostgresLockManager.AcquireCoreAsync(System.String,Less3.Locking.LockMode,System.Int32,System.Int32,Less3.Locking.LockBehavior,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Locking.PostgresLockManager.HeartbeatCoreAsync(Less3.Locking.LockHandle,System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Locking.PostgresLockManager.ReleaseCoreAsync(Less3.Locking.LockHandle,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Locking.PostgresLockManager.ValidateCoreAsync(Less3.Locking.LockHandle,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
         <member name="T:Less3.Program">
             <summary>
             Less3 is an S3-compatible object storage server.
@@ -5348,6 +6204,163 @@
             </summary>
             <param name="exists">Whether the requested resource exists.</param>
         </member>
+        <member name="T:Less3.Responses.LeaderResponse">
+            <summary>
+            Response describing the node currently holding the cluster cleanup-leader lease.
+            </summary>
+        </member>
+        <member name="P:Less3.Responses.LeaderResponse.LeaderNodeId">
+            <summary>
+            Identifier of the leader node, or null when no node currently holds the lease.
+            </summary>
+        </member>
+        <member name="M:Less3.Responses.LeaderResponse.#ctor">
+            <summary>
+            Instantiate.
+            </summary>
+        </member>
+        <member name="T:Less3.Settings.AuthCacheSettings">
+            <summary>
+            Bounded caching of authentication and authorization results. Caching credentials and
+            authorization decisions avoids a database round trip on every request, but a stale entry
+            must never outlive a revocation by more than the configured TTL. Entries are also dropped
+            immediately when the credential/role/session epoch advances after any mutation.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.AuthCacheSettings.Enabled">
+            <summary>
+            Enable or disable auth caching. Default value is false, meaning every request resolves
+            credentials and authorization live against the database — the strictly safest posture,
+            with no possibility of a revoked credential lingering. Enabling it trades a bounded
+            staleness window (<see cref="P:Less3.Settings.AuthCacheSettings.TtlMs"/>) for fewer control-plane reads.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.AuthCacheSettings.TtlMs">
+            <summary>
+            Maximum lifetime of a cached authentication/authorization entry, in milliseconds.
+            A revoked credential, deleted session, or changed role stops working within this
+            window even absent an explicit epoch bump. Default value is 15000 (15 seconds).
+            Minimum value is 1000. Maximum value is 300000 (5 minutes).
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.AuthCacheSettings.MaxEntries">
+            <summary>
+            Maximum number of entries retained in the auth cache before least-recently-used
+            eviction. Default value is 10000. Minimum value is 100.
+            </summary>
+        </member>
+        <member name="M:Less3.Settings.AuthCacheSettings.#ctor">
+            <summary>
+            Instantiate with default settings.
+            </summary>
+        </member>
+        <member name="T:Less3.Settings.ClusterSettings">
+            <summary>
+            Multi-node cluster configuration. When <see cref="P:Less3.Settings.ClusterSettings.Enabled"/> is false, Less3 runs as a
+            standalone single node (the default for a native binary run): SQLite is acceptable, the
+            lock provider is in-process, and no cluster membership is tracked. When enabled, Less3
+            participates in a scale-out cluster and requires a networked control-plane database
+            (PostgreSQL) plus shared storage mounted identically on every node.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.ClusterSettings.Enabled">
+            <summary>
+            Enable multi-node cluster behavior. Default value is false. When true, the database
+            must not be SQLite and the lock provider must not be Local; startup validation enforces
+            this because a shared SQLite file cannot back multiple writers.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.ClusterSettings.NodeId">
+            <summary>
+            Stable identifier for this node, used in lock holder identifiers, cluster membership,
+            metrics labels, and request-history attribution. Null or empty means the identifier is
+            resolved at startup from the machine name plus a short generated suffix.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.ClusterSettings.LockProvider">
+            <summary>
+            Distributed lock provider. Default value is <see cref="F:Less3.Settings.LockProviderEnum.Local"/>.
+            Cluster deployments use <see cref="F:Less3.Settings.LockProviderEnum.Postgres"/> (the DB is the lock
+            authority) or, optionally, <see cref="F:Less3.Settings.LockProviderEnum.Clutch"/>.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.ClusterSettings.NodeHeartbeatIntervalMs">
+            <summary>
+            Interval at which this node refreshes its membership row, in milliseconds.
+            Default value is 10000 (10 seconds). Minimum value is 1000.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.ClusterSettings.NodeStaleAfterMs">
+            <summary>
+            Age after which a node that has not refreshed its membership row is considered stale
+            (down), in milliseconds. Should be a small multiple of
+            <see cref="P:Less3.Settings.ClusterSettings.NodeHeartbeatIntervalMs"/>. Default value is 30000 (30 seconds).
+            Minimum value is 2000.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.ClusterSettings.BucketClientCacheTtlMs">
+            <summary>
+            How long a cached bucket client is trusted before it is revalidated against the control
+            plane, in milliseconds. Only applies in cluster mode (single-node trusts its cache
+            indefinitely because it is the only writer). Lower values converge faster on cross-node
+            bucket create/delete/config changes at the cost of more control-plane reads. Default
+            value is 5000 (5 seconds). Minimum value is 500.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.ClusterSettings.Lock">
+            <summary>
+            Lock manager tuning.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.ClusterSettings.Clutch">
+            <summary>
+            Configuration for the optional Clutch lock provider.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.ClusterSettings.AuthCache">
+            <summary>
+            Bounded authentication/authorization caching.
+            </summary>
+        </member>
+        <member name="M:Less3.Settings.ClusterSettings.#ctor">
+            <summary>
+            Instantiate with default (single-node) settings.
+            </summary>
+        </member>
+        <member name="T:Less3.Settings.ClutchSettings">
+            <summary>
+            Configuration for the optional Clutch distributed lock provider. These values are read
+            only when <see cref="P:Less3.Settings.ClusterSettings.LockProvider"/> is <see cref="F:Less3.Settings.LockProviderEnum.Clutch"/>.
+            Less3 talks to Clutch's REST lock endpoints over HTTP; no Clutch SDK dependency is required.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.ClutchSettings.Endpoint">
+            <summary>
+            Base URL of the Clutch server, for example "http://clutch:8080". Null or empty when
+            the Clutch provider is not in use.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.ClutchSettings.AccessKey">
+            <summary>
+            Clutch access key used to obtain a bearer token for lock operations.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.ClutchSettings.TenantId">
+            <summary>
+            Clutch tenant identifier whose lock namespace Less3 uses.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.ClutchSettings.RequestTimeoutMs">
+            <summary>
+            HTTP request timeout for Clutch calls, in milliseconds.
+            Default value is 15000. Minimum value is 1000.
+            </summary>
+        </member>
+        <member name="M:Less3.Settings.ClutchSettings.#ctor">
+            <summary>
+            Instantiate with default settings.
+            </summary>
+        </member>
         <member name="T:Less3.Settings.DebugSettings">
             <summary>
             Debug settings.
@@ -5371,6 +6384,81 @@
         <member name="M:Less3.Settings.DebugSettings.#ctor">
             <summary>
             Debug settings.
+            </summary>
+        </member>
+        <member name="T:Less3.Settings.LockProviderEnum">
+            <summary>
+            Distributed lock provider selection for multi-node coordination.
+            </summary>
+        </member>
+        <member name="F:Less3.Settings.LockProviderEnum.Local">
+            <summary>
+            In-process locking for single-node deployments. Fencing tokens are an in-memory
+            per-key monotonic counter. This is the default and is the only supported provider
+            when the database is SQLite.
+            </summary>
+        </member>
+        <member name="F:Less3.Settings.LockProviderEnum.Postgres">
+            <summary>
+            Native PostgreSQL-backed distributed lock manager. The database is the single
+            authority for lock state; acquisition is serialized per key and protected by
+            monotonic fencing tokens. This is the default in cluster mode.
+            </summary>
+        </member>
+        <member name="F:Less3.Settings.LockProviderEnum.Clutch">
+            <summary>
+            Optional Clutch-backed distributed lock manager. Clutch shares the same PostgreSQL
+            database via "bring your own database", so the database remains authoritative.
+            Opt-in only.
+            </summary>
+        </member>
+        <member name="T:Less3.Settings.LockSettings">
+            <summary>
+            Distributed lock manager tuning. Every value is in milliseconds unless otherwise noted.
+            Lease expiry is always evaluated with the database clock, never a node clock, so these
+            values are safe across nodes with skewed clocks.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.LockSettings.DefaultLeaseMs">
+            <summary>
+            Default lease duration granted on acquire, in milliseconds.
+            The lease is renewed automatically by the lock manager's heartbeat loop while the
+            handle is held. Default value is 30000 (30 seconds). Minimum value is 1000.
+            Choose a value comfortably larger than the longest single locked operation.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.LockSettings.HeartbeatIntervalMs">
+            <summary>
+            Interval at which held leases are renewed, in milliseconds.
+            Default value is 10000 (10 seconds). Minimum value is 500.
+            Should be well under <see cref="P:Less3.Settings.LockSettings.DefaultLeaseMs"/> so a renewal is attempted several
+            times before a lease could lapse.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.LockSettings.MaxHoldMs">
+            <summary>
+            Hard ceiling on how long a single holder may keep a lock, in milliseconds, regardless
+            of heartbeats. Prevents a wedged holder from keeping a key forever.
+            Default value is 3600000 (1 hour). Minimum value is 1000.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.LockSettings.AcquireTimeoutMs">
+            <summary>
+            Default maximum time to wait for a contended lock when acquiring with Wait behavior,
+            in milliseconds. Default value is 15000 (15 seconds). Minimum value is 0
+            (0 means fail immediately if not free).
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.LockSettings.WaiterPollMs">
+            <summary>
+            Poll interval used while waiting for a contended lock, in milliseconds.
+            Cross-node waiters wake on this interval; correctness is unaffected because the
+            acquire transaction is the only authority. Default value is 250. Minimum value is 25.
+            </summary>
+        </member>
+        <member name="M:Less3.Settings.LockSettings.#ctor">
+            <summary>
+            Instantiate with default settings.
             </summary>
         </member>
         <member name="T:Less3.Settings.LoggingSettings">
@@ -5431,6 +6519,79 @@
         <member name="M:Less3.Settings.LoggingSettings.#ctor">
             <summary>
             Logging settings.
+            </summary>
+        </member>
+        <member name="T:Less3.Settings.ObservabilitySettings">
+            <summary>
+            Observability configuration. Less3 instruments its own code with base-class-library meters
+            and activity sources under the "Less3.*" names and subscribes to Watson's "Watson" meter.
+            A Radiant host collects those, optionally serves a Prometheus scrape endpoint, and can push
+            OpenTelemetry traces, metrics, and logs to a collector. When <see cref="P:Less3.Settings.ObservabilitySettings.Enabled"/> is false
+            (the native single-node default), the meters still exist but nothing collects them, which is
+            effectively free.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.ObservabilitySettings.Enabled">
+            <summary>
+            Master switch for the telemetry host. Default value is false. The Docker image enables
+            it. Individual exporters below are still gated by their own flags.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.ObservabilitySettings.ServiceName">
+            <summary>
+            Service name reported on the telemetry resource. Default value is "less3".
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.ObservabilitySettings.PrometheusEnabled">
+            <summary>
+            Enable a Prometheus scrape endpoint at <see cref="P:Less3.Settings.ObservabilitySettings.PrometheusPath"/> served by the Watson
+            webserver on the main listener port (the same port that serves S3 and REST). That port
+            binds all interfaces, so the endpoint is reachable across a network for scraping. It
+            exposes the webserver's HTTP/server metrics; the Less3.* domain metrics are exported via
+            OTLP (<see cref="P:Less3.Settings.ObservabilitySettings.OtlpEnabled"/>) to a collector instead. Default value is true (effective
+            only when <see cref="P:Less3.Settings.ObservabilitySettings.Enabled"/> is also true).
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.ObservabilitySettings.PrometheusHostname">
+            <summary>
+            Reserved. Intended hostname for an OpenTelemetry in-process Prometheus listener, which is
+            not usable on Linux (wildcard hosts fail URI parsing and a specific bound host rejects
+            mismatched Host headers). It is NOT used: the scrape endpoint is served by the Watson
+            webserver on the main listener port. Default value is "localhost".
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.ObservabilitySettings.PrometheusPort">
+            <summary>
+            Reserved. Intended port for an OpenTelemetry in-process Prometheus listener; NOT used, as
+            the scrape endpoint is served on the main webserver port. Default value is 9464. Minimum
+            value is 1. Maximum value is 65535.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.ObservabilitySettings.PrometheusPath">
+            <summary>
+            URL path of the Prometheus scrape endpoint. Default value is "/metrics".
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.ObservabilitySettings.OtlpEnabled">
+            <summary>
+            Enable OTLP export of metrics and traces to a collector. Default value is false.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.ObservabilitySettings.OtlpEndpoint">
+            <summary>
+            OTLP collector endpoint, for example "http://otel-collector:4317". Read only when
+            <see cref="P:Less3.Settings.ObservabilitySettings.OtlpEnabled"/> is true.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.ObservabilitySettings.ExportLogs">
+            <summary>
+            Export application logs through the OpenTelemetry logging pipeline (in addition to the
+            existing syslog sink). Default value is false. Requires <see cref="P:Less3.Settings.ObservabilitySettings.OtlpEnabled"/>.
+            </summary>
+        </member>
+        <member name="M:Less3.Settings.ObservabilitySettings.#ctor">
+            <summary>
+            Instantiate with default settings.
             </summary>
         </member>
         <member name="T:Less3.Settings.SettingsBase">
@@ -5503,6 +6664,17 @@
             Debugging settings.
             </summary>
         </member>
+        <member name="P:Less3.Settings.SettingsBase.Cluster">
+            <summary>
+            Multi-node cluster settings. When disabled (the default), Less3 runs as a standalone
+            single node.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.SettingsBase.Observability">
+            <summary>
+            Observability settings (metrics, traces, logs).
+            </summary>
+        </member>
         <member name="M:Less3.Settings.SettingsBase.#ctor">
             <summary>
             Instantiate.
@@ -5515,7 +6687,16 @@
         </member>
         <member name="P:Less3.Settings.StorageSettings.TempDirectory">
             <summary>
-            Temporary storage directory.
+            Temporary storage directory used for single-object write staging.
+            In a multi-node cluster this must point at storage mounted identically on every node
+            so a write that is retried on another node can be reasoned about consistently.
+            </summary>
+        </member>
+        <member name="P:Less3.Settings.StorageSettings.PartsDirectory">
+            <summary>
+            Directory used to stage multipart upload parts before assembly. Null or empty means
+            a "parts" subdirectory of <see cref="P:Less3.Settings.StorageSettings.TempDirectory"/> is used. In a multi-node cluster
+            this must be shared storage so any node can complete or abort any upload.
             </summary>
         </member>
         <member name="P:Less3.Settings.StorageSettings.StorageType">
@@ -5525,13 +6706,22 @@
         </member>
         <member name="P:Less3.Settings.StorageSettings.DiskDirectory">
             <summary>
-            Storage directory for 'Disk' StorageType.
+            Storage directory for 'Disk' StorageType. In a multi-node cluster this must be shared
+            storage mounted identically on every node so any node can read any object's blob.
             </summary>
         </member>
         <member name="M:Less3.Settings.StorageSettings.#ctor">
             <summary>
             Storage settings.
             </summary>
+        </member>
+        <member name="M:Less3.Settings.StorageSettings.GetEffectivePartsDirectory">
+            <summary>
+            Resolve the effective directory used to stage multipart upload parts. Returns
+            <see cref="P:Less3.Settings.StorageSettings.PartsDirectory"/> when set, otherwise a "parts" subdirectory of
+            <see cref="P:Less3.Settings.StorageSettings.TempDirectory"/>. The returned path always ends with a trailing slash.
+            </summary>
+            <returns>Effective parts directory path.</returns>
         </member>
         <member name="T:Less3.Storage.DiskStorageDriver">
             <summary>
@@ -5655,6 +6845,35 @@
             <param name="contentLength">Number of bytes to read from the stream.</param>
             <param name="stream">Stream.</param>
             <returns>MD5 hash.</returns>
+        </member>
+        <member name="T:Less3.Storage.MultipartPaths">
+            <summary>
+            Builds the on-disk paths used to stage multipart upload parts and single-object write
+            temporaries. Both the object handler and the cleanup manager use these helpers so the two
+            can never disagree about where a part lives — in a cluster the parts directory is shared
+            storage and any node must resolve the identical path.
+            </summary>
+        </member>
+        <member name="M:Less3.Storage.MultipartPaths.PartsDirectory(Less3.Settings.StorageSettings)">
+            <summary>
+            Directory in which multipart parts are staged (shared storage in cluster mode). Always
+            ends with a trailing slash and is created if it does not exist.
+            </summary>
+            <param name="storage">Storage settings.</param>
+            <returns>Parts directory path.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when storage is null.</exception>
+        </member>
+        <member name="M:Less3.Storage.MultipartPaths.PartFilePath(Less3.Settings.StorageSettings,System.String,System.String,System.Int32)">
+            <summary>
+            Full path of the file staging a specific multipart part.
+            </summary>
+            <param name="storage">Storage settings.</param>
+            <param name="bucketId">Bucket identifier.</param>
+            <param name="uploadId">Upload identifier.</param>
+            <param name="partNumber">Part number (1 or greater).</param>
+            <returns>Full part file path.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when a required argument is null or empty.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException">Thrown when partNumber is less than 1.</exception>
         </member>
         <member name="T:Less3.Storage.ObjectStream">
             <summary>
@@ -5813,6 +7032,181 @@
         <member name="F:Less3.Storage.StorageDriverType.Disk">
             <summary>
             Disk.
+            </summary>
+        </member>
+        <member name="T:Less3.Telemetry.Less3Telemetry">
+            <summary>
+            Base-class-library instruments for Less3. These meters carry no dependency on any telemetry
+            SDK; they cost almost nothing until a host (Radiant) subscribes to them by name. Identifiers
+            (bucket, key, upload) are deliberately kept off metric labels to bound cardinality — those
+            belong on spans and logs. The fencing-conflict counter is the key data-integrity signal: it
+            should stay at zero, and any increment means a lock holder was correctly rejected after its
+            lease lapsed.
+            Thread-safe.
+            </summary>
+        </member>
+        <member name="F:Less3.Telemetry.Less3Telemetry.LocksMeterName">
+            <summary>
+            Meter name for lock manager instruments.
+            </summary>
+        </member>
+        <member name="F:Less3.Telemetry.Less3Telemetry.StorageMeterName">
+            <summary>
+            Meter name for storage instruments.
+            </summary>
+        </member>
+        <member name="F:Less3.Telemetry.Less3Telemetry.MultipartMeterName">
+            <summary>
+            Meter name for multipart instruments.
+            </summary>
+        </member>
+        <member name="F:Less3.Telemetry.Less3Telemetry.BucketsMeterName">
+            <summary>
+            Meter name for bucket-cache instruments.
+            </summary>
+        </member>
+        <member name="F:Less3.Telemetry.Less3Telemetry.CleanupMeterName">
+            <summary>
+            Meter name for cleanup instruments.
+            </summary>
+        </member>
+        <member name="F:Less3.Telemetry.Less3Telemetry.ApiMeterName">
+            <summary>
+            Meter name for per-operation API instruments (every S3 and REST operation).
+            </summary>
+        </member>
+        <member name="F:Less3.Telemetry.Less3Telemetry.ObjectMeterName">
+            <summary>
+            Meter name for object-operation stage-timing instruments.
+            </summary>
+        </member>
+        <member name="F:Less3.Telemetry.Less3Telemetry.AllMeterNames">
+            <summary>
+            All Less3 meter names, for a host to subscribe to in one call.
+            </summary>
+        </member>
+        <member name="F:Less3.Telemetry.Less3Telemetry.ActivitySourceName">
+            <summary>
+            Activity source name for Less3 spans.
+            </summary>
+        </member>
+        <member name="M:Less3.Telemetry.Less3Telemetry.LockAcquired(System.String,System.String,System.Double)">
+            <summary>
+            Record a successful lock acquisition.
+            </summary>
+            <param name="provider">Lock provider name.</param>
+            <param name="mode">Lock mode.</param>
+            <param name="durationMs">Acquisition duration in milliseconds.</param>
+        </member>
+        <member name="M:Less3.Telemetry.Less3Telemetry.LockDenied(System.String,System.String,System.String)">
+            <summary>
+            Record a denied or timed-out lock acquisition.
+            </summary>
+            <param name="provider">Lock provider name.</param>
+            <param name="mode">Lock mode.</param>
+            <param name="reason">Denial reason.</param>
+        </member>
+        <member name="M:Less3.Telemetry.Less3Telemetry.FencingConflict(System.String)">
+            <summary>
+            Record a fencing conflict: a mutation was rejected because the holder no longer owns the
+            lock. This is the data-integrity guard firing and should be rare.
+            </summary>
+            <param name="operation">Operation that was rejected.</param>
+        </member>
+        <member name="M:Less3.Telemetry.Less3Telemetry.BlobWritten(System.Int64)">
+            <summary>
+            Record a blob write of the given size.
+            </summary>
+            <param name="bytes">Bytes written.</param>
+        </member>
+        <member name="M:Less3.Telemetry.Less3Telemetry.BlobDeleted">
+            <summary>
+            Record a blob delete.
+            </summary>
+        </member>
+        <member name="M:Less3.Telemetry.Less3Telemetry.PartUploaded">
+            <summary>
+            Record a multipart part upload.
+            </summary>
+        </member>
+        <member name="M:Less3.Telemetry.Less3Telemetry.MultipartCompleted">
+            <summary>
+            Record a completed multipart upload.
+            </summary>
+        </member>
+        <member name="M:Less3.Telemetry.Less3Telemetry.MultipartAborted">
+            <summary>
+            Record an aborted multipart upload.
+            </summary>
+        </member>
+        <member name="M:Less3.Telemetry.Less3Telemetry.CacheHit">
+            <summary>
+            Record a bucket client cache hit.
+            </summary>
+        </member>
+        <member name="M:Less3.Telemetry.Less3Telemetry.CacheMiss">
+            <summary>
+            Record a bucket client cache miss or revalidation.
+            </summary>
+        </member>
+        <member name="M:Less3.Telemetry.Less3Telemetry.CleanupLeaderPass(System.Int32)">
+            <summary>
+            Record a cleanup pass performed by the elected leader, and the number of temporary files
+            it deleted.
+            </summary>
+            <param name="deletedFiles">Number of orphan files deleted.</param>
+        </member>
+        <member name="M:Less3.Telemetry.Less3Telemetry.ApiOperation(System.String,System.String,System.Int32,System.Double)">
+            <summary>
+            Record one completed API operation (every S3 and REST operation flows through here),
+            with its duration and result. Identifiers stay off the labels to keep cardinality bounded.
+            </summary>
+            <param name="surface">API surface: "s3", "rest", or "admin".</param>
+            <param name="operation">Operation name (S3 request type, or REST method+resource).</param>
+            <param name="statusCode">HTTP status code the operation returned.</param>
+            <param name="durationMs">End-to-end duration in milliseconds.</param>
+        </member>
+        <member name="M:Less3.Telemetry.Less3Telemetry.StartObjectOperation(System.String)">
+            <summary>
+            Start a trace span for an object operation so its stages can be timestamped end to end.
+            Returns null when no trace listener is attached (the aggregate stage histograms still
+            record regardless). Dispose the returned activity when the operation finishes.
+            </summary>
+            <param name="operation">Operation name, for example "PutObject".</param>
+            <returns>An activity, or null.</returns>
+        </member>
+        <member name="M:Less3.Telemetry.Less3Telemetry.ObjectStage(System.Diagnostics.Activity,System.String,System.String,System.Double)">
+            <summary>
+            Record the duration of one stage of an object operation, and stamp a timestamped event on
+            the operation's span so the full execution timeline is captured on the trace.
+            </summary>
+            <param name="activity">The object operation's activity, or null.</param>
+            <param name="operation">Operation name, for example "PutObject".</param>
+            <param name="stage">Stage name, for example "lock_acquire", "storage_write", "db_commit".</param>
+            <param name="durationMs">Stage duration in milliseconds.</param>
+        </member>
+        <member name="T:Less3.Telemetry.TelemetryHost">
+            <summary>
+            Owns the process-wide telemetry host. Subscribes a Radiant host to Less3's own meters and to
+            Watson's meter and activity source, exposes a Prometheus scrape endpoint, and optionally
+            pushes OpenTelemetry metrics, traces, and logs to a collector. When observability is disabled
+            the meters still exist but nothing collects them, which is effectively free.
+            Thread-safe.
+            </summary>
+        </member>
+        <member name="M:Less3.Telemetry.TelemetryHost.Start(Less3.Settings.SettingsBase,System.String,SyslogLogging.LoggingModule)">
+            <summary>
+            Start the telemetry host from settings. Returns null when observability is disabled.
+            </summary>
+            <param name="settings">Settings.</param>
+            <param name="nodeId">Node identifier, reported as the telemetry service instance id.</param>
+            <param name="logging">Logging module.</param>
+            <returns>A started telemetry host, or null when disabled.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when a required argument is null.</exception>
+        </member>
+        <member name="M:Less3.Telemetry.TelemetryHost.Dispose">
+            <summary>
+            Dispose.
             </summary>
         </member>
     </members>

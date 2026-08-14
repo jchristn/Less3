@@ -39,6 +39,10 @@ namespace Less3
         private static DatabaseDriverBase _Database;
         private static ConfigManager _Config;
         private static BucketManager _Buckets;
+        private static NodeManager _Nodes;
+        private static Less3.Locking.ILockManager _LockManager;
+        private static Less3.Telemetry.TelemetryHost _Telemetry;
+        private static string _NodeId;
         private static ApiHandler _ApiHandler;
         private static AdminApiHandler _AdminApiHandler;
         private static RestApiHandler _RestApiHandler;
@@ -91,6 +95,10 @@ namespace Less3
 
             _Logging.Info(_Header + "disposing cleanup manager");
             if (_Cleanup != null) _Cleanup.Dispose();
+
+            if (_Nodes != null) _Nodes.Dispose();
+            if (_LockManager is IDisposable disposableLock) disposableLock.Dispose();
+            if (_Telemetry != null) _Telemetry.Dispose();
 
             _S3Server.Stop();
             _Logging.Info("Less3 exiting");
@@ -246,31 +254,49 @@ namespace Less3
 
             //             0        1         2         3         4         5
             //             123456789012345678901234567890123456789012345678901234567890
+            _NodeId = ResolveNodeId(_Settings);
+            ValidateClusterConfiguration();
+
+            Console.WriteLine("| Initializing telemetry");
+            _Telemetry = Less3.Telemetry.TelemetryHost.Start(_Settings, _NodeId, _Logging);
+
             Console.WriteLine("| Initializing database");
             _Database = DatabaseDriverFactory.Create(_Settings.Database, _Logging);
 
             Console.WriteLine("| Initializing configuration manager");
             _Config = new ConfigManager(_Settings, _Logging, _Database);
-            EnsureDefaultBootstrapData();
-            EnsureContainerBootstrapData();
+
+            Console.WriteLine("| Initializing lock manager (" + _Settings.Cluster.LockProvider + ", node " + _NodeId + ")");
+            _LockManager = Less3.Locking.LockManagerFactory.Create(_Settings, _Database, _NodeId, _Logging);
+
+            // Seed under a cluster-wide lock so concurrent node startups populate the control plane
+            // exactly once instead of racing on primary keys (archive/MULTINODE_PLAN.md R16).
+            _Database.RunExclusiveBootstrap(() =>
+            {
+                EnsureDefaultBootstrapData();
+                EnsureContainerBootstrapData();
+            });
 
             Console.WriteLine("| Initializing bucket manager");
-            _Buckets = new BucketManager(_Settings, _Logging, _Config, _Database);
+            _Buckets = new BucketManager(_Settings, _Logging, _Config, _Database, _LockManager);
 
             Console.WriteLine("| Initializing authentication manager");
             _Auth = new AuthManager(_Settings, _Logging, _Config, _Buckets);
 
+            Console.WriteLine("| Initializing node manager");
+            _Nodes = new NodeManager(_Settings, _Logging, _Database, _NodeId, _Version);
+
             Console.WriteLine("| Initializing cleanup manager");
-            _Cleanup = new CleanupManager(_Settings, _Logging, _Config);
+            _Cleanup = new CleanupManager(_Settings, _Logging, _Config, _LockManager, _NodeId);
 
             Console.WriteLine("| Initializing API handler");
-            _ApiHandler = new ApiHandler(_Settings, _Logging, _Config, _Buckets, _Auth);
+            _ApiHandler = new ApiHandler(_Settings, _Logging, _Config, _Buckets, _Auth, _LockManager);
 
             Console.WriteLine("| Initializing admin API handler");
             _AdminApiHandler = new AdminApiHandler(_Settings, _Logging, _Config, _Buckets, _Auth, _Cleanup);
 
             Console.WriteLine("| Initializing REST API handler");
-            _RestApiHandler = new RestApiHandler(_Settings, _Logging, _Config, _Buckets, _Auth);
+            _RestApiHandler = new RestApiHandler(_Settings, _Logging, _Config, _Buckets, _Auth, _Nodes);
 
             Console.WriteLine("| Initializing console manager");
             _Console = new ConsoleManager(_Settings, _Logging);
@@ -283,6 +309,17 @@ namespace Less3
             _S3Settings.Logger = message => Console.WriteLine(LogSanitizer.Redact(message));
             _S3Settings.EnableSignatures = _Settings.ValidateSignatures;
             _S3Settings.Webserver = _Settings.Webserver;
+
+            // Serve a reachable per-node Prometheus scrape endpoint on the main webserver port using
+            // Watson's native telemetry, which binds all interfaces correctly (unlike an
+            // OpenTelemetry in-process HttpListener). This exposes Watson's HTTP/server metrics; the
+            // full Less3.* metric set is exported via OTLP to the collector.
+            if (_Settings.Observability != null && _Settings.Observability.Enabled && _Settings.Observability.PrometheusEnabled)
+            {
+                _Settings.Webserver.Telemetry.Prometheus.Enable = true;
+                _Settings.Webserver.Telemetry.Prometheus.Path = _Settings.Observability.PrometheusPath;
+                Console.WriteLine("| Prometheus scrape endpoint enabled at " + _Settings.Observability.PrometheusPath + " on the main port");
+            }
 
             _S3Server = new S3Server(_S3Settings);
             _S3Server.Webserver.Routes.Preflight = PreflightRoute;
@@ -358,7 +395,43 @@ namespace Less3
 
             Console.WriteLine("| Seeding default container data");
             _Logging.Info(_Header + "detected empty configuration database in container, seeding default Docker data");
-            DefaultDataSeeder.Seed(_Settings, _Logging, _Database, _Config);
+            DefaultDataSeeder.Seed(_Settings, _Logging, _Database, _Config, _LockManager);
+        }
+
+        private static string ResolveNodeId(SettingsBase settings)
+        {
+            if (settings.Cluster != null && !String.IsNullOrEmpty(settings.Cluster.NodeId)) return settings.Cluster.NodeId;
+
+            string env = Environment.GetEnvironmentVariable("LESS3_NODE_ID");
+            if (!String.IsNullOrEmpty(env)) return env;
+
+            string machine = Environment.MachineName;
+            return String.IsNullOrEmpty(machine) ? "less3-node" : machine;
+        }
+
+        private static void ValidateClusterConfiguration()
+        {
+            if (_Settings.Cluster == null || !_Settings.Cluster.Enabled) return;
+
+            if (_Settings.Database.Type == DatabaseTypeEnum.Sqlite)
+            {
+                Common.ExitApplication(_Header,
+                    "Cluster mode is enabled but the database is SQLite. A shared SQLite file cannot safely back multiple nodes. " +
+                    "Configure a PostgreSQL database (Database.Type=Postgresql) or disable Cluster.Enabled.", -1);
+                return;
+            }
+
+            if (_Settings.Cluster.LockProvider == LockProviderEnum.Local)
+            {
+                _Logging.Warn(_Header + "cluster mode enabled with the Local lock provider; the Local provider is in-process only and cannot coordinate across nodes. Use Postgres or Clutch.");
+            }
+
+            if (_Settings.Cluster.LockProvider == LockProviderEnum.Postgres && _Settings.Database.Type != DatabaseTypeEnum.Postgresql)
+            {
+                Common.ExitApplication(_Header,
+                    "The Postgres lock provider requires a PostgreSQL database (Database.Type=Postgresql).", -1);
+                return;
+            }
         }
 
         private static void EnsureDefaultBootstrapData()
@@ -532,6 +605,19 @@ namespace Less3
             #endregion
 
             #region Misc-URLs
+
+            if (ctx.Http.Request.Url.Elements.Length == 1
+                && ctx.Http.Request.Url.Elements[0].Equals("healthz", StringComparison.OrdinalIgnoreCase))
+            {
+                bool healthy = true;
+                try { _Database.ExecuteQuery("SELECT 1;", false).GetAwaiter().GetResult(); }
+                catch { healthy = false; }
+
+                ctx.Response.StatusCode = healthy ? 200 : 503;
+                ctx.Response.ContentType = "application/json";
+                await ctx.Response.Send("{\"status\":\"" + (healthy ? "ok" : "unhealthy") + "\",\"nodeId\":\"" + _NodeId + "\",\"version\":\"" + _Version + "\"}");
+                return true;
+            }
 
             if (ctx.Http.Request.Method == WatsonWebserver.Core.HttpMethod.GET
                 && ctx.Http.Request.Url.Elements.Length >= 1
@@ -1443,6 +1529,16 @@ namespace Less3
                 + ctx.Request.RequestType.ToString() + " "
                 + ctx.Http.Response.StatusCode + " "
                 + ctx.Http.Timestamp.TotalMs + "ms");
+
+            // Meter the S3 operation. REST (/api/v1) and admin (/admin) operations are metered in
+            // their own handlers, so skip those and the internal endpoints here.
+            string firstElem = ctx.Http.Request.Url.Elements != null && ctx.Http.Request.Url.Elements.Length > 0
+                ? ctx.Http.Request.Url.Elements[0].ToLowerInvariant() : "";
+            if (firstElem != "api" && firstElem != "admin" && firstElem != "healthz" && firstElem != "swagger"
+                && firstElem != "favicon.ico" && firstElem != "robots.txt" && firstElem != "metrics" && firstElem != "openapi.json")
+            {
+                Less3.Telemetry.Less3Telemetry.ApiOperation("s3", ctx.Request.RequestType.ToString(), ctx.Http.Response.StatusCode, ctx.Http.Timestamp.TotalMs ?? 0);
+            }
 
             try
             {

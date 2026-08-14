@@ -165,6 +165,61 @@ async function mockLess3(page: Page): Promise<void> {
     await route.fulfill({ status: 200, headers: jsonHeaders, body: emptyArray });
   });
 
+  await page.route('**/api/v1/cluster/health', async (route) => {
+    await route.fulfill({
+      status: 200,
+      headers: jsonHeaders,
+      body: JSON.stringify({
+        ClusterEnabled: true,
+        LockProvider: 'Redis',
+        SelfNodeId: 'node-alpha',
+        TotalNodes: 2,
+        HealthyNodes: 2,
+        Nodes: [],
+        GeneratedUtc: '2026-07-22T00:00:00.000Z',
+      }),
+    });
+  });
+
+  await page.route('**/api/v1/cluster/nodes', async (route) => {
+    await route.fulfill({
+      status: 200,
+      headers: jsonHeaders,
+      body: JSON.stringify([
+        {
+          NodeId: 'node-alpha',
+          Hostname: 'alpha.less3.local',
+          Version: '4.0.0',
+          StartedUtc: '2026-07-22T00:00:00.000Z',
+          LastSeenUtc: '2026-07-22T00:00:00.000Z',
+          Healthy: true,
+          IsSelf: true,
+        },
+        {
+          NodeId: 'node-bravo',
+          Hostname: 'bravo.less3.local',
+          Version: '4.0.0',
+          StartedUtc: '2026-07-22T00:00:00.000Z',
+          LastSeenUtc: '2026-07-22T00:00:00.000Z',
+          Healthy: true,
+          IsSelf: false,
+        },
+      ]),
+    });
+  });
+
+  await page.route('**/api/v1/cluster/leader', async (route) => {
+    await route.fulfill({
+      status: 200,
+      headers: jsonHeaders,
+      body: JSON.stringify({ LeaderNodeId: 'node-alpha' }),
+    });
+  });
+
+  await page.route('**/api/v1/locks', async (route) => {
+    await route.fulfill({ status: 200, headers: jsonHeaders, body: emptyArray });
+  });
+
   await page.route('**/*', async (route) => {
     const request = route.request();
     if (request.url().startsWith(API_ENDPOINT)) {
@@ -239,6 +294,9 @@ test.describe('Less3 dashboard smoke', () => {
     { path: '/admin/roles', heading: 'Roles' },
     { path: '/admin/role-assignments', heading: 'Role Assignments' },
     { path: '/admin/permissions', heading: 'Permissions' },
+    { path: '/admin/cluster', heading: 'Cluster' },
+    { path: '/admin/locks', heading: 'Locks' },
+    { path: '/admin/observability', heading: 'Observability' },
   ]) {
     test(`${route.heading} route renders`, async ({ page }) => {
       await mockLess3(page);

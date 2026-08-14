@@ -2,13 +2,17 @@ namespace Less3.Api.S3
 {
     using Less3.Classes;
     using Less3.Helpers;
+    using Less3.Locking;
     using Less3.Settings;
+    using Less3.Storage;
+    using Less3.Telemetry;
     using S3ServerLibrary;
     using S3ServerLibrary.S3Objects;
     using SyslogLogging;
     using System;
     using System.Collections.Generic;
     using System.Collections.Specialized;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Security.Cryptography;
@@ -35,6 +39,7 @@ namespace Less3.Api.S3
         private ConfigManager _Config = null;
         private BucketManager _Buckets = null;
         private AuthManager _Auth = null;
+        private ILockManager _LockManager = null;
 
         #endregion
 
@@ -45,13 +50,15 @@ namespace Less3.Api.S3
             LoggingModule logging,
             ConfigManager config,
             BucketManager buckets,
-            AuthManager auth)
+            AuthManager auth,
+            ILockManager lockManager)
         {
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _Logging = logging ?? throw new ArgumentNullException(nameof(logging));
             _Config = config ?? throw new ArgumentNullException(nameof(config));
             _Buckets = buckets ?? throw new ArgumentNullException(nameof(buckets));
             _Auth = auth ?? throw new ArgumentNullException(nameof(auth));
+            _LockManager = lockManager ?? throw new ArgumentNullException(nameof(lockManager));
         }
 
         #endregion
@@ -62,26 +69,38 @@ namespace Less3.Api.S3
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
-            RequestValidator.ValidateAuthorization(md, _Logging, header);
-            RequestValidator.ValidateBucketExists(md, _Logging, header);
-
-            long versionId = RequestValidator.ParseVersionId(ctx);
-            if (md.Obj == null)
+            Activity activity = Less3Telemetry.StartObjectOperation("DeleteObject");
+            Stopwatch sw = Stopwatch.StartNew();
+            try
             {
-                _Logging.Info(header + "object " + ctx.Request.Key + " does not exist, returning idempotent delete success");
-                return;
+                RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
+                RequestValidator.ValidateAuthorization(md, _Logging, header);
+                RequestValidator.ValidateBucketExists(md, _Logging, header);
+                Less3Telemetry.ObjectStage(activity, "DeleteObject", "metadata_read", sw.Elapsed.TotalMilliseconds);
+
+                long versionId = RequestValidator.ParseVersionId(ctx);
+                if (md.Obj == null)
+                {
+                    _Logging.Info(header + "object " + ctx.Request.Key + " does not exist, returning idempotent delete success");
+                    return;
+                }
+
+                RequestValidator.ValidateObjectExists(md.Obj, versionId, _Logging, header);
+                RequestValidator.CheckDeleteMarker(md.Obj, ctx);
+
+                md.BucketClient.DeleteObjectVersion(md.Obj.Key, versionId);
+                md.BucketClient.DeleteObjectVersionAcl(md.Obj.Key, versionId);
+                md.BucketClient.DeleteObjectVersionTags(md.Obj.Key, versionId);
+                Less3Telemetry.ObjectStage(activity, "DeleteObject", "db_commit", sw.Elapsed.TotalMilliseconds);
+
+                if (md.Bucket.EnableVersioning)
+                    ctx.Response.Headers.Add("x-amz-version-id", md.Obj.Version.ToString());
             }
-
-            RequestValidator.ValidateObjectExists(md.Obj, versionId, _Logging, header);
-            RequestValidator.CheckDeleteMarker(md.Obj, ctx);
-
-            md.BucketClient.DeleteObjectVersion(md.Obj.Key, versionId);
-            md.BucketClient.DeleteObjectVersionAcl(md.Obj.Key, versionId);
-            md.BucketClient.DeleteObjectVersionTags(md.Obj.Key, versionId);
-
-            if (md.Bucket.EnableVersioning)
-                ctx.Response.Headers.Add("x-amz-version-id", md.Obj.Version.ToString());
+            finally
+            {
+                Less3Telemetry.ObjectStage(activity, "DeleteObject", "total", sw.Elapsed.TotalMilliseconds);
+                activity?.Dispose();
+            }
         }
 
         internal async Task<DeleteResult> DeleteMultiple(S3Context ctx, DeleteMultiple dm)
@@ -173,53 +192,76 @@ namespace Less3.Api.S3
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
-            RequestValidator.ValidateAuthorization(md, _Logging, header);
-            RequestValidator.ValidateBucketExists(md, _Logging, header);
-
-            long versionId = RequestValidator.ParseVersionId(ctx);
-
-            if (md.Obj == null)
+            Activity activity = Less3Telemetry.StartObjectOperation("HeadObject");
+            Stopwatch sw = Stopwatch.StartNew();
+            try
             {
-                throw new S3Exception(new Error(ErrorCode.NoSuchKey));
+                RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
+                RequestValidator.ValidateAuthorization(md, _Logging, header);
+                RequestValidator.ValidateBucketExists(md, _Logging, header);
+
+                long versionId = RequestValidator.ParseVersionId(ctx);
+
+                if (md.Obj == null)
+                {
+                    throw new S3Exception(new Error(ErrorCode.NoSuchKey));
+                }
+
+                RequestValidator.CheckDeleteMarker(md.Obj, ctx);
+                Less3Telemetry.ObjectStage(activity, "HeadObject", "metadata_read", sw.Elapsed.TotalMilliseconds);
+
+                ObjectMetadata metadata = new ObjectMetadata(md.Obj.Key, md.Obj.LastUpdateUtc, md.Obj.Etag ?? md.Obj.Md5, md.Obj.ContentLength, new Owner(md.Obj.OwnerId, null));
+                metadata.ContentType = md.Obj.ContentType;
+
+                if (md.Bucket.EnableVersioning)
+                    ctx.Response.Headers.Add("x-amz-version-id", md.Obj.Version.ToString());
+
+                AddUserMetadataHeaders(md.Obj, ctx, header);
+
+                return metadata;
             }
-
-            RequestValidator.CheckDeleteMarker(md.Obj, ctx);
-
-            ObjectMetadata metadata = new ObjectMetadata(md.Obj.Key, md.Obj.LastUpdateUtc, md.Obj.Etag ?? md.Obj.Md5, md.Obj.ContentLength, new Owner(md.Obj.OwnerId, null));
-            metadata.ContentType = md.Obj.ContentType;
-
-            if (md.Bucket.EnableVersioning)
-                ctx.Response.Headers.Add("x-amz-version-id", md.Obj.Version.ToString());
-
-            AddUserMetadataHeaders(md.Obj, ctx, header);
-
-            return metadata;
+            finally
+            {
+                Less3Telemetry.ObjectStage(activity, "HeadObject", "total", sw.Elapsed.TotalMilliseconds);
+                activity?.Dispose();
+            }
         }
 
         internal async Task<S3Object> Read(S3Context ctx)
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
-            RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
-            RequestValidator.ValidateAuthorization(md, _Logging, header);
-            RequestValidator.ValidateBucketExists(md, _Logging, header);
+            Activity activity = Less3Telemetry.StartObjectOperation("GetObject");
+            Stopwatch sw = Stopwatch.StartNew();
+            try
+            {
+                RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
+                RequestValidator.ValidateAuthorization(md, _Logging, header);
+                RequestValidator.ValidateBucketExists(md, _Logging, header);
 
-            long versionId = RequestValidator.ParseVersionId(ctx);
-            RequestValidator.ValidateObjectExists(md.Obj, versionId, _Logging, header);
-            RequestValidator.CheckDeleteMarker(md.Obj, ctx);
+                long versionId = RequestValidator.ParseVersionId(ctx);
+                RequestValidator.ValidateObjectExists(md.Obj, versionId, _Logging, header);
+                RequestValidator.CheckDeleteMarker(md.Obj, ctx);
 
-            bool isLatest = true;
-            long latestVersion = md.BucketClient.GetObjectLatestVersion(md.Obj.Key);
-            if (md.Obj.Version < latestVersion) isLatest = false;
+                bool isLatest = true;
+                long latestVersion = md.BucketClient.GetObjectLatestVersion(md.Obj.Key);
+                if (md.Obj.Version < latestVersion) isLatest = false;
+                Less3Telemetry.ObjectStage(activity, "GetObject", "metadata_read", sw.Elapsed.TotalMilliseconds);
 
-            if (md.Bucket.EnableVersioning)
-                ctx.Response.Headers.Add("x-amz-version-id", md.Obj.Version.ToString());
+                if (md.Bucket.EnableVersioning)
+                    ctx.Response.Headers.Add("x-amz-version-id", md.Obj.Version.ToString());
 
-            AddUserMetadataHeaders(md.Obj, ctx, header);
+                AddUserMetadataHeaders(md.Obj, ctx, header);
 
-            FileStream fs = new FileStream(GetObjectBlobFile(md.Bucket, md.Obj), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            return new S3Object(md.Obj.Key, md.Obj.Version.ToString(), isLatest, md.Obj.LastUpdateUtc, md.Obj.Etag, md.Obj.ContentLength, GetOwnerFromUserId(md.Obj.OwnerId), fs, md.Obj.ContentType);
+                FileStream fs = new FileStream(GetObjectBlobFile(md.Bucket, md.Obj), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                Less3Telemetry.ObjectStage(activity, "GetObject", "storage_open", sw.Elapsed.TotalMilliseconds);
+                return new S3Object(md.Obj.Key, md.Obj.Version.ToString(), isLatest, md.Obj.LastUpdateUtc, md.Obj.Etag, md.Obj.ContentLength, GetOwnerFromUserId(md.Obj.OwnerId), fs, md.Obj.ContentType);
+            }
+            finally
+            {
+                Less3Telemetry.ObjectStage(activity, "GetObject", "total", sw.Elapsed.TotalMilliseconds);
+                activity?.Dispose();
+            }
         }
 
         internal async Task<AccessControlPolicy> ReadAcl(S3Context ctx)
@@ -251,6 +293,10 @@ namespace Less3.Api.S3
         {
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
 
+            Activity activity = Less3Telemetry.StartObjectOperation("GetObjectRange");
+            Stopwatch sw = Stopwatch.StartNew();
+            try
+            {
             RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
             RequestValidator.ValidateAuthorization(md, _Logging, header);
             RequestValidator.ValidateBucketExists(md, _Logging, header);
@@ -268,6 +314,7 @@ namespace Less3.Api.S3
             bool isLatest = true;
             long latestVersion = md.BucketClient.GetObjectLatestVersion(md.Obj.Key);
             if (md.Obj.Version < latestVersion) isLatest = false;
+            Less3Telemetry.ObjectStage(activity, "GetObjectRange", "metadata_read", sw.Elapsed.TotalMilliseconds);
 
             long readLen = 0;
             if (ctx.Request.RangeEnd != null)
@@ -317,6 +364,7 @@ namespace Less3.Api.S3
 
             using (FileStream fs = new FileStream(GetObjectBlobFile(md.Bucket, md.Obj), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
+                Less3Telemetry.ObjectStage(activity, "GetObjectRange", "storage_open", sw.Elapsed.TotalMilliseconds);
                 fs.Seek(ctx.Request.RangeStart.Value, SeekOrigin.Begin);
 
                 int bytesRemaining = (int)readLen;
@@ -355,6 +403,12 @@ namespace Less3.Api.S3
                 S3Object obj = new S3Object(md.Obj.Key, md.Obj.Version.ToString(), isLatest, md.Obj.LastUpdateUtc, md.Obj.Etag, readLen, GetOwnerFromUserId(md.Obj.OwnerId), data, md.Obj.ContentType);
                 obj.TotalSize = md.Obj.ContentLength;
                 return obj;
+            }
+            }
+            finally
+            {
+                Less3Telemetry.ObjectStage(activity, "GetObjectRange", "total", sw.Elapsed.TotalMilliseconds);
+                activity?.Dispose();
             }
         }
 
@@ -782,6 +836,15 @@ namespace Less3.Api.S3
             Less3.Classes.Upload uploadRecord = _Config.GetUploadById(md.Bucket.TenantId, ctx.Request.UploadId);
             RequestValidator.ValidateUpload(uploadRecord, ctx.Request.UploadId, _Logging, header);
 
+            // Serialize completion and abort of this upload across all nodes. Any node can assemble
+            // the object from parts on shared storage, but only one at a time; a duplicate complete
+            // re-reads the (now absent) upload under the lock and fails cleanly, yielding one object.
+            LockHandle uploadLock = _LockManager.AcquireAsync(LockKeys.Upload(ctx.Request.UploadId), LockMode.Write, new AcquireOptions(_Settings.Cluster.Lock.AcquireTimeoutMs), CancellationToken.None).GetAwaiter().GetResult();
+            try
+            {
+            uploadRecord = _Config.GetUploadById(md.Bucket.TenantId, ctx.Request.UploadId);
+            RequestValidator.ValidateUpload(uploadRecord, ctx.Request.UploadId, _Logging, header);
+
             if (upload == null || upload.Parts == null || upload.Parts.Count < 1)
             {
                 _Logging.Warn(header + "complete multipart upload request did not include any parts");
@@ -943,6 +1006,7 @@ namespace Less3.Api.S3
             _Config.DeleteUpload(md.Bucket.TenantId, ctx.Request.UploadId);
 
             _Logging.Info(header + "completed multipart upload " + ctx.Request.UploadId + " for key " + ctx.Request.Bucket + "/" + ctx.Request.Key);
+            Less3Telemetry.MultipartCompleted();
 
             CompleteMultipartUploadResult result = new CompleteMultipartUploadResult();
             result.Location = "http://" + ctx.Http.Request.Headers["Host"] + "/" + ctx.Request.Bucket + "/" + ctx.Request.Key;
@@ -956,6 +1020,11 @@ namespace Less3.Api.S3
                 ctx.Response.Headers.Add("x-amz-version-id", obj.Version.ToString());
 
             return result;
+            }
+            finally
+            {
+                _LockManager.ReleaseAsync(uploadLock, CancellationToken.None).GetAwaiter().GetResult();
+            }
         }
 
         internal async Task UploadPart(S3Context ctx)
@@ -1057,6 +1126,7 @@ namespace Less3.Api.S3
                 }
 
                 _Config.AddUploadPart(part);
+                Less3Telemetry.PartUploaded();
 
                 ctx.Response.Headers.Add("ETag", "\"" + hashes.MD5 + "\"");
 
@@ -1097,23 +1167,32 @@ namespace Less3.Api.S3
             Less3.Classes.Upload uploadRecord = _Config.GetUploadById(md.Bucket.TenantId, ctx.Request.UploadId);
             RequestValidator.ValidateUpload(uploadRecord, ctx.Request.UploadId, _Logging, header);
 
-            List<UploadPart> parts = GetLatestUploadPartsByNumber(_Config.GetUploadPartsByUploadId(md.Bucket.TenantId, ctx.Request.UploadId));
-            if (parts != null && parts.Count > 0)
+            LockHandle uploadLock = _LockManager.AcquireAsync(LockKeys.Upload(ctx.Request.UploadId), LockMode.Write, new AcquireOptions(_Settings.Cluster.Lock.AcquireTimeoutMs), CancellationToken.None).GetAwaiter().GetResult();
+            try
             {
-                foreach (UploadPart part in parts)
+                List<UploadPart> parts = GetLatestUploadPartsByNumber(_Config.GetUploadPartsByUploadId(md.Bucket.TenantId, ctx.Request.UploadId));
+                if (parts != null && parts.Count > 0)
                 {
-                    string partFile = GetPartFilePath(md.Bucket.Id, ctx.Request.UploadId, part.PartNumber);
-                    if (File.Exists(partFile))
+                    foreach (UploadPart part in parts)
                     {
-                        File.Delete(partFile);
+                        string partFile = GetPartFilePath(md.Bucket.Id, ctx.Request.UploadId, part.PartNumber);
+                        if (File.Exists(partFile))
+                        {
+                            File.Delete(partFile);
+                        }
                     }
                 }
+
+                _Config.DeleteUploadParts(md.Bucket.TenantId, ctx.Request.UploadId);
+                _Config.DeleteUpload(md.Bucket.TenantId, ctx.Request.UploadId);
+
+                _Logging.Info(header + "aborted multipart upload " + ctx.Request.UploadId);
+                Less3Telemetry.MultipartAborted();
             }
-
-            _Config.DeleteUploadParts(md.Bucket.TenantId, ctx.Request.UploadId);
-            _Config.DeleteUpload(md.Bucket.TenantId, ctx.Request.UploadId);
-
-            _Logging.Info(header + "aborted multipart upload " + ctx.Request.UploadId);
+            finally
+            {
+                _LockManager.ReleaseAsync(uploadLock, CancellationToken.None).GetAwaiter().GetResult();
+            }
         }
 
         internal async Task<ListPartsResult> ReadParts(S3Context ctx)
@@ -1180,17 +1259,7 @@ namespace Less3.Api.S3
 
         private string GetPartFilePath(string bucketId, string uploadId, int partNumber)
         {
-            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
-            if (String.IsNullOrEmpty(uploadId)) throw new ArgumentNullException(nameof(uploadId));
-            if (partNumber < 1) throw new ArgumentOutOfRangeException(nameof(partNumber));
-
-            string tempDir = _Settings.Storage.TempDirectory;
-            if (!tempDir.EndsWith("/") && !tempDir.EndsWith("\\"))
-            {
-                tempDir += "/";
-            }
-
-            return tempDir + bucketId + "-upload-" + uploadId + "-part-" + partNumber;
+            return MultipartPaths.PartFilePath(_Settings.Storage, bucketId, uploadId, partNumber);
         }
 
         private void AddUserMetadataHeaders(Obj obj, S3Context ctx, string header)

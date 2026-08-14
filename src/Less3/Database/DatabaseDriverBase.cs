@@ -139,6 +139,22 @@ namespace Less3.Database
         /// <returns>Data table.</returns>
         public abstract Task<DataTable> ExecuteQueries(IEnumerable<string> queries, bool isTransaction = false, CancellationToken token = default);
 
+        /// <summary>
+        /// Run a bootstrap action (schema seeding, default data) under a cluster-wide mutual
+        /// exclusion so that when multiple nodes start against the same database at once, exactly
+        /// one performs the seed while the others wait and then observe the data already present.
+        /// The default implementation simply runs the action (single-node engines need no
+        /// coordination); the PostgreSQL driver overrides it to hold a database advisory lock for
+        /// the duration of the action.
+        /// </summary>
+        /// <param name="action">The bootstrap action to run exclusively.</param>
+        /// <exception cref="System.ArgumentNullException">Thrown when action is null.</exception>
+        public virtual void RunExclusiveBootstrap(Action action)
+        {
+            if (action == null) throw new ArgumentNullException(nameof(action));
+            action();
+        }
+
         #endregion
     }
 }

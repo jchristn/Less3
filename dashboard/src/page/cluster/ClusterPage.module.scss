@@ -1,0 +1,58 @@
+.statGrid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.statCard {
+  height: 100%;
+  min-width: 0;
+}
+
+.statCard :global(.ant-card-body) {
+  height: 100%;
+  padding: 14px 16px;
+}
+
+.statContent {
+  height: 100%;
+  min-width: 0;
+}
+
+.statIcon {
+  align-items: center;
+  border-radius: 8px;
+  display: flex;
+  flex: 0 0 40px;
+  font-size: 20px;
+  height: 40px;
+  justify-content: center;
+  width: 40px;
+}
+
+.statText {
+  flex: 1;
+  min-width: 0;
+}
+
+.statLabel {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.statValue {
+  display: block;
+  line-height: 1.15;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.linkGrid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}

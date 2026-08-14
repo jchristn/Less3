@@ -2,18 +2,20 @@
 setlocal enabledelayedexpansion
 
 REM ==========================================================================
-REM reset.bat - Reset Less3 docker environment to factory defaults
+REM reset.bat - Reset the Less3 Docker environment to factory defaults.
 REM
-REM This script destroys all runtime data (database, object storage, logs)
-REM and restores the factory-default database. Configuration files are
-REM preserved.
+REM The Docker deployment runs on PostgreSQL, with metadata in the 'pgdata'
+REM volume and object data in the 'less3-data' volume. A factory reset drops
+REM those volumes (wiping the database and object storage) and clears the
+REM host-mounted logs. On the next 'docker compose up' the nodes recreate their
+REM schema and re-seed the default tenant, credentials, and sample bucket
+REM automatically - no database file to restore.
 REM
 REM Usage: factory\reset.bat
 REM ==========================================================================
 
 set "SCRIPT_DIR=%~dp0"
 set "DOCKER_DIR=%SCRIPT_DIR%..\"
-set "FACTORY_DIR=%SCRIPT_DIR%"
 
 REM -------------------------------------------------------------------------
 REM Confirmation prompt
@@ -26,13 +28,15 @@ echo.
 echo WARNING: This is a DESTRUCTIVE action. The following will
 echo be permanently deleted:
 echo.
-echo   - Less3 SQLite database (buckets, objects, users,
-echo     credentials, ACLs, tags)
-echo   - All object storage files
-echo   - All temporary files
-echo   - All log files
+echo   - The PostgreSQL data volume (all metadata, lock state,
+echo     cluster membership, buckets, users, credentials, ACLs)
+echo   - The shared object-storage volume (all object data and
+echo     multipart parts)
+echo   - All host log files
 echo.
-echo Configuration files (system.json) will NOT be modified.
+echo Configuration files (system.node.json, clutch\clutch.json)
+echo are NOT modified. The nodes re-seed the default data on the
+echo next startup.
 echo.
 set /p "CONFIRM=Type 'RESET' to confirm: "
 echo.
@@ -43,51 +47,26 @@ if not "%CONFIRM%"=="RESET" (
 )
 
 REM -------------------------------------------------------------------------
-REM Ensure containers are stopped
+REM Stop containers and drop the data volumes (covers the optional clutch
+REM profile too). This removes the 'pgdata' and 'less3-data' named volumes.
 REM -------------------------------------------------------------------------
-echo [1/5] Stopping containers...
+echo [1/2] Stopping containers and removing data volumes...
 pushd "%DOCKER_DIR%"
-docker compose down 2>nul
+docker compose down -v --remove-orphans 2>nul
 popd
 
 REM -------------------------------------------------------------------------
-REM Restore factory database
+REM Clear host logs
 REM -------------------------------------------------------------------------
-echo [2/5] Restoring factory database...
-if not exist "%DOCKER_DIR%db" mkdir "%DOCKER_DIR%db" 2>nul
-del /q "%DOCKER_DIR%db\less3.db" 2>nul
-del /q "%DOCKER_DIR%db\less3.db-shm" 2>nul
-del /q "%DOCKER_DIR%db\less3.db-wal" 2>nul
-copy /y "%FACTORY_DIR%less3.db" "%DOCKER_DIR%db\less3.db" >nul
-echo         Restored db\less3.db
-
-REM -------------------------------------------------------------------------
-REM Clear object storage
-REM -------------------------------------------------------------------------
-echo [3/5] Clearing object storage...
-if exist "%DOCKER_DIR%disk" rd /s /q "%DOCKER_DIR%disk" 2>nul
-if not exist "%DOCKER_DIR%disk" mkdir "%DOCKER_DIR%disk" 2>nul
-if not exist "%DOCKER_DIR%temp" mkdir "%DOCKER_DIR%temp" 2>nul
-del /q "%DOCKER_DIR%temp\*" 2>nul
-type nul > "%DOCKER_DIR%disk\.gitkeep"
-type nul > "%DOCKER_DIR%temp\.gitkeep"
-echo         Cleared object storage and temp files
-
-REM -------------------------------------------------------------------------
-REM Clear logs
-REM -------------------------------------------------------------------------
-echo [4/5] Clearing logs...
+echo [2/2] Clearing logs...
 if not exist "%DOCKER_DIR%logs" mkdir "%DOCKER_DIR%logs" 2>nul
 del /q "%DOCKER_DIR%logs\*" 2>nul
 type nul > "%DOCKER_DIR%logs\.gitkeep"
-echo         Cleared log files
 
-REM -------------------------------------------------------------------------
-REM Done
-REM -------------------------------------------------------------------------
-echo [5/5] Factory reset complete.
 echo.
-echo To start the environment:
+echo Factory reset complete.
+echo.
+echo To start fresh (the nodes will recreate the schema and seed defaults):
 echo   cd %DOCKER_DIR%
 echo   docker compose up -d
 echo.

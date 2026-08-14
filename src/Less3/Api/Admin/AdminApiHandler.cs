@@ -76,24 +76,36 @@ namespace Less3.Api.Admin
 
         internal async Task Process(S3Context ctx)
         {
-            switch (ctx.Http.Request.Method)
-            {
-                case WatsonWebserver.Core.HttpMethod.GET:
-                    await _GetHandler.Process(ctx);
-                    return;
-                case WatsonWebserver.Core.HttpMethod.POST:
-                    await _PostHandler.Process(ctx);
-                    return;
-                case WatsonWebserver.Core.HttpMethod.PUT:
-                    await _PutHandler.Process(ctx);
-                    return;
-                case WatsonWebserver.Core.HttpMethod.DELETE:
-                    await _DeleteHandler.Process(ctx);
-                    return;
-            }
+            System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
+            string[] elements = ctx.Http.Request.Url.Elements;
+            string resource = elements != null && elements.Length >= 2 ? elements[1].ToLowerInvariant() : "root";
+            string operation = ctx.Http.Request.Method.ToString() + " " + resource;
 
-            await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest);
-            return;
+            try
+            {
+                switch (ctx.Http.Request.Method)
+                {
+                    case WatsonWebserver.Core.HttpMethod.GET:
+                        await _GetHandler.Process(ctx);
+                        return;
+                    case WatsonWebserver.Core.HttpMethod.POST:
+                        await _PostHandler.Process(ctx);
+                        return;
+                    case WatsonWebserver.Core.HttpMethod.PUT:
+                        await _PutHandler.Process(ctx);
+                        return;
+                    case WatsonWebserver.Core.HttpMethod.DELETE:
+                        await _DeleteHandler.Process(ctx);
+                        return;
+                }
+
+                await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest);
+                return;
+            }
+            finally
+            {
+                Less3.Telemetry.Less3Telemetry.ApiOperation("admin", operation, ctx.Http.Response.StatusCode, sw.Elapsed.TotalMilliseconds);
+            }
         }
 
         #endregion

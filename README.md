@@ -35,7 +35,7 @@ v4.0.0
 - Added cluster membership, the `/api/v1/cluster/*` and `/api/v1/locks` admin endpoints, and an unauthenticated `/healthz` probe for load balancers and orchestrators
 - Made cleanup and schema migration leader-only, elected through lock leases and a Postgres advisory lock
 - Metered every S3, REST, and admin API and added per-stage timestamps through every object operation (lock-acquire → metadata → storage → commit → blob-delete), surfaced in Grafana
-- Added Radiant/Watson observability with per-node Prometheus metrics and a Docker stack shipping Prometheus, Grafana (five pre-provisioned dashboards), Loki, Tempo, an OpenTelemetry collector, and the Clutch lock server with its metrics scraped too
+- Added Radiant/Watson observability with per-node Prometheus metrics, application logs shipped to Loki (SyslogLogging → OTLP → collector → Loki), and a Docker stack shipping Prometheus, Grafana (six pre-provisioned dashboards), Loki, Tempo, an OpenTelemetry collector, and the Clutch lock server with its metrics scraped too
 - Made PostgreSQL the default in Docker while native OOBE stays on SQLite; cluster mode refuses to start on SQLite
 - See `CHANGELOG.md` for release details and `MULTINODE_SETUP.md` for the cluster operator guide
 
@@ -378,13 +378,14 @@ Ordering is strictly by arrival, so a steady stream of reads cannot starve a que
 
 Less3's library code is instrumented with base-class-library `Meter` and `ActivitySource` instruments under `Less3.*` names — no telemetry-SDK dependency in the instrumented code. Every S3, REST, and admin API operation is metered (request count and duration, labeled by surface and operation), and every object operation records per-stage timestamps throughout its execution (lock-acquire, metadata-read, storage read/write, database-commit, blob-delete).
 
-Each node also exposes Watson's native Prometheus `/metrics` endpoint on its main port. In the Docker stack, Prometheus scrapes that endpoint directly for the Watson HTTP metrics, while the `Less3.*` domain metrics, traces, and logs are exported over OTLP to an OpenTelemetry collector and re-exported for Prometheus. Grafana ships with five pre-provisioned dashboards:
+Each node also exposes Watson's native Prometheus `/metrics` endpoint on its main port. In the Docker stack, Prometheus scrapes that endpoint directly for the Watson HTTP metrics, while the `Less3.*` domain metrics and traces are exported over OTLP to an OpenTelemetry collector (metrics re-exported for Prometheus, traces to Tempo). Application logs are bridged from the SyslogLogging module into the same OTLP pipeline and land in Loki, so every node's log stream is queryable in Grafana (labeled by `service_instance_id`) and correlated with traces. Grafana ships with six pre-provisioned dashboards:
 
 - **Less3 — Overview** - traffic, storage, and error-rate summary
 - **Less3 — Locks & Data Integrity** - lock acquires/denials/waiters and the fencing-conflict counter, which should stay at zero
 - **Less3 — Cluster** - node membership and health
 - **Less3 — API Operations** - per-operation request rate, error rate, p95 latency, and object-operation stage timings
 - **Less3 — Clutch Lock Server** - Clutch lock activity, WebSocket connections, and HTTP throughput (Clutch's own metrics are scraped into the same Prometheus)
+- **Less3 — Logs** - live application logs from every node (via Loki), with a per-node filter and log-volume graph
 
 ## Open Source Packages 
 
@@ -420,7 +421,7 @@ The default stack publishes these host ports (PostgreSQL and the individual node
 |---|---|---|
 | 8000 | nginx | Single entry point, load-balanced across the nodes: S3 API, REST API (`/api/v1/...`), admin API (`/admin/...`), `/healthz`, per-node `/metrics`. |
 | 3000 | less3-ui | Less3 dashboard. |
-| 3001 | grafana | Grafana (anonymous admin); five Less3 dashboards pre-provisioned (Overview, Locks & Data Integrity, Cluster, API Operations, Clutch). |
+| 3001 | grafana | Grafana (anonymous admin); six Less3 dashboards pre-provisioned (Overview, Locks & Data Integrity, Cluster, API Operations, Clutch, Logs). |
 | 9090 | prometheus | Prometheus UI / query API. |
 | 3100 | loki | Loki log API. |
 | 3200 | tempo | Tempo trace API. |

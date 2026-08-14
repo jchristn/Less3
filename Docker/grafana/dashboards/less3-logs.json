@@ -1,0 +1,58 @@
+{
+  "uid": "less3-logs",
+  "title": "Less3 - Logs",
+  "tags": ["less3", "logs"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "time": { "from": "now-1h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "node",
+        "type": "query",
+        "datasource": { "type": "loki", "uid": "loki" },
+        "query": "label_values({service_name=\"less3\"}, service_instance_id)",
+        "refresh": 2,
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "current": { "text": "All", "value": "$__all" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Log volume / sec by node",
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 0 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": { "defaults": { "custom": { "drawStyle": "bars", "stacking": { "mode": "normal" } } }, "overrides": [] },
+      "targets": [
+        { "refId": "A", "expr": "sum by (service_instance_id) (rate({service_name=\"less3\", service_instance_id=~\"$node\"}[$__auto]))", "legendFormat": "{{service_instance_id}}", "datasource": { "type": "loki", "uid": "loki" } }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "logs",
+      "title": "Less3 logs",
+      "description": "Application logs from every Less3 node, shipped via SyslogLogging -> OTLP -> collector -> Loki. Filter by node with the variable above.",
+      "gridPos": { "h": 20, "w": 24, "x": 0, "y": 6 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        { "refId": "A", "expr": "{service_name=\"less3\", service_instance_id=~\"$node\"}", "datasource": { "type": "loki", "uid": "loki" } }
+      ]
+    }
+  ]
+}

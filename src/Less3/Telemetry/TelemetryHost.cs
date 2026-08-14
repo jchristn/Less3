@@ -1,6 +1,7 @@
 namespace Less3.Telemetry
 {
     using System;
+    using Microsoft.Extensions.Logging;
     using Less3.Settings;
     using Radiant;
     using SyslogLogging;
@@ -19,16 +20,18 @@ namespace Less3.Telemetry
 
         private readonly RadiantHost _Host;
         private readonly LoggingModule _Logging;
+        private Action<LogEntry> _LogBridge = null;
         private bool _Disposed = false;
 
         #endregion
 
         #region Constructors-and-Factories
 
-        private TelemetryHost(RadiantHost host, LoggingModule logging)
+        private TelemetryHost(RadiantHost host, LoggingModule logging, Action<LogEntry> logBridge)
         {
             _Host = host;
             _Logging = logging;
+            _LogBridge = logBridge;
         }
 
         /// <summary>
@@ -77,6 +80,8 @@ namespace Less3.Telemetry
             if (obs.OtlpEnabled && !String.IsNullOrEmpty(obs.OtlpEndpoint)) radiant.Otlp.Endpoint = obs.OtlpEndpoint;
 
             radiant.Logs.Enable = obs.ExportLogs && obs.OtlpEnabled;
+            // Export the rendered message text so Loki shows the log line, not just structured state.
+            radiant.Logs.IncludeFormattedMessage = true;
 
             // Telemetry must never take down the server. If the pipeline fails to build (for
             // example a Prometheus port already in use, or an exporter that cannot bind), log it and
@@ -92,11 +97,52 @@ namespace Less3.Telemetry
                 return null;
             }
 
+            // Bridge Less3's SyslogLogging output into the OTLP log pipeline: every emitted log entry
+            // is forwarded to a Radiant ILogger, which exports it over OTLP to the collector and on to
+            // Loki. Requires SyslogLogging >= 2.2.0 (the MessageLogged event). The handler is exception-
+            // isolated inside SyslogLogging (routed to OnLoggingError), so a telemetry hiccup can never
+            // disrupt logging.
+            Action<LogEntry> bridge = null;
+            if (radiant.Logs.Enable)
+            {
+                ILogger otel = host.CreateLogger(obs.ServiceName);
+                bridge = entry => ForwardToOtel(otel, entry);
+                logging.MessageLogged += bridge;
+            }
+
             logging.Info("[TelemetryHost] started; service=" + obs.ServiceName + " instance=" + nodeId +
                 (obs.PrometheusEnabled ? " prometheus=" + radiant.Prometheus.ToScrapeUrl() : "") +
-                (obs.OtlpEnabled ? " otlp=" + obs.OtlpEndpoint : ""));
+                (obs.OtlpEnabled ? " otlp=" + obs.OtlpEndpoint : "") +
+                (radiant.Logs.Enable ? " logs=otlp" : ""));
 
-            return new TelemetryHost(host, logging);
+            return new TelemetryHost(host, logging, bridge);
+        }
+
+        private static void ForwardToOtel(ILogger otel, LogEntry entry)
+        {
+            if (otel == null || entry == null) return;
+
+            LogLevel level = MapSeverity(entry.Severity);
+            if (!otel.IsEnabled(level)) return;
+
+            // State is the raw message string; the formatter returns it verbatim so arbitrary log text
+            // (including braces) is never interpreted as a message template.
+            otel.Log(level, default, entry.Message, entry.Exception, static (state, _) => state);
+        }
+
+        private static LogLevel MapSeverity(Severity severity)
+        {
+            switch (severity)
+            {
+                case Severity.Debug: return LogLevel.Debug;
+                case Severity.Info: return LogLevel.Information;
+                case Severity.Warn: return LogLevel.Warning;
+                case Severity.Error: return LogLevel.Error;
+                case Severity.Alert: return LogLevel.Critical;
+                case Severity.Critical: return LogLevel.Critical;
+                case Severity.Emergency: return LogLevel.Critical;
+                default: return LogLevel.Information;
+            }
         }
 
         private static string Flatten(Exception e)
@@ -124,6 +170,13 @@ namespace Less3.Telemetry
         public void Dispose()
         {
             if (_Disposed) return;
+
+            if (_LogBridge != null)
+            {
+                try { _Logging.MessageLogged -= _LogBridge; }
+                catch (Exception e) { _Logging?.Warn("[TelemetryHost] log-bridge detach encountered: " + e.Message); }
+                _LogBridge = null;
+            }
 
             try { _Host?.Dispose(); }
             catch (Exception e) { _Logging?.Warn("[TelemetryHost] dispose encountered: " + e.Message); }

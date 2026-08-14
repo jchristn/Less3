@@ -70,7 +70,7 @@ Every node must mount the shared storage at the same absolute path — in the de
 
 ## Observability
 
-Each node exposes Watson's native Prometheus `/metrics` endpoint on its main port (scraped directly for the `http.server.*` metrics) and pushes its `Less3.*` domain metrics, traces, and logs to the bundled OpenTelemetry collector over OTLP; every S3, REST, and admin API is metered, and object operations record per-stage timings. The Docker stack ships Prometheus (`9090`), Grafana (`3001`, anonymous admin), Loki (`3100`), Tempo (`3200`), and the Clutch lock server (whose own metrics are scraped too). Grafana comes up with five dashboards already provisioned: "Less3 — Overview", "Less3 — Locks & Data Integrity" (whose fencing-conflict count should stay at zero), "Less3 — Cluster", "Less3 — API Operations", and "Less3 — Clutch Lock Server".
+Each node exposes Watson's native Prometheus `/metrics` endpoint on its main port (scraped directly for the `http.server.*` metrics) and pushes its `Less3.*` domain metrics and traces to the bundled OpenTelemetry collector over OTLP; every S3, REST, and admin API is metered, and object operations record per-stage timings. Application logs are bridged from SyslogLogging through the same OTLP pipeline into Loki, so each node's logs are queryable in Grafana. The Docker stack ships Prometheus (`9090`), Grafana (`3001`, anonymous admin), Loki (`3100`), Tempo (`3200`), and the Clutch lock server (whose own metrics are scraped too). Grafana comes up with six dashboards already provisioned: "Less3 — Overview", "Less3 — Locks & Data Integrity" (whose fencing-conflict count should stay at zero), "Less3 — Cluster", "Less3 — API Operations", "Less3 — Clutch Lock Server", and "Less3 — Logs".
 
 ## Health and Cluster Endpoints
 

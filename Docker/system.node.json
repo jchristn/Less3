@@ -17,7 +17,7 @@
   "Cluster": {
     "Enabled": true,
     "NodeId": null,
-    "LockProvider": "Postgres",
+    "LockProvider": "Clutch",
     "NodeHeartbeatIntervalMs": 10000,
     "NodeStaleAfterMs": 30000,
     "BucketClientCacheTtlMs": 5000,
@@ -27,6 +27,12 @@
       "MaxHoldMs": 3600000,
       "AcquireTimeoutMs": 15000,
       "WaiterPollMs": 250
+    },
+    "Clutch": {
+      "Endpoint": "http://clutch:8080",
+      "AccessKey": "clutch-default-access-key",
+      "TenantId": null,
+      "RequestTimeoutMs": 15000
     },
     "AuthCache": {
       "Enabled": false,

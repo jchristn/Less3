@@ -5,7 +5,9 @@ namespace Less3.Settings
     /// <summary>
     /// Configuration for the optional Clutch distributed lock provider. These values are read
     /// only when <see cref="ClusterSettings.LockProvider"/> is <see cref="LockProviderEnum.Clutch"/>.
-    /// Less3 talks to Clutch's REST lock endpoints over HTTP; no Clutch SDK dependency is required.
+    /// Less3 talks to Clutch over its native WebSocket lock protocol (one persistent connection per
+    /// node); no Clutch SDK dependency is required. <see cref="Endpoint"/> is given as an http(s) URL
+    /// and is upgraded to ws(s) internally.
     /// </summary>
     public class ClutchSettings
     {

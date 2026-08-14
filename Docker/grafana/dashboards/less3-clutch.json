@@ -46,17 +46,18 @@
       "gridPos": { "h": 7, "w": 12, "x": 0, "y": 6 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "histogram_quantile(0.95, sum by (le) (rate(clutch_lock_acquire_duration_milliseconds_bucket[5m])))", "legendFormat": "p95", "datasource": { "type": "prometheus", "uid": "prometheus" } }
+        { "refId": "A", "expr": "histogram_quantile(0.95, sum by (le) (rate(clutch_lock_acquire_duration_bucket[5m])))", "legendFormat": "p95", "datasource": { "type": "prometheus", "uid": "prometheus" } }
       ]
     },
     {
       "id": 5,
       "type": "timeseries",
-      "title": "Clutch HTTP requests / sec",
+      "title": "Lock waiters over time",
+      "description": "Queued waiters awaiting a lock grant. Sustained non-zero values indicate contention on hot keys.",
       "gridPos": { "h": 7, "w": 12, "x": 12, "y": 6 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(rate(clutch_http_request_total[5m]))", "legendFormat": "requests", "datasource": { "type": "prometheus", "uid": "prometheus" } }
+        { "refId": "A", "expr": "sum(clutch_lock_waiters)", "legendFormat": "waiters", "datasource": { "type": "prometheus", "uid": "prometheus" } }
       ]
     }
   ]

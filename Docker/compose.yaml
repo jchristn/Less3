@@ -183,10 +183,11 @@ services:
       - prometheus
 
   #
-  # Clutch lock service. Available to the cluster for distributed lock management and reachable
-  # through the Clutch dashboard below. It shares this same PostgreSQL via bring-your-own-database,
-  # so the database stays the single authority. Less3 uses the native Postgres lock provider by
-  # default; set Cluster.LockProvider to "Clutch" in system.node.json to route locking here instead.
+  # Clutch lock service. This stack's default lock provider: system.node.json sets
+  # Cluster.LockProvider=Clutch, so each Less3 node holds a persistent lock WebSocket here. It
+  # shares this same PostgreSQL via bring-your-own-database, so the database stays the single
+  # authority for lock state and fencing tokens. To use in-database locking with no extra service,
+  # set Cluster.LockProvider to "Postgres" in system.node.json (Clutch then simply goes unused).
   #
   clutch:
     container_name: 'less3-clutch'

@@ -47,8 +47,10 @@ if not "%CONFIRM%"=="RESET" (
 )
 
 REM -------------------------------------------------------------------------
-REM Stop containers and drop the data volumes (covers the optional clutch
-REM profile too). This removes the 'pgdata' and 'less3-data' named volumes.
+REM Stop containers and drop the data volumes (the whole stack, including the
+REM Clutch lock server). This removes the 'pgdata' and 'less3-data' named
+REM volumes; on the next boot the nodes reconnect to Clutch (the default lock
+REM provider) and re-seed the default data.
 REM -------------------------------------------------------------------------
 echo [1/2] Stopping containers and removing data volumes...
 pushd "%DOCKER_DIR%"

@@ -55,7 +55,7 @@ Cluster mode adds a `Cluster` block and an `Observability` block to `system.json
 "Cluster": {
   "Enabled": true,
   "NodeId": null,
-  "LockProvider": "Postgres",
+  "LockProvider": "Clutch",
   "NodeHeartbeatIntervalMs": 10000,
   "NodeStaleAfterMs": 30000,
   "BucketClientCacheTtlMs": 5000,
@@ -66,6 +66,12 @@ Cluster mode adds a `Cluster` block and an `Observability` block to `system.json
     "AcquireTimeoutMs": 15000,
     "WaiterPollMs": 250
   },
+  "Clutch": {
+    "Endpoint": "http://clutch:8080",
+    "AccessKey": "clutch-default-access-key",
+    "TenantId": null,
+    "RequestTimeoutMs": 15000
+  },
   "AuthCache": {
     "Enabled": false,
     "TtlMs": 15000
@@ -73,7 +79,7 @@ Cluster mode adds a `Cluster` block and an `Observability` block to `system.json
 }
 ```
 
-`Enabled` turns the cluster on and arms the SQLite startup guard. `NodeId` names this node in logs, metrics labels, lock-holder records, membership rows, and audit trails; leave it `null` and Less3 resolves it from the machine name or the `LESS3_NODE_ID` environment variable, which is how the compose file gives each container a stable identity. `LockProvider` selects the coordination backend — `Postgres` is the cluster default, `Local` is the in-process single-node manager, and `Clutch` is the optional alpha provider described later.
+`Enabled` turns the cluster on and arms the SQLite startup guard. `NodeId` names this node in logs, metrics labels, lock-holder records, membership rows, and audit trails; leave it `null` and Less3 resolves it from the machine name or the `LESS3_NODE_ID` environment variable, which is how the compose file gives each container a stable identity. `LockProvider` selects the coordination backend — the Docker stack ships with `Clutch` so the bundled lock server, its dashboard, and the "Manage Locks" action are live out of the box; `Postgres` is the in-database provider (no extra service, and the more battle-tested path); and `Local` is the in-process single-node manager. The `Clutch` sub-block is read only when `LockProvider` is `Clutch`: `Endpoint` is the Clutch server's http(s) URL (upgraded to a WebSocket internally), and `AccessKey` is its lock credential — the demo seeds `clutch-default-access-key` on first boot.
 
 The heartbeat and staleness values govern membership: a node writes a heartbeat every `NodeHeartbeatIntervalMs`, and if it goes quiet for longer than `NodeStaleAfterMs` the cluster considers it stale. `BucketClientCacheTtlMs` bounds how long a node may reuse a cached bucket handle before it revalidates the bucket against the database, so a bucket created or reconfigured on one node becomes visible on the others within that window.
 
@@ -227,26 +233,26 @@ The Docker stack turns this into something you can watch without any setup. Prom
 
 Loki (port 3100) collects logs and Tempo (port 3200) collects traces, both wired into Grafana with trace-to-log correlation, so you can pivot from a slow request span to the exact log lines that request produced. The existing `SyslogLogging` output stays in place; the OTLP pipeline runs alongside it rather than replacing it.
 
-## The optional Clutch lock provider
+## The Clutch lock provider (Docker default)
 
-Postgres is the lock authority in a stock cluster, and for almost everyone it should stay that way. If you already run a Clutch lock server, or you want to consolidate locking for several services onto one, Less3 can hand its coordination to Clutch instead. Set `LockProvider` to `Clutch` and fill in the `Clutch` block:
+The Docker stack routes Less3's locking through the bundled Clutch lock server by default, so the Clutch server, its dashboard, and the Less3 dashboard's "Manage Locks" action are all live the moment you `docker compose up`. Each node opens one persistent lock WebSocket to Clutch, which shows up as two connections on the "Less3 — Clutch Lock Server" Grafana board once both nodes have served a lock. The relevant `system.node.json` block:
 
 ```json
 "Cluster": {
   "LockProvider": "Clutch",
   "Clutch": {
     "Endpoint": "http://clutch:8080",
-    "AccessKey": "your-clutch-access-key",
-    "TenantId": "your-tenant"
+    "AccessKey": "clutch-default-access-key",
+    "TenantId": null
   }
 }
 ```
 
-Less3 talks to Clutch over its native WebSocket lock protocol (one persistent connection per node, so every lock the node holds is released automatically if the socket drops). There is no third-party SDK pulled into the default build. The Docker stack already runs the Clutch server and its dashboard, so nothing extra is needed to bring them up; you only switch `LockProvider` to `Clutch` and point the `Clutch` block at the server. Its dashboard is at `http://localhost:3002` (also reachable from the Less3 dashboard's "Manage Locks" action), and the seeded default access key is `clutch-default-access-key`.
+Less3 talks to Clutch over its native WebSocket lock protocol (one persistent connection per node, so every lock the node holds is released automatically if the socket drops). There is no third-party SDK pulled into the default build. `Endpoint` is the Clutch server's http(s) URL, upgraded to a WebSocket internally; `AccessKey` is its lock credential — the demo seeds `clutch-default-access-key` on first boot. The connection is established lazily on a node's first lock, so an idle node shows no connection until it serves one. Clutch's dashboard is at `http://localhost:3002` (also reachable from the Less3 dashboard's "Manage Locks" action).
 
-The Clutch server shares the same PostgreSQL database through bring-your-own-database, so even with this provider the database remains the single authority for lock state. What changes is the front door to that authority, not the authority itself.
+The Clutch server shares the same PostgreSQL database through bring-your-own-database, so even with this provider the database remains the single authority for lock state and fencing tokens. What changes is the front door to that authority, not the authority itself.
 
-Clutch is alpha (v0.2.0). It is a real option and it passes the same coordination tests as the native provider, but it has less mileage. Unless you have a specific reason to run it, leave `LockProvider` on `Postgres`.
+Clutch is alpha (v0.2.0). It passes the same coordination tests as the native provider, but it has less mileage, and it adds a service to run. For a leaner deployment — or a more battle-tested one — set `LockProvider` to `Postgres` instead: locking then runs entirely inside the database with no extra service, and the bundled Clutch server simply goes unused. Both providers preserve the same data-integrity guarantees; pick based on whether you want Clutch's centralized lock console or the minimal-dependency in-database path.
 
 ## How the cluster protects your data
 

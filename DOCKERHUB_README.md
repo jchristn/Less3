@@ -37,7 +37,7 @@ docker compose -f compose.single.yaml up -d --build
 
 ## Cluster Configuration
 
-Cluster nodes read `system.node.json`, which enables the cluster, selects the Postgres lock provider, and points storage at the shared `/less3` mount. The essential blocks:
+Cluster nodes read `system.node.json`, which enables the cluster, selects the lock provider (Clutch by default in the Docker stack; `Postgres` for in-database locking with no extra service), and points storage at the shared `/less3` mount. The essential blocks:
 
 ```json
 {
@@ -52,7 +52,11 @@ Cluster nodes read `system.node.json`, which enables the cluster, selects the Po
   "Cluster": {
     "Enabled": true,
     "NodeId": null,
-    "LockProvider": "Postgres"
+    "LockProvider": "Clutch",
+    "Clutch": {
+      "Endpoint": "http://clutch:8080",
+      "AccessKey": "clutch-default-access-key"
+    }
   },
   "Storage": {
     "DiskDirectory": "/less3/disk/",
@@ -66,7 +70,7 @@ Every node must mount the shared storage at the same absolute path — in the de
 
 ## Observability
 
-Each node exposes Prometheus metrics on port `9464` under `Less3.*` names, plus Watson's native `http.server.*` metrics, and can push OTLP traces and logs to the bundled OpenTelemetry collector. The Docker stack ships Prometheus (`9090`), Grafana (`3001`, anonymous admin), Loki (`3100`), and Tempo (`3200`). Grafana comes up with three dashboards already provisioned: "Less3 — Overview", "Less3 — Locks & Data Integrity" (whose fencing-conflict count should stay at zero), and "Less3 — Cluster".
+Each node exposes Watson's native Prometheus `/metrics` endpoint on its main port (scraped directly for the `http.server.*` metrics) and pushes its `Less3.*` domain metrics, traces, and logs to the bundled OpenTelemetry collector over OTLP; every S3, REST, and admin API is metered, and object operations record per-stage timings. The Docker stack ships Prometheus (`9090`), Grafana (`3001`, anonymous admin), Loki (`3100`), Tempo (`3200`), and the Clutch lock server (whose own metrics are scraped too). Grafana comes up with five dashboards already provisioned: "Less3 — Overview", "Less3 — Locks & Data Integrity" (whose fencing-conflict count should stay at zero), "Less3 — Cluster", "Less3 — API Operations", and "Less3 — Clutch Lock Server".
 
 ## Health and Cluster Endpoints
 

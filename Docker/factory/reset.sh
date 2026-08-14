@@ -47,8 +47,10 @@ if [ "$CONFIRM" != "RESET" ]; then
 fi
 
 # -------------------------------------------------------------------------
-# Stop containers and drop the data volumes (covers the optional clutch
-# profile too). This removes the 'pgdata' and 'less3-data' named volumes.
+# Stop containers and drop the data volumes (the whole stack, including the
+# Clutch lock server). This removes the 'pgdata' and 'less3-data' named
+# volumes; on the next boot the nodes reconnect to Clutch (the default lock
+# provider) and re-seed the default data.
 # -------------------------------------------------------------------------
 echo "[1/2] Stopping containers and removing data volumes..."
 cd "$DOCKER_DIR"

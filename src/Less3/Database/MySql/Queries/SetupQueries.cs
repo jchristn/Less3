@@ -285,7 +285,6 @@ namespace Less3.Database.MySql.Queries
             indices.Add("CREATE INDEX idx_objects_deletemarker ON objects (deletemarker);");
             indices.Add("CREATE INDEX idx_objects_tenant_id ON objects (tenant_id);");
             indices.Add("CREATE INDEX idx_objects_tenant_bucket_key ON objects (tenant_id, bucket_id, `key`);");
-            indices.Add("CREATE INDEX idx_objects_tenant_bucket_key_version ON objects (tenant_id, bucket_id, `key`, version);");
             indices.Add("CREATE INDEX idx_objects_tenant_bucket_createdutc ON objects (tenant_id, bucket_id, createdutc);");
 
             indices.Add("CREATE INDEX idx_bucketacls_bucket_id ON bucketacls (bucket_id);");

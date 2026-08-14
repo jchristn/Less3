@@ -369,8 +369,6 @@ namespace Less3.Database.SqlServer.Queries
                 CREATE INDEX idx_objects_tenant_id ON objects (tenant_id);
                 IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='idx_objects_tenant_bucket_key')
                 CREATE INDEX idx_objects_tenant_bucket_key ON objects (tenant_id, bucket_id, [key]);
-                IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='idx_objects_tenant_bucket_key_version')
-                CREATE INDEX idx_objects_tenant_bucket_key_version ON objects (tenant_id, bucket_id, [key], version);
                 IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='idx_objects_tenant_bucket_createdutc')
                 CREATE INDEX idx_objects_tenant_bucket_createdutc ON objects (tenant_id, bucket_id, createdutc);
                 IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='idx_bucketacls_tenant_id')

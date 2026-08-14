@@ -24,6 +24,13 @@ namespace Less3.Database.SqlServer.Queries
             migrations.Add("IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('requesthistory') AND name = 'requestbody') ALTER TABLE requesthistory ADD requestbody NVARCHAR(MAX);");
             migrations.Add("IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('requesthistory') AND name = 'responsebody') ALTER TABLE requesthistory ADD responsebody NVARCHAR(MAX);");
 
+            // v4.0.0: enforce object version uniqueness as the data-integrity backstop behind the
+            // distributed write lock. A single (tenant, bucket, key, version) must resolve to exactly
+            // one row, so two writers that both computed the same next version can never both commit.
+            // Replaces the earlier non-unique index of the same columns.
+            migrations.Add("IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='idx_objects_tenant_bucket_key_version_unique') CREATE UNIQUE INDEX idx_objects_tenant_bucket_key_version_unique ON objects (tenant_id, bucket_id, [key], version);");
+            migrations.Add("IF EXISTS (SELECT * FROM sys.indexes WHERE name='idx_objects_tenant_bucket_key_version') DROP INDEX idx_objects_tenant_bucket_key_version ON objects;");
+
             return migrations;
         }
     }

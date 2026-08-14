@@ -304,7 +304,6 @@ namespace Less3.Database.Sqlite.Queries
                 CREATE UNIQUE INDEX IF NOT EXISTS idx_buckets_tenant_name ON buckets (tenant_id, name);
                 CREATE INDEX IF NOT EXISTS idx_objects_tenant_id ON objects (tenant_id);
                 CREATE INDEX IF NOT EXISTS idx_objects_tenant_bucket_key ON objects (tenant_id, bucket_id, key);
-                CREATE INDEX IF NOT EXISTS idx_objects_tenant_bucket_key_version ON objects (tenant_id, bucket_id, key, version);
                 CREATE INDEX IF NOT EXISTS idx_objects_tenant_bucket_createdutc ON objects (tenant_id, bucket_id, createdutc);
                 CREATE INDEX IF NOT EXISTS idx_bucketacls_tenant_id ON bucketacls (tenant_id);
                 CREATE INDEX IF NOT EXISTS idx_bucketacls_tenant_bucket_id ON bucketacls (tenant_id, bucket_id);

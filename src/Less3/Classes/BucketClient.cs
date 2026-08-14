@@ -222,7 +222,7 @@ namespace Less3.Classes
 
                 return true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 // A new blob's filename is its unique object id, so a failed commit leaves only a
                 // harmless orphan; remove it eagerly.
@@ -231,6 +231,17 @@ namespace Less3.Classes
                     try { if (_StorageDriver.Exists(obj.BlobFilename)) _StorageDriver.Delete(obj.BlobFilename); }
                     catch (Exception) { }
                 }
+
+                // The unique (tenant, bucket, key, version) index is the database-enforced backstop
+                // behind the write lock. If it rejects this insert, another writer committed the same
+                // version concurrently (or a lease lapsed and a superseding holder won the race). That
+                // is a data-integrity conflict caught before any corruption, so surface it as such.
+                if (SqlErrorClassifier.IsUniqueConstraintViolation(e))
+                {
+                    Less3Telemetry.FencingConflict("AddObject");
+                    _Logging.Warn("AddObject version conflict on " + _Bucket.Name + "/" + obj.Key + " version " + obj.Version + "; concurrent write rejected by unique constraint");
+                }
+
                 throw;
             }
             finally

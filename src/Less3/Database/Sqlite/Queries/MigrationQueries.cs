@@ -24,6 +24,13 @@ namespace Less3.Database.Sqlite.Queries
             migrations.Add("ALTER TABLE requesthistory ADD COLUMN requestbody TEXT;");
             migrations.Add("ALTER TABLE requesthistory ADD COLUMN responsebody TEXT;");
 
+            // v4.0.0: enforce object version uniqueness as the data-integrity backstop behind the
+            // distributed write lock. A single (tenant, bucket, key, version) must resolve to exactly
+            // one row, so two writers that both computed the same next version can never both commit.
+            // Replaces the earlier non-unique index of the same columns.
+            migrations.Add("CREATE UNIQUE INDEX IF NOT EXISTS idx_objects_tenant_bucket_key_version_unique ON objects (tenant_id, bucket_id, key, version);");
+            migrations.Add("DROP INDEX IF EXISTS idx_objects_tenant_bucket_key_version;");
+
             return migrations;
         }
     }

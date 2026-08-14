@@ -15,7 +15,7 @@ import ThemeModeSwitch from '../theme-mode-switch/ThemeModeSwitch';
 import styles from './dashboard.module.scss';
 
 const { Header, Content } = Layout;
-const dashboardVersion = process.env.NEXT_PUBLIC_LESS3_VERSION || '3.0.0';
+const dashboardVersion = process.env.NEXT_PUBLIC_LESS3_VERSION || '4.0.0';
 
 interface LayoutWrapperProps {
   children: React.ReactNode;

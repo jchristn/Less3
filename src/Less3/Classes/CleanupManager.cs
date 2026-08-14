@@ -6,7 +6,10 @@ namespace Less3.Classes
     using System.Linq;
     using System.Threading;
 
+    using Less3.Locking;
     using Less3.Settings;
+    using Less3.Storage;
+    using Less3.Telemetry;
     using SyslogLogging;
 
     /// <summary>
@@ -23,10 +26,13 @@ namespace Less3.Classes
         private SettingsBase _Settings = null;
         private LoggingModule _Logging = null;
         private ConfigManager _Config = null;
+        private ILockManager _LockManager = null;
+        private string _NodeId = null;
         private Timer _CleanupTimer = null;
         private bool _Disposed = false;
 
         private int _CleanupIntervalMs = 3600000;
+        private int _OrphanGraceMs = 900000;
         private DateTime? _LastCleanupRunUtc = null;
 
         #endregion
@@ -39,15 +45,21 @@ namespace Less3.Classes
         /// <param name="settings">Settings.</param>
         /// <param name="logging">Logging module.</param>
         /// <param name="config">Configuration manager.</param>
+        /// <param name="lockManager">Lock manager, used to elect a single cleanup leader per cluster.</param>
+        /// <param name="nodeId">Identifier of this node.</param>
         /// <exception cref="ArgumentNullException">Thrown when required parameters are null.</exception>
         public CleanupManager(
             SettingsBase settings,
             LoggingModule logging,
-            ConfigManager config)
+            ConfigManager config,
+            ILockManager lockManager,
+            string nodeId)
         {
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _Logging = logging ?? throw new ArgumentNullException(nameof(logging));
             _Config = config ?? throw new ArgumentNullException(nameof(config));
+            _LockManager = lockManager ?? throw new ArgumentNullException(nameof(lockManager));
+            _NodeId = String.IsNullOrEmpty(nodeId) ? "unknown" : nodeId;
 
             _CleanupIntervalMs = _Settings.CleanupIntervalMs;
             _CleanupTimer = new Timer(CleanupCallback, null, _CleanupIntervalMs, _CleanupIntervalMs);
@@ -89,6 +101,22 @@ namespace Less3.Classes
         public DateTime? LastCleanupRunUtc
         {
             get { return _LastCleanupRunUtc; }
+        }
+
+        /// <summary>
+        /// Grace period, in milliseconds, below which a temporary or part file is never deleted as
+        /// an orphan even if no active upload row references it. Protects files that are being
+        /// staged right now on this or another node while their database rows are not yet committed.
+        /// Default value is 900000 (15 minutes). Minimum value is 60000 (1 minute).
+        /// </summary>
+        public int OrphanGraceMs
+        {
+            get { return _OrphanGraceMs; }
+            set
+            {
+                if (value < 60000) throw new ArgumentOutOfRangeException(nameof(value), "OrphanGraceMs must be at least 60000ms (1 minute).");
+                _OrphanGraceMs = value;
+            }
         }
 
         /// <summary>
@@ -169,11 +197,26 @@ namespace Less3.Classes
 
         private void CleanupCallback(object state)
         {
+            // Elect a single cleanup leader per cluster. In single-node mode the in-process lock is
+            // always granted; in a cluster only the node that wins the lease runs the cycle, so no
+            // node ever deletes another node's in-flight files.
+            LockHandle leader = null;
             try
             {
-                _Logging.Debug("CleanupManager starting cleanup cycle");
+                try
+                {
+                    leader = _LockManager.AcquireAsync(LockKeys.ClusterCleanup, LockMode.Write, new AcquireOptions(), CancellationToken.None).GetAwaiter().GetResult();
+                }
+                catch (LockDeniedException)
+                {
+                    _Logging.Debug("CleanupManager skipping cycle; another node holds the cleanup lease");
+                    return;
+                }
+
+                _Logging.Debug("CleanupManager starting cleanup cycle (leader " + _NodeId + ")");
 
                 RunCleanupCycle();
+                Less3Telemetry.CleanupLeaderPass(0);
                 _LastCleanupRunUtc = DateTime.UtcNow;
 
                 _Logging.Debug("CleanupManager completed cleanup cycle");
@@ -181,6 +224,14 @@ namespace Less3.Classes
             catch (Exception e)
             {
                 _Logging.Exception(e, "CleanupManager", "CleanupCallback");
+            }
+            finally
+            {
+                if (leader != null)
+                {
+                    try { _LockManager.ReleaseAsync(leader, CancellationToken.None).GetAwaiter().GetResult(); }
+                    catch (Exception) { }
+                }
             }
         }
 
@@ -276,9 +327,6 @@ namespace Less3.Classes
 
         private int DeleteOrphanTempFiles()
         {
-            string tempDir = _Settings.Storage.TempDirectory;
-            if (String.IsNullOrEmpty(tempDir) || !Directory.Exists(tempDir)) return 0;
-
             HashSet<string> activeFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             List<Upload> uploads = _Config.GetUploads();
             if (uploads != null)
@@ -295,20 +343,36 @@ namespace Less3.Classes
                 }
             }
 
+            // Scan both the temp staging directory and the (possibly separate, possibly shared)
+            // parts directory. In cluster mode, never touch a file younger than the orphan grace
+            // period, because it may be a part or staging file being written right now whose
+            // database row has not yet been committed on this or another node. In single-node mode
+            // there is no such cross-node race, so orphans are removed immediately.
+            bool applyGrace = _Settings.Cluster != null && _Settings.Cluster.Enabled;
+            DateTime cutoff = DateTime.UtcNow.AddMilliseconds(-_OrphanGraceMs);
+            HashSet<string> scanned = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             int deleted = 0;
-            foreach (string file in Directory.GetFiles(tempDir, "*", SearchOption.AllDirectories))
-            {
-                string fullPath = Path.GetFullPath(file);
-                if (activeFiles.Contains(fullPath)) continue;
 
-                try
+            foreach (string dir in new[] { _Settings.Storage.TempDirectory, _Settings.Storage.GetEffectivePartsDirectory() })
+            {
+                if (String.IsNullOrEmpty(dir) || !Directory.Exists(dir)) continue;
+
+                foreach (string file in Directory.GetFiles(dir, "*", SearchOption.AllDirectories))
                 {
-                    File.Delete(fullPath);
-                    deleted++;
-                }
-                catch (Exception e)
-                {
-                    _Logging.Warn("CleanupManager failed to delete temporary file " + fullPath + ": " + e.Message);
+                    string fullPath = Path.GetFullPath(file);
+                    if (!scanned.Add(fullPath)) continue;
+                    if (activeFiles.Contains(fullPath)) continue;
+
+                    try
+                    {
+                        if (applyGrace && File.GetLastWriteTimeUtc(fullPath) > cutoff) continue;
+                        File.Delete(fullPath);
+                        deleted++;
+                    }
+                    catch (Exception e)
+                    {
+                        _Logging.Warn("CleanupManager failed to delete temporary file " + fullPath + ": " + e.Message);
+                    }
                 }
             }
 
@@ -317,17 +381,7 @@ namespace Less3.Classes
 
         private string GetPartFilePath(string bucketId, string uploadId, int partNumber)
         {
-            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
-            if (String.IsNullOrEmpty(uploadId)) throw new ArgumentNullException(nameof(uploadId));
-            if (partNumber < 1) throw new ArgumentOutOfRangeException(nameof(partNumber));
-
-            string tempDir = _Settings.Storage.TempDirectory;
-            if (!tempDir.EndsWith("/") && !tempDir.EndsWith("\\"))
-            {
-                tempDir += "/";
-            }
-
-            return tempDir + bucketId + "-upload-" + uploadId + "-part-" + partNumber;
+            return MultipartPaths.PartFilePath(_Settings.Storage, bucketId, uploadId, partNumber);
         }
 
         #endregion

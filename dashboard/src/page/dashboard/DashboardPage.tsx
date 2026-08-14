@@ -4,6 +4,7 @@ import {
   BankOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
+  ClusterOutlined,
   DatabaseOutlined,
   FolderOutlined,
   HddOutlined,
@@ -299,6 +300,13 @@ const DashboardPage: React.FC = () => {
               icon={<FolderOutlined />}
               color="#1890ff"
               onClick={() => router.push('/admin/objects')}
+            />
+            <QuickActionCard
+              title="View Cluster"
+              description="Inspect node health and leadership"
+              icon={<ClusterOutlined />}
+              color="#2f54eb"
+              onClick={() => router.push('/admin/cluster')}
             />
           </Less3Flex>
         </div>

@@ -12,6 +12,7 @@
     using SyslogLogging;
 
     using Less3.Classes;
+    using Less3.Locking;
     using Less3.Settings;
 
     /// <summary>
@@ -31,7 +32,8 @@
         private LoggingModule _Logging;
         private ConfigManager _Config;
         private BucketManager _Buckets;
-        private AuthManager _Auth; 
+        private AuthManager _Auth;
+        private ILockManager _LockManager;
 
         private ServiceHandler _ServiceHandler;
         private BucketHandler _BucketHandler;
@@ -42,27 +44,30 @@
         #region Constructors-and-Factories
          
         internal ApiHandler(
-            SettingsBase settings, 
-            LoggingModule logging,  
+            SettingsBase settings,
+            LoggingModule logging,
             ConfigManager config,
             BucketManager buckets,
-            AuthManager auth)
+            AuthManager auth,
+            ILockManager lockManager)
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
             if (logging == null) throw new ArgumentNullException(nameof(logging));
             if (config == null) throw new ArgumentNullException(nameof(config));
             if (buckets == null) throw new ArgumentNullException(nameof(buckets));
-            if (auth == null) throw new ArgumentNullException(nameof(auth)); 
+            if (auth == null) throw new ArgumentNullException(nameof(auth));
+            if (lockManager == null) throw new ArgumentNullException(nameof(lockManager));
 
             _Settings = settings;
             _Logging = logging;
             _Config = config;
             _Buckets = buckets;
-            _Auth = auth; 
+            _Auth = auth;
+            _LockManager = lockManager;
 
             _ServiceHandler = new ServiceHandler(_Settings, _Logging, _Config, _Buckets, _Auth);
             _BucketHandler = new BucketHandler(_Settings, _Logging, _Config, _Buckets, _Auth);
-            _ObjectHandler = new ObjectHandler(_Settings, _Logging, _Config, _Buckets, _Auth);
+            _ObjectHandler = new ObjectHandler(_Settings, _Logging, _Config, _Buckets, _Auth, _LockManager);
         }
 
         #endregion

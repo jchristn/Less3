@@ -376,28 +376,31 @@
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
             string file = FilePath(key);
-            using (FileStream fs = new FileStream(file, FileMode.Create))
-            {
-                long bytesRemaining = contentLength;
-                int read = 0;
-                byte[] buffer = new byte[_StreamBufferSize];
 
-                while (bytesRemaining > 0)
+            // Compute the hash in the single write pass and flush to disk. Re-opening the file to
+            // hash it is unsafe on a shared filesystem (NFS/SMB) where attribute caching can serve
+            // stale bytes to the second reader.
+            using (IncrementalHash md5 = IncrementalHash.CreateHash(HashAlgorithmName.MD5))
+            {
+                using (FileStream fs = new FileStream(file, FileMode.Create, FileAccess.Write))
                 {
-                    read = stream.Read(buffer, 0, buffer.Length);
-                    if (read > 0)
+                    long bytesRemaining = contentLength;
+                    int read = 0;
+                    byte[] buffer = new byte[_StreamBufferSize];
+
+                    while (bytesRemaining > 0)
                     {
+                        read = stream.Read(buffer, 0, buffer.Length);
+                        if (read <= 0) break;
                         fs.Write(buffer, 0, read);
+                        md5.AppendData(buffer, 0, read);
                         bytesRemaining -= read;
                     }
+
+                    fs.Flush(true);
                 }
-            }
 
-            FileInfo fi = new FileInfo(file);
-
-            using (FileStream fs = new FileStream(file, FileMode.Open))
-            {
-                return Common.Md5(fs);
+                return md5.GetHashAndReset();
             }
         }
 
@@ -413,28 +416,28 @@
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
             string file = FilePath(key);
-            using (FileStream fs = new FileStream(file, FileMode.Create))
-            {
-                long bytesRemaining = contentLength;
-                int read = 0;
-                byte[] buffer = new byte[_StreamBufferSize];
 
-                while (bytesRemaining > 0)
+            using (IncrementalHash md5 = IncrementalHash.CreateHash(HashAlgorithmName.MD5))
+            {
+                using (FileStream fs = new FileStream(file, FileMode.Create, FileAccess.Write))
                 {
-                    read = await stream.ReadAsync(buffer, 0, buffer.Length);
-                    if (read > 0)
+                    long bytesRemaining = contentLength;
+                    int read = 0;
+                    byte[] buffer = new byte[_StreamBufferSize];
+
+                    while (bytesRemaining > 0)
                     {
-                        await fs.WriteAsync(buffer, 0, read);
+                        read = await stream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
+                        if (read <= 0) break;
+                        await fs.WriteAsync(buffer, 0, read).ConfigureAwait(false);
+                        md5.AppendData(buffer, 0, read);
                         bytesRemaining -= read;
                     }
+
+                    fs.Flush(true);
                 }
-            }
 
-            FileInfo fi = new FileInfo(file);
-
-            using (FileStream fs = new FileStream(file, FileMode.Open))
-            {
-                return await Common.Md5Async(fs, _StreamBufferSize);
+                return md5.GetHashAndReset();
             }
         }
 

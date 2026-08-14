@@ -167,7 +167,9 @@
 
             ConfigManager config = new ConfigManager(settings, logging, database);
 
-            DefaultDataSeeder.Seed(settings, logging, database, config);
+            Less3.Locking.ILockManager lockManager = Less3.Locking.LockManagerFactory.Create(settings, database, "setup", logging);
+
+            DefaultDataSeeder.Seed(settings, logging, database, config, lockManager);
 
             #endregion
             

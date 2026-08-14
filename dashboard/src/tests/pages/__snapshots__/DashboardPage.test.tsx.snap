@@ -134,7 +134,7 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
         <span
           class="contextValue"
         >
-          3.0.0
+          4.0.0
         </span>
       </span>
     </div>
@@ -771,6 +771,131 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
                     href="/admin/api-explorer"
                   >
                     API Explorer
+                  </a>
+                </span>
+              </li>
+            </ul>
+          </li>
+          <li
+            class="ant-menu-item-group"
+            role="presentation"
+          >
+            <div
+              class="ant-menu-item-group-title"
+              role="presentation"
+              title="OBSERVABILITY"
+            >
+              OBSERVABILITY
+            </div>
+            <ul
+              class="ant-menu-item-group-list"
+              role="group"
+            >
+              <li
+                class="ant-menu-item"
+                data-menu-id="rc-menu-uuid-cluster"
+                role="menuitem"
+                style="padding-left: 24px;"
+                tabindex="-1"
+              >
+                <span
+                  aria-label="cluster"
+                  class="anticon anticon-cluster ant-menu-item-icon"
+                  role="img"
+                >
+                  <svg
+                    aria-hidden="true"
+                    data-icon="cluster"
+                    fill="currentColor"
+                    focusable="false"
+                    height="1em"
+                    viewBox="64 64 896 896"
+                    width="1em"
+                  >
+                    <path
+                      d="M888 680h-54V540H546v-92h238c8.8 0 16-7.2 16-16V168c0-8.8-7.2-16-16-16H240c-8.8 0-16 7.2-16 16v264c0 8.8 7.2 16 16 16h238v92H190v140h-54c-4.4 0-8 3.6-8 8v176c0 4.4 3.6 8 8 8h176c4.4 0 8-3.6 8-8V688c0-4.4-3.6-8-8-8h-54v-72h220v72h-54c-4.4 0-8 3.6-8 8v176c0 4.4 3.6 8 8 8h176c4.4 0 8-3.6 8-8V688c0-4.4-3.6-8-8-8h-54v-72h220v72h-54c-4.4 0-8 3.6-8 8v176c0 4.4 3.6 8 8 8h176c4.4 0 8-3.6 8-8V688c0-4.4-3.6-8-8-8zM256 805.3c0 1.5-1.2 2.7-2.7 2.7h-58.7c-1.5 0-2.7-1.2-2.7-2.7v-58.7c0-1.5 1.2-2.7 2.7-2.7h58.7c1.5 0 2.7 1.2 2.7 2.7v58.7zm288 0c0 1.5-1.2 2.7-2.7 2.7h-58.7c-1.5 0-2.7-1.2-2.7-2.7v-58.7c0-1.5 1.2-2.7 2.7-2.7h58.7c1.5 0 2.7 1.2 2.7 2.7v58.7zM288 384V216h448v168H288zm544 421.3c0 1.5-1.2 2.7-2.7 2.7h-58.7c-1.5 0-2.7-1.2-2.7-2.7v-58.7c0-1.5 1.2-2.7 2.7-2.7h58.7c1.5 0 2.7 1.2 2.7 2.7v58.7zM360 300a40 40 0 1080 0 40 40 0 10-80 0z"
+                    />
+                  </svg>
+                </span>
+                <span
+                  class="ant-menu-title-content"
+                >
+                  <a
+                    href="/admin/cluster"
+                  >
+                    Cluster
+                  </a>
+                </span>
+              </li>
+              <li
+                class="ant-menu-item"
+                data-menu-id="rc-menu-uuid-locks"
+                role="menuitem"
+                style="padding-left: 24px;"
+                tabindex="-1"
+              >
+                <span
+                  aria-label="lock"
+                  class="anticon anticon-lock ant-menu-item-icon"
+                  role="img"
+                >
+                  <svg
+                    aria-hidden="true"
+                    data-icon="lock"
+                    fill="currentColor"
+                    focusable="false"
+                    height="1em"
+                    viewBox="64 64 896 896"
+                    width="1em"
+                  >
+                    <path
+                      d="M832 464h-68V240c0-70.7-57.3-128-128-128H388c-70.7 0-128 57.3-128 128v224h-68c-17.7 0-32 14.3-32 32v384c0 17.7 14.3 32 32 32h640c17.7 0 32-14.3 32-32V496c0-17.7-14.3-32-32-32zM332 240c0-30.9 25.1-56 56-56h248c30.9 0 56 25.1 56 56v224H332V240zm460 600H232V536h560v304zM484 701v53c0 4.4 3.6 8 8 8h40c4.4 0 8-3.6 8-8v-53a48.01 48.01 0 10-56 0z"
+                    />
+                  </svg>
+                </span>
+                <span
+                  class="ant-menu-title-content"
+                >
+                  <a
+                    href="/admin/locks"
+                  >
+                    Locks
+                  </a>
+                </span>
+              </li>
+              <li
+                class="ant-menu-item"
+                data-menu-id="rc-menu-uuid-observability"
+                role="menuitem"
+                style="padding-left: 24px;"
+                tabindex="-1"
+              >
+                <span
+                  aria-label="line-chart"
+                  class="anticon anticon-line-chart ant-menu-item-icon"
+                  role="img"
+                >
+                  <svg
+                    aria-hidden="true"
+                    data-icon="line-chart"
+                    fill="currentColor"
+                    focusable="false"
+                    height="1em"
+                    viewBox="64 64 896 896"
+                    width="1em"
+                  >
+                    <path
+                      d="M888 792H200V168c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v688c0 4.4 3.6 8 8 8h752c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM305.8 637.7c3.1 3.1 8.1 3.1 11.3 0l138.3-137.6L583 628.5c3.1 3.1 8.2 3.1 11.3 0l275.4-275.3c3.1-3.1 3.1-8.2 0-11.3l-39.6-39.6a8.03 8.03 0 00-11.3 0l-230 229.9L461.4 404a8.03 8.03 0 00-11.3 0L266.3 586.7a8.03 8.03 0 000 11.3l39.5 39.7z"
+                    />
+                  </svg>
+                </span>
+                <span
+                  class="ant-menu-title-content"
+                >
+                  <a
+                    href="/admin/observability"
+                  >
+                    Observability
                   </a>
                 </span>
               </li>
@@ -1792,6 +1917,60 @@ exports[`DashboardPage Snapshots matches the default render 1`] = `
                             style="font-size: 13px; color: var(--ant-color-text-secondary);"
                           >
                             Browse and manage stored objects
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    class="ant-card ant-card-bordered ant-card-hoverable css-dev-only-do-not-override-ry7cab css-var-root"
+                    style="cursor: pointer; flex: 1 1 220px; min-width: 220px;"
+                  >
+                    <div
+                      class="ant-card-body"
+                    >
+                      <div
+                        class="ant-flex css-dev-only-do-not-override-ry7cab css-var-root ant-flex-align-center"
+                        style="gap: 16px;"
+                      >
+                        <div
+                          style="width: 48px; height: 48px; border-radius: 12px; background: rgba(47, 84, 235, 0.08); display: flex; align-items: center; justify-content: center; font-size: 22px; color: rgb(47, 84, 235);"
+                        >
+                          <span
+                            aria-label="cluster"
+                            class="anticon anticon-cluster"
+                            role="img"
+                          >
+                            <svg
+                              aria-hidden="true"
+                              data-icon="cluster"
+                              fill="currentColor"
+                              focusable="false"
+                              height="1em"
+                              viewBox="64 64 896 896"
+                              width="1em"
+                            >
+                              <path
+                                d="M888 680h-54V540H546v-92h238c8.8 0 16-7.2 16-16V168c0-8.8-7.2-16-16-16H240c-8.8 0-16 7.2-16 16v264c0 8.8 7.2 16 16 16h238v92H190v140h-54c-4.4 0-8 3.6-8 8v176c0 4.4 3.6 8 8 8h176c4.4 0 8-3.6 8-8V688c0-4.4-3.6-8-8-8h-54v-72h220v72h-54c-4.4 0-8 3.6-8 8v176c0 4.4 3.6 8 8 8h176c4.4 0 8-3.6 8-8V688c0-4.4-3.6-8-8-8h-54v-72h220v72h-54c-4.4 0-8 3.6-8 8v176c0 4.4 3.6 8 8 8h176c4.4 0 8-3.6 8-8V688c0-4.4-3.6-8-8-8zM256 805.3c0 1.5-1.2 2.7-2.7 2.7h-58.7c-1.5 0-2.7-1.2-2.7-2.7v-58.7c0-1.5 1.2-2.7 2.7-2.7h58.7c1.5 0 2.7 1.2 2.7 2.7v58.7zm288 0c0 1.5-1.2 2.7-2.7 2.7h-58.7c-1.5 0-2.7-1.2-2.7-2.7v-58.7c0-1.5 1.2-2.7 2.7-2.7h58.7c1.5 0 2.7 1.2 2.7 2.7v58.7zM288 384V216h448v168H288zm544 421.3c0 1.5-1.2 2.7-2.7 2.7h-58.7c-1.5 0-2.7-1.2-2.7-2.7v-58.7c0-1.5 1.2-2.7 2.7-2.7h58.7c1.5 0 2.7 1.2 2.7 2.7v58.7zM360 300a40 40 0 1080 0 40 40 0 10-80 0z"
+                              />
+                            </svg>
+                          </span>
+                        </div>
+                        <div
+                          class="ant-flex css-dev-only-do-not-override-ry7cab css-var-root ant-flex-align-stretch ant-flex-vertical"
+                          style="gap: 2px;"
+                        >
+                          <span
+                            class="ant-typography css-dev-only-do-not-override-ry7cab css-var-root"
+                            style="font-weight: 600; font-size: 15px;"
+                          >
+                            View Cluster
+                          </span>
+                          <span
+                            class="ant-typography css-dev-only-do-not-override-ry7cab css-var-root"
+                            style="font-size: 13px; color: var(--ant-color-text-secondary);"
+                          >
+                            Inspect node health and leadership
                           </span>
                         </div>
                       </div>

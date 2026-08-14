@@ -7,6 +7,7 @@ namespace Less3.Classes
     using System.Linq;
 
     using Less3.Database;
+    using Less3.Locking;
     using Less3.Settings;
     using Padlocks;
     using SyslogLogging;
@@ -26,20 +27,23 @@ namespace Less3.Classes
         private LoggingModule _Logging;
         private ConfigManager _Config;
         private DatabaseDriverBase _Database;
+        private ILockManager _LockManager;
 
         private readonly ConcurrentDictionary<string, BucketClient> _Buckets = new ConcurrentDictionary<string, BucketClient>();
+        private readonly ConcurrentDictionary<string, DateTime> _LastValidatedUtc = new ConcurrentDictionary<string, DateTime>();
         private readonly Padlock<string> _BucketLocks = new Padlock<string>();
 
         #endregion
 
         #region Constructors-and-Factories
 
-        internal BucketManager(SettingsBase settings, LoggingModule logging, ConfigManager config, DatabaseDriverBase database)
+        internal BucketManager(SettingsBase settings, LoggingModule logging, ConfigManager config, DatabaseDriverBase database, ILockManager lockManager)
         {
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _Logging = logging ?? throw new ArgumentNullException(nameof(logging));
             _Config = config ?? throw new ArgumentNullException(nameof(config));
             _Database = database ?? throw new ArgumentNullException(nameof(database));
+            _LockManager = lockManager ?? throw new ArgumentNullException(nameof(lockManager));
 
             InitializeBuckets();
         }
@@ -64,8 +68,9 @@ namespace Less3.Classes
                 bool success = _Config.AddBucket(bucket);
                 if (success)
                 {
-                    BucketClient client = new BucketClient(_Settings, _Logging, bucket, _Database);
+                    BucketClient client = new BucketClient(_Settings, _Logging, bucket, _Database, _LockManager);
                     _Buckets[key] = client;
+                    _LastValidatedUtc[key] = DateTime.UtcNow;
                 }
 
                 return success;
@@ -85,6 +90,7 @@ namespace Less3.Classes
                 if (_Config.BucketExists(bucket.TenantId, bucket.Name))
                 {
                     _Buckets.TryRemove(key, out client);
+                    _LastValidatedUtc.TryRemove(key, out _);
 
                     removed = true;
 
@@ -143,7 +149,14 @@ namespace Less3.Classes
         {
             if (String.IsNullOrEmpty(bucketName)) throw new ArgumentNullException(nameof(bucketName));
 
-            return _Buckets.Values.FirstOrDefault(b => b.Name.Equals(bucketName));
+            BucketClient cached = _Buckets.Values.FirstOrDefault(b => b.Name.Equals(bucketName));
+            if (cached != null && !_Settings.Cluster.Enabled) return cached;
+
+            // Read-through: a bucket created on another node is not in this node's cache, so resolve
+            // it from the control plane (the authority) by name.
+            Bucket bucket = _Config.GetBucketByName(bucketName);
+            if (bucket == null) return cached;
+            return ResolveClient(bucket.TenantId, bucket.Name, ClientKey(bucket.TenantId, bucket.Name));
         }
 
         internal BucketClient GetClient(string tenantId, string bucketName)
@@ -151,8 +164,22 @@ namespace Less3.Classes
             if (String.IsNullOrEmpty(tenantId)) throw new ArgumentNullException(nameof(tenantId));
             if (String.IsNullOrEmpty(bucketName)) throw new ArgumentNullException(nameof(bucketName));
 
-            _Buckets.TryGetValue(ClientKey(tenantId, bucketName), out BucketClient client);
-            return client;
+            string key = ClientKey(tenantId, bucketName);
+
+            if (_Buckets.TryGetValue(key, out BucketClient client))
+            {
+                // Single node is the only writer, so its cache is always coherent.
+                if (!_Settings.Cluster.Enabled) return client;
+
+                // In cluster mode, trust the cached client only within the revalidation window.
+                if (_LastValidatedUtc.TryGetValue(key, out DateTime last)
+                    && (DateTime.UtcNow - last).TotalMilliseconds < _Settings.Cluster.BucketClientCacheTtlMs)
+                {
+                    return client;
+                }
+            }
+
+            return ResolveClient(tenantId, bucketName, key);
         }
 
         internal List<Bucket> GetUserBuckets(string userId)
@@ -197,11 +224,46 @@ namespace Less3.Classes
 
             using (_BucketLocks.Lock(key))
             {
-                BucketClient client = new BucketClient(_Settings, _Logging, bucket, _Database);
+                BucketClient client = new BucketClient(_Settings, _Logging, bucket, _Database, _LockManager);
                 if (!_Buckets.TryAdd(key, client))
                 {
                     client.Dispose();
                 }
+                else
+                {
+                    _LastValidatedUtc[key] = DateTime.UtcNow;
+                }
+            }
+        }
+
+        private BucketClient ResolveClient(string tenantId, string bucketName, string key)
+        {
+            using (_BucketLocks.Lock(key))
+            {
+                Bucket bucket = _Config.GetBucketByName(tenantId, bucketName);
+
+                if (bucket == null)
+                {
+                    // Bucket was deleted (possibly on another node); evict any stale client so the
+                    // caller sees NoSuchBucket.
+                    if (_Buckets.TryRemove(key, out BucketClient stale)) stale.Dispose();
+                    _LastValidatedUtc.TryRemove(key, out _);
+                    return null;
+                }
+
+                if (_Buckets.TryGetValue(key, out BucketClient existing))
+                {
+                    // Refresh configuration (versioning flag, public access, storage location) so a
+                    // change made on another node takes effect (R13).
+                    existing.UpdateBucket(bucket);
+                    _LastValidatedUtc[key] = DateTime.UtcNow;
+                    return existing;
+                }
+
+                BucketClient client = new BucketClient(_Settings, _Logging, bucket, _Database, _LockManager);
+                _Buckets[key] = client;
+                _LastValidatedUtc[key] = DateTime.UtcNow;
+                return client;
             }
         }
 

@@ -1,46 +1,225 @@
+#
+# Less3 v4.0.0 - multi-node scale-out stack (the Docker default).
+#
+# nginx load-balances across two Less3 nodes that share a PostgreSQL control plane and a shared
+# storage volume. The distributed lock manager (native Postgres) keeps every object mutation
+# serialized and fenced, so scaling out never costs data integrity. Prometheus, Grafana, Loki,
+# Tempo, and an OpenTelemetry collector give you monitoring out of the box.
+#
+# Build and tag the images first (from the repo root: build-all.bat v4.0.0), then bring it up:
+#   docker compose up -d
+# Tear it down:  docker compose down          (add -v to also drop the data volumes)
+#
+# This is the definitive multi-node deployment: PostgreSQL, two Less3 nodes, nginx, the Less3
+# dashboard, the full observability stack, and the Clutch lock server + dashboard.
+# For a single-node deployment (still on Postgres, no load balancer) use compose.single.yaml.
+#
+
+name: less3
+
 services:
 
   #
-  # Less3
-  # See https://hub.docker.com/r/jchristn77/less3
-  # and https://github.com/jchristn/less3
+  # PostgreSQL control plane - single source of truth for metadata, lock state, and membership.
   #
-
-  less3:
-    container_name: 'less3'
-    image: 'jchristn77/less3:v3.0.0'
-    ports:
-      - "8000:8000"
-    stdin_open: true
-    tty: true
+  postgres:
+    container_name: 'less3-postgres'
+    image: 'postgres:17'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=less3
     volumes:
-      - ./system.json:/app/system.json
-      - ./db:/app/db
-      - ./logs/:/app/logs/
-      - ./temp/:/app/temp/
-      - ./disk/:/app/disk/
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: curl -s -o /dev/null -w '' http://localhost:8000 ; test $$? -ne 7
+      test: ["CMD-SHELL", "pg_isready -U postgres -d less3"]
       interval: 5s
       timeout: 3s
-      retries: 3
+      retries: 10
       start_period: 10s
 
   #
-  # Less3 UI (Dashboard)
-  # See https://hub.docker.com/r/jchristn77/less3-ui
+  # Less3 node 1
   #
+  less3-node1:
+    container_name: 'less3-node1'
+    image: 'jchristn77/less3:v4.0.0'
+    environment:
+      - LESS3_NODE_ID=less3-node1
+    volumes:
+      - ./system.node.json:/app/system.json
+      - less3-data:/less3
+      - ./logs/:/app/logs/
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/healthz || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+    depends_on:
+      postgres:
+        condition: service_healthy
 
+  #
+  # Less3 node 2
+  #
+  less3-node2:
+    container_name: 'less3-node2'
+    image: 'jchristn77/less3:v4.0.0'
+    environment:
+      - LESS3_NODE_ID=less3-node2
+    volumes:
+      - ./system.node.json:/app/system.json
+      - less3-data:/less3
+      - ./logs/:/app/logs/
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/healthz || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  #
+  # nginx load balancer - the single S3/REST/dashboard entry point on :8000.
+  # Retries only idempotent requests; a timed-out POST/PUT is never replayed on another node.
+  #
+  nginx:
+    container_name: 'less3-nginx'
+    image: 'nginx:1.27'
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      less3-node1:
+        condition: service_healthy
+      less3-node2:
+        condition: service_healthy
+
+  #
+  # Less3 dashboard (points at the nginx front end).
+  #
   less3-ui:
     container_name: 'less3-ui'
-    image: 'jchristn77/less3-ui:v3.0.0'
+    image: 'jchristn77/less3-ui:v4.0.0'
     ports:
       - "3000:3000"
-    stdin_open: true
-    tty: true
     environment:
       - TERM=xterm-256color
       - LESS3_SERVER_URL=http://localhost:8000
     depends_on:
-      less3:
+      - nginx
+
+  #
+  # OpenTelemetry collector - receives OTLP from every node, fans out to Prometheus/Tempo/Loki.
+  #
+  otel-collector:
+    container_name: 'less3-otel-collector'
+    image: 'otel/opentelemetry-collector-contrib:0.109.0'
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel/otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+
+  #
+  # Prometheus - scrapes each node's in-process /metrics and the collector.
+  #
+  prometheus:
+    container_name: 'less3-prometheus'
+    image: 'prom/prometheus:v2.55.1'
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+      - '--enable-feature=exemplar-storage'
+    volumes:
+      - ./prometheus/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
+    ports:
+      - "9090:9090"
+
+  #
+  # Loki - log aggregation.
+  #
+  loki:
+    container_name: 'less3-loki'
+    image: 'grafana/loki:3.2.1'
+    command: ["-config.file=/etc/loki/loki-config.yaml"]
+    volumes:
+      - ./loki/loki-config.yaml:/etc/loki/loki-config.yaml:ro
+    ports:
+      - "3100:3100"
+
+  #
+  # Tempo - distributed tracing.
+  #
+  tempo:
+    container_name: 'less3-tempo'
+    image: 'grafana/tempo:2.6.1'
+    command: ["-config.file=/etc/tempo/tempo.yaml"]
+    volumes:
+      - ./tempo/tempo.yaml:/etc/tempo/tempo.yaml:ro
+    ports:
+      - "3200:3200"
+
+  #
+  # Grafana - dashboards pre-provisioned (Overview, Locks & Data Integrity, Cluster).
+  #
+  grafana:
+    container_name: 'less3-grafana'
+    image: 'grafana/grafana:11.3.0'
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+
+  #
+  # Clutch lock service. This stack's default lock provider: system.node.json sets
+  # Cluster.LockProvider=Clutch, so each Less3 node holds a persistent lock WebSocket here. It
+  # shares this same PostgreSQL via bring-your-own-database, so the database stays the single
+  # authority for lock state and fencing tokens. To use in-database locking with no extra service,
+  # set Cluster.LockProvider to "Postgres" in system.node.json (Clutch then simply goes unused).
+  #
+  clutch:
+    container_name: 'less3-clutch'
+    image: 'jchristn77/clutch-server:v0.2.0'
+    environment:
+      - CLUTCH_NODE_ID=clutch-node1
+      - CLUTCH_DB_TYPE=Postgresql
+      - CLUTCH_DB_HOST=postgres
+      - CLUTCH_DB_PORT=5432
+      - CLUTCH_DB_DATABASE=less3
+      - CLUTCH_DB_USERNAME=postgres
+      - CLUTCH_DB_PASSWORD=postgres
+    volumes:
+      - ./clutch/clutch.json:/app/clutch.json
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
         condition: service_healthy
+
+  #
+  # Clutch operator dashboard ("Manage Locks" from the Less3 dashboard links here). It talks to the
+  # Clutch server API on host port 8080. Served on host port 3002 (3000 is the Less3 dashboard).
+  #
+  clutch-ui:
+    container_name: 'less3-clutch-ui'
+    image: 'jchristn77/clutch-ui:v0.2.0'
+    ports:
+      - "3002:80"
+    depends_on:
+      - clutch
+
+volumes:
+  pgdata:
+  less3-data:

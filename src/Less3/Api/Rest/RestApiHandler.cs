@@ -29,6 +29,7 @@ namespace Less3.Api.Rest
         private ConfigManager _Config;
         private BucketManager _Buckets;
         private AuthManager _Auth;
+        private NodeManager _Nodes;
 
         #endregion
 
@@ -39,19 +40,22 @@ namespace Less3.Api.Rest
             LoggingModule logging,
             ConfigManager config,
             BucketManager buckets,
-            AuthManager auth)
+            AuthManager auth,
+            NodeManager nodes)
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
             if (logging == null) throw new ArgumentNullException(nameof(logging));
             if (config == null) throw new ArgumentNullException(nameof(config));
             if (buckets == null) throw new ArgumentNullException(nameof(buckets));
             if (auth == null) throw new ArgumentNullException(nameof(auth));
+            if (nodes == null) throw new ArgumentNullException(nameof(nodes));
 
             _Settings = settings;
             _Logging = logging;
             _Config = config;
             _Buckets = buckets;
             _Auth = auth;
+            _Nodes = nodes;
         }
 
         #endregion
@@ -62,31 +66,41 @@ namespace Less3.Api.Rest
         {
             if (ctx == null) throw new ArgumentNullException(nameof(ctx));
 
-            if (ctx.Http.Request.Url.Elements == null || ctx.Http.Request.Url.Elements.Length < 3)
+            System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
+            string[] elements = ctx.Http.Request.Url.Elements;
+            string resourceType = elements != null && elements.Length >= 3 ? NormalizeResourceType(elements[2]) : "root";
+            string operation = ctx.Http.Request.Method.ToString() + " " + resourceType;
+
+            try
             {
+                if (elements == null || elements.Length < 3)
+                {
+                    await SendInvalidRequest(ctx).ConfigureAwait(false);
+                    return;
+                }
+
+                switch (ctx.Http.Request.Method)
+                {
+                    case HttpMethod.GET:
+                        await Get(ctx, resourceType).ConfigureAwait(false);
+                        return;
+                    case HttpMethod.POST:
+                        await Post(ctx, resourceType).ConfigureAwait(false);
+                        return;
+                    case HttpMethod.PUT:
+                        await Put(ctx, resourceType).ConfigureAwait(false);
+                        return;
+                    case HttpMethod.DELETE:
+                        await Delete(ctx, resourceType).ConfigureAwait(false);
+                        return;
+                }
+
                 await SendInvalidRequest(ctx).ConfigureAwait(false);
-                return;
             }
-
-            string resourceType = NormalizeResourceType(ctx.Http.Request.Url.Elements[2]);
-
-            switch (ctx.Http.Request.Method)
+            finally
             {
-                case HttpMethod.GET:
-                    await Get(ctx, resourceType).ConfigureAwait(false);
-                    return;
-                case HttpMethod.POST:
-                    await Post(ctx, resourceType).ConfigureAwait(false);
-                    return;
-                case HttpMethod.PUT:
-                    await Put(ctx, resourceType).ConfigureAwait(false);
-                    return;
-                case HttpMethod.DELETE:
-                    await Delete(ctx, resourceType).ConfigureAwait(false);
-                    return;
+                Less3.Telemetry.Less3Telemetry.ApiOperation("rest", operation, ctx.Http.Response.StatusCode, sw.Elapsed.TotalMilliseconds);
             }
-
-            await SendInvalidRequest(ctx).ConfigureAwait(false);
         }
 
         #endregion
@@ -95,6 +109,18 @@ namespace Less3.Api.Rest
 
         private async Task Get(S3Context ctx, string resourceType)
         {
+            if (resourceType.Equals("cluster", StringComparison.OrdinalIgnoreCase))
+            {
+                await GetCluster(ctx).ConfigureAwait(false);
+                return;
+            }
+
+            if (resourceType.Equals("locks", StringComparison.OrdinalIgnoreCase))
+            {
+                await GetLocks(ctx).ConfigureAwait(false);
+                return;
+            }
+
             if (IsExistsRequest(ctx))
             {
                 await SendExists(ctx, Exists(ctx, resourceType, ctx.Http.Request.Url.Elements[3])).ConfigureAwait(false);
@@ -1350,6 +1376,50 @@ namespace Less3.Api.Rest
             if (String.Equals(value, "true", StringComparison.OrdinalIgnoreCase)) return true;
             if (String.Equals(value, "1", StringComparison.OrdinalIgnoreCase)) return true;
             return false;
+        }
+
+        private async Task GetCluster(S3Context ctx)
+        {
+            string[] elements = ctx.Http.Request.Url.Elements;
+            string sub = elements.Length >= 4 ? elements[3].ToLowerInvariant() : "health";
+
+            switch (sub)
+            {
+                case "nodes":
+                    await SendJson(ctx, _Nodes.GetNodes(), 200).ConfigureAwait(false);
+                    return;
+                case "leader":
+                    await SendJson(ctx, new LeaderResponse { LeaderNodeId = _Nodes.GetLeaderNodeId() }, 200).ConfigureAwait(false);
+                    return;
+                case "health":
+                    await SendJson(ctx, _Nodes.GetHealth(), 200).ConfigureAwait(false);
+                    return;
+                default:
+                    await SendNotFound(ctx).ConfigureAwait(false);
+                    return;
+            }
+        }
+
+        private async Task GetLocks(S3Context ctx)
+        {
+            string[] elements = ctx.Http.Request.Url.Elements;
+            List<LockInfo> locks = _Nodes.GetActiveLocks();
+
+            if (elements.Length >= 4 && !String.IsNullOrEmpty(elements[3]))
+            {
+                string key = Uri.UnescapeDataString(elements[3]);
+                LockInfo match = locks.FirstOrDefault(l => String.Equals(l.LockKey, key, StringComparison.Ordinal));
+                if (match == null)
+                {
+                    await SendNotFound(ctx).ConfigureAwait(false);
+                    return;
+                }
+
+                await SendJson(ctx, match, 200).ConfigureAwait(false);
+                return;
+            }
+
+            await SendJson(ctx, locks, 200).ConfigureAwait(false);
         }
 
         private static string NormalizeResourceType(string resourceType)

@@ -1,0 +1,95 @@
+{
+  "EnableConsole": false,
+  "ValidateSignatures": false,
+  "HeaderApiKey": "x-api-key",
+  "AdminApiKey": "less3admin",
+  "RegionString": "us-west-1",
+  "Database": {
+    "Type": "Postgresql",
+    "Hostname": "postgres",
+    "Port": 5432,
+    "Username": "postgres",
+    "Password": "postgres",
+    "DatabaseName": "less3",
+    "RequireEncryption": false,
+    "LogQueries": false
+  },
+  "Cluster": {
+    "Enabled": true,
+    "NodeId": null,
+    "LockProvider": "Clutch",
+    "NodeHeartbeatIntervalMs": 10000,
+    "NodeStaleAfterMs": 30000,
+    "BucketClientCacheTtlMs": 5000,
+    "Lock": {
+      "DefaultLeaseMs": 30000,
+      "HeartbeatIntervalMs": 10000,
+      "MaxHoldMs": 3600000,
+      "AcquireTimeoutMs": 15000,
+      "WaiterPollMs": 250
+    },
+    "Clutch": {
+      "Endpoint": "http://clutch:8080",
+      "AccessKey": "clutch-default-access-key",
+      "TenantId": null,
+      "RequestTimeoutMs": 15000
+    },
+    "AuthCache": {
+      "Enabled": false,
+      "TtlMs": 15000
+    }
+  },
+  "Observability": {
+    "Enabled": true,
+    "ServiceName": "less3",
+    "PrometheusEnabled": true,
+    "PrometheusHostname": "0.0.0.0",
+    "PrometheusPort": 9464,
+    "PrometheusPath": "/metrics",
+    "OtlpEnabled": true,
+    "OtlpEndpoint": "http://otel-collector:4317",
+    "ExportLogs": true
+  },
+  "Webserver": {
+    "Hostname": "*",
+    "Port": 8000,
+    "IO": {
+      "StreamBufferSize": 65536,
+      "MaxRequests": 1024,
+      "ReadTimeoutMs": 30000,
+      "MaxIncomingHeadersSize": 65536,
+      "EnableKeepAlive": false
+    },
+    "Ssl": {
+      "Enable": false,
+      "MutuallyAuthenticate": false,
+      "AcceptInvalidAcertificates": true
+    },
+    "AccessControl": {
+      "DenyList": {},
+      "PermitList": {},
+      "Mode": "DefaultPermit"
+    }
+  },
+  "Storage": {
+    "TempDirectory": "/less3/temp/",
+    "PartsDirectory": "/less3/temp/parts/",
+    "StorageType": "Disk",
+    "DiskDirectory": "/less3/disk/"
+  },
+  "Logging": {
+    "SyslogServerIp": "127.0.0.1",
+    "SyslogServerPort": 514,
+    "MinimumLevel": "Info",
+    "LogHttpRequests": false,
+    "LogS3Requests": false,
+    "ConsoleLogging": true,
+    "DiskLogging": true,
+    "DiskDirectory": "./logs/"
+  },
+  "Debug": {
+    "Authentication": false,
+    "S3Requests": false,
+    "Exceptions": false
+  }
+}

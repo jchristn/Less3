@@ -1,10 +1,13 @@
 #!/bin/bash
 #
-# reset.sh - Reset Less3 docker environment to factory defaults
+# reset.sh - Reset the Less3 Docker environment to factory defaults.
 #
-# This script destroys all runtime data (database, object storage, logs)
-# and restores the factory-default database. Configuration files are
-# preserved.
+# The Docker deployment runs on PostgreSQL, with metadata in the 'pgdata'
+# volume and object data in the 'less3-data' volume. A factory reset drops
+# those volumes (wiping the database and object storage) and clears the
+# host-mounted logs. On the next 'docker compose up' the nodes recreate their
+# schema and re-seed the default tenant, credentials, and sample bucket
+# automatically - no database file to restore.
 #
 # Usage: ./factory/reset.sh
 #
@@ -13,7 +16,6 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DOCKER_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-FACTORY_DIR="$SCRIPT_DIR"
 
 # -------------------------------------------------------------------------
 # Confirmation prompt
@@ -26,13 +28,15 @@ echo ""
 echo "WARNING: This is a DESTRUCTIVE action. The following will"
 echo "be permanently deleted:"
 echo ""
-echo "  - Less3 SQLite database (buckets, objects, users,"
-echo "    credentials, ACLs, tags)"
-echo "  - All object storage files"
-echo "  - All temporary files"
-echo "  - All log files"
+echo "  - The PostgreSQL data volume (all metadata, lock state,"
+echo "    cluster membership, buckets, users, credentials, ACLs)"
+echo "  - The shared object-storage volume (all object data and"
+echo "    multipart parts)"
+echo "  - All host log files"
 echo ""
-echo "Configuration files (system.json) will NOT be modified."
+echo "Configuration files (system.node.json, clutch/clutch.json)"
+echo "are NOT modified. The nodes re-seed the default data on the"
+echo "next startup."
 echo ""
 read -r -p "Type 'RESET' to confirm: " CONFIRM
 echo ""
@@ -43,48 +47,27 @@ if [ "$CONFIRM" != "RESET" ]; then
 fi
 
 # -------------------------------------------------------------------------
-# Ensure containers are stopped
+# Stop containers and drop the data volumes (the whole stack, including the
+# Clutch lock server). This removes the 'pgdata' and 'less3-data' named
+# volumes; on the next boot the nodes reconnect to Clutch (the default lock
+# provider) and re-seed the default data.
 # -------------------------------------------------------------------------
-echo "[1/5] Stopping containers..."
+echo "[1/2] Stopping containers and removing data volumes..."
 cd "$DOCKER_DIR"
-docker compose down 2>/dev/null || true
+docker compose down -v --remove-orphans 2>/dev/null || true
 
 # -------------------------------------------------------------------------
-# Restore factory database
+# Clear host logs
 # -------------------------------------------------------------------------
-echo "[2/5] Restoring factory database..."
-mkdir -p "$DOCKER_DIR/db"
-rm -f "$DOCKER_DIR/db/less3.db"
-rm -f "$DOCKER_DIR/db/less3.db-shm"
-rm -f "$DOCKER_DIR/db/less3.db-wal"
-cp "$FACTORY_DIR/less3.db" "$DOCKER_DIR/db/less3.db"
-echo "        Restored db/less3.db"
-
-# -------------------------------------------------------------------------
-# Clear object storage
-# -------------------------------------------------------------------------
-echo "[3/5] Clearing object storage..."
-mkdir -p "$DOCKER_DIR/disk" "$DOCKER_DIR/temp"
-rm -rf "$DOCKER_DIR/disk/"*
-rm -rf "$DOCKER_DIR/temp/"*
-touch "$DOCKER_DIR/disk/.gitkeep" "$DOCKER_DIR/temp/.gitkeep"
-echo "        Cleared object storage and temp files"
-
-# -------------------------------------------------------------------------
-# Clear logs
-# -------------------------------------------------------------------------
-echo "[4/5] Clearing logs..."
+echo "[2/2] Clearing logs..."
 mkdir -p "$DOCKER_DIR/logs"
-rm -f "$DOCKER_DIR/logs/"*
+rm -f "$DOCKER_DIR/logs/"* 2>/dev/null || true
 touch "$DOCKER_DIR/logs/.gitkeep"
-echo "        Cleared log files"
 
-# -------------------------------------------------------------------------
-# Done
-# -------------------------------------------------------------------------
-echo "[5/5] Factory reset complete."
 echo ""
-echo "To start the environment:"
+echo "Factory reset complete."
+echo ""
+echo "To start fresh (the nodes will recreate the schema and seed defaults):"
 echo "  cd $DOCKER_DIR"
 echo "  docker compose up -d"
 echo ""

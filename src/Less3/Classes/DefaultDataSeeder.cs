@@ -33,12 +33,13 @@ namespace Less3.Classes
         private const string TenantMemberRoleId = "rol_builtin_tenantmember";
         private const string CustomRoleId = "rol_builtin_custom";
 
-        internal static void Seed(SettingsBase settings, LoggingModule logging, DatabaseDriverBase database, ConfigManager config)
+        internal static void Seed(SettingsBase settings, LoggingModule logging, DatabaseDriverBase database, ConfigManager config, Less3.Locking.ILockManager lockManager)
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
             if (logging == null) throw new ArgumentNullException(nameof(logging));
             if (database == null) throw new ArgumentNullException(nameof(database));
             if (config == null) throw new ArgumentNullException(nameof(config));
+            if (lockManager == null) throw new ArgumentNullException(nameof(lockManager));
 
             Directory.CreateDirectory(settings.Storage.DiskDirectory);
             Directory.CreateDirectory(settings.Storage.TempDirectory);
@@ -63,7 +64,7 @@ namespace Less3.Classes
 
             config.AddBucket(bucketConfig);
 
-            BucketClient bucket = new BucketClient(settings, logging, bucketConfig, database);
+            BucketClient bucket = new BucketClient(settings, logging, bucketConfig, database, lockManager);
 
             DateTime ts = DateTime.Now.ToUniversalTime();
 
@@ -140,12 +141,18 @@ namespace Less3.Classes
             Directory.CreateDirectory(settings.Storage.DiskDirectory);
             Directory.CreateDirectory(settings.Storage.TempDirectory);
 
-            if (!config.TenantExists(DefaultTenantId))
+            // Idempotent: if the default tenant already exists the control plane has been seeded
+            // (by this node on a prior run, or by another node in the cluster), so skip re-inserting
+            // the built-in roles/permissions/users, which would violate their primary keys.
+            if (config.TenantExists(DefaultTenantId))
             {
-                Tenant tenant = new Tenant(DefaultTenantId, "Default");
-                tenant.Active = true;
-                config.AddTenant(tenant);
+                logging.Debug("DefaultDataSeeder control plane already seeded; skipping");
+                return;
             }
+
+            Tenant tenant = new Tenant(DefaultTenantId, "Default");
+            tenant.Active = true;
+            config.AddTenant(tenant);
 
             SeedBuiltInRole(config, TenantAdminRoleId, "TenantAdmin", "Tenant administrator with all tenant permissions.");
             SeedBuiltInRole(config, SecurityAdminRoleId, "SecurityAdmin", "Security administrator for tenant IAM and audit surfaces.");

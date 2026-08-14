@@ -116,6 +116,25 @@ namespace Less3.Settings
             set => _Debug = (value != null ? value : throw new ArgumentNullException(nameof(Debug)));
         }
 
+        /// <summary>
+        /// Multi-node cluster settings. When disabled (the default), Less3 runs as a standalone
+        /// single node.
+        /// </summary>
+        public ClusterSettings Cluster
+        {
+            get => _Cluster;
+            set => _Cluster = (value != null ? value : throw new ArgumentNullException(nameof(Cluster)));
+        }
+
+        /// <summary>
+        /// Observability settings (metrics, traces, logs).
+        /// </summary>
+        public ObservabilitySettings Observability
+        {
+            get => _Observability;
+            set => _Observability = (value != null ? value : throw new ArgumentNullException(nameof(Observability)));
+        }
+
         private string _HeaderApiKey = "x-api-key";
         private string _AdminApiKey = "less3admin";
         private string _RegionString = "us-west-1";
@@ -126,6 +145,8 @@ namespace Less3.Settings
         private StorageSettings _Storage = new StorageSettings();
         private LoggingSettings _Logging = new LoggingSettings();
         private DebugSettings _Debug = new DebugSettings();
+        private ClusterSettings _Cluster = new ClusterSettings();
+        private ObservabilitySettings _Observability = new ObservabilitySettings();
 
         /// <summary>
         /// Instantiate.

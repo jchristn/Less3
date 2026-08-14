@@ -914,6 +914,51 @@ Response body:
 }
 ```
 
+## Cluster Operations
+
+These read-only endpoints expose the state of a multi-node deployment. They require admin authentication (`x-api-key`), except `/healthz`, which is unauthenticated so a load balancer or orchestrator can probe it. In a standalone single-node deployment the node endpoints report exactly one node and the lock listing is empty; nothing errors.
+
+### Cluster Health
+
+```text
+GET /api/v1/cluster/health
+```
+
+Returns aggregate health: `ClusterEnabled`, `LockProvider`, `SelfNodeId`, `TotalNodes`, `HealthyNodes`, a `Nodes` array (see below), and `GeneratedUtc`.
+
+### List Nodes
+
+```text
+GET /api/v1/cluster/nodes
+```
+
+Returns an array of node records: `NodeId`, `Hostname`, `Version`, `StartedUtc`, `LastSeenUtc`, `Healthy` (true when the node refreshed its membership within `Cluster.NodeStaleAfterMs`), and `IsSelf`.
+
+### Cluster Leader
+
+```text
+GET /api/v1/cluster/leader
+```
+
+Returns `{ "LeaderNodeId": "..." }` — the node currently holding the `cluster:cleanup` lease, or `null` when no node holds it.
+
+### List Active Locks
+
+```text
+GET /api/v1/locks
+GET /api/v1/locks/{key}
+```
+
+Returns currently-held distributed locks: `LockKey`, `Mode`, `HolderId`, `FencingToken`, `NodeId`, `AcquiredUtc`, and `LeaseExpiresUtc`. The single-key form URL-encodes `{key}` (for example `obj%3Adefault%3Adefault%3Ahello.txt`). Observing locks never affects them. With the `Local` (single-node) or `Clutch` provider this list is empty because those locks are not held in the Less3 database.
+
+### Health Probe
+
+```text
+GET /healthz
+```
+
+Unauthenticated. Returns `{ "status": "ok" | "unhealthy", "nodeId": "...", "version": "..." }` with HTTP 200 when the control-plane database is reachable and 503 otherwise. nginx uses passive failure detection (`max_fails`/`fail_timeout`) to route around an unhealthy node; container and orchestrator health checks poll this endpoint.
+
 ## OpenAPI
 
 Less3 exposes one combined OpenAPI document:

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <Description>End-to-end multi-node integration tests for Less3. Stands up a temporary Docker cluster on randomized ports, exercises every API in positive and negative cases, tests failure scenarios, and reports PASS/FAIL per test with a summary.</Description>
+    <IsPackable>false</IsPackable>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Less3\Less3.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.S3" Version="4.0.102.1" />
+  </ItemGroup>
+
+</Project>

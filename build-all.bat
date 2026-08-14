@@ -12,7 +12,7 @@ GOTO :Done
 :Usage
 ECHO.
 ECHO Provide an argument specifying the version or tag.
-ECHO Example: build-all.bat v3.0.0
+ECHO Example: build-all.bat v4.0.0
 EXIT /B 1
 
 :Failed

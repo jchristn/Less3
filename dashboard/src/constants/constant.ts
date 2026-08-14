@@ -22,4 +22,7 @@ export const paths = {
   requestHistory: `/admin/request-history`,
   maintenance: `/admin/maintenance`,
   apiExplorer: `/admin/api-explorer`,
+  cluster: `/admin/cluster`,
+  locks: `/admin/locks`,
+  observability: `/admin/observability`,
 };

@@ -25,6 +25,7 @@ import {
 } from '#/store/slice/dashboardStatsSlice';
 import { formatDate } from '#/utils/dateUtils';
 import { message } from '#/utils/message';
+import ManageLocksModal from './ManageLocksModal';
 
 type SettingsRecord = Record<string, any>;
 
@@ -605,6 +606,7 @@ const MaintenancePage: React.FC = () => {
               >
                 Verify Objects
               </Less3Button>
+              <ManageLocksModal />
             </Less3Flex>
           </Less3Flex>
         </Less3Card>

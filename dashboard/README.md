@@ -8,6 +8,15 @@
 - Tenant, bucket, object, user, credential, role, role assignment, and permission management
 - Credential create and rotate flows that show secrets once and hide them from metadata views
 - Health, reporting KPI, request history, maintenance, and API Explorer views
+- Multi-node cluster awareness: node health, leader election, and self-node indicators
+- Distributed lock inspector with fencing tokens and lease-expiry hints (data-integrity guard)
+- Observability hub linking the bundled Grafana and Prometheus dashboards (Overview; Locks & Data Integrity; Cluster)
+
+## Environment Variables
+
+- `NEXT_PUBLIC_LESS3_SERVER_URL` — Less3 server base URL (default `http://127.0.0.1:8000`)
+- `NEXT_PUBLIC_LESS3_GRAFANA_URL` — Bundled Grafana URL (default `http://localhost:3001`)
+- `NEXT_PUBLIC_LESS3_PROMETHEUS_URL` — Bundled Prometheus URL (default `http://localhost:9090`)
 
 ## Requirements
 

@@ -206,6 +206,50 @@ namespace Test.Xunit
         }
 
         [Fact]
+        public async Task ReadRangeFromNonZeroOffsetReturnsCorrectSliceAcrossAllVariants()
+        {
+            string baseDir = NewBaseDir();
+            try
+            {
+                DiskStorageDriver driver = new DiskStorageDriver(baseDir);
+
+                byte[] payload = new byte[1000];
+                new Random(2026).NextBytes(payload);
+                driver.Write("obj-slice", payload);
+
+                int offset = 400;
+                int count = 250;
+                byte[] expected = new byte[count];
+                Array.Copy(payload, offset, expected, 0, count);
+
+                // A range read from a non-zero offset must return bytes starting at that offset, not
+                // from the beginning of the object. Exercise every range variant.
+                Assert.Equal(expected, driver.ReadRange("obj-slice", offset, count));
+                Assert.Equal(expected, await driver.ReadRangeAsync("obj-slice", offset, count));
+
+                ObjectStream syncStream = driver.ReadRangeStream("obj-slice", offset, count);
+                Assert.Equal(expected, ReadAll(syncStream.Data));
+
+                ObjectStream asyncStream = await driver.ReadRangeStreamAsync("obj-slice", offset, count);
+                Assert.Equal(expected, ReadAll(asyncStream.Data));
+            }
+            finally
+            {
+                try { Directory.Delete(baseDir, true); } catch (Exception) { }
+            }
+        }
+
+        private static byte[] ReadAll(Stream stream)
+        {
+            using (stream)
+            using (MemoryStream ms = new MemoryStream())
+            {
+                stream.CopyTo(ms);
+                return ms.ToArray();
+            }
+        }
+
+        [Fact]
         public void ReadMissingKeyThrows()
         {
             string baseDir = NewBaseDir();

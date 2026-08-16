@@ -155,6 +155,8 @@
 
             using (FileStream fs = new FileStream(file, FileMode.Open))
             {
+                fs.Seek(indexStart, SeekOrigin.Begin);
+
                 long bytesRemaining = count;
                 int read = 0;
                 byte[] buffer = null;
@@ -200,6 +202,8 @@
 
             using (FileStream fs = new FileStream(file, FileMode.Open))
             {
+                fs.Seek(indexStart, SeekOrigin.Begin);
+
                 long bytesRemaining = count;
                 int read = 0;
                 byte[] buffer = null;
@@ -249,6 +253,8 @@
             {
                 using (FileStream fs = new FileStream(file, FileMode.Open))
                 {
+                    fs.Seek(indexStart, SeekOrigin.Begin);
+
                     long bytesRemaining = count;
                     int read = 0;
                     byte[] buffer = null;
@@ -302,6 +308,8 @@
             {
                 using (FileStream fs = new FileStream(file, FileMode.Open))
                 {
+                    fs.Seek(indexStart, SeekOrigin.Begin);
+
                     long bytesRemaining = count;
                     int read = 0;
                     byte[] buffer = null;

@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.S3" Version="4.0.101.4" />
+    <PackageReference Include="AWSSDK.S3" Version="4.0.102.1" />
     <PackageReference Include="Touchstone.Core" Version="0.1.12" />
     <ProjectReference Include="..\..\src\Less3\Less3.csproj" />
   </ItemGroup>

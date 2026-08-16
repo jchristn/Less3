@@ -4201,6 +4201,24 @@
             <param name="action">The bootstrap action to run exclusively.</param>
             <exception cref="T:System.ArgumentNullException">Thrown when action is null.</exception>
         </member>
+        <member name="T:Less3.Database.SqlErrorClassifier">
+            <summary>
+            Classifies database provider exceptions into dialect-agnostic categories so callers can react
+            to a condition such as a unique-constraint violation without taking a compile-time dependency
+            on a specific provider's exception type. Matching is performed against the exception chain
+            (including any wrapping <see cref="T:System.AggregateException"/> raised by synchronous waits).
+            Thread-safe; the class is stateless.
+            </summary>
+        </member>
+        <member name="M:Less3.Database.SqlErrorClassifier.IsUniqueConstraintViolation(System.Exception)">
+            <summary>
+            Determine whether an exception, or any exception it wraps, represents a unique-constraint
+            or duplicate-key violation. Recognizes the wording used by SQLite, PostgreSQL, MySQL, and
+            SQL Server. The exception chain is walked to a bounded depth to guard against cycles.
+            </summary>
+            <param name="exception">Exception to inspect. May be an <see cref="T:System.AggregateException"/> or otherwise wrap inner exceptions.</param>
+            <returns>True if the exception chain indicates a unique-constraint violation; otherwise false.</returns>
+        </member>
         <member name="M:Less3.Database.Sqlite.Implementations.BucketAclMethods.ExistsByGroupName(System.String,System.String)">
             <inheritdoc />
         </member>
@@ -6331,7 +6349,9 @@
             <summary>
             Configuration for the optional Clutch distributed lock provider. These values are read
             only when <see cref="P:Less3.Settings.ClusterSettings.LockProvider"/> is <see cref="F:Less3.Settings.LockProviderEnum.Clutch"/>.
-            Less3 talks to Clutch's REST lock endpoints over HTTP; no Clutch SDK dependency is required.
+            Less3 talks to Clutch over its native WebSocket lock protocol (one persistent connection per
+            node); no Clutch SDK dependency is required. <see cref="P:Less3.Settings.ClutchSettings.Endpoint"/> is given as an http(s) URL
+            and is upgraded to ws(s) internally.
             </summary>
         </member>
         <member name="P:Less3.Settings.ClutchSettings.Endpoint">

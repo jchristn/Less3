@@ -3128,9 +3128,14 @@ namespace Test.Shared
                 }
             });
 
-            HttpResponseMessage restHistoryResponse = await server.RestPostAsync("requesthistory/enumerate?tenantId=default", restQueryJson, cancellationToken).ConfigureAwait(false);
-            EnsureStatus(HttpStatusCode.OK, restHistoryResponse.StatusCode, "REST enumerate REST request history");
-            string restHistoryBody = await restHistoryResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            string restHistoryBody = await PollEnumerateRequestHistoryAsync(
+                server,
+                restQueryJson,
+                item =>
+                    JsonStringEquals(item, "HttpMethod", "GET")
+                    && JsonStringContains(item, "RequestUrl", "/api/v1/buckets?tenantId=default"),
+                "REST enumerate REST request history",
+                cancellationToken).ConfigureAwait(false);
             JsonElement restHistory = FindEnumerationItem(
                 restHistoryBody,
                 item =>
@@ -3163,9 +3168,12 @@ namespace Test.Shared
                 }
             });
 
-            HttpResponseMessage historyResponse = await server.RestPostAsync("requesthistory/enumerate?tenantId=default", queryJson, cancellationToken).ConfigureAwait(false);
-            EnsureStatus(HttpStatusCode.OK, historyResponse.StatusCode, "REST enumerate request history");
-            string historyBody = await historyResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            string historyBody = await PollEnumerateRequestHistoryAsync(
+                server,
+                queryJson,
+                item => true,
+                "REST enumerate request history",
+                cancellationToken).ConfigureAwait(false);
             EnsureContains(historyBody, "\"Limit\": 1", "REST request history pagination");
             EnsureContains(historyBody, "\"Offset\": 0", "REST request history pagination");
             EnsureGreaterOrEqual(2, ExtractEnumerationTotal(historyBody, "REST request history pagination"), "REST request history pagination total");
@@ -6215,6 +6223,49 @@ namespace Test.Shared
             }
 
             throw new InvalidOperationException(operation + " did not include an expected item");
+        }
+
+        private static bool ContainsEnumerationItem(string json, Func<JsonElement, bool> predicate)
+        {
+            using JsonDocument document = JsonDocument.Parse(json);
+            if (!document.RootElement.TryGetProperty("Items", out JsonElement items)
+                || items.ValueKind != JsonValueKind.Array)
+            {
+                return false;
+            }
+
+            foreach (JsonElement item in items.EnumerateArray())
+            {
+                if (predicate(item)) return true;
+            }
+
+            return false;
+        }
+
+        private static async Task<string> PollEnumerateRequestHistoryAsync(
+            Less3TestServer server,
+            string queryJson,
+            Func<JsonElement, bool> readyPredicate,
+            string operation,
+            CancellationToken cancellationToken)
+        {
+            string body = null;
+
+            // Request history is persisted by the post-request handler after the response has been
+            // sent, so a just-issued request can be absent from the very next enumeration. Poll
+            // briefly until the expected entry has been written rather than assuming it is immediately
+            // visible; this removes an async-write race that could otherwise fail intermittently.
+            for (int attempt = 0; attempt < 20; attempt++)
+            {
+                HttpResponseMessage response = await server.RestPostAsync("requesthistory/enumerate?tenantId=default", queryJson, cancellationToken).ConfigureAwait(false);
+                EnsureStatus(HttpStatusCode.OK, response.StatusCode, operation);
+                body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                if (ContainsEnumerationItem(body, readyPredicate)) return body;
+
+                await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+            }
+
+            return body;
         }
 
         private static bool JsonStringEquals(JsonElement item, string propertyName, string expected)

@@ -5,6 +5,8 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<Version>4.0.0</Version>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<Authors>Joel Christner</Authors>
 		<Company>Joel Christner</Company>
 		<Product>Less3</Product>
@@ -36,13 +38,13 @@
 		<PackageReference Include="Padlock" Version="1.0.4" />
 		<PackageReference Include="PrettyId" Version="2.0.1" />
 		<PackageReference Include="Radiant" Version="0.1.2" />
-		<PackageReference Include="S3Server" Version="7.3.1" />
+		<PackageReference Include="S3Server" Version="7.3.2" />
 		<PackageReference Include="Watson" Version="7.1.0" />
-		<PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.4" />
+		<PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.5" />
 		<PackageReference Include="SyslogLogging" Version="2.2.1" />
-		<PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.10" />
+		<PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.11" />
 		<PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.2" />
-		<PackageReference Include="MySql.Data" Version="9.7.0" />
+		<PackageReference Include="MySql.Data" Version="26.7.0" />
 		<PackageReference Include="Npgsql" Version="10.0.3" />
 		<PackageReference Include="XmlToPox" Version="1.0.3" />
 	</ItemGroup>

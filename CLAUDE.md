@@ -49,6 +49,19 @@ docker compose down
 ./Docker/compose-up.bat   # Windows
 ```
 
+### Running Tests
+```bash
+cd test/Test.Automated
+dotnet run --no-build                      # every Touchstone suite (starts temporary servers)
+dotnet run --no-build -- --suite S3Compat  # only the S3 compatibility suites (test/Test.Shared/S3Compatibility)
+dotnet run --no-build -- --legacy          # shared suite catalog; reports only through the exit code
+```
+- S3 behavior changes need positive and negative cases in `test/Test.Shared/S3Compatibility`; they run under Touchstone, xUnit, NUnit and `--legacy`.
+- `LESS3_TEST_DB_TYPE` (`Postgresql`, `Mysql`, `SqlServer`) plus `LESS3_TEST_DB_HOST`/`_PORT`/`_USER`/`_PASSWORD`/`_NAME` run the suites against an existing, empty external database; SQL changes must pass on all four dialects.
+- `LESS3_TEST_DLL=<path to Less3.dll>` runs the tests against another build, e.g. to confirm a new test fails on the old code.
+- Test servers are child processes tracked by `test/Test.Shared/Processes/ChildProcessTracker`: a kill-on-close job object (Windows) ends them with the test process however it exits, an exit hook kills any still registered, and the first server of each run sweeps `less3-test-*` temp directories whose owner process is gone. Start servers only through `Less3TestServer` so they are tracked.
+- `AwsCliTest.bat` and `MinioClientTest.bat` exercise the same behaviors through real clients; set `LESS3_ENDPOINT` and credentials to run them unattended.
+
 ### Testing with AWS CLI
 See `AWSCLI.md` for comprehensive AWS CLI testing commands. Key endpoints:
 - Default access key: `default`
@@ -209,12 +222,26 @@ BucketClient is the primary interface for bucket operations:
 
 ### Versioning Behavior
 
-- Versioning disabled by default on new buckets
-- When versioning disabled: Overwriting existing object throws `InvalidBucketState`
-- When enabled: New writes create new version (Version counter increments)
-- Version IDs are integers (not strings like AWS S3)
-- Delete creates delete marker when versioning enabled
-- Version 1 is special: If version not specified, version 1 assumed
+Less3 follows Amazon S3 versioning semantics. `BucketClient` owns them; handlers resolve the exact row a request names and never assume a version number.
+
+- A bucket is unversioned (never enabled), `EnableVersioning`, or `VersioningSuspended`. Once enabled it can only be suspended, never returned to unversioned (`ConfigManager.UpdateBucket` enforces this for the REST/admin paths too).
+- Version numbers are integers internally and always increase per key. Rows written while versioning is not enabled carry `Obj.NullVersion` and are reported with version ID `null`; a key has at most one null version.
+- A request's version is an `ObjectVersionReference`: no version ID means the latest row, `null` means the null version, a positive integer means that version, and anything else is `400 InvalidArgument`. Never default to version 1.
+- `AddObject`: enabled appends latest+1; unversioned/suspended replaces the null version. The new row is committed before the replaced row, its ACL/tag rows, and its blob are removed.
+- `DeleteObject`: without a version, enabled/suspended add a delete-marker row (suspended replaces the null version); unversioned removes the object. With a version, that row (and its ACLs, tags, blob) is removed permanently.
+- Delete markers are rows with `DeleteMarker = true` and no blob. GET of a latest marker is `404` + `x-amz-delete-marker`; naming a marker's version is `405`.
+- ACL/tag changes go through `BucketClient.SetObjectAcls` / `SetObjectTags`, which take the key's write lock and address the row by object ID.
+- Reads go through `BucketClient.OpenObject`, which re-resolves the row under the shared read lock and returns the row actually served.
+- Listing uses keyset queries (`EnumerateLatest` / `EnumerateVersions`) ordered by binary key; each dialect must compare keys case-sensitively and in byte order (SQLite default, Postgres `COLLATE "C"`, MySQL `utf8mb4_bin`, SQL Server `Latin1_General_100_BIN2`).
+
+### S3Server 8 Contract
+
+Less3 uses S3Server 8.0.1, which frames the S3 wire details itself: ListObjects v1/v2 and ListObjectVersions shapes (including delete markers) and `encoding-type=url`, DeleteObjects `Quiet`, canned ACL writes (the callback receives a `null` policy), CopyObject and UploadPartCopy (`Object.Copy` / `Object.UploadPartCopy`, request types `ObjectCopy` / `ObjectUploadPartCopy`), suffix ranges (`S3Request.RangeSuffixLength`, routed to `Object.ReadRange`), HEAD ranges, `Content-Range` for the bytes returned, `304` (throw `ErrorCode.NotModified` after adding `ETag`/`Last-Modified`), per-operation parameter validation, and the S3 XML namespace. Callbacks return models with unencoded values.
+
+- S3Server validates query parameters **before** `PreRequestHandler` and runs `PreRequestHandler` **before** signature validation, so nothing that acts on or discloses data may be answered from `PreRequestHandler`.
+- `ObjectCopy` and `ObjectUploadPartCopy` are authorized as `ObjectWrite` and `ObjectUploadPart` (Program.cs); the copy checks read access to the source itself.
+- `ReadRange` must reject unsatisfiable ranges itself, before it opens a stream: S3Server's own range check runs after the callback returns, and a stream it never sends would hold the object's read lock.
+- Every supported S3 operation is a registered callback that returns an S3Server model; `DefaultRequestHandler` only answers requests S3Server cannot route. Do not write S3 response bodies by hand. If S3Server cannot express a response exactly, fix it upstream (see `archive/S3SERVER_BUGS.md`).
 
 ### Error Handling
 

@@ -4,6 +4,7 @@ namespace Less3.Database.PostgreSql.Implementations
     using System.Collections.Generic;
     using System.Data;
     using Less3.Classes;
+    using Less3.Database.Implementations;
     using Less3.Database.Interfaces;
     using Less3.Database.PostgreSql.Queries;
 
@@ -79,7 +80,7 @@ namespace Less3.Database.PostgreSql.Implementations
                 entry.ResponseBodyLength = Convert.ToInt64(row["responsebodylength"]);
                 entry.RequestBody = row["requestbody"] != DBNull.Value ? row["requestbody"].ToString() : null;
                 entry.ResponseBody = row["responsebody"] != DBNull.Value ? row["responsebody"].ToString() : null;
-                entry.CreatedUtc = Convert.ToDateTime(row["createdutc"]).ToUniversalTime();
+                entry.CreatedUtc = ControlPlaneDataMapper.UtcDateTime(row["createdutc"]);
                 entries.Add(entry);
             }
 

@@ -13,6 +13,7 @@ namespace Test.Shared
     using Amazon;
     using Amazon.Runtime;
     using Amazon.S3;
+    using Test.Shared.Processes;
 
     /// <summary>
     /// Manages a Less3 server instance for integration testing.
@@ -85,6 +86,11 @@ namespace Test.Shared
         /// </summary>
         public bool ValidateSignatures => _ValidateSignatures;
 
+        /// <summary>
+        /// Process id of the running server, or null before it starts and after it is disposed.
+        /// </summary>
+        public int? ProcessId => _Process?.Id;
+
         #endregion
 
         #region Constructors-and-Factories
@@ -100,7 +106,7 @@ namespace Test.Shared
             string? baseDomain = null)
         {
             _Port = GetRandomPort();
-            _TempDirectory = Path.Combine(Path.GetTempPath(), "less3-test-" + Path.GetRandomFileName().Replace(".", ""));
+            _TempDirectory = Path.Combine(Path.GetTempPath(), ChildProcessTracker.DirectoryPrefix + Path.GetRandomFileName().Replace(".", ""));
             _ValidateSignatures = validateSignatures;
             _SimulateContainerEnvironment = simulateContainerEnvironment;
             _OmitSystemJson = omitSystemJson;
@@ -142,6 +148,8 @@ namespace Test.Shared
             {
                 throw new InvalidOperationException("Omitting system.json requires simulateContainerEnvironment=true.");
             }
+
+            ChildProcessTracker.EnsureSwept();
 
             Directory.CreateDirectory(_TempDirectory);
             if (!_OmitSystemJson)
@@ -190,6 +198,8 @@ namespace Test.Shared
             _Process = Process.Start(psi);
             if (_Process == null)
                 throw new InvalidOperationException("Failed to start Less3 process");
+
+            ChildProcessTracker.Track(_Process, _TempDirectory);
 
             _Process.OutputDataReceived += (sender, e) =>
             {
@@ -422,18 +432,27 @@ namespace Test.Shared
 
             if (disposing)
             {
-                if (_Process != null && !_Process.HasExited)
+                if (_Process != null)
                 {
                     try
                     {
-                        _Process.Kill(true);
-                        _Process.WaitForExit(5000);
+                        if (!_Process.HasExited)
+                        {
+                            _Process.Kill(true);
+                            _Process.WaitForExit(5000);
+                        }
                     }
                     catch
                     {
                     }
 
-                    _Process.Dispose();
+                    // A server that survived the kill stays tracked (and undisposed) so the exit hook retries it.
+                    if (_Process.HasExited)
+                    {
+                        ChildProcessTracker.Untrack(_Process);
+                        _Process.Dispose();
+                    }
+
                     _Process = null;
                 }
 
@@ -476,11 +495,7 @@ namespace Test.Shared
                 RegionString = "us-west-1",
                 RequestHistoryRetentionDays = 30,
                 CleanupIntervalMs = 3600000,
-                Database = new
-                {
-                    Type = "Sqlite",
-                    Filename = "./less3.db"
-                },
+                Database = DatabaseSettingsFromEnvironment(),
                 Webserver = new
                 {
                     Hostname = "127.0.0.1",
@@ -516,6 +531,34 @@ namespace Test.Shared
             File.WriteAllText(Path.Combine(_TempDirectory, "system.json"), json);
         }
 
+        /// <summary>
+        /// Database settings for the server under test. Defaults to a per-server SQLite file; set
+        /// LESS3_TEST_DB_TYPE (Sqlite, Postgresql, Mysql, SqlServer) plus LESS3_TEST_DB_HOST, LESS3_TEST_DB_PORT,
+        /// LESS3_TEST_DB_USER, LESS3_TEST_DB_PASSWORD and LESS3_TEST_DB_NAME to run against an external database.
+        /// </summary>
+        private static object DatabaseSettingsFromEnvironment()
+        {
+            string type = Environment.GetEnvironmentVariable("LESS3_TEST_DB_TYPE");
+            if (String.IsNullOrEmpty(type) || String.Equals(type, "Sqlite", StringComparison.OrdinalIgnoreCase))
+            {
+                return new
+                {
+                    Type = "Sqlite",
+                    Filename = "./less3.db"
+                };
+            }
+
+            return new
+            {
+                Type = type,
+                Hostname = Environment.GetEnvironmentVariable("LESS3_TEST_DB_HOST") ?? "localhost",
+                Port = Int32.Parse(Environment.GetEnvironmentVariable("LESS3_TEST_DB_PORT") ?? "0"),
+                Username = Environment.GetEnvironmentVariable("LESS3_TEST_DB_USER"),
+                Password = Environment.GetEnvironmentVariable("LESS3_TEST_DB_PASSWORD"),
+                DatabaseName = Environment.GetEnvironmentVariable("LESS3_TEST_DB_NAME") ?? "less3"
+            };
+        }
+
         private void WriteLess3Database()
         {
             // The database is created automatically by WatsonORM on startup.
@@ -524,6 +567,15 @@ namespace Test.Shared
 
         private string FindLess3Dll()
         {
+            // LESS3_TEST_DLL points the tests at a specific build, e.g. to confirm new tests fail against
+            // an earlier version of the server.
+            string overridePath = Environment.GetEnvironmentVariable("LESS3_TEST_DLL");
+            if (!String.IsNullOrEmpty(overridePath))
+            {
+                if (!File.Exists(overridePath)) throw new FileNotFoundException("LESS3_TEST_DLL does not exist.", overridePath);
+                return overridePath;
+            }
+
             bool preferRelease = AppContext.BaseDirectory.IndexOf(Path.DirectorySeparatorChar + "Release" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) >= 0;
 
             // Look for the built Less3.dll relative to the test project

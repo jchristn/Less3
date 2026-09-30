@@ -8,17 +8,27 @@ echo.
 echo [IMPORTANT] Ensure you run this script against a clean installation of Less3
 echo             If you have leftover buckets or objects, delete less3.db and restart
 echo.
+echo Optional environment variables:
+echo   LESS3_ENDPOINT     Less3 S3 endpoint (default http://localhost:8000)
+echo   LESS3_ACCESS_KEY   access key (default: default)
+echo   LESS3_SECRET_KEY   secret key, at least 8 characters for mc (default: defaultsecret)
+echo.
 
-set ENDPOINT=http://localhost:8000
-set ACCESS_KEY=default
-set SECRET_KEY=defaultsecret
+if defined LESS3_ENDPOINT (set ENDPOINT=%LESS3_ENDPOINT%) else (set ENDPOINT=http://localhost:8000)
+if defined LESS3_ACCESS_KEY (set ACCESS_KEY=%LESS3_ACCESS_KEY%) else (set ACCESS_KEY=default)
+if defined LESS3_SECRET_KEY (set SECRET_KEY=%LESS3_SECRET_KEY%) else (set SECRET_KEY=defaultsecret)
 set ALIAS=less3
 set TEST_BUCKET=test-bucket
+set COMPAT_VER=test-compat-versions
+set COMPAT_OBJ=test-compat-objects
+set COMPAT_COPY=test-compat-copy
+set OUT=%TEMP%\less3-mc-out.tmp
+set ERR=%TEMP%\less3-mc-err.tmp
 
 echo Configuring MinIO Client...
 echo [INFO] MinIO Client requires secret keys to be at least 8 characters
-echo [INFO] Using ACCESS_KEY=%ACCESS_KEY% and SECRET_KEY=%SECRET_KEY%
-mc alias set %ALIAS% %ENDPOINT% %ACCESS_KEY% %SECRET_KEY%
+echo [INFO] Using ACCESS_KEY=%ACCESS_KEY%
+mc alias set %ALIAS% %ENDPOINT% %ACCESS_KEY% %SECRET_KEY% >nul
 if %ERRORLEVEL% NEQ 0 (
     echo [FAIL] MinIO Client configuration failed
     echo Please ensure mc is installed: https://min.io/docs/minio/linux/reference/minio-mc.html
@@ -46,16 +56,9 @@ echo BUCKET OPERATIONS TESTS
 echo ===============================================================================
 echo.
 
-echo [TEST] Cleaning up any pre-existing test bucket...
-mc rm --recursive --force --versions %ALIAS%/%TEST_BUCKET%/
-timeout /t 2 /nobreak >nul
-mc rb --force %ALIAS%/%TEST_BUCKET%
-if %ERRORLEVEL% EQU 0 (
-    echo [INFO] Pre-existing bucket was deleted
-) else (
-    echo [INFO] No pre-existing bucket found or already clean
-)
-timeout /t 1 /nobreak >nul
+echo [TEST] Cleaning up any pre-existing test buckets...
+for %%b in (%TEST_BUCKET% %COMPAT_VER% %COMPAT_OBJ% %COMPAT_COPY%) do call :purge_bucket %%b
+echo [INFO] Pre-test cleanup attempted
 echo.
 
 echo [TEST] Creating test bucket...
@@ -148,7 +151,7 @@ echo [NOTE] MinIO Client automatically handles multipart uploads for large files
 echo.
 
 echo [TEST] Creating large test file (15 MB)...
-fsutil file createnew test-multipart-large.dat 15728640
+fsutil file createnew test-multipart-large.dat 15728640 >nul
 if %ERRORLEVEL% NEQ 0 (
     echo [FAIL] Create large file failed
     goto :error
@@ -379,22 +382,236 @@ echo [PASS] Mirrored objects cleaned
 echo.
 
 echo ===============================================================================
+echo S3 COMPATIBILITY TESTS
+echo ===============================================================================
+echo.
+
+mc mb %ALIAS%/%COMPAT_VER% >nul
+mc mb %ALIAS%/%COMPAT_OBJ% >nul
+mc mb %ALIAS%/%COMPAT_COPY% >nul
+
+rem ---------------------------------------------------------------- batch delete
+echo [TEST] Recursive remove (DeleteObjects) removes every object under a prefix...
+echo x> x.txt
+for %%k in (one two three) do mc cp --quiet x.txt %ALIAS%/%COMPAT_OBJ%/batch/%%k.txt >nul
+mc rm --recursive --force %ALIAS%/%COMPAT_OBJ%/batch/ > "%OUT%" 2>"%ERR%"
+if %ERRORLEVEL% NEQ 0 (
+    echo [FAIL] Recursive remove failed
+    type "%ERR%"
+    goto :error
+)
+mc ls --recursive %ALIAS%/%COMPAT_OBJ%/batch/ > "%OUT%" 2>nul
+call :expect_empty "%OUT%" "objects remain after recursive remove"
+if defined FAILED goto :error
+echo [PASS] Recursive remove succeeded
+echo.
+
+rem ---------------------------------------------------------------- versioning
+echo [TEST] Versioned delete keeps earlier versions; undo restores the object...
+mc version enable %ALIAS%/%COMPAT_VER% >nul
+for %%v in (one two three) do (
+    echo %%v> v.txt
+    mc cp --quiet v.txt %ALIAS%/%COMPAT_VER%/doc >nul
+)
+mc rm %ALIAS%/%COMPAT_VER%/doc >nul
+mc cat %ALIAS%/%COMPAT_VER%/doc > "%OUT%" 2>nul
+if %ERRORLEVEL% EQU 0 (
+    echo [FAIL] A deleted object is still readable
+    goto :error
+)
+mc cat --vid 1 %ALIAS%/%COMPAT_VER%/doc > "%OUT%"
+call :expect_content "%OUT%" "one" "version 1 after delete"
+if defined FAILED goto :error
+mc ls --versions --json %ALIAS%/%COMPAT_VER%/doc > "%OUT%"
+call :expect_count "%OUT%" "\"versionId\"" 4 "versions plus delete marker"
+if defined FAILED goto :error
+mc undo %ALIAS%/%COMPAT_VER%/doc --force >nul
+mc cat %ALIAS%/%COMPAT_VER%/doc > "%OUT%"
+call :expect_content "%OUT%" "three" "object after undo"
+if defined FAILED goto :error
+echo [PASS] Delete marker, version reads and undo
+echo.
+
+echo [TEST] Suspending versioning keeps existing versions (no data loss)...
+mc version suspend %ALIAS%/%COMPAT_VER% >nul
+mc version info --json %ALIAS%/%COMPAT_VER% > "%OUT%"
+findstr /C:"Suspended" "%OUT%" >nul
+if %ERRORLEVEL% NEQ 0 (
+    echo [FAIL] Versioning is not reported as Suspended
+    type "%OUT%"
+    goto :error
+)
+echo suspended> v.txt
+mc cp --quiet v.txt %ALIAS%/%COMPAT_VER%/doc >nul
+if %ERRORLEVEL% NEQ 0 (
+    echo [FAIL] Write after suspending versioning failed
+    goto :error
+)
+mc ls --versions --json %ALIAS%/%COMPAT_VER%/doc > "%OUT%"
+call :expect_count "%OUT%" "\"versionId\"" 4 "three earlier versions plus the null version"
+if defined FAILED goto :error
+mc cat --vid 1 %ALIAS%/%COMPAT_VER%/doc > "%OUT%"
+call :expect_content "%OUT%" "one" "version 1 after suspending"
+if defined FAILED goto :error
+mc cat %ALIAS%/%COMPAT_VER%/doc > "%OUT%"
+call :expect_content "%OUT%" "suspended" "latest after suspended write"
+if defined FAILED goto :error
+echo [PASS] Suspended versioning keeps prior versions
+echo.
+
+echo [TEST] A bucket holding versions cannot be removed without --force...
+mc rb %ALIAS%/%COMPAT_VER% > "%OUT%" 2>&1
+if %ERRORLEVEL% EQU 0 (
+    echo [FAIL] Bucket with versions was removed
+    goto :error
+)
+echo [PASS] Bucket removal refused
+echo.
+
+rem ---------------------------------------------------------------- listing
+echo [TEST] mirror then diff reports no differences (listing is in S3 key order)...
+mkdir test-order 2>nul
+mkdir test-order\dir 2>nul
+for %%k in (Zed.txt a_b.txt a-b.txt ab.txt a.txt _under.txt 10.txt 9.txt dir\y.txt dir\z.txt) do echo %%k> test-order\%%k
+mc mirror --quiet test-order %ALIAS%/%COMPAT_OBJ%/order >nul
+if %ERRORLEVEL% NEQ 0 (
+    echo [FAIL] Mirror failed
+    goto :error
+)
+mc diff test-order %ALIAS%/%COMPAT_OBJ%/order > "%OUT%" 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo [FAIL] diff failed
+    type "%OUT%"
+    goto :error
+)
+call :expect_empty "%OUT%" "mc diff reported differences"
+if defined FAILED goto :error
+echo [PASS] No differences after mirror
+echo.
+
+echo [TEST] Keys differing only in case are distinct objects...
+echo upper> upper.txt
+echo lower> lower.txt
+mc cp --quiet upper.txt %ALIAS%/%COMPAT_OBJ%/Case.txt >nul
+mc cp --quiet lower.txt %ALIAS%/%COMPAT_OBJ%/case.txt >nul
+mc cat %ALIAS%/%COMPAT_OBJ%/Case.txt > "%OUT%"
+call :expect_content "%OUT%" "upper" "Case.txt"
+if defined FAILED goto :error
+mc cat %ALIAS%/%COMPAT_OBJ%/case.txt > "%OUT%"
+call :expect_content "%OUT%" "lower" "case.txt"
+if defined FAILED goto :error
+echo [PASS] Case-sensitive keys
+echo.
+
+echo [TEST] Keys with spaces and plus signs list and read back exactly...
+echo encoded> enc.txt
+mc cp --quiet enc.txt "%ALIAS%/%COMPAT_OBJ%/enc dir/a b+c.txt" >nul
+mc ls --recursive "%ALIAS%/%COMPAT_OBJ%/enc dir/" > "%OUT%"
+call :expect_count "%OUT%" "a b+c.txt" 1 "ListObjects key with a space and a plus"
+if defined FAILED goto :error
+mc cat "%ALIAS%/%COMPAT_OBJ%/enc dir/a b+c.txt" > "%OUT%"
+call :expect_content "%OUT%" "encoded" "content of the encoded key"
+if defined FAILED goto :error
+mc cp --quiet enc.txt "%ALIAS%/%COMPAT_VER%/enc dir/a b+c.txt" >nul
+mc ls --versions "%ALIAS%/%COMPAT_VER%/enc dir/" > "%OUT%"
+call :expect_count "%OUT%" "a b+c.txt" 1 "ListObjectVersions key with a space and a plus"
+if defined FAILED goto :error
+echo [PASS] Encoded keys round-trip
+echo.
+
+rem ---------------------------------------------------------------- ranges, metadata, tags
+<nul set /p =0123456789> ten.txt
+mc cp --quiet ten.txt %ALIAS%/%COMPAT_OBJ%/ten.txt >nul
+
+echo [TEST] Range reads (offset and tail)...
+mc cat --offset 5 %ALIAS%/%COMPAT_OBJ%/ten.txt > "%OUT%"
+call :expect_content "%OUT%" "56789" "offset 5"
+if defined FAILED goto :error
+mc cat --tail 3 %ALIAS%/%COMPAT_OBJ%/ten.txt > "%OUT%"
+call :expect_content "%OUT%" "789" "tail 3"
+if defined FAILED goto :error
+echo [PASS] Range reads
+echo.
+
+echo [TEST] Metadata and tags given at upload are stored...
+mc cp --quiet --attr "Cache-Control=max-age=60;Color=Blue" --tags "team=storage" ten.txt %ALIAS%/%COMPAT_OBJ%/meta.txt >nul
+if %ERRORLEVEL% NEQ 0 (
+    echo [FAIL] Upload with metadata and tags failed
+    goto :error
+)
+mc stat --json %ALIAS%/%COMPAT_OBJ%/meta.txt > "%OUT%"
+findstr /I /C:"max-age=60" "%OUT%" >nul
+if %ERRORLEVEL% NEQ 0 (
+    echo [FAIL] Cache-Control not stored
+    type "%OUT%"
+    goto :error
+)
+findstr /C:"Blue" "%OUT%" >nul
+if %ERRORLEVEL% NEQ 0 (
+    echo [FAIL] User metadata not stored
+    type "%OUT%"
+    goto :error
+)
+mc tag list --json %ALIAS%/%COMPAT_OBJ%/meta.txt > "%OUT%"
+findstr /C:"storage" "%OUT%" >nul
+if %ERRORLEVEL% NEQ 0 (
+    echo [FAIL] Tags given at upload not stored
+    type "%OUT%"
+    goto :error
+)
+echo [PASS] Metadata and tags stored
+echo.
+
+rem ---------------------------------------------------------------- server-side copy
+echo [TEST] Server-side copy between buckets preserves content and metadata...
+mc cp --quiet %ALIAS%/%COMPAT_OBJ%/meta.txt %ALIAS%/%COMPAT_COPY%/meta-copy.txt >nul
+if %ERRORLEVEL% NEQ 0 (
+    echo [FAIL] Server-side copy failed
+    goto :error
+)
+mc cat %ALIAS%/%COMPAT_COPY%/meta-copy.txt > "%OUT%"
+call :expect_content "%OUT%" "0123456789" "copied content"
+if defined FAILED goto :error
+mc stat --json %ALIAS%/%COMPAT_COPY%/meta-copy.txt > "%OUT%"
+findstr /C:"Blue" "%OUT%" >nul
+if %ERRORLEVEL% NEQ 0 (
+    echo [FAIL] Metadata not copied
+    goto :error
+)
+echo [PASS] Server-side copy
+echo.
+
+echo [TEST] Server-side move of a 15 MB object preserves its content...
+fsutil file createnew move-large.dat 15728640 >nul
+mc cp --quiet move-large.dat %ALIAS%/%COMPAT_OBJ%/large.dat >nul
+mc mv --quiet %ALIAS%/%COMPAT_OBJ%/large.dat %ALIAS%/%COMPAT_COPY%/large-moved.dat >nul
+if %ERRORLEVEL% NEQ 0 (
+    echo [FAIL] Server-side move failed
+    goto :error
+)
+mc cp --quiet %ALIAS%/%COMPAT_COPY%/large-moved.dat move-large-downloaded.dat >nul
+fc /b move-large.dat move-large-downloaded.dat >nul
+if %ERRORLEVEL% NEQ 0 (
+    echo [FAIL] Moved object content differs from the original
+    goto :error
+)
+mc stat %ALIAS%/%COMPAT_OBJ%/large.dat >nul 2>nul
+if %ERRORLEVEL% EQU 0 (
+    echo [FAIL] Source still exists after mv
+    goto :error
+)
+echo [PASS] Server-side move preserved content
+echo.
+
+echo ===============================================================================
 echo CLEANUP
 echo ===============================================================================
 echo.
 
-echo [TEST] Disabling versioning on test bucket...
-mc version suspend %ALIAS%/%TEST_BUCKET% 2>nul
-echo.
-
-echo [TEST] Cleaning up all object versions...
-mc rm --recursive --force --versions %ALIAS%/%TEST_BUCKET%/ 2>nul
-timeout /t 2 /nobreak >nul
-echo.
-
-echo [TEST] Cleaning up test bucket...
-mc rb --force %ALIAS%/%TEST_BUCKET%
-if %ERRORLEVEL% NEQ 0 (
+echo [TEST] Removing test buckets and every object version...
+for %%b in (%TEST_BUCKET% %COMPAT_VER% %COMPAT_OBJ% %COMPAT_COPY%) do call :purge_bucket %%b
+mc ls %ALIAS%/%TEST_BUCKET% >nul 2>nul
+if %ERRORLEVEL% EQU 0 (
     echo [WARN] Cleanup may have failed - some objects may remain
     echo [INFO] You may need to manually delete: mc rb --force %ALIAS%/%TEST_BUCKET%
 )
@@ -402,16 +619,11 @@ echo [PASS] Cleanup completed
 echo.
 
 echo [TEST] Removing MinIO Client alias...
-mc alias rm %ALIAS%
+mc alias rm %ALIAS% >nul
 echo [PASS] Alias removed
 echo.
 
-echo [TEST] Cleaning up temporary files and directories...
-del /q test-file.txt 2>nul
-del /q test-file-downloaded.txt 2>nul
-del /q test-multipart-large.dat 2>nul
-del /q test-version.txt 2>nul
-rd /s /q test-mirror 2>nul
+call :cleanup_files
 echo [PASS] Temporary files cleaned
 echo.
 
@@ -424,8 +636,7 @@ echo.
 echo [INFO] Comparison with AWS CLI Test Suite:
 echo        - MinIO Client automatically handles multipart uploads
 echo        - ACL support is simplified (bucket-level anonymous policies)
-echo        - Range reads not directly supported
-echo        - Includes mirror/sync features not in AWS CLI
+echo        - Includes mirror/diff checks that depend on S3 key ordering
 echo        - For comprehensive S3 API testing, use AwsCliTest.bat
 echo.
 goto :end
@@ -439,13 +650,57 @@ echo.
 echo [FAILURE] One or more tests failed!
 echo.
 echo Cleaning up temporary files and directories...
-del /q test-file.txt 2>nul
-del /q test-file-downloaded.txt 2>nul
-del /q test-multipart-large.dat 2>nul
-del /q test-version.txt 2>nul
-rd /s /q test-mirror 2>nul
-mc alias rm %ALIAS% 2>nul
+call :cleanup_files
+mc alias rm %ALIAS% >nul 2>nul
 exit /b 1
+
+rem Remove every object version, delete marker and incomplete upload, then the bucket.
+:purge_bucket
+mc rm --recursive --force --versions %ALIAS%/%~1 >nul 2>nul
+mc rm --incomplete --recursive --force %ALIAS%/%~1 >nul 2>nul
+mc rb %ALIAS%/%~1 >nul 2>nul
+exit /b 0
+
+rem expect_content <file> <expected> <description>: the file holds exactly one line equal to <expected>.
+:expect_content
+set FAILED=
+set VAL=
+set /p VAL=<%1
+if not "!VAL!"=="%~2" (
+    echo [FAIL] %~3: expected [%~2], got [!VAL!]
+    set FAILED=1
+)
+exit /b 0
+
+rem expect_count <file> <text> <count> <description>: the file has <count> lines containing <text>.
+:expect_count
+set FAILED=
+set COUNT=0
+rem Windows find.exe by full path: a Unix 'find' earlier on PATH (e.g. from Git) would scan the drive.
+for /f %%c in ('findstr /C:%2 %1 ^| "%SystemRoot%\System32\find.exe" /c /v ""') do set COUNT=%%c
+if not "!COUNT!"=="%~3" (
+    echo [FAIL] %~4: expected %~3, found !COUNT!
+    set FAILED=1
+)
+exit /b 0
+
+rem expect_empty <file> <description>: the file is empty.
+:expect_empty
+set FAILED=
+for %%f in (%1) do if %%~zf NEQ 0 (
+    echo [FAIL] %~2:
+    type %1
+    set FAILED=1
+)
+exit /b 0
+
+:cleanup_files
+del /q test-file.txt test-file-downloaded.txt test-multipart-large.dat test-version.txt 2>nul
+del /q x.txt v.txt upper.txt lower.txt ten.txt enc.txt move-large.dat move-large-downloaded.dat 2>nul
+del /q "%OUT%" "%ERR%" 2>nul
+rd /s /q test-mirror 2>nul
+rd /s /q test-order 2>nul
+exit /b 0
 
 :end
 endlocal

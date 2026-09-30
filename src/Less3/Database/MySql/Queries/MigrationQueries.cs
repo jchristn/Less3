@@ -31,6 +31,29 @@ namespace Less3.Database.MySql.Queries
             migrations.Add("CREATE UNIQUE INDEX idx_objects_tenant_bucket_key_version_unique ON objects (tenant_id, bucket_id, `key`, version);");
             migrations.Add("DROP INDEX idx_objects_tenant_bucket_key_version ON objects;");
 
+            // v4.1.0: S3 versioning compatibility. A bucket whose versioning is suspended keeps its
+            // versions; the null version identifies the single row a suspended write or delete replaces.
+            migrations.Add("ALTER TABLE buckets ADD COLUMN versioningsuspended TINYINT(1) NOT NULL DEFAULT 0;");
+            migrations.Add("ALTER TABLE objects ADD COLUMN nullversion TINYINT(1) NOT NULL DEFAULT 0;");
+
+            // v4.1.0: S3 object keys are case-sensitive byte strings. The table default collation
+            // (utf8mb4_unicode_ci) made "Photo.jpg" and "photo.jpg" the same key. utf8mb4_0900_bin is also
+            // NO PAD, so "a" and "a " stay distinct (utf8mb4_bin ignores trailing spaces when comparing).
+            migrations.Add("ALTER TABLE objects MODIFY `key` VARCHAR(1024) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin;");
+
+            // v4.1.0: the (tenant, bucket, key, version) unique index cannot be built on the full key under
+            // InnoDB's 3072-byte index limit, so the uniqueness backstop uses the SHA-256 of the key.
+            migrations.Add("ALTER TABLE objects ADD COLUMN keyhash CHAR(64) CHARACTER SET ascii GENERATED ALWAYS AS (SHA2(`key`, 256)) STORED;");
+            migrations.Add("CREATE UNIQUE INDEX idx_objects_tenant_bucket_keyhash_version_unique ON objects (tenant_id, bucket_id, keyhash, version);");
+
+
+            // v4.1.0: before 4.1, suspending versioning simply turned it off, so a bucket with versioning off
+            // but with numbered versions (version > 1, not null versions) was suspended; mark it so. Then mark
+            // the rows of buckets that never had versioning as null versions. Both statements are idempotent:
+            // rows written by 4.1 in unversioned buckets are always null versions.
+            migrations.Add("UPDATE buckets SET versioningsuspended = 1 WHERE enableversioning = 0 AND versioningsuspended = 0 AND EXISTS (SELECT 1 FROM objects o WHERE o.bucket_id = buckets.id AND o.version > 1 AND o.nullversion = 0);");
+            migrations.Add("UPDATE objects SET nullversion = 1 WHERE nullversion = 0 AND bucket_id IN (SELECT b.id FROM buckets b WHERE b.enableversioning = 0 AND b.versioningsuspended = 0);");
+
             return migrations;
         }
     }

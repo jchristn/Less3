@@ -97,9 +97,9 @@ namespace Less3.Database.PostgreSql.Implementations
                 upload.OwnerId = row["owner_id"] != DBNull.Value ? row["owner_id"].ToString() : null;
                 upload.AuthorId = row["author_id"] != DBNull.Value ? row["author_id"].ToString() : null;
                 upload.Key = row["key"] != DBNull.Value ? row["key"].ToString() : null;
-                upload.CreatedUtc = Convert.ToDateTime(row["createdutc"]).ToUniversalTime();
-                upload.LastAccessUtc = Convert.ToDateTime(row["lastaccessutc"]).ToUniversalTime();
-                upload.ExpirationUtc = Convert.ToDateTime(row["expirationutc"]).ToUniversalTime();
+                upload.CreatedUtc = ControlPlaneDataMapper.UtcDateTime(row["createdutc"]);
+                upload.LastAccessUtc = ControlPlaneDataMapper.UtcDateTime(row["lastaccessutc"]);
+                upload.ExpirationUtc = ControlPlaneDataMapper.UtcDateTime(row["expirationutc"]);
                 upload.ContentType = row["contenttype"] != DBNull.Value ? row["contenttype"].ToString() : null;
                 upload.Metadata = row["metadata"] != DBNull.Value ? row["metadata"].ToString() : null;
                 uploads.Add(upload);

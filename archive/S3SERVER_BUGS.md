@@ -9,6 +9,10 @@ Context:
 - Some failures were fixed in Less3 directly. Those are not listed here.
 - The items below are the ones that should be considered upstream `S3Server` improvements.
 
+## Status (S3Server 8.0.1)
+
+All items are resolved: 1 to 7 in S3Server 7.4.0 and 8.0.0, and 8 in 8.0.1 (see the S3Server CHANGELOG). Less3 uses the native callbacks for all of them and no longer writes any S3 response body itself.
+
 ## 1. Signature validation can fail open when `EnableSignatures = true`
 
 Where:
@@ -180,3 +184,53 @@ Even if the implementation changes above are deferred, `S3Server` should add fir
 - Range response contains `Content-Range` and `Accept-Ranges`.
 - Recognized but unwired request types do not collapse into generic malformed-request errors.
 
+
+## 5. `PreRequestHandler` runs before signature validation
+
+Where: `S3Server.cs`, `RequestHandler`: `Settings.PreRequestHandler` is invoked, and a `true` result ends the request, before the `EnableSignatures` block.
+
+Current behavior: anything an embedding application answers from `PreRequestHandler` is never signature-checked. Less3 answered canned-ACL writes (`PUT ?acl` with no body, which the `ObjectWriteAcl`/`BucketWriteAcl` callbacks cannot accept because they require an XML body) from its pre-request handler, so a request carrying only a valid access key could change a bucket's or object's ACL.
+
+How Less3 works around it: the ACL-write, ListObjects, ListObjectVersions and DeleteObjects callbacks are left unregistered, so S3Server routes those requests to `DefaultRequestHandler`, which runs after signature validation.
+
+Recommended fix: validate signatures before `PreRequestHandler` (or offer a post-authentication hook), and let the ACL-write callbacks receive a null policy when the body is empty.
+
+## 6. Response types cannot express several Amazon S3 responses exactly
+
+- `Deleted.VersionId` and `Deleted.DeleteMarkerVersionId` are `IsNullable = true` without `ShouldSerialize*`, so a null value is written as `<VersionId xsi:nil="true"/>`, and `<DeleteMarker>false</DeleteMarker>` is always written. `Error` in a `DeleteResult` also writes a non-standard `HttpStatusCode` element.
+- `ListBucketResult` has no `NextMarker`, `StartAfter` or `ContinuationToken`, so ListObjects v1 delimiter pagination and v2 token echo cannot be expressed.
+- `ListVersionsResult` keeps versions and delete markers in separate lists, so they are serialized grouped rather than interleaved in key/version order.
+- `ListMultipartUploadsResult` is serialized without the S3 XML namespace.
+- `ObjectWrite` has no way to return a body, so CopyObject (`x-amz-copy-source`) cannot return `CopyObjectResult`, and without special handling a copy is treated as a PUT with an empty body. The same applies to `UploadPart` with `x-amz-copy-source` (`CopyPartResult`).
+- Read callbacks cannot return `304 Not Modified`, and there is no `ErrorCode` for it.
+- A suffix range (`Range: bytes=-N`) sets `RangeEnd` but not `RangeStart`, so the request is classified as `ObjectRead` and the response is framed as `200` instead of `206`.
+
+How Less3 works around it: it writes these responses itself (from `DefaultRequestHandler`, or from inside the callback, returning a zero-length result so S3Server's follow-up send is a no-op).
+
+## 7. Request parsing errors surface as `500`
+
+- A negative `max-keys` makes the `S3Request.MaxKeys` setter throw `ArgumentOutOfRangeException` while the request context is being built, before any callback runs, so the client gets `500 InternalError` instead of `400 InvalidArgument`.
+- `ctx.Http.Request.Query.Elements` holds percent-encoded values (e.g. `prefix=alpha%2F`) while `S3Request.Prefix` and friends are decoded; callers reading other query parameters must decode them themselves.
+
+## Additional Recommended S3Server Test Additions
+
+- A canned ACL write with a forged signature is rejected.
+- `DeleteResult` for an unversioned key contains no `VersionId` or `DeleteMarker` elements.
+- `max-keys=-1` returns `400`.
+- `bytes=-N` returns `206` with the last `N` bytes.
+
+## 8. Delete markers in ListObjectVersions carry a nil ETag and a StorageClass (8.0.0; resolved in 8.0.1)
+
+Where: `S3Objects/VersionedEntity.cs` declares `ETag` with `IsNullable = true` and always writes `StorageClass`; `DeleteMarker` sets `ETag` to null. A version listing therefore contains:
+
+```xml
+<DeleteMarker><Key>k</Key><VersionId>2</VersionId><IsLatest>true</IsLatest><LastModified>...</LastModified>
+  <ETag p3:nil="true" xmlns:p3="http://www.w3.org/2001/XMLSchema-instance"></ETag><StorageClass>STANDARD</StorageClass>
+  <Owner>...</Owner></DeleteMarker>
+```
+
+Amazon S3 sends only `Key`, `VersionId`, `IsLatest`, `LastModified` and `Owner` for a delete marker. Clients that read the listing are handed an ETag element and a storage class that a delete marker does not have.
+
+How Less3 worked around it until 8.0.1: `Bucket.ReadVersions` was left unregistered. `BucketHandler.ListObjectVersionsXml` built the same `ListVersionsResult`, applied `encoding-type=url` itself (S3Server's encoding overload is internal), serialized it with `SerializationHelper.SerializeXml`, and removed `ETag`, `Size` and `StorageClass` from each `DeleteMarker`. The workaround was removed when Less3 moved to 8.0.1.
+
+Recommended fix: add `ShouldSerializeETag()` (non-empty) and `ShouldSerializeStorageClass()` (false for `DeleteMarker`) to the version entities, and add a Compatibility scenario that lists a delete marker. Less3's `S3CompatProtocol_VersionListing_DeleteMarkerShape` test and the AwsCliTest "Delete marker shape" check assert the Amazon S3 shape.

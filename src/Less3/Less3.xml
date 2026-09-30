@@ -44,14 +44,52 @@
             API handler.
             </summary>
         </member>
+        <member name="M:Less3.Api.S3.ApiHelper.ValidateContentMd5(S3ServerLibrary.S3Context)">
+            <summary>
+            Verify the Content-MD5 header, when present, against the request body. S3Server has already read
+            the body for XML requests, so it is taken from the request's cached bytes.
+            </summary>
+            <exception cref="T:S3ServerLibrary.S3Exception">InvalidDigest when the header is not a base64 MD5, BadDigest when it does not match.</exception>
+        </member>
         <member name="T:Less3.Api.S3.BucketHandler">
             <summary>
             Bucket APIs.
             </summary>
         </member>
+        <member name="M:Less3.Api.S3.BucketHandler.ListObjects(S3ServerLibrary.S3Context)">
+            <summary>
+            ListObjects (v1) and ListObjectsV2. S3Server shapes the response for the requested list type
+            (Marker for v1; KeyCount, ContinuationToken and StartAfter for v2; Owner only with fetch-owner
+            for v2) and applies encoding-type=url, so values are returned unencoded.
+            </summary>
+        </member>
+        <member name="M:Less3.Api.S3.BucketHandler.ListObjectVersions(S3ServerLibrary.S3Context)">
+            <summary>
+            ListObjectVersions, with versions and delete markers interleaved in key order, newest version
+            first. S3Server shapes delete markers and applies encoding-type=url, so values are returned unencoded.
+            </summary>
+        </member>
         <member name="T:Less3.Api.S3.ObjectHandler">
             <summary>
             Object APIs.
+            </summary>
+        </member>
+        <member name="F:Less3.Api.S3.ObjectHandler.MaxDeleteObjectsKeys">
+            <summary>
+            Maximum number of keys Amazon S3 accepts in one DeleteObjects request.
+            </summary>
+        </member>
+        <member name="M:Less3.Api.S3.ObjectHandler.DeleteMultiple(S3ServerLibrary.S3Context,S3ServerLibrary.S3Objects.DeleteMultiple)">
+            <summary>
+            Delete multiple objects. Each key is authorized as an individual DeleteObject, and each key's
+            outcome is reported independently; one key failing never prevents the others from being processed.
+            A key or version that does not exist is reported as deleted, as Amazon S3 does.
+            </summary>
+        </member>
+        <member name="M:Less3.Api.S3.ObjectHandler.Copy(S3ServerLibrary.S3Context)">
+            <summary>
+            CopyObject (PUT with x-amz-copy-source). The caller must be allowed to write the destination and
+            read the source.
             </summary>
         </member>
         <member name="T:Less3.Api.S3.ServiceHandler">
@@ -177,6 +215,18 @@
         <member name="T:Less3.Classes.AuthManager">
             <summary>
             Authentication manager.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.AuthManager.ForObject(Less3.Classes.RequestMetadata,Less3.Classes.Bucket,Less3.Classes.BucketClient,Less3.Classes.Obj)">
+            <summary>
+            Build request metadata for a different object than the one the request names, sharing the
+            request's authentication and bucket context. Used where one request acts on several objects
+            (DeleteObjects) or on an object other than the target (the CopyObject source).
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.AuthManager.AuthorizeObjectRequest(S3ServerLibrary.S3Context,Less3.Classes.RequestMetadata,S3ServerLibrary.S3RequestType)">
+            <summary>
+            Authorize an object operation of the given type against the object in the supplied metadata.
             </summary>
         </member>
         <member name="T:Less3.Classes.AuthorizationAudit">
@@ -414,6 +464,15 @@
             Enable or disable versioning.
             </summary>
         </member>
+        <member name="P:Less3.Classes.Bucket.VersioningSuspended">
+            <summary>
+            Indicates that versioning was enabled on this bucket and has since been suspended.
+            Default value is false. When true, EnableVersioning is false, existing versions are retained,
+            and new writes replace the key's null version rather than creating a new version.
+            Amazon S3 does not allow a versioned bucket to return to the unversioned state, so a
+            request to disable versioning on a versioned bucket sets this flag instead.
+            </summary>
+        </member>
         <member name="P:Less3.Classes.Bucket.EnablePublicWrite">
             <summary>
             Enable or disable public write.
@@ -564,9 +623,103 @@
             Bucket client.  All object construction, authentication, and authorization must occur prior to using bucket methods.
             </summary>
         </member>
+        <member name="P:Less3.Classes.BucketClient.VersioningConfigured">
+            <summary>
+            True when versioning is enabled or suspended, i.e. the bucket reports version IDs.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.BucketClient.VersionIdString(Less3.Classes.Obj)">
+            <summary>
+            The version ID Amazon S3 would report for a row: "null" for the null version (and for every row
+            in a bucket that has never had versioning enabled), otherwise the version number.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.BucketClient.AddObject(Less3.Classes.Obj,System.IO.Stream,Less3.Classes.ObjectWritePreconditions,System.Collections.Generic.List{Less3.Classes.ObjectAcl},System.Collections.Generic.List{Less3.Classes.ObjectTag})">
+            <summary>
+            Write a new object version. With versioning enabled the write becomes the new latest version;
+            otherwise it replaces the key's null version (versions written while versioning was enabled
+            are kept). The new row is committed before the replaced row and its blob are removed, so a
+            crash part-way through never loses the only copy.
+            </summary>
+            <param name="obj">Object row to insert; its version and null-version flag are assigned here.</param>
+            <param name="stream">Object content.</param>
+            <param name="preconditions">Conditional-write headers, or null.</param>
+            <param name="acls">ACL entries for the new row, or null. Applied while the write lock is held.</param>
+            <param name="tags">Tags for the new row, or null. Applied while the write lock is held.</param>
+            <exception cref="T:Less3.Classes.ObjectPreconditionException">Thrown when a conditional-write precondition is not met.</exception>
+        </member>
+        <member name="M:Less3.Classes.BucketClient.DeleteObject(System.String,Less3.Classes.ObjectVersionReference,System.String)">
+            <summary>
+            Delete an object following Amazon S3 semantics.
+            A specific version (numbered or "null") is permanently removed along with its ACLs, tags and blob.
+            Without a version, a versioning-enabled bucket gets a new delete marker; a suspended bucket
+            replaces the key's null version with a null delete marker; an unversioned bucket permanently
+            removes the object. Deleting a key or version that does not exist succeeds with Found = false,
+            except that a versioned bucket still records a delete marker, as Amazon S3 does.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.BucketClient.ResolveObject(System.String,Less3.Classes.ObjectVersionReference)">
+            <summary>
+            Resolve the row a version reference refers to, or null. The row may be a delete marker.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.BucketClient.OpenObject(Less3.Classes.Obj,System.Boolean,System.Func{Less3.Classes.Obj,Less3.Classes.ObjectByteRange})">
+            <summary>
+            Open an object for reading while holding the shared read lock on its key; the lock is released
+            when the returned stream is disposed. The row is re-resolved under the lock: with followLatest the
+            current latest version is served (so a read racing an overwrite gets one complete version rather
+            than a not-found), otherwise the exact row requested. selectRange chooses the bytes from the row
+            actually served and may throw to reject an unsatisfiable range; null selects the whole object.
+            Returns null when there is nothing to serve (deleted, or the latest version is a delete marker).
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.BucketClient.HasAnyVersions">
+            <summary>
+            True when the bucket holds any object version or delete marker. Amazon S3 refuses to delete
+            a bucket until every version and delete marker is gone.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.BucketClient.ListObjects(System.String,System.String,System.String,System.Int32)">
+            <summary>
+            List the latest version of each key, in ascending binary key order, rolling keys up into
+            common prefixes at the delimiter. Common prefixes count toward maxKeys, as in Amazon S3.
+            </summary>
+            <param name="prefix">Key prefix, or null.</param>
+            <param name="delimiter">Delimiter, or null.</param>
+            <param name="startAfter">Exclusive start key or common prefix (marker, start-after, or continuation), or null.</param>
+            <param name="maxKeys">Maximum keys and common prefixes to return. Minimum value is 0.</param>
+        </member>
+        <member name="M:Less3.Classes.BucketClient.ListObjectVersions(System.String,System.String,System.String,System.Nullable{System.Int64},System.Int32)">
+            <summary>
+            List every version and delete marker, ordered by key ascending (binary) and version descending.
+            </summary>
+            <param name="prefix">Key prefix, or null.</param>
+            <param name="delimiter">Delimiter, or null.</param>
+            <param name="keyMarker">Exclusive start key, or null.</param>
+            <param name="versionIdMarker">Version of keyMarker to start after, or null to start after every version of keyMarker.</param>
+            <param name="maxKeys">Maximum versions and common prefixes to return. Minimum value is 0.</param>
+        </member>
+        <member name="M:Less3.Classes.BucketClient.SetObjectTags(Less3.Classes.Obj,System.Collections.Generic.List{Less3.Classes.ObjectTag})">
+            <summary>
+            Replace the tag set of a specific object row under the key's write lock.
+            Returns false when the row no longer exists or is a delete marker.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.BucketClient.SetObjectAcls(Less3.Classes.Obj,System.Collections.Generic.List{Less3.Classes.ObjectAcl})">
+            <summary>
+            Replace the ACL of a specific object row under the key's write lock.
+            Returns false when the row no longer exists or is a delete marker.
+            </summary>
+        </member>
         <member name="T:Less3.Classes.BucketManager">
             <summary>
             Bucket manager.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.BucketManager.Update(Less3.Classes.Bucket)">
+            <summary>
+            Update a bucket's configuration in place and refresh this node's cached client, so the change
+            takes effect immediately here and, in cluster mode, within the client revalidation window elsewhere.
             </summary>
         </member>
         <member name="T:Less3.Classes.BucketNameValidator">
@@ -676,6 +829,34 @@
             <param name="bucketId">Bucket Id.</param>
             <param name="key">Key.</param>
             <param name="val">Value.</param>
+        </member>
+        <member name="T:Less3.Classes.BucketVersioningState">
+            <summary>
+            A bucket's versioning state captured once for the duration of an object operation, so every decision
+            in that operation uses the same state even if the bucket's configuration changes concurrently.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.BucketVersioningState.Enabled">
+            <summary>
+            True when versioning is enabled.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.BucketVersioningState.Suspended">
+            <summary>
+            True when versioning was enabled and is now suspended.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.BucketVersioningState.Configured">
+            <summary>
+            True when versioning is enabled or suspended, i.e. the bucket reports version IDs.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.BucketVersioningState.#ctor(System.Boolean,System.Boolean)">
+            <summary>
+            Instantiate.
+            </summary>
+            <param name="enabled">True when versioning is enabled.</param>
+            <param name="suspended">True when versioning is suspended.</param>
         </member>
         <member name="T:Less3.Classes.CleanupManager">
             <summary>
@@ -1365,6 +1546,14 @@
             Delete marker.
             </summary>
         </member>
+        <member name="P:Less3.Classes.Obj.NullVersion">
+            <summary>
+            Indicates that this row is the key's null version, i.e. it was written while versioning
+            was not enabled on the bucket (never enabled, or suspended). Default value is false.
+            A key has at most one null version; a write or delete while versioning is suspended
+            replaces it. Versions written while versioning is enabled are never null versions.
+            </summary>
+        </member>
         <member name="P:Less3.Classes.Obj.Md5">
             <summary>
             MD5.
@@ -1511,6 +1700,136 @@
             </summary>
             <returns>String.</returns>
         </member>
+        <member name="T:Less3.Classes.ObjectByteRange">
+            <summary>
+            A contiguous run of bytes within an object.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ObjectByteRange.Start">
+            <summary>
+            Offset of the first byte. Minimum value is 0.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ObjectByteRange.Length">
+            <summary>
+            Number of bytes. Minimum value is 0.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.ObjectByteRange.#ctor(System.Int64,System.Int64)">
+            <summary>
+            Instantiate.
+            </summary>
+            <param name="start">Offset of the first byte. Minimum value is 0.</param>
+            <param name="length">Number of bytes. Minimum value is 0.</param>
+            <exception cref="T:System.ArgumentOutOfRangeException">Thrown when start or length is negative.</exception>
+        </member>
+        <member name="T:Less3.Classes.ObjectDeleteResult">
+            <summary>
+            Outcome of deleting an object or object version.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ObjectDeleteResult.Found">
+            <summary>
+            True when a version was permanently removed or a delete marker was created. False when the
+            key or version did not exist; Amazon S3 still reports such a delete as successful.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ObjectDeleteResult.DeleteMarker">
+            <summary>
+            True when the operation created a delete marker, or permanently removed a version that was a delete marker.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ObjectDeleteResult.VersionId">
+            <summary>
+            Version ID to report: the version that was removed, or the delete marker that was created.
+            Null when the bucket has never had versioning enabled.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ObjectDeleteResult.CreatedDeleteMarker">
+            <summary>
+            True when the operation created a new delete marker rather than removing a version.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.ObjectListing">
+            <summary>
+            One page of a ListObjects or ListObjectVersions result, in the order Amazon S3 returns it.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ObjectListing.Objects">
+            <summary>
+            Object rows (latest versions for ListObjects; every version and delete marker for ListObjectVersions).
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ObjectListing.CommonPrefixes">
+            <summary>
+            Common prefixes rolled up by the delimiter, in ascending order.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ObjectListing.LatestObjectIds">
+            <summary>
+            Object IDs, from Objects, that are the latest version of their key. Only populated for version listings.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ObjectListing.IsTruncated">
+            <summary>
+            True when more results are available.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ObjectListing.NextMarker">
+            <summary>
+            When truncated, the last key or common prefix returned; the next page starts after it.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ObjectListing.NextVersionIdMarker">
+            <summary>
+            When truncated and the last item returned is a version, that version's ID. Only used for version listings.
+            </summary>
+        </member>
+        <member name="T:Less3.Classes.ObjectPreconditionException">
+            <summary>
+            Thrown when a conditional write's precondition is not met.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ObjectPreconditionException.ObjectMissing">
+            <summary>
+            True when the precondition failed because the object does not exist (If-Match against a missing key),
+            which Amazon S3 reports as NoSuchKey rather than PreconditionFailed.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.ObjectPreconditionException.#ctor(System.String,System.Boolean)">
+            <summary>
+            Instantiate.
+            </summary>
+            <param name="message">Message describing the failed precondition.</param>
+            <param name="objectMissing">True when the object does not exist.</param>
+        </member>
+        <member name="T:Less3.Classes.ObjectReadResult">
+            <summary>
+            An open read of an object: the row actually being served, and a stream over the requested bytes.
+            The stream holds the key's shared read lock until it is disposed.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ObjectReadResult.Object">
+            <summary>
+            The row being served. When the request named no version this is the latest version at the time
+            the read lock was acquired, which can be newer than the row resolved before the lock.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ObjectReadResult.Data">
+            <summary>
+            Stream over the selected bytes. The caller must dispose it.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ObjectReadResult.Start">
+            <summary>
+            Offset of the first byte in the stream. Minimum value is 0.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ObjectReadResult.Length">
+            <summary>
+            Number of bytes in the stream. Minimum value is 0.
+            </summary>
+        </member>
         <member name="T:Less3.Classes.ObjectTag">
             <summary>
             Tag entry for an object.
@@ -1574,6 +1893,86 @@
             <param name="objectId">Object Id.</param>
             <param name="key">Key.</param>
             <param name="val">Value.</param>
+        </member>
+        <member name="T:Less3.Classes.ObjectVersionReference">
+            <summary>
+            Identifies which version of an object key a request refers to: the latest version (no version ID
+            supplied), the null version (version ID "null"), or a specific numbered version.
+            Immutable and thread-safe.
+            </summary>
+        </member>
+        <member name="F:Less3.Classes.ObjectVersionReference.NullVersionId">
+            <summary>
+            Version ID string Amazon S3 uses for the null version, i.e. the version written while
+            versioning was not enabled.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ObjectVersionReference.IsLatest">
+            <summary>
+            True when no version ID was supplied and the request refers to the latest version.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ObjectVersionReference.IsNullVersion">
+            <summary>
+            True when the version ID "null" was supplied.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ObjectVersionReference.Version">
+            <summary>
+            Numbered version. Only meaningful when IsLatest and IsNullVersion are both false. Minimum value is 1.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ObjectVersionReference.Latest">
+            <summary>
+            Reference to the latest version.
+            </summary>
+        </member>
+        <member name="M:Less3.Classes.ObjectVersionReference.ForVersion(System.Int64)">
+            <summary>
+            Create a reference to a specific numbered version.
+            </summary>
+            <param name="version">Version number. Minimum value is 1.</param>
+            <returns>Version reference.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">Thrown when version is less than 1.</exception>
+        </member>
+        <member name="M:Less3.Classes.ObjectVersionReference.TryParse(System.String,Less3.Classes.ObjectVersionReference@)">
+            <summary>
+            Parse a version ID supplied by a client.
+            Null or empty refers to the latest version, "null" refers to the null version, and a positive
+            integer refers to that numbered version. Any other value is invalid.
+            </summary>
+            <param name="versionId">Version ID as supplied by the client; may be null.</param>
+            <param name="reference">Parsed reference, or null when the value is invalid.</param>
+            <returns>True if the value is valid.</returns>
+        </member>
+        <member name="M:Less3.Classes.ObjectVersionReference.ToString">
+            <summary>
+            Version ID string for this reference: null for the latest version, "null" for the null
+            version, otherwise the version number.
+            </summary>
+            <returns>Version ID string, or null.</returns>
+        </member>
+        <member name="T:Less3.Classes.ObjectWritePreconditions">
+            <summary>
+            Conditional-write headers (If-Match, If-None-Match) evaluated against the current object while the
+            write lock is held, so the check and the write are atomic.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ObjectWritePreconditions.IfMatch">
+            <summary>
+            Value of the If-Match header, or null. The write proceeds only if the current object's ETag matches.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ObjectWritePreconditions.IfNoneMatch">
+            <summary>
+            Value of the If-None-Match header, or null. Amazon S3 only supports "*", which makes the write
+            proceed only if the key does not currently exist.
+            </summary>
+        </member>
+        <member name="P:Less3.Classes.ObjectWritePreconditions.Any">
+            <summary>
+            True when at least one precondition is set.
+            </summary>
         </member>
         <member name="T:Less3.Classes.Permission">
             <summary>
@@ -3340,6 +3739,38 @@
             <param name="prefix">Optional key prefix filter.</param>
             <returns>List of matching objects.</returns>
         </member>
+        <member name="M:Less3.Database.Interfaces.IObjMethods.GetNullVersion(System.String,System.String)">
+            <summary>
+            Retrieve the null version of a key within a bucket, i.e. the row written while versioning
+            was not enabled.
+            </summary>
+            <param name="key">Object key.</param>
+            <param name="bucketId">Bucket Id.</param>
+            <returns>Null-version row, or null if the key has no null version.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjMethods.EnumerateLatest(System.String,System.String,System.String,System.Int32)">
+            <summary>
+            Enumerate the latest version of each key in a bucket, in ascending binary (ordinal) key order,
+            excluding keys whose latest version is a delete marker. Supports keyset pagination.
+            </summary>
+            <param name="bucketId">Bucket Id.</param>
+            <param name="prefix">Optional key prefix; matched exactly and case-sensitively. Null or empty matches all keys.</param>
+            <param name="afterKey">Optional exclusive lower bound; only keys that sort after this key are returned.</param>
+            <param name="maxResults">Maximum number of rows to return. Minimum value is 1.</param>
+            <returns>List of latest-version rows.</returns>
+        </member>
+        <member name="M:Less3.Database.Interfaces.IObjMethods.EnumerateVersions(System.String,System.String,System.String,System.Nullable{System.Int64},System.Int32)">
+            <summary>
+            Enumerate every version and delete marker in a bucket, ordered by key ascending (binary) and
+            version descending. Supports keyset pagination.
+            </summary>
+            <param name="bucketId">Bucket Id.</param>
+            <param name="prefix">Optional key prefix; matched exactly and case-sensitively. Null or empty matches all keys.</param>
+            <param name="afterKey">Optional exclusive lower bound on key.</param>
+            <param name="afterVersion">Optional version within afterKey; when set, versions of afterKey older than this one are also returned.</param>
+            <param name="maxResults">Maximum number of rows to return. Minimum value is 1.</param>
+            <returns>List of rows.</returns>
+        </member>
         <member name="M:Less3.Database.Interfaces.IObjMethods.GetStatistics(System.String)">
             <summary>
             Get object count and total bytes for a bucket.
@@ -4014,6 +4445,15 @@
         <member name="M:Less3.Database.MySql.Implementations.ObjMethods.Enumerate(System.String,System.Int32,System.Int32,System.Boolean,System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjMethods.GetNullVersion(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjMethods.EnumerateLatest(System.String,System.String,System.String,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.MySql.Implementations.ObjMethods.EnumerateVersions(System.String,System.String,System.String,System.Nullable{System.Int64},System.Int32)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.MySql.Implementations.ObjMethods.GetStatistics(System.String)">
             <inheritdoc />
         </member>
@@ -4450,6 +4890,15 @@
         <member name="M:Less3.Database.Sqlite.Implementations.ObjMethods.Enumerate(System.String,System.Int32,System.Int32,System.Boolean,System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjMethods.GetNullVersion(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjMethods.EnumerateLatest(System.String,System.String,System.String,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.Sqlite.Implementations.ObjMethods.EnumerateVersions(System.String,System.String,System.String,System.Nullable{System.Int64},System.Int32)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.Sqlite.Implementations.ObjMethods.GetStatistics(System.String)">
             <inheritdoc />
         </member>
@@ -4840,6 +5289,15 @@
         <member name="M:Less3.Database.SqlServer.Implementations.ObjMethods.Enumerate(System.String,System.Int32,System.Int32,System.Boolean,System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjMethods.GetNullVersion(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjMethods.EnumerateLatest(System.String,System.String,System.String,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Database.SqlServer.Implementations.ObjMethods.EnumerateVersions(System.String,System.String,System.String,System.Nullable{System.Int64},System.Int32)">
+            <inheritdoc />
+        </member>
         <member name="M:Less3.Database.SqlServer.Implementations.ObjMethods.GetStatistics(System.String)">
             <inheritdoc />
         </member>
@@ -5049,7 +5507,7 @@
             <returns>List of ObjectAcl objects ready for database insertion.</returns>
             <exception cref="T:System.ArgumentNullException">Thrown when currentUser, config, or logging is null.</exception>
         </member>
-        <member name="M:Less3.Helpers.AclConverter.GrantsFromHeaders(Less3.Classes.User,System.Collections.Specialized.NameValueCollection,Less3.Classes.ConfigManager)">
+        <member name="M:Less3.Helpers.AclConverter.GrantsFromHeaders(Less3.Classes.User,System.Collections.Specialized.NameValueCollection,Less3.Classes.ConfigManager,System.String)">
             <summary>
             Extracts ACL grants from HTTP request headers.
             Supports canned ACLs and individual grant headers.
@@ -5057,8 +5515,54 @@
             <param name="user">User making the request. Used for 'private' canned ACL.</param>
             <param name="headers">HTTP request headers to parse. May be null.</param>
             <param name="config">Configuration manager for user email/Id lookups.</param>
+            <param name="bucketOwnerId">Bucket owner Id, used by the bucket-owner-read and bucket-owner-full-control canned ACLs. May be null.</param>
             <returns>List of Grant objects parsed from headers. Empty list if no grants found.</returns>
             <exception cref="T:System.ArgumentNullException">Thrown when user or config is null.</exception>
+        </member>
+        <member name="T:Less3.Helpers.ConditionalRequestEvaluator">
+            <summary>
+            Evaluates the conditional headers Amazon S3 honors on GetObject, HeadObject and CopyObject
+            (If-Match, If-None-Match, If-Modified-Since, If-Unmodified-Since) using the precedence in
+            RFC 7232 section 6, which matches Amazon S3's documented behavior. Thread-safe.
+            </summary>
+        </member>
+        <member name="M:Less3.Helpers.ConditionalRequestEvaluator.Evaluate(System.Collections.Specialized.NameValueCollection,System.String,System.String,System.DateTime)">
+            <summary>
+            Evaluate conditional headers against an object.
+            </summary>
+            <param name="headers">Request headers.</param>
+            <param name="headerPrefix">Header name prefix: empty for GET/HEAD, "x-amz-copy-source-" for CopyObject.</param>
+            <param name="etag">Object ETag.</param>
+            <param name="lastModifiedUtc">Object last-modified timestamp.</param>
+            <returns>Outcome.</returns>
+        </member>
+        <member name="M:Less3.Helpers.ConditionalRequestEvaluator.TryParseHttpDate(System.String,System.DateTime@)">
+            <summary>
+            Parse an HTTP date (RFC 1123, RFC 850 or asctime) or an ISO 8601 timestamp as UTC.
+            </summary>
+            <param name="value">Header value.</param>
+            <param name="result">Parsed UTC timestamp.</param>
+            <returns>True if parsed.</returns>
+        </member>
+        <member name="T:Less3.Helpers.ConditionalRequestOutcome">
+            <summary>
+            Result of evaluating conditional GET/HEAD request headers against an object.
+            </summary>
+        </member>
+        <member name="F:Less3.Helpers.ConditionalRequestOutcome.Proceed">
+            <summary>
+            All conditions passed; serve the object.
+            </summary>
+        </member>
+        <member name="F:Less3.Helpers.ConditionalRequestOutcome.NotModified">
+            <summary>
+            If-None-Match or If-Modified-Since indicates the client's copy is current; respond 304.
+            </summary>
+        </member>
+        <member name="F:Less3.Helpers.ConditionalRequestOutcome.PreconditionFailed">
+            <summary>
+            If-Match or If-Unmodified-Since failed; respond 412.
+            </summary>
         </member>
         <member name="T:Less3.Helpers.CredentialMaterialGenerator">
             <summary>
@@ -5097,6 +5601,29 @@
             <param name="credentials">Credentials.</param>
             <param name="includeSecret">Whether to include secret keys.</param>
             <returns>Response-safe credentials.</returns>
+        </member>
+        <member name="T:Less3.Helpers.EtagMatcher">
+            <summary>
+            Evaluates HTTP entity-tag conditions (If-Match, If-None-Match) against an object's ETag.
+            Thread-safe.
+            </summary>
+        </member>
+        <member name="M:Less3.Helpers.EtagMatcher.Matches(System.String,System.String)">
+            <summary>
+            Determine whether an If-Match or If-None-Match header value matches an ETag.
+            The header may be "*", a single entity tag, or a comma-separated list; quotes and weak
+            validator prefixes (W/) are ignored.
+            </summary>
+            <param name="headerValue">Header value.</param>
+            <param name="etag">Object ETag, with or without quotes.</param>
+            <returns>True if any listed tag matches, or the header is "*".</returns>
+        </member>
+        <member name="M:Less3.Helpers.EtagMatcher.Normalize(System.String)">
+            <summary>
+            Strip quotes and a weak-validator prefix from an entity tag.
+            </summary>
+            <param name="etag">Entity tag.</param>
+            <returns>Normalized entity tag, or null.</returns>
         </member>
         <member name="T:Less3.Helpers.HashHelper">
             <summary>
@@ -5288,36 +5815,6 @@
             <exception cref="T:System.ArgumentNullException">Thrown when md or logging is null.</exception>
             <exception cref="T:S3ServerLibrary.S3Exception">Thrown with AccessDenied when user or credential is null.</exception>
         </member>
-        <member name="M:Less3.Helpers.RequestValidator.ParseVersionId(S3ServerLibrary.S3Context)">
-            <summary>
-            Parses and validates the version ID from the S3 request context.
-            Default value is 1 if no version ID is specified.
-            </summary>
-            <param name="ctx">S3 request context containing version ID string.</param>
-            <returns>Parsed version ID as a long integer. Returns 1 if version ID is not specified.</returns>
-            <exception cref="T:System.ArgumentNullException">Thrown when ctx is null.</exception>
-            <exception cref="T:S3ServerLibrary.S3Exception">Thrown with NoSuchVersion when version ID cannot be parsed as a valid long integer.</exception>
-        </member>
-        <member name="M:Less3.Helpers.RequestValidator.ValidateObjectExists(Less3.Classes.Obj,System.Int64,SyslogLogging.LoggingModule,System.String)">
-            <summary>
-            Validates that an object exists and throws appropriate exceptions based on version ID.
-            </summary>
-            <param name="obj">Object metadata. Null indicates object does not exist.</param>
-            <param name="versionId">Version ID being requested. Used to determine appropriate error message.</param>
-            <param name="logging">Logging module for error reporting.</param>
-            <param name="header">Log header prefix for consistent log formatting.</param>
-            <exception cref="T:System.ArgumentNullException">Thrown when logging is null.</exception>
-            <exception cref="T:S3ServerLibrary.S3Exception">Thrown with NoSuchKey when object is null and versionId is 1. Thrown with NoSuchVersion when object is null and versionId is greater than 1.</exception>
-        </member>
-        <member name="M:Less3.Helpers.RequestValidator.CheckDeleteMarker(Less3.Classes.Obj,S3ServerLibrary.S3Context)">
-            <summary>
-            Checks if the object is marked as deleted and sets appropriate response headers.
-            </summary>
-            <param name="obj">Object metadata to check for delete marker.</param>
-            <param name="ctx">S3 request context for setting response headers.</param>
-            <exception cref="T:System.ArgumentNullException">Thrown when obj or ctx is null.</exception>
-            <exception cref="T:S3ServerLibrary.S3Exception">Thrown with NoSuchKey when object has a delete marker. Response headers will include delete marker indicator.</exception>
-        </member>
         <member name="M:Less3.Helpers.RequestValidator.ValidateUploadId(S3ServerLibrary.S3Context,SyslogLogging.LoggingModule,System.String)">
             <summary>
             Parses and validates the upload ID from the S3 request context.
@@ -5354,6 +5851,20 @@
             <summary>
             Shared S3 tag validation.
             </summary>
+        </member>
+        <member name="T:Less3.Helpers.UtcTimestamp">
+            <summary>
+            Normalizes timestamps that Less3 stores in UTC. Values read back from the database usually have
+            DateTimeKind.Unspecified; calling ToUniversalTime on those treats them as local time and shifts them
+            by the server's UTC offset. Thread-safe.
+            </summary>
+        </member>
+        <member name="M:Less3.Helpers.UtcTimestamp.AsUtc(System.DateTime)">
+            <summary>
+            Return the timestamp as UTC: Unspecified values are UTC already, Local values are converted.
+            </summary>
+            <param name="value">Timestamp stored or computed in UTC.</param>
+            <returns>UTC timestamp.</returns>
         </member>
         <member name="T:Less3.Locking.AcquireOptions">
             <summary>
@@ -6742,6 +7253,62 @@
             <see cref="P:Less3.Settings.StorageSettings.TempDirectory"/>. The returned path always ends with a trailing slash.
             </summary>
             <returns>Effective parts directory path.</returns>
+        </member>
+        <member name="T:Less3.Storage.BoundedReadStream">
+            <summary>
+            Read-only, forward-only view over a contiguous slice of an underlying stream. Reading stops after
+            the configured number of bytes, so a range read can be streamed without buffering it in memory.
+            Disposing this stream disposes the underlying stream. Not thread-safe.
+            </summary>
+        </member>
+        <member name="P:Less3.Storage.BoundedReadStream.CanRead">
+            <inheritdoc />
+        </member>
+        <member name="P:Less3.Storage.BoundedReadStream.CanSeek">
+            <inheritdoc />
+        </member>
+        <member name="P:Less3.Storage.BoundedReadStream.CanWrite">
+            <inheritdoc />
+        </member>
+        <member name="P:Less3.Storage.BoundedReadStream.Length">
+            <inheritdoc />
+        </member>
+        <member name="P:Less3.Storage.BoundedReadStream.Position">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Storage.BoundedReadStream.#ctor(System.IO.Stream,System.Int64)">
+            <summary>
+            Instantiate over the next <paramref name="length"/> bytes of <paramref name="inner"/>, starting
+            at its current position.
+            </summary>
+            <param name="inner">Underlying readable stream, already positioned at the start of the slice.</param>
+            <param name="length">Number of bytes in the slice. Minimum value is 0.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when inner is null.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException">Thrown when length is negative.</exception>
+        </member>
+        <member name="M:Less3.Storage.BoundedReadStream.Read(System.Byte[],System.Int32,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Storage.BoundedReadStream.ReadAsync(System.Byte[],System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Storage.BoundedReadStream.ReadAsync(System.Memory{System.Byte},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Storage.BoundedReadStream.Flush">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Storage.BoundedReadStream.Seek(System.Int64,System.IO.SeekOrigin)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Storage.BoundedReadStream.SetLength(System.Int64)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Storage.BoundedReadStream.Write(System.Byte[],System.Int32,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Less3.Storage.BoundedReadStream.Dispose(System.Boolean)">
+            <inheritdoc />
         </member>
         <member name="T:Less3.Storage.DiskStorageDriver">
             <summary>

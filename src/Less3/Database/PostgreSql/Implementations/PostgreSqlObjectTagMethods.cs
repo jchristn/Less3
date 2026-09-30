@@ -93,7 +93,7 @@ namespace Less3.Database.PostgreSql.Implementations
                 tag.ObjectId = row["object_id"] != DBNull.Value ? row["object_id"].ToString() : null;
                 tag.Key = row["key"] != DBNull.Value ? row["key"].ToString() : null;
                 tag.Value = row["value"] != DBNull.Value ? row["value"].ToString() : null;
-                tag.CreatedUtc = Convert.ToDateTime(row["createdutc"]).ToUniversalTime();
+                tag.CreatedUtc = ControlPlaneDataMapper.UtcDateTime(row["createdutc"]);
                 tags.Add(tag);
             }
 

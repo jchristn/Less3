@@ -11,14 +11,14 @@ namespace Less3.Database.SqlServer.Queries
                 ? "'" + obj.ExpirationUtc.Value.ToString(Sanitizer.TimestampFormat) + "'"
                 : "NULL";
 
-            return "INSERT INTO objects (id, tenant_id, bucket_id, owner_id, author_id, [key], contenttype, contentlength, version, etag, retention, blobfilename, isfolder, deletemarker, md5, createdutc, lastupdateutc, lastaccessutc, metadata, expirationutc) VALUES ("
+            return "INSERT INTO objects (id, tenant_id, bucket_id, owner_id, author_id, [key], contenttype, contentlength, version, etag, retention, blobfilename, isfolder, deletemarker, md5, createdutc, lastupdateutc, lastaccessutc, metadata, expirationutc, nullversion) VALUES ("
                 + "'" + Sanitizer.SanitizeString(obj.Id) + "', "
                 + "'" + Sanitizer.SanitizeString(obj.TenantId) + "', "
                 + "'" + Sanitizer.SanitizeString(obj.BucketId) + "', "
                 + "'" + Sanitizer.SanitizeString(obj.OwnerId) + "', "
                 + "'" + Sanitizer.SanitizeString(obj.AuthorId) + "', "
-                + "'" + Sanitizer.SanitizeString(obj.Key) + "', "
-                + "'" + Sanitizer.SanitizeString(obj.ContentType) + "', "
+                + "N'" + Sanitizer.SanitizeString(obj.Key) + "', "
+                + "N'" + Sanitizer.SanitizeString(obj.ContentType) + "', "
                 + obj.ContentLength + ", "
                 + obj.Version + ", "
                 + "'" + Sanitizer.SanitizeString(obj.Etag) + "', "
@@ -30,19 +30,22 @@ namespace Less3.Database.SqlServer.Queries
                 + "'" + obj.CreatedUtc.ToString(Sanitizer.TimestampFormat) + "', "
                 + "'" + obj.LastUpdateUtc.ToString(Sanitizer.TimestampFormat) + "', "
                 + "'" + obj.LastAccessUtc.ToString(Sanitizer.TimestampFormat) + "', "
-                + "'" + Sanitizer.SanitizeString(obj.Metadata) + "', "
-                + expirationUtc
+                + "N'" + Sanitizer.SanitizeString(obj.Metadata) + "', "
+                + expirationUtc + ", "
+                + (obj.NullVersion ? 1 : 0)
                 + ");";
         }
 
         internal static string SelectLatestByKey(string key, string bucketId)
         {
-            return "SELECT TOP 1 * FROM objects WHERE [key] = '" + Sanitizer.SanitizeString(key) + "' AND bucket_id = '" + Sanitizer.SanitizeString(bucketId) + "' ORDER BY version DESC;";
+            // SQL Server's '=' ignores trailing spaces, so the lengths are compared too ("a" and "a " are
+            // different keys).
+            return "SELECT TOP 1 * FROM objects WHERE [key] = N'" + Sanitizer.SanitizeString(key) + "' AND DATALENGTH([key]) = DATALENGTH(N'" + Sanitizer.SanitizeString(key) + "') AND bucket_id = '" + Sanitizer.SanitizeString(bucketId) + "' ORDER BY version DESC;";
         }
 
         internal static string SelectByKeyAndVersion(string key, long version, string bucketId)
         {
-            return "SELECT TOP 1 * FROM objects WHERE [key] = '" + Sanitizer.SanitizeString(key) + "' AND version = " + version + " AND bucket_id = '" + Sanitizer.SanitizeString(bucketId) + "';";
+            return "SELECT TOP 1 * FROM objects WHERE [key] = N'" + Sanitizer.SanitizeString(key) + "' AND DATALENGTH([key]) = DATALENGTH(N'" + Sanitizer.SanitizeString(key) + "') AND version = " + version + " AND bucket_id = '" + Sanitizer.SanitizeString(bucketId) + "';";
         }
 
         internal static string SelectById(string id, string bucketId)
@@ -52,7 +55,7 @@ namespace Less3.Database.SqlServer.Queries
 
         internal static string SelectLatestVersion(string key, string bucketId)
         {
-            return "SELECT TOP 1 version FROM objects WHERE [key] = '" + Sanitizer.SanitizeString(key) + "' AND bucket_id = '" + Sanitizer.SanitizeString(bucketId) + "' ORDER BY version DESC;";
+            return "SELECT TOP 1 version FROM objects WHERE [key] = N'" + Sanitizer.SanitizeString(key) + "' AND DATALENGTH([key]) = DATALENGTH(N'" + Sanitizer.SanitizeString(key) + "') AND bucket_id = '" + Sanitizer.SanitizeString(bucketId) + "' ORDER BY version DESC;";
         }
 
         internal static string UpdateQuery(Obj obj)
@@ -67,8 +70,8 @@ namespace Less3.Database.SqlServer.Queries
                 + "bucket_id = '" + Sanitizer.SanitizeString(obj.BucketId) + "', "
                 + "owner_id = '" + Sanitizer.SanitizeString(obj.OwnerId) + "', "
                 + "author_id = '" + Sanitizer.SanitizeString(obj.AuthorId) + "', "
-                + "[key] = '" + Sanitizer.SanitizeString(obj.Key) + "', "
-                + "contenttype = '" + Sanitizer.SanitizeString(obj.ContentType) + "', "
+                + "[key] = N'" + Sanitizer.SanitizeString(obj.Key) + "', "
+                + "contenttype = N'" + Sanitizer.SanitizeString(obj.ContentType) + "', "
                 + "contentlength = " + obj.ContentLength + ", "
                 + "version = " + obj.Version + ", "
                 + "etag = '" + Sanitizer.SanitizeString(obj.Etag) + "', "
@@ -80,8 +83,9 @@ namespace Less3.Database.SqlServer.Queries
                 + "createdutc = '" + obj.CreatedUtc.ToString(Sanitizer.TimestampFormat) + "', "
                 + "lastupdateutc = '" + obj.LastUpdateUtc.ToString(Sanitizer.TimestampFormat) + "', "
                 + "lastaccessutc = '" + obj.LastAccessUtc.ToString(Sanitizer.TimestampFormat) + "', "
-                + "metadata = '" + Sanitizer.SanitizeString(obj.Metadata) + "', "
-                + "expirationutc = " + expirationUtc + " "
+                + "metadata = N'" + Sanitizer.SanitizeString(obj.Metadata) + "', "
+                + "expirationutc = " + expirationUtc + ", "
+                + "nullversion = " + (obj.NullVersion ? 1 : 0) + " "
                 + "WHERE id = '" + Sanitizer.SanitizeString(obj.Id) + "';";
         }
 
@@ -106,6 +110,67 @@ namespace Less3.Database.SqlServer.Queries
 
             query += " ORDER BY id ASC OFFSET " + startIndex + " ROWS FETCH NEXT " + maxResults + " ROWS ONLY;";
             return query;
+        }
+
+        internal static string SelectNullVersion(string key, string bucketId)
+        {
+            return "SELECT TOP 1 * FROM objects WHERE [key] = N'" + Sanitizer.SanitizeString(key) + "' AND DATALENGTH([key]) = DATALENGTH(N'" + Sanitizer.SanitizeString(key) + "') AND bucket_id = '" + Sanitizer.SanitizeString(bucketId) + "' AND nullversion = 1 ORDER BY version DESC;";
+        }
+
+        internal static string EnumerateLatest(string bucketId, string prefix, string afterKey, int maxResults)
+        {
+            // A binary collation orders and compares keys by code unit rather than by the server's
+            // (usually case-insensitive) default collation.
+            string query = "SELECT TOP (" + maxResults + ") o.* FROM objects o WHERE o.bucket_id = '" + Sanitizer.SanitizeString(bucketId) + "' "
+                + "AND o.version = (SELECT MAX(i.version) FROM objects i WHERE i.bucket_id = o.bucket_id AND i.[key] = o.[key] AND DATALENGTH(i.[key]) = DATALENGTH(o.[key])) "
+                + "AND o.deletemarker = 0"
+                + KeyFilters(prefix, afterKey, null)
+                + " ORDER BY o.[key] COLLATE Latin1_General_100_BIN2 ASC, DATALENGTH(o.[key]) ASC;";
+            return query;
+        }
+
+        internal static string EnumerateVersions(string bucketId, string prefix, string afterKey, long? afterVersion, int maxResults)
+        {
+            string query = "SELECT TOP (" + maxResults + ") o.* FROM objects o WHERE o.bucket_id = '" + Sanitizer.SanitizeString(bucketId) + "'"
+                + KeyFilters(prefix, afterKey, afterVersion)
+                + " ORDER BY o.[key] COLLATE Latin1_General_100_BIN2 ASC, DATALENGTH(o.[key]) ASC, o.version DESC;";
+            return query;
+        }
+
+        private static string KeyFilters(string prefix, string afterKey, long? afterVersion)
+        {
+            // SQL Server compares strings as if the shorter one were padded with spaces, so "a" and "a " compare
+            // equal. Every equality therefore also compares DATALENGTH, and ordering breaks ties by length.
+            string filters = "";
+
+            if (!String.IsNullOrEmpty(prefix))
+            {
+                // LEFT counts UTF-16 code units for NVARCHAR, matching String.Length; LIKE would treat
+                // %, _ and [ as wildcards.
+                string p = "N'" + Sanitizer.SanitizeString(prefix) + "'";
+                filters += " AND o.[key] COLLATE Latin1_General_100_BIN2 >= " + p
+                    + " AND LEFT(o.[key], " + prefix.Length + ") COLLATE Latin1_General_100_BIN2 = " + p
+                    + " AND DATALENGTH(LEFT(o.[key], " + prefix.Length + ")) = DATALENGTH(" + p + ")";
+            }
+
+            if (afterKey != null)
+            {
+                string a = "N'" + Sanitizer.SanitizeString(afterKey) + "'";
+                string greater = "o.[key] COLLATE Latin1_General_100_BIN2 > " + a;
+                string sameText = "o.[key] COLLATE Latin1_General_100_BIN2 = " + a;
+
+                filters += " AND (" + greater
+                    + " OR (" + sameText + " AND DATALENGTH(o.[key]) > DATALENGTH(" + a + "))";
+
+                if (afterVersion != null)
+                {
+                    filters += " OR (" + sameText + " AND DATALENGTH(o.[key]) = DATALENGTH(" + a + ") AND o.version < " + afterVersion.Value + ")";
+                }
+
+                filters += ")";
+            }
+
+            return filters;
         }
 
         internal static string GetStatistics(string bucketId)

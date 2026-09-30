@@ -84,8 +84,8 @@ namespace Less3.Database.PostgreSql.Implementations
                 part.MD5Hash = row["md5hash"] != DBNull.Value ? row["md5hash"].ToString() : null;
                 part.Sha1Hash = row["sha1hash"] != DBNull.Value ? row["sha1hash"].ToString() : null;
                 part.Sha256Hash = row["sha256hash"] != DBNull.Value ? row["sha256hash"].ToString() : null;
-                part.LastAccessUtc = Convert.ToDateTime(row["lastaccessutc"]).ToUniversalTime();
-                part.CreatedUtc = Convert.ToDateTime(row["createdutc"]).ToUniversalTime();
+                part.LastAccessUtc = ControlPlaneDataMapper.UtcDateTime(row["lastaccessutc"]);
+                part.CreatedUtc = ControlPlaneDataMapper.UtcDateTime(row["createdutc"]);
                 parts.Add(part);
             }
 

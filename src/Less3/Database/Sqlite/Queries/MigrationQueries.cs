@@ -31,6 +31,19 @@ namespace Less3.Database.Sqlite.Queries
             migrations.Add("CREATE UNIQUE INDEX IF NOT EXISTS idx_objects_tenant_bucket_key_version_unique ON objects (tenant_id, bucket_id, key, version);");
             migrations.Add("DROP INDEX IF EXISTS idx_objects_tenant_bucket_key_version;");
 
+            // v4.1.0: S3 versioning compatibility. A bucket whose versioning is suspended keeps its
+            // versions; the null version identifies the single row a suspended write or delete replaces.
+            migrations.Add("ALTER TABLE buckets ADD COLUMN versioningsuspended INT NOT NULL DEFAULT 0;");
+            migrations.Add("ALTER TABLE objects ADD COLUMN nullversion INT NOT NULL DEFAULT 0;");
+
+
+            // v4.1.0: before 4.1, suspending versioning simply turned it off, so a bucket with versioning off
+            // but with numbered versions (version > 1, not null versions) was suspended; mark it so. Then mark
+            // the rows of buckets that never had versioning as null versions. Both statements are idempotent:
+            // rows written by 4.1 in unversioned buckets are always null versions.
+            migrations.Add("UPDATE buckets SET versioningsuspended = 1 WHERE enableversioning = 0 AND versioningsuspended = 0 AND EXISTS (SELECT 1 FROM objects o WHERE o.bucket_id = buckets.id AND o.version > 1 AND o.nullversion = 0);");
+            migrations.Add("UPDATE objects SET nullversion = 1 WHERE nullversion = 0 AND bucket_id IN (SELECT b.id FROM buckets b WHERE b.enableversioning = 0 AND b.versioningsuspended = 0);");
+
             return migrations;
         }
     }

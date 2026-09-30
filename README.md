@@ -28,18 +28,15 @@ Core use cases for Less3:
 
 ## Current Version
 
-v4.0.0
+v4.1.0
 
-- Added the multi-node scale-out cluster: the same binary runs standalone (SQLite, local disk, in-process lock) or as a cluster (PostgreSQL control plane, shared storage, distributed lock, nginx load balancer)
-- Added a pluggable distributed lock manager (`ILockManager`) with `Local`, `Postgres`, and optional `Clutch` (WebSocket) providers, using per-key fencing tokens re-checked at the database commit to keep a lapsed lease from corrupting data
-- Added fair FIFO read/write/delete lock semantics: shared, uncapped concurrent reads; exclusive writes and deletes granted only after everything that arrived before them drains — reads can't starve a queued writer
-- Moved blobs, object-write staging, and multipart parts onto shared storage so any node can complete or abort any upload
-- Added cluster membership, the `/api/v1/cluster/*` and `/api/v1/locks` admin endpoints, and an unauthenticated `/healthz` probe for load balancers and orchestrators
-- Made cleanup and schema migration leader-only, elected through lock leases and a Postgres advisory lock
-- Metered every S3, REST, and admin API and added per-stage timestamps through every object operation (lock-acquire → metadata → storage → commit → blob-delete), surfaced in Grafana
-- Added Radiant/Watson observability with per-node Prometheus metrics, application logs shipped to Loki (SyslogLogging → OTLP → collector → Loki), and a Docker stack shipping Prometheus, Grafana (six pre-provisioned dashboards), Loki, Tempo, an OpenTelemetry collector, and the Clutch lock server with its metrics scraped too
-- Made PostgreSQL the default in Docker while native OOBE stays on SQLite; cluster mode refuses to start on SQLite
-- See `CHANGELOG.md` for release details and `MULTINODE_SETUP.md` for the cluster operator guide
+- Fixed a data-loss bug when versioning is suspended: versioning is now `Enabled` or `Suspended` as in Amazon S3, and suspended writes replace only a key's `null` version
+- Implemented Amazon S3 delete semantics: delete markers on top of the latest version, permanent deletion of a named version, and a DeleteObjects that reports missing keys as deleted, honors `Quiet`, reports per-key errors, and authorizes each key
+- Implemented CopyObject and UploadPartCopy (a server-side copy used to be stored as a 0-byte object), conditional requests (`304` and `412`), `Content-MD5` validation, suffix and `HEAD` ranges, and stored system metadata
+- Fixed listing to return keys in binary order across pages, with correct markers, continuation tokens, delimiters, `encoding-type=url`, and case-sensitive keys on every database
+- Closed a signature-validation bypass on canned ACL writes, and moved to S3Server 8.0.1 so every S3 response is framed as Amazon S3 frames it
+- Added 158 S3 compatibility tests, and real-client checks in `AwsCliTest.bat` and `MinioClientTest.bat`
+- v4.0.0 introduced the multi-node scale-out cluster; see `MULTINODE_SETUP.md`. See `CHANGELOG.md` for release details
 
 <details>
 <summary><strong>Screenshots</strong></summary>
@@ -144,12 +141,12 @@ The Docker default is a two-node PostgreSQL cluster behind nginx, with the full 
 ```bash
 git clone https://github.com/jchristn/less3
 cd less3
-build-all.bat v4.0.0
+build-all.bat v4.1.0
 cd Docker
 docker compose up -d
 ```
 
-`compose.yaml` uses the published, tagged images, so build and tag them first (`build-all.bat v4.0.0`), then bring the stack up. It starts PostgreSQL, two Less3 nodes sharing a storage volume, nginx on port `8000`, the dashboard on port `3000`, the Clutch lock server and dashboard, and Prometheus, Grafana, Loki, Tempo, and an OpenTelemetry collector. Point an S3 client at `http://localhost:8000` and requests round-robin across the nodes. See [`MULTINODE_SETUP.md`](MULTINODE_SETUP.md) for provisioning, shared-storage rules, the full HTTP port list, and running the same topology by hand. For one durable node on Postgres without the load balancer, use `docker compose -f compose.single.yaml up -d`.
+`compose.yaml` uses the published, tagged images, so build and tag them first (`build-all.bat v4.1.0`), then bring the stack up. It starts PostgreSQL, two Less3 nodes sharing a storage volume, nginx on port `8000`, the dashboard on port `3000`, the Clutch lock server and dashboard, and Prometheus, Grafana, Loki, Tempo, and an OpenTelemetry collector. Point an S3 client at `http://localhost:8000` and requests round-robin across the nodes. See [`MULTINODE_SETUP.md`](MULTINODE_SETUP.md) for provisioning, shared-storage rules, the full HTTP port list, and running the same topology by hand. For one durable node on Postgres without the load balancer, use `docker compose -f compose.single.yaml up -d`.
 
 ### Starting the Dashboard
 
@@ -406,12 +403,12 @@ Less3 is available on [DockerHub](https://hub.docker.com/r/jchristn77/less3). Th
 From the `Docker` directory:
 
 ```bash
-build-all.bat v4.0.0
+build-all.bat v4.1.0
 cd Docker
 docker compose up -d
 ```
 
-`compose.yaml` is the definitive multi-node deployment. It references the published, tagged images (`jchristn77/less3:v4.0.0`, `jchristn77/less3-ui:v4.0.0`), so build and tag them first with `build-all.bat v4.0.0`, then bring the stack up. It starts PostgreSQL 17, two Less3 nodes (`less3-node1` and `less3-node2`) sharing the `less3-data` volume mounted at `/less3`, nginx, the Less3 dashboard, the Clutch lock server and its dashboard, and the observability stack (an OpenTelemetry collector, Prometheus, Grafana, Loki, Tempo). The nodes read `system.node.json`, which sets `Cluster.Enabled`, `LockProvider: Clutch`, and the shared storage paths. Each node serves its Watson HTTP metrics at `/metrics` on its main port and pushes its `Less3.*` domain metrics to the collector over OTLP; Prometheus scrapes both.
+`compose.yaml` is the definitive multi-node deployment. It references the published, tagged images (`jchristn77/less3:v4.1.0`, `jchristn77/less3-ui:v4.1.0`), so build and tag them first with `build-all.bat v4.1.0`, then bring the stack up. It starts PostgreSQL 17, two Less3 nodes (`less3-node1` and `less3-node2`) sharing the `less3-data` volume mounted at `/less3`, nginx, the Less3 dashboard, the Clutch lock server and its dashboard, and the observability stack (an OpenTelemetry collector, Prometheus, Grafana, Loki, Tempo). The nodes read `system.node.json`, which sets `Cluster.Enabled`, `LockProvider: Clutch`, and the shared storage paths. Each node serves its Watson HTTP metrics at `/metrics` on its main port and pushes its `Less3.*` domain metrics to the collector over OTLP; Prometheus scrapes both.
 
 The Docker stack routes Less3's locking through the bundled Clutch lock server by default, so each node holds a persistent lock WebSocket to Clutch (visible as two connections on the "Less3 — Clutch Lock Server" Grafana board) and the dashboard's "Manage Locks" action opens a live Clutch UI. Clutch shares this same PostgreSQL via bring-your-own-database, so the database stays authoritative for fencing tokens. Clutch is alpha; to use the in-database provider instead — no extra service, and the more battle-tested path — set `Cluster.LockProvider` to `Postgres` in `system.node.json`.
 

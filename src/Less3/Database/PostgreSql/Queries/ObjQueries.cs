@@ -11,7 +11,7 @@ namespace Less3.Database.PostgreSql.Queries
                 ? "'" + obj.ExpirationUtc.Value.ToString(Sanitizer.TimestampFormat) + "'"
                 : "NULL";
 
-            return "INSERT INTO objects (id, tenant_id, bucket_id, owner_id, author_id, key, contenttype, contentlength, version, etag, retention, blobfilename, isfolder, deletemarker, md5, createdutc, lastupdateutc, lastaccessutc, metadata, expirationutc) VALUES ("
+            return "INSERT INTO objects (id, tenant_id, bucket_id, owner_id, author_id, key, contenttype, contentlength, version, etag, retention, blobfilename, isfolder, deletemarker, md5, createdutc, lastupdateutc, lastaccessutc, metadata, expirationutc, nullversion) VALUES ("
                 + "'" + Sanitizer.SanitizeString(obj.Id) + "', "
                 + "'" + Sanitizer.SanitizeString(obj.TenantId) + "', "
                 + "'" + Sanitizer.SanitizeString(obj.BucketId) + "', "
@@ -31,7 +31,8 @@ namespace Less3.Database.PostgreSql.Queries
                 + "'" + obj.LastUpdateUtc.ToString(Sanitizer.TimestampFormat) + "', "
                 + "'" + obj.LastAccessUtc.ToString(Sanitizer.TimestampFormat) + "', "
                 + "'" + Sanitizer.SanitizeString(obj.Metadata) + "', "
-                + expirationVal
+                + expirationVal + ", "
+                + (obj.NullVersion ? "TRUE" : "FALSE")
                 + ");";
         }
 
@@ -87,7 +88,8 @@ namespace Less3.Database.PostgreSql.Queries
                 + "lastupdateutc = '" + obj.LastUpdateUtc.ToString(Sanitizer.TimestampFormat) + "', "
                 + "lastaccessutc = '" + obj.LastAccessUtc.ToString(Sanitizer.TimestampFormat) + "', "
                 + "metadata = '" + Sanitizer.SanitizeString(obj.Metadata) + "', "
-                + "expirationutc = " + expirationVal + " "
+                + "expirationutc = " + expirationVal + ", "
+                + "nullversion = " + (obj.NullVersion ? "TRUE" : "FALSE") + " "
                 + "WHERE id = '" + Sanitizer.SanitizeString(obj.Id) + "';";
         }
 
@@ -109,6 +111,70 @@ namespace Less3.Database.PostgreSql.Queries
 
             query += " ORDER BY id ASC LIMIT " + maxResults + " OFFSET " + startIndex + ";";
             return query;
+        }
+
+        internal static string SelectNullVersion(string key, string bucketId)
+        {
+            return "SELECT * FROM objects WHERE key = '" + Sanitizer.SanitizeString(key)
+                + "' AND bucket_id = '" + Sanitizer.SanitizeString(bucketId)
+                + "' AND nullversion = TRUE ORDER BY version DESC LIMIT 1;";
+        }
+
+        internal static string EnumerateLatest(string bucketId, string prefix, string afterKey, int maxResults)
+        {
+            // COLLATE "C" orders and compares keys bytewise, matching Amazon S3, regardless of the
+            // database's locale collation.
+            string query = "SELECT o.* FROM objects o WHERE o.bucket_id = '" + Sanitizer.SanitizeString(bucketId) + "' "
+                + "AND o.version = (SELECT MAX(i.version) FROM objects i WHERE i.bucket_id = o.bucket_id AND i.key = o.key) "
+                + "AND o.deletemarker = FALSE"
+                + KeyFilters(prefix, afterKey, null)
+                + " ORDER BY o.key COLLATE \"C\" ASC LIMIT " + maxResults + ";";
+            return query;
+        }
+
+        internal static string EnumerateVersions(string bucketId, string prefix, string afterKey, long? afterVersion, int maxResults)
+        {
+            string query = "SELECT o.* FROM objects o WHERE o.bucket_id = '" + Sanitizer.SanitizeString(bucketId) + "'"
+                + KeyFilters(prefix, afterKey, afterVersion)
+                + " ORDER BY o.key COLLATE \"C\" ASC, o.version DESC LIMIT " + maxResults + ";";
+            return query;
+        }
+
+        private static string KeyFilters(string prefix, string afterKey, long? afterVersion)
+        {
+            string filters = "";
+
+            if (!String.IsNullOrEmpty(prefix))
+            {
+                // substr counts characters (code points); LIKE would treat % and _ as wildcards.
+                filters += " AND o.key COLLATE \"C\" >= '" + Sanitizer.SanitizeString(prefix) + "'"
+                    + " AND substr(o.key, 1, " + CodePointLength(prefix) + ") = '" + Sanitizer.SanitizeString(prefix) + "'";
+            }
+
+            if (afterKey != null)
+            {
+                if (afterVersion != null)
+                {
+                    filters += " AND (o.key COLLATE \"C\" > '" + Sanitizer.SanitizeString(afterKey) + "'"
+                        + " OR (o.key = '" + Sanitizer.SanitizeString(afterKey) + "' AND o.version < " + afterVersion.Value + "))";
+                }
+                else
+                {
+                    filters += " AND o.key COLLATE \"C\" > '" + Sanitizer.SanitizeString(afterKey) + "'";
+                }
+            }
+
+            return filters;
+        }
+
+        private static int CodePointLength(string value)
+        {
+            int count = 0;
+            foreach (char c in value)
+            {
+                if (!Char.IsLowSurrogate(c)) count++;
+            }
+            return count;
         }
 
         internal static string GetStatistics(string bucketId)

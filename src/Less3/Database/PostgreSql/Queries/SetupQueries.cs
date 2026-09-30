@@ -140,6 +140,7 @@ namespace Less3.Database.PostgreSql.Queries
                     enableversioning BOOLEAN NOT NULL DEFAULT FALSE,
                     enablepublicwrite BOOLEAN NOT NULL DEFAULT FALSE,
                     enablepublicread BOOLEAN NOT NULL DEFAULT FALSE,
+                    versioningsuspended BOOLEAN NOT NULL DEFAULT FALSE,
                     createdutc TIMESTAMPTZ NOT NULL
                 );
 
@@ -167,7 +168,8 @@ namespace Less3.Database.PostgreSql.Queries
                     lastupdateutc TIMESTAMPTZ NOT NULL,
                     lastaccessutc TIMESTAMPTZ NOT NULL,
                     metadata TEXT,
-                    expirationutc TIMESTAMPTZ
+                    expirationutc TIMESTAMPTZ,
+                    nullversion BOOLEAN NOT NULL DEFAULT FALSE
                 );
 
                 CREATE INDEX IF NOT EXISTS idx_objects_id ON objects (id);

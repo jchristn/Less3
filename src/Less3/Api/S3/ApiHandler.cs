@@ -132,11 +132,6 @@
             return await _BucketHandler.ReadLocation(ctx);
         }
 
-        internal async Task<ListBucketResult> BucketRead(S3Context ctx)
-        {
-            return await _BucketHandler.Read(ctx);
-        }
-
         internal async Task<AccessControlPolicy> BucketReadAcl(S3Context ctx)
         {
             return await _BucketHandler.ReadAcl(ctx);
@@ -147,11 +142,6 @@
             return await _BucketHandler.ReadTags(ctx);
         }
 
-        internal async Task<ListVersionsResult> BucketReadVersions(S3Context ctx)
-        {
-            return await _BucketHandler.ReadVersions(ctx);
-        }
-
         internal async Task<VersioningConfiguration> BucketReadVersioning(S3Context ctx)
         {
             return await _BucketHandler.ReadVersioning(ctx);
@@ -160,11 +150,6 @@
         internal async Task BucketWrite(S3Context ctx)
         {
             await _BucketHandler.Write(ctx);
-        }
-
-        internal async Task BucketWriteAcl(S3Context ctx, AccessControlPolicy acp)
-        {
-            await _BucketHandler.WriteAcl(ctx, acp);
         }
 
         internal async Task BucketWriteTagging(S3Context ctx, Tagging tagging)
@@ -184,11 +169,6 @@
         internal async Task ObjectDelete(S3Context ctx)
         {
             await _ObjectHandler.Delete(ctx);
-        }
-
-        internal async Task<DeleteResult> ObjectDeleteMultiple(S3Context ctx, DeleteMultiple dm)
-        {
-            return await _ObjectHandler.DeleteMultiple(ctx, dm);
         }
 
         internal async Task ObjectDeleteTagging(S3Context ctx)
@@ -224,11 +204,6 @@
         internal async Task ObjectWrite(S3Context ctx)
         {
             await _ObjectHandler.Write(ctx);
-        }
-
-        internal async Task ObjectWriteAcl(S3Context ctx, AccessControlPolicy acp)
-        {
-            await _ObjectHandler.WriteAcl(ctx, acp);
         }
 
         internal async Task ObjectWriteTagging(S3Context ctx, Tagging tagging)
@@ -272,9 +247,49 @@
 
         #endregion
 
-        #endregion
+        #region Listing-And-Batch-APIs
 
-        #region Private-Methods
+        internal async Task<ListBucketResult> BucketRead(S3Context ctx)
+        {
+            return await _BucketHandler.ListObjects(ctx).ConfigureAwait(false);
+        }
+
+        internal async Task<ListVersionsResult> BucketReadVersions(S3Context ctx)
+        {
+            return await _BucketHandler.ListObjectVersions(ctx).ConfigureAwait(false);
+        }
+
+        internal async Task BucketWriteAcl(S3Context ctx, AccessControlPolicy acp)
+        {
+            // The policy is null for canned ACLs and x-amz-grant-* headers, which carry no body.
+            ApiHelper.ValidateContentMd5(ctx);
+            await _BucketHandler.WriteAcl(ctx, acp).ConfigureAwait(false);
+        }
+
+        internal async Task ObjectWriteAcl(S3Context ctx, AccessControlPolicy acp)
+        {
+            // The policy is null for canned ACLs and x-amz-grant-* headers, which carry no body.
+            ApiHelper.ValidateContentMd5(ctx);
+            await _ObjectHandler.WriteAcl(ctx, acp).ConfigureAwait(false);
+        }
+
+        internal async Task<DeleteResult> ObjectDeleteMultiple(S3Context ctx, DeleteMultiple dm)
+        {
+            ApiHelper.ValidateContentMd5(ctx);
+            return await _ObjectHandler.DeleteMultiple(ctx, dm).ConfigureAwait(false);
+        }
+
+        internal async Task<CopyObjectResult> ObjectCopy(S3Context ctx)
+        {
+            return await _ObjectHandler.Copy(ctx).ConfigureAwait(false);
+        }
+
+        internal async Task<CopyPartResult> UploadPartCopy(S3Context ctx)
+        {
+            return await _ObjectHandler.UploadPartCopy(ctx).ConfigureAwait(false);
+        }
+
+        #endregion
 
         #endregion
 

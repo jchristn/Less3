@@ -31,6 +31,19 @@ namespace Less3.Database.PostgreSql.Queries
             migrations.Add("CREATE UNIQUE INDEX IF NOT EXISTS idx_objects_tenant_bucket_key_version_unique ON objects (tenant_id, bucket_id, key, version);");
             migrations.Add("DROP INDEX IF EXISTS idx_objects_tenant_bucket_key_version;");
 
+            // v4.1.0: S3 versioning compatibility. A bucket whose versioning is suspended keeps its
+            // versions; the null version identifies the single row a suspended write or delete replaces.
+            migrations.Add("ALTER TABLE buckets ADD COLUMN IF NOT EXISTS versioningsuspended BOOLEAN NOT NULL DEFAULT FALSE;");
+            migrations.Add("ALTER TABLE objects ADD COLUMN IF NOT EXISTS nullversion BOOLEAN NOT NULL DEFAULT FALSE;");
+
+
+            // v4.1.0: before 4.1, suspending versioning simply turned it off, so a bucket with versioning off
+            // but with numbered versions (version > 1, not null versions) was suspended; mark it so. Then mark
+            // the rows of buckets that never had versioning as null versions. Both statements are idempotent:
+            // rows written by 4.1 in unversioned buckets are always null versions.
+            migrations.Add("UPDATE buckets SET versioningsuspended = TRUE WHERE enableversioning = FALSE AND versioningsuspended = FALSE AND EXISTS (SELECT 1 FROM objects o WHERE o.bucket_id = buckets.id AND o.version > 1 AND o.nullversion = FALSE);");
+            migrations.Add("UPDATE objects SET nullversion = TRUE WHERE nullversion = FALSE AND bucket_id IN (SELECT b.id FROM buckets b WHERE b.enableversioning = FALSE AND b.versioningsuspended = FALSE);");
+
             return migrations;
         }
     }

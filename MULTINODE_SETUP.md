@@ -118,10 +118,10 @@ Finally, storage points at the shared mount:
 
 ### The Docker path
 
-If you just want a working cluster, the compose file is the fastest route. The compose files reference the published, tagged images (`jchristn77/less3:v4.0.0` and `jchristn77/less3-ui:v4.0.0`), so build and tag them first with the repo-root build scripts, then bring the stack up from the `Docker` directory:
+If you just want a working cluster, the compose file is the fastest route. The compose files reference the published, tagged images (`jchristn77/less3:v4.1.0` and `jchristn77/less3-ui:v4.1.0`), so build and tag them first with the repo-root build scripts, then bring the stack up from the `Docker` directory:
 
 ```bash
-build-all.bat v4.0.0
+build-all.bat v4.1.0
 cd Docker
 docker compose up -d
 ```
@@ -197,7 +197,7 @@ curl http://localhost:8000/healthz
 ```
 
 ```json
-{ "status": "healthy", "nodeId": "less3-node1", "version": "4.0.0" }
+{ "status": "healthy", "nodeId": "less3-node1", "version": "4.1.0" }
 ```
 
 The probe reflects whether the node can reach the database and write to storage, which is why the compose file uses it for container health checks and startup ordering, and why it is the right target for any orchestrator or external load-balancer probe. It requires no credentials precisely so that a balancer can call it without secrets.

@@ -72,6 +72,38 @@ namespace Less3.Database.Interfaces
         List<Obj> Enumerate(string bucketId, int startIndex, int maxResults, bool excludeDeleteMarkers, string prefix);
 
         /// <summary>
+        /// Retrieve the null version of a key within a bucket, i.e. the row written while versioning
+        /// was not enabled.
+        /// </summary>
+        /// <param name="key">Object key.</param>
+        /// <param name="bucketId">Bucket Id.</param>
+        /// <returns>Null-version row, or null if the key has no null version.</returns>
+        Obj GetNullVersion(string key, string bucketId);
+
+        /// <summary>
+        /// Enumerate the latest version of each key in a bucket, in ascending binary (ordinal) key order,
+        /// excluding keys whose latest version is a delete marker. Supports keyset pagination.
+        /// </summary>
+        /// <param name="bucketId">Bucket Id.</param>
+        /// <param name="prefix">Optional key prefix; matched exactly and case-sensitively. Null or empty matches all keys.</param>
+        /// <param name="afterKey">Optional exclusive lower bound; only keys that sort after this key are returned.</param>
+        /// <param name="maxResults">Maximum number of rows to return. Minimum value is 1.</param>
+        /// <returns>List of latest-version rows.</returns>
+        List<Obj> EnumerateLatest(string bucketId, string prefix, string afterKey, int maxResults);
+
+        /// <summary>
+        /// Enumerate every version and delete marker in a bucket, ordered by key ascending (binary) and
+        /// version descending. Supports keyset pagination.
+        /// </summary>
+        /// <param name="bucketId">Bucket Id.</param>
+        /// <param name="prefix">Optional key prefix; matched exactly and case-sensitively. Null or empty matches all keys.</param>
+        /// <param name="afterKey">Optional exclusive lower bound on key.</param>
+        /// <param name="afterVersion">Optional version within afterKey; when set, versions of afterKey older than this one are also returned.</param>
+        /// <param name="maxResults">Maximum number of rows to return. Minimum value is 1.</param>
+        /// <returns>List of rows.</returns>
+        List<Obj> EnumerateVersions(string bucketId, string prefix, string afterKey, long? afterVersion, int maxResults);
+
+        /// <summary>
         /// Get object count and total bytes for a bucket.
         /// </summary>
         /// <param name="bucketId">Bucket Id.</param>

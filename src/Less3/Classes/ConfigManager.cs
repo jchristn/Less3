@@ -801,6 +801,17 @@ namespace Less3.Classes
                 return false;
             }
 
+            // Amazon S3 never returns a bucket to the unversioned state once versioning has been
+            // enabled; turning versioning off suspends it, which keeps every existing version.
+            if (bucket.EnableVersioning)
+            {
+                bucket.VersioningSuspended = false;
+            }
+            else if (existing.EnableVersioning || existing.VersioningSuspended)
+            {
+                bucket.VersioningSuspended = true;
+            }
+
             bucket.CreatedUtc = existing.CreatedUtc;
             _Database.Buckets.Update(bucket);
             return true;

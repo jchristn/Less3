@@ -137,7 +137,7 @@ namespace Less3.Database.PostgreSql.Implementations
                 acl.PermitReadAcp = ControlPlaneDataMapper.BoolValue(row, "permitreadacp");
                 acl.PermitWriteAcp = ControlPlaneDataMapper.BoolValue(row, "permitwriteacp");
                 acl.FullControl = ControlPlaneDataMapper.BoolValue(row, "fullcontrol");
-                acl.CreatedUtc = Convert.ToDateTime(row["createdutc"]).ToUniversalTime();
+                acl.CreatedUtc = ControlPlaneDataMapper.UtcDateTime(row["createdutc"]);
                 acls.Add(acl);
             }
 

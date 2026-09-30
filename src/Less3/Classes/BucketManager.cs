@@ -77,6 +77,30 @@ namespace Less3.Classes
             }
         }
 
+        /// <summary>
+        /// Update a bucket's configuration in place and refresh this node's cached client, so the change
+        /// takes effect immediately here and, in cluster mode, within the client revalidation window elsewhere.
+        /// </summary>
+        internal bool Update(Bucket bucket)
+        {
+            if (bucket == null) throw new ArgumentNullException(nameof(bucket));
+            string key = ClientKey(bucket.TenantId, bucket.Name);
+
+            using (_BucketLocks.Lock(key))
+            {
+                if (!_Config.UpdateBucket(bucket)) return false;
+
+                Bucket updated = _Config.GetBucketById(bucket.TenantId, bucket.Id);
+                if (updated != null && _Buckets.TryGetValue(key, out BucketClient client))
+                {
+                    client.UpdateBucket(updated);
+                    _LastValidatedUtc[key] = DateTime.UtcNow;
+                }
+
+                return true;
+            }
+        }
+
         internal bool Remove(Bucket bucket, bool destroy)
         {
             if (bucket == null) throw new ArgumentNullException(nameof(bucket));

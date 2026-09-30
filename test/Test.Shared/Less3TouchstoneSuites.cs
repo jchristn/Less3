@@ -31,7 +31,7 @@ namespace Test.Shared
         {
             get
             {
-                return new List<TestSuiteDescriptor>
+                List<TestSuiteDescriptor> suites = new List<TestSuiteDescriptor>
                 {
                     LiveTemporaryInstanceSuite(),
                     IdentifierAndContractSuite(),
@@ -55,6 +55,10 @@ namespace Test.Shared
                     PerformanceRegressionSuite(),
                     DockerAndBootstrapSuite()
                 };
+
+                suites.AddRange(Test.Shared.S3Compatibility.S3CompatibilitySuites.All);
+                suites.Add(Test.Shared.Processes.HarnessProcessCleanupCases.Suite());
+                return suites;
             }
         }
 
@@ -4333,26 +4337,22 @@ namespace Test.Shared
             {
                 await PutTextObjectAsync(client, bucketName, "exists.txt", "exists", cancellationToken).ConfigureAwait(false);
 
-                try
+                // Amazon S3 reports a key that does not exist as deleted, so neither key is an error.
+                DeleteObjectsResponse response = await client.DeleteObjectsAsync(new DeleteObjectsRequest
                 {
-                    await client.DeleteObjectsAsync(new DeleteObjectsRequest
+                    BucketName = bucketName,
+                    Objects = new List<KeyVersion>
                     {
-                        BucketName = bucketName,
-                        Objects = new List<KeyVersion>
-                        {
-                            new KeyVersion { Key = "exists.txt" },
-                            new KeyVersion { Key = "missing.txt" }
-                        }
-                    }, cancellationToken).ConfigureAwait(false);
-                }
-                catch (DeleteObjectsException ex)
-                {
-                    EnsureEqual(1, ex.Response.DeletedObjects.Count, "mixed deleted object count");
-                    EnsureTrue(ex.Response.DeleteErrors.Count >= 1, "mixed delete error count");
-                    return;
-                }
+                        new KeyVersion { Key = "exists.txt" },
+                        new KeyVersion { Key = "missing.txt" }
+                    }
+                }, cancellationToken).ConfigureAwait(false);
 
-                throw new InvalidOperationException("mixed DeleteObjects unexpectedly succeeded without errors.");
+                EnsureEqual(2, response.DeletedObjects.Count, "mixed deleted object count");
+                EnsureTrue(response.DeleteErrors == null || response.DeleteErrors.Count == 0, "mixed delete reports no errors");
+                await EnsureS3FailureAsync(
+                    () => client.GetObjectAsync(bucketName, "exists.txt", cancellationToken),
+                    "existing object removed by DeleteObjects").ConfigureAwait(false);
             }, cancellationToken).ConfigureAwait(false);
         }
 

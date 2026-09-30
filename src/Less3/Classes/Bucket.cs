@@ -52,6 +52,15 @@ namespace Less3.Classes
         public bool EnableVersioning { get; set; } = false;
 
         /// <summary>
+        /// Indicates that versioning was enabled on this bucket and has since been suspended.
+        /// Default value is false. When true, EnableVersioning is false, existing versions are retained,
+        /// and new writes replace the key's null version rather than creating a new version.
+        /// Amazon S3 does not allow a versioned bucket to return to the unversioned state, so a
+        /// request to disable versioning on a versioned bucket sets this flag instead.
+        /// </summary>
+        public bool VersioningSuspended { get; set; } = false;
+
+        /// <summary>
         /// Enable or disable public write.
         /// </summary>
         public bool EnablePublicWrite { get; set; } = false;

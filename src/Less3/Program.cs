@@ -352,20 +352,19 @@ namespace Less3
             _S3Server.Bucket.Delete = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketDelete(ctx));
             _S3Server.Bucket.DeleteTagging = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketDeleteTagging(ctx));
             _S3Server.Bucket.Exists = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketExists(ctx));
-            _S3Server.Bucket.Read = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketRead(ctx));
             _S3Server.Bucket.ReadAcl = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketReadAcl(ctx));
             _S3Server.Bucket.ReadLocation = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketReadLocation(ctx));
             _S3Server.Bucket.ReadTagging = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketReadTagging(ctx));
-            _S3Server.Bucket.ReadVersions = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketReadVersions(ctx));
             _S3Server.Bucket.ReadVersioning = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketReadVersioning(ctx));
             _S3Server.Bucket.Write = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketWrite(ctx));
-            _S3Server.Bucket.WriteAcl = (ctx, acp) => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketWriteAcl(ctx, acp));
             _S3Server.Bucket.WriteTagging = (ctx, tagging) => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketWriteTagging(ctx, tagging));
             _S3Server.Bucket.WriteVersioning = (ctx, versioning) => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketWriteVersioning(ctx, versioning));
             _S3Server.Bucket.ReadMultipartUploads = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ReadMultipartUploads(ctx));
+            _S3Server.Bucket.Read = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketRead(ctx));
+            _S3Server.Bucket.ReadVersions = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketReadVersions(ctx));
+            _S3Server.Bucket.WriteAcl = (ctx, acp) => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.BucketWriteAcl(ctx, acp));
 
             _S3Server.Object.Delete = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ObjectDelete(ctx));
-            _S3Server.Object.DeleteMultiple = (ctx, dm) => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ObjectDeleteMultiple(ctx, dm));
             _S3Server.Object.DeleteTagging = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ObjectDeleteTagging(ctx));
             _S3Server.Object.Exists = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ObjectExists(ctx));
             _S3Server.Object.Read = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ObjectRead(ctx));
@@ -373,13 +372,16 @@ namespace Less3
             _S3Server.Object.ReadRange = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ObjectReadRange(ctx));
             _S3Server.Object.ReadTagging = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ObjectReadTagging(ctx));
             _S3Server.Object.Write = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ObjectWrite(ctx));
-            _S3Server.Object.WriteAcl = (ctx, acp) => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ObjectWriteAcl(ctx, acp));
             _S3Server.Object.WriteTagging = (ctx, tagging) => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ObjectWriteTagging(ctx, tagging));
             _S3Server.Object.UploadPart = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.UploadPart(ctx));
             _S3Server.Object.AbortMultipartUpload = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.AbortMultipartUpload(ctx));
             _S3Server.Object.CompleteMultipartUpload = (ctx, upload) => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.CompleteMultipartUpload(ctx, upload));
             _S3Server.Object.CreateMultipartUpload = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.CreateMultipartUpload(ctx));
             _S3Server.Object.ReadParts = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ReadParts(ctx));
+            _S3Server.Object.WriteAcl = (ctx, acp) => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ObjectWriteAcl(ctx, acp));
+            _S3Server.Object.DeleteMultiple = (ctx, dm) => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ObjectDeleteMultiple(ctx, dm));
+            _S3Server.Object.Copy = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.ObjectCopy(ctx));
+            _S3Server.Object.UploadPartCopy = ctx => ExecuteWithExceptionLogging(ctx, () => _ApiHandler.UploadPartCopy(ctx));
 
             _S3Server.Start();
 
@@ -892,7 +894,17 @@ namespace Less3
                 case S3RequestType.ObjectAbortMultipartUpload:
                 case S3RequestType.ObjectReadParts:
                     md = _Auth.AuthorizeObjectRequest(ctx, md);
-                    break; 
+                    break;
+
+                // A copy writes the destination exactly as the operation it replaces does; read access to the
+                // copy source is checked separately by the copy itself.
+                case S3RequestType.ObjectCopy:
+                    md = _Auth.AuthorizeObjectRequest(ctx, md, S3RequestType.ObjectWrite);
+                    break;
+
+                case S3RequestType.ObjectUploadPartCopy:
+                    md = _Auth.AuthorizeObjectRequest(ctx, md, S3RequestType.ObjectUploadPart);
+                    break;
             }
 
             if (_Settings.Debug.Authentication)
@@ -911,37 +923,23 @@ namespace Less3
 
             #endregion
 
-            #region Handle-Canned-ACLs
+            #region Metadata-Diagnostics
 
-            if ((ctx.Request.RequestType == S3RequestType.ObjectWriteAcl || ctx.Request.RequestType == S3RequestType.BucketWriteAcl) &&
-                ctx.Http.Request.ContentLength == 0)
+            // Diagnostic dump of the resolved request metadata. Everything handled in this method runs
+            // before S3Server validates the request signature, so it is only served to callers presenting
+            // the admin API key, and secrets are removed from the output.
+            if (ctx.Http.Request.Query.Elements != null
+                && ctx.Http.Request.Query.Elements.AllKeys.Contains("metadata")
+                && md.Authorization == AuthorizationResult.AdminAuthorized)
             {
-                _Logging.Debug(header + "handling canned ACL request (no body)");
-
-                if (ctx.Request.RequestType == S3RequestType.ObjectWriteAcl)
-                {
-                    await _ApiHandler.ObjectWriteAcl(ctx, null);
-                }
-                else if (ctx.Request.RequestType == S3RequestType.BucketWriteAcl)
-                {
-                    await _ApiHandler.BucketWriteAcl(ctx, null);
-                }
-
+                ctx.Response.ContentType = "application/json";
+                await ctx.Response.Send(SerializationHelper.SerializeJson(RedactMetadata(md), true));
                 return true;
             }
 
             #endregion
 
-            if (ctx.Http.Request.Query.Elements != null && ctx.Http.Request.Query.Elements.AllKeys.Contains("metadata"))
-            {
-                ctx.Response.ContentType = "application/json";
-                await ctx.Response.Send(SerializationHelper.SerializeJson(md, true));
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return false;
         }
 
         private static bool IsPublicRestOperation(S3Context ctx)
@@ -1250,7 +1248,41 @@ namespace Less3
 
         private static async Task DefaultRequestHandler(S3Context ctx)
         {
+            if (ctx.Request.RequestType != S3RequestType.Unknown)
+            {
+                await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.NotImplemented);
+                return;
+            }
+
             await ctx.Response.Send(S3ServerLibrary.S3Objects.ErrorCode.InvalidRequest);
+        }
+
+        private static RequestMetadata RedactMetadata(RequestMetadata md)
+        {
+            RequestMetadata copy = new RequestMetadata();
+            copy.TenantId = md.TenantId;
+            copy.Bucket = md.Bucket;
+            copy.BucketAcls = md.BucketAcls;
+            copy.BucketTags = md.BucketTags;
+            copy.Obj = md.Obj;
+            copy.ObjectAcls = md.ObjectAcls;
+            copy.ObjectTags = md.ObjectTags;
+            copy.Authentication = md.Authentication;
+            copy.Authorization = md.Authorization;
+
+            if (md.User != null)
+            {
+                copy.User = SerializationHelper.DeserializeJson<User>(SerializationHelper.SerializeJson(md.User, false));
+                copy.User.PasswordHash = null;
+            }
+
+            if (md.Credential != null)
+            {
+                copy.Credential = SerializationHelper.DeserializeJson<Credential>(SerializationHelper.SerializeJson(md.Credential, false));
+                copy.Credential.SecretKey = null;
+            }
+
+            return copy;
         }
 
         private static string OpenApiDocument()

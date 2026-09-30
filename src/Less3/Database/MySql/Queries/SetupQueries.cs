@@ -127,6 +127,7 @@ namespace Less3.Database.MySql.Queries
                     enableversioning TINYINT(1) NOT NULL DEFAULT 0,
                     enablepublicwrite TINYINT(1) NOT NULL DEFAULT 0,
                     enablepublicread TINYINT(1) NOT NULL DEFAULT 0,
+                    versioningsuspended TINYINT(1) NOT NULL DEFAULT 0,
                     createdutc DATETIME(6) NOT NULL
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -136,7 +137,7 @@ namespace Less3.Database.MySql.Queries
                     bucket_id VARCHAR(64) NOT NULL,
                     owner_id VARCHAR(64),
                     author_id VARCHAR(64),
-                    `key` VARCHAR(1024),
+                    `key` VARCHAR(1024) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin,
                     contenttype VARCHAR(256),
                     contentlength BIGINT NOT NULL DEFAULT 0,
                     version BIGINT NOT NULL DEFAULT 1,
@@ -150,7 +151,9 @@ namespace Less3.Database.MySql.Queries
                     lastupdateutc DATETIME(6) NOT NULL,
                     lastaccessutc DATETIME(6) NOT NULL,
                     metadata TEXT,
-                    expirationutc DATETIME(6)
+                    expirationutc DATETIME(6),
+                    nullversion TINYINT(1) NOT NULL DEFAULT 0,
+                    keyhash CHAR(64) CHARACTER SET ascii GENERATED ALWAYS AS (SHA2(`key`, 256)) STORED
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
                 CREATE TABLE IF NOT EXISTS bucketacls (
@@ -281,10 +284,13 @@ namespace Less3.Database.MySql.Queries
             indices.Add("CREATE INDEX idx_objects_id ON objects (id);");
             indices.Add("CREATE INDEX idx_objects_bucket_id ON objects (bucket_id);");
             indices.Add("CREATE INDEX idx_objects_owner_id ON objects (owner_id);");
-            indices.Add("CREATE INDEX idx_objects_key ON objects (`key`);");
+            // InnoDB limits an index key to 3072 bytes and `key` is VARCHAR(1024) utf8mb4 (up to 4096 bytes),
+            // so key lookups use prefix indexes and uniqueness uses the SHA-256 of the full key.
+            indices.Add("CREATE INDEX idx_objects_key ON objects (`key`(768));");
             indices.Add("CREATE INDEX idx_objects_deletemarker ON objects (deletemarker);");
             indices.Add("CREATE INDEX idx_objects_tenant_id ON objects (tenant_id);");
-            indices.Add("CREATE INDEX idx_objects_tenant_bucket_key ON objects (tenant_id, bucket_id, `key`);");
+            indices.Add("CREATE INDEX idx_objects_tenant_bucket_key ON objects (tenant_id, bucket_id, `key`(600));");
+            indices.Add("CREATE UNIQUE INDEX idx_objects_tenant_bucket_keyhash_version_unique ON objects (tenant_id, bucket_id, keyhash, version);");
             indices.Add("CREATE INDEX idx_objects_tenant_bucket_createdutc ON objects (tenant_id, bucket_id, createdutc);");
 
             indices.Add("CREATE INDEX idx_bucketacls_bucket_id ON bucketacls (bucket_id);");

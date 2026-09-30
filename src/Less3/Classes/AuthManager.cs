@@ -372,20 +372,14 @@ namespace Less3.Classes
                 && ctx.Request.IsObjectRequest
                 && !String.IsNullOrEmpty(ctx.Request.Key))
             {
-                if (String.IsNullOrEmpty(ctx.Request.VersionId))
+                // Resolve the row the request refers to: the latest version, the null version, or a
+                // numbered version. The row may be a delete marker. An invalid version ID resolves to no
+                // row; handlers reject it with InvalidArgument.
+                if (ObjectVersionReference.TryParse(ctx.Request.VersionId, out ObjectVersionReference versionReference))
                 {
-                    md.Obj = md.BucketClient.GetObjectLatestMetadata(ctx.Request.Key);
+                    md.Obj = md.BucketClient.ResolveObject(ctx.Request.Key, versionReference);
                 }
-                else
-                {
-                    long versionId = 1;
-                    if (!String.IsNullOrEmpty(ctx.Request.VersionId))
-                    {
-                        Int64.TryParse(ctx.Request.VersionId, out versionId);
-                    }
-                    md.Obj = md.BucketClient.GetObjectVersionMetadata(ctx.Request.Key, versionId);
-                }
-                                
+
                 if (md.Obj != null)
                 {
                     md.ObjectAcls = md.BucketClient.GetObjectAcl(md.Obj.Id);
@@ -732,6 +726,43 @@ namespace Less3.Classes
         internal RequestMetadata AuthorizeObjectRequest(S3Context ctx, RequestMetadata md)
         {
             if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            return AuthorizeObjectRequest(ctx, md, ctx.Request.RequestType);
+        }
+
+        /// <summary>
+        /// Build request metadata for a different object than the one the request names, sharing the
+        /// request's authentication and bucket context. Used where one request acts on several objects
+        /// (DeleteObjects) or on an object other than the target (the CopyObject source).
+        /// </summary>
+        internal RequestMetadata ForObject(RequestMetadata md, Bucket bucket, BucketClient client, Obj obj)
+        {
+            if (md == null) throw new ArgumentNullException(nameof(md));
+            if (bucket == null) throw new ArgumentNullException(nameof(bucket));
+            if (client == null) throw new ArgumentNullException(nameof(client));
+
+            bool sameBucket = md.Bucket != null && String.Equals(md.Bucket.Id, bucket.Id, StringComparison.Ordinal);
+
+            RequestMetadata scoped = new RequestMetadata();
+            scoped.TenantId = md.TenantId;
+            scoped.User = md.User;
+            scoped.Credential = md.Credential;
+            scoped.Authentication = md.Authentication;
+            scoped.Bucket = bucket;
+            scoped.BucketClient = client;
+            scoped.BucketAcls = sameBucket ? md.BucketAcls : client.GetBucketAcl();
+            scoped.BucketTags = sameBucket ? md.BucketTags : client.GetBucketTags();
+            scoped.Obj = obj;
+            scoped.ObjectAcls = obj != null ? client.GetObjectAcl(obj.Id) : new List<ObjectAcl>();
+            scoped.ObjectTags = obj != null ? client.GetObjectTags(obj.Id) : new List<ObjectTag>();
+            return scoped;
+        }
+
+        /// <summary>
+        /// Authorize an object operation of the given type against the object in the supplied metadata.
+        /// </summary>
+        internal RequestMetadata AuthorizeObjectRequest(S3Context ctx, RequestMetadata md, S3RequestType requestType)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
             if (md == null) throw new ArgumentNullException(nameof(md));
 
             string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Http.Request.Method.ToString() + " " + ctx.Http.Request.Url.RawWithoutQuery + "] AuthorizeObjectWriteRequest ";
@@ -773,7 +804,7 @@ namespace Less3.Classes
 
             if (md.Bucket != null)
             {
-                switch (ctx.Request.RequestType)
+                switch (requestType)
                 {
                     case S3RequestType.ObjectExists:
                     case S3RequestType.ObjectRead:
@@ -808,7 +839,7 @@ namespace Less3.Classes
 
             if (md.BucketAcls != null && md.BucketAcls.Count > 0)
             {
-                switch (ctx.Request.RequestType)
+                switch (requestType)
                 {
                     case S3RequestType.ObjectExists:
                     case S3RequestType.ObjectRead:
@@ -863,7 +894,7 @@ namespace Less3.Classes
 
             if (md.ObjectAcls != null && md.ObjectAcls.Count > 0)
             {
-                switch (ctx.Request.RequestType)
+                switch (requestType)
                 {
                     case S3RequestType.ObjectExists:
                     case S3RequestType.ObjectRead:
@@ -929,7 +960,7 @@ namespace Less3.Classes
             if (TryAuthorizeRbac(
                 md,
                 "Object",
-                OperationForObjectRequest(ctx.Request.RequestType),
+                OperationForObjectRequest(requestType),
                 md.Obj != null ? md.Obj.Id : null,
                 out bool rbacPermitted,
                 out string rbacReason))
@@ -975,7 +1006,7 @@ namespace Less3.Classes
 
             if (md.BucketAcls != null && md.BucketAcls.Count > 0)
             {
-                switch (ctx.Request.RequestType)
+                switch (requestType)
                 {
                     case S3RequestType.ObjectExists:
                     case S3RequestType.ObjectRead:
@@ -1030,7 +1061,7 @@ namespace Less3.Classes
 
             if (md.ObjectAcls != null && md.ObjectAcls.Count > 0)
             {
-                switch (ctx.Request.RequestType)
+                switch (requestType)
                 {
                     case S3RequestType.ObjectExists:
                     case S3RequestType.ObjectRead:
@@ -1085,7 +1116,7 @@ namespace Less3.Classes
 
             if (md.BucketAcls != null && md.BucketAcls.Count > 0)
             {
-                switch (ctx.Request.RequestType)
+                switch (requestType)
                 {
                     case S3RequestType.ObjectExists:
                     case S3RequestType.ObjectRead:
@@ -1140,7 +1171,7 @@ namespace Less3.Classes
 
             if (md.ObjectAcls != null && md.ObjectAcls.Count > 0)
             {
-                switch (ctx.Request.RequestType)
+                switch (requestType)
                 {
                     case S3RequestType.ObjectExists:
                     case S3RequestType.ObjectRead:

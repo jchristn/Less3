@@ -95,6 +95,35 @@ namespace Less3.Database.MySql.Implementations
         }
 
         /// <inheritdoc />
+        public Obj GetNullVersion(string key, string bucketId)
+        {
+            if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Database.ExecuteQuery(ObjQueries.SelectNullVersion(key, bucketId)).Result;
+            List<Obj> objects = MapList(result);
+            if (objects.Count > 0) return objects[0];
+            return null;
+        }
+
+        /// <inheritdoc />
+        public List<Obj> EnumerateLatest(string bucketId, string prefix, string afterKey, int maxResults)
+        {
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            if (maxResults < 1) throw new ArgumentOutOfRangeException(nameof(maxResults), "Maximum results must be at least 1.");
+            DataTable result = _Database.ExecuteQuery(ObjQueries.EnumerateLatest(bucketId, prefix, afterKey, maxResults)).Result;
+            return MapList(result);
+        }
+
+        /// <inheritdoc />
+        public List<Obj> EnumerateVersions(string bucketId, string prefix, string afterKey, long? afterVersion, int maxResults)
+        {
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            if (maxResults < 1) throw new ArgumentOutOfRangeException(nameof(maxResults), "Maximum results must be at least 1.");
+            DataTable result = _Database.ExecuteQuery(ObjQueries.EnumerateVersions(bucketId, prefix, afterKey, afterVersion, maxResults)).Result;
+            return MapList(result);
+        }
+
+        /// <inheritdoc />
         public BucketStatistics GetStatistics(string bucketId)
         {
             if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
@@ -135,6 +164,7 @@ namespace Less3.Database.MySql.Implementations
             obj.BlobFilename = row["blobfilename"] != null && row["blobfilename"] != DBNull.Value ? row["blobfilename"].ToString() : null;
             obj.IsFolder = ControlPlaneDataMapper.BoolValue(row, "isfolder");
             obj.DeleteMarker = ControlPlaneDataMapper.BoolValue(row, "deletemarker");
+            obj.NullVersion = ControlPlaneDataMapper.BoolValue(row, "nullversion");
             obj.Md5 = row["md5"] != null && row["md5"] != DBNull.Value ? row["md5"].ToString() : null;
             obj.CreatedUtc = DateTime.Parse(row["createdutc"].ToString());
             obj.LastUpdateUtc = DateTime.Parse(row["lastupdateutc"].ToString());

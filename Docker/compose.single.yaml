@@ -1,10 +1,10 @@
 #
-# Less3 v4.0.0 - single node on PostgreSQL (durable, no load balancer, no scale-out).
+# Less3 v4.1.0 - single node on PostgreSQL (durable, no load balancer, no scale-out).
 #
 # For users who want a Postgres control plane without running a cluster. The native binary OOBE
 # still defaults to SQLite; this is the Docker "one node, real database" option.
 #
-# Build and tag the images first (from the repo root: build-all.bat v4.0.0), then bring it up:
+# Build and tag the images first (from the repo root: build-all.bat v4.1.0), then bring it up:
 #   docker compose -f compose.single.yaml up -d
 #
 
@@ -30,7 +30,7 @@ services:
 
   less3:
     container_name: 'less3'
-    image: 'jchristn77/less3:v4.0.0'
+    image: 'jchristn77/less3:v4.1.0'
     ports:
       - "8000:8000"
     volumes:
@@ -49,7 +49,7 @@ services:
 
   less3-ui:
     container_name: 'less3-ui'
-    image: 'jchristn77/less3-ui:v4.0.0'
+    image: 'jchristn77/less3-ui:v4.1.0'
     ports:
       - "3000:3000"
     environment:

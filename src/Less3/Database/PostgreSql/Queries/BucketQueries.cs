@@ -7,7 +7,7 @@ namespace Less3.Database.PostgreSql.Queries
     {
         internal static string InsertQuery(Bucket bucket)
         {
-            return "INSERT INTO buckets (id, tenant_id, owner_id, name, regionstring, storagetype, diskdirectory, enableversioning, enablepublicwrite, enablepublicread, createdutc) VALUES ("
+            return "INSERT INTO buckets (id, tenant_id, owner_id, name, regionstring, storagetype, diskdirectory, enableversioning, enablepublicwrite, enablepublicread, createdutc, versioningsuspended) VALUES ("
                 + "'" + Sanitizer.SanitizeString(bucket.Id) + "', "
                 + "'" + Sanitizer.SanitizeString(bucket.TenantId) + "', "
                 + "'" + Sanitizer.SanitizeString(bucket.OwnerId) + "', "
@@ -18,7 +18,8 @@ namespace Less3.Database.PostgreSql.Queries
                 + (bucket.EnableVersioning ? "TRUE" : "FALSE") + ", "
                 + (bucket.EnablePublicWrite ? "TRUE" : "FALSE") + ", "
                 + (bucket.EnablePublicRead ? "TRUE" : "FALSE") + ", "
-                + "'" + bucket.CreatedUtc.ToString(Sanitizer.TimestampFormat) + "'"
+                + "'" + bucket.CreatedUtc.ToString(Sanitizer.TimestampFormat) + "', "
+                + (bucket.VersioningSuspended ? "TRUE" : "FALSE")
                 + ");";
         }
 
@@ -84,7 +85,8 @@ namespace Less3.Database.PostgreSql.Queries
                 + "enableversioning = " + (bucket.EnableVersioning ? "TRUE" : "FALSE") + ", "
                 + "enablepublicwrite = " + (bucket.EnablePublicWrite ? "TRUE" : "FALSE") + ", "
                 + "enablepublicread = " + (bucket.EnablePublicRead ? "TRUE" : "FALSE") + ", "
-                + "createdutc = '" + bucket.CreatedUtc.ToString(Sanitizer.TimestampFormat) + "' "
+                + "createdutc = '" + bucket.CreatedUtc.ToString(Sanitizer.TimestampFormat) + "', "
+                + "versioningsuspended = " + (bucket.VersioningSuspended ? "TRUE" : "FALSE") + " "
                 + "WHERE tenant_id = '" + Sanitizer.SanitizeString(bucket.TenantId)
                 + "' AND id = '" + Sanitizer.SanitizeString(bucket.Id) + "';";
         }

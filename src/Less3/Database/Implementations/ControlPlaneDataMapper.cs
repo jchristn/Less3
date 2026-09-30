@@ -28,6 +28,16 @@ namespace Less3.Database.Implementations
             return Convert.ToInt32(value) != 0;
         }
 
+        internal static DateTime UtcDateTime(object value)
+        {
+            // Less3 stores UTC. A DataTable column drops DateTimeKind, so an Unspecified value must be
+            // labeled UTC rather than converted with ToUniversalTime, which would treat it as local time.
+            DateTime dt = Convert.ToDateTime(value, CultureInfo.InvariantCulture);
+            if (dt.Kind == DateTimeKind.Utc) return dt;
+            if (dt.Kind == DateTimeKind.Local) return dt.ToUniversalTime();
+            return DateTime.SpecifyKind(dt, DateTimeKind.Utc);
+        }
+
         internal static DateTime DateValue(DataRow row, string column)
         {
             string value = StringValue(row, column);
@@ -193,6 +203,7 @@ namespace Less3.Database.Implementations
             bucket.StorageType = ParseEnum(StringValue(row, "storagetype"), StorageDriverType.Disk);
             bucket.DiskDirectory = StringValue(row, "diskdirectory");
             bucket.EnableVersioning = BoolValue(row, "enableversioning");
+            bucket.VersioningSuspended = BoolValue(row, "versioningsuspended");
             bucket.EnablePublicWrite = BoolValue(row, "enablepublicwrite");
             bucket.EnablePublicRead = BoolValue(row, "enablepublicread");
             bucket.CreatedUtc = DateValue(row, "createdutc");
@@ -216,6 +227,7 @@ namespace Less3.Database.Implementations
             obj.BlobFilename = StringValue(row, "blobfilename");
             obj.IsFolder = BoolValue(row, "isfolder");
             obj.DeleteMarker = BoolValue(row, "deletemarker");
+            obj.NullVersion = BoolValue(row, "nullversion");
             obj.Md5 = StringValue(row, "md5");
             obj.CreatedUtc = DateValue(row, "createdutc");
             obj.LastUpdateUtc = DateValue(row, "lastupdateutc");

@@ -64,9 +64,9 @@ Less3 v3.0.0 documents and tests these S3 operation families:
 
 - Service operations: list buckets.
 - Bucket operations: create, delete, exists/head, list objects, list versions, read/write versioning, read/write/delete tags, read/write ACLs, and location.
-- Object operations: put, get, head, ranged get, delete, delete many, read/write/delete tags, and read/write ACLs.
-- Multipart operations: create upload, upload part, complete upload, abort upload, list uploads, and list upload parts.
-- Versioning operations: retrieve specific versions, list versions, and show delete markers.
+- Object operations: put, get, head, ranged get (including suffix ranges), conditional get/head, copy, delete, delete many, read/write/delete tags, and read/write ACLs.
+- Multipart operations: create upload, upload part, upload part copy, complete upload, abort upload, list uploads, and list upload parts.
+- Versioning operations: enable and suspend versioning, retrieve specific versions (including the `null` version), permanently delete versions, list versions, and delete markers.
 
 Less3-owned identifiers use PrettyId string IDs internally. S3 protocol fields that require bucket names, object keys, ETags, upload IDs, and version IDs keep their S3 meanings.
 
@@ -167,7 +167,7 @@ Response body:
   <MaxKeys>100</MaxKeys>
   <Delimiter>/</Delimiter>
   <IsTruncated>false</IsTruncated>
-  <NextContinuationToken>MQ==</NextContinuationToken>
+  <NextContinuationToken>bGVzczM6YWxidW1zLzIwMjYvY292ZXIuanBn</NextContinuationToken>
   <KeyCount>1</KeyCount>
   <Contents>
     <Key>albums/2026/cover.jpg</Key>
@@ -187,7 +187,23 @@ Response body:
 </ListBucketResult>
 ```
 
-`Owner` is included only when `fetch-owner=true` is supplied and the owner can be resolved.
+Keys are returned in ascending UTF-8 byte order across all pages, as in Amazon S3. `prefix` is matched exactly and
+case-sensitively. With a `delimiter`, keys are rolled up into `CommonPrefixes`, which count toward `max-keys` and
+`KeyCount`. `max-keys` is capped at 1000; a negative or non-numeric value returns `400 InvalidArgument`.
+
+- ListObjectsV2 (`list-type=2`) pages with the opaque `continuation-token` from `NextContinuationToken` (echoed back as
+  `ContinuationToken`) and honors `start-after` (echoed as `StartAfter`). An invalid token returns `400 InvalidArgument`.
+- ListObjects v1 pages with `marker`, which is a key: the next page starts after it. Truncated responses that use a
+  delimiter include `NextMarker`.
+- `encoding-type=url` encodes keys, prefixes, delimiters, and markers as Amazon S3 does (a space becomes `+`, `/` is
+  kept, and other reserved bytes become `%XX`), so clients decode them with form decoding. It applies to
+  ListObjectVersions and ListMultipartUploads as well.
+- v1 responses always include `Marker` and never `KeyCount`; v2 responses include `KeyCount` and never `Marker`.
+- `Owner` is included in v1 responses, and in v2 responses only when `fetch-owner=true` is supplied.
+
+List Versions pages with `key-marker` and `version-id-marker` (returned as `NextKeyMarker` and `NextVersionIdMarker`),
+returns versions and delete markers interleaved in key order with the newest version first, flags exactly one
+`IsLatest` entry per key, and reports `null` as the version ID of versions written while versioning was not enabled.
 
 ### Get Bucket Location
 
@@ -313,7 +329,7 @@ Request body:
 </AccessControlPolicy>
 ```
 
-Response body: empty. Success status is `200`. Canned ACL and grant headers are also accepted for bucket creation and ACL writes.
+Response body: empty. Success status is `200`. Canned ACL and grant headers are also accepted for bucket creation and ACL writes. A body that is not a valid ACL returns `400 MalformedACLError`.
 
 ### Get Bucket Versioning
 
@@ -347,7 +363,10 @@ Request body:
 </VersioningConfiguration>
 ```
 
-Use any status other than `Enabled` to disable versioning in the current Less3 implementation.
+`Status` must be `Enabled` or `Suspended`; any other value returns `400 MalformedXML`. As in Amazon S3, a bucket
+that has had versioning enabled never returns to the unversioned state: suspending keeps every existing version, and
+new writes (and deletes) while suspended replace the key's single `null` version. `GET ?versioning` returns
+`Suspended` for such a bucket and no `Status` for a bucket that has never had versioning enabled.
 
 Response body: empty. Success status is `200`.
 
@@ -414,7 +433,49 @@ x-amz-grant-read: id="{user-id}"
 x-amz-grant-full-control: id="{user-id}"
 ```
 
-Response body: empty. Success status is `200`; response headers include `ETag` and, when bucket versioning is enabled, `x-amz-version-id`.
+Response body: empty. Success status is `200`; response headers include `ETag` and, when bucket versioning is enabled
+or suspended, `x-amz-version-id`.
+
+- A `Content-MD5` that does not match the body returns `400 BadDigest`; a malformed one returns `400 InvalidDigest`.
+  No object is written.
+- `If-None-Match: *` writes only when the key does not exist, and `If-Match` only when the current ETag matches;
+  otherwise `412 PreconditionFailed` (`404 NoSuchKey` for `If-Match` on a missing key). The check and the write are
+  atomic under the key's write lock.
+- `Cache-Control`, `Content-Disposition`, `Content-Encoding`, `Content-Language`, and `Expires` are stored and
+  returned on `GET`/`HEAD`. User metadata keys are stored in lowercase.
+- `x-amz-tagging: key1=value1&key2=value2` tags the new object.
+- `x-amz-acl` also accepts `bucket-owner-read` and `bucket-owner-full-control`; an unknown canned ACL returns `400`.
+  `x-amz-grant-*` headers accept `id="..."`, `emailAddress="..."`, and `uri="..."` entries separated by commas.
+- An object written without `Content-Type` is served as `binary/octet-stream`.
+- A body shorter than its declared length returns `400 IncompleteBody`.
+
+### Copy Object
+
+```text
+PUT /{bucket}/{key}
+x-amz-copy-source: /{source-bucket}/{source-key}[?versionId={version-id}]
+```
+
+Request body: none. The caller must be allowed to read the source (as for `GET`) and write the destination.
+
+Optional headers: `x-amz-metadata-directive: COPY | REPLACE`, `x-amz-tagging-directive: COPY | REPLACE` (with
+`x-amz-tagging`), `x-amz-copy-source-if-match`, `x-amz-copy-source-if-none-match`,
+`x-amz-copy-source-if-modified-since`, `x-amz-copy-source-if-unmodified-since`, and the ACL headers of `PUT Object`.
+
+Response body:
+
+```xml
+<CopyObjectResult>
+  <LastModified>2026-01-01T00:00:00.000Z</LastModified>
+  <ETag>"9a0364b9e99bb480dd25e1f0284c8555"</ETag>
+</CopyObjectResult>
+```
+
+Response headers include `x-amz-version-id` for a versioned destination and `x-amz-copy-source-version-id` for a
+versioned source. Copying an object onto itself requires `x-amz-metadata-directive: REPLACE` in an unversioned
+bucket (`400 InvalidRequest` otherwise). A failed copy-source condition returns `412 PreconditionFailed`. Copying a
+key whose latest version is a delete marker returns `404`. `UploadPart` with `x-amz-copy-source` (and optionally
+`x-amz-copy-source-range: bytes={first}-{last}`) copies into a multipart upload and returns a `CopyPartResult`.
 
 ### Head Object
 
@@ -425,7 +486,7 @@ HEAD /{bucket}/{key}?versionId={version-id}
 
 Request body: none.
 
-Response body: empty.
+Response body: empty. Errors to `HEAD` have no body either.
 
 Response headers:
 
@@ -436,6 +497,9 @@ ETag: "9a0364b9e99bb480dd25e1f0284c8555"
 x-amz-version-id: 2
 x-amz-meta-color: blue
 ```
+
+`HEAD` honors `Range` as `GET` does: `206` with `Content-Range` and the length of the range, or `416` when the range
+cannot be satisfied.
 
 ### Get Object
 
@@ -454,12 +518,32 @@ Ranged reads use the standard `Range` header:
 Range: bytes=0-1023
 ```
 
-Successful ranged responses include:
+Suffix ranges (`Range: bytes=-500`) and open-ended ranges (`Range: bytes=1024-`) are supported. Successful ranged
+responses are `206` and include:
 
 ```text
 Content-Range: bytes 0-1023/12345
 Accept-Ranges: bytes
 ```
+
+A range whose last byte is past the end of the object is clamped to the last byte, and `Content-Range` describes the
+bytes returned (`bytes=5-100` on a 10-byte object is `bytes 5-9/10`). A suffix range larger than the object returns the
+whole object. A range whose first byte is at or past the end of the object returns `416 InvalidRange` with
+`RangeRequested` and `ActualObjectSize` in the error body. On an empty object a range is `416`, but a suffix range
+returns `200` with an empty body, as in Amazon S3. A `Range` header Less3 cannot use (another unit, several ranges, or
+unparseable bounds) is ignored and the whole object is returned.
+
+Conditional requests: `If-Match` and `If-Unmodified-Since` return `412 PreconditionFailed` when they fail;
+`If-None-Match` and `If-Modified-Since` return `304 Not Modified`. The same applies to `HEAD`.
+
+Response overrides: the `response-content-type`, `response-content-disposition`, `response-content-encoding`,
+`response-content-language`, `response-cache-control`, and `response-expires` query parameters override the
+corresponding response headers.
+
+Versions: when the latest version is a delete marker, `GET`/`HEAD` return `404 NoSuchKey` with
+`x-amz-delete-marker: true`; naming a delete marker's version ID returns `405 MethodNotAllowed`. A version ID that
+does not exist returns `404 NoSuchVersion`, and a malformed one `400 InvalidArgument`. `versionId=null` selects the
+version written while versioning was not enabled.
 
 ### Delete Object
 
@@ -470,7 +554,16 @@ DELETE /{bucket}/{key}?versionId={version-id}
 
 Request body: none.
 
-Response body: empty. Success status is `204` or the S3 stack's successful empty response. Missing current-version deletes are idempotent; invalid explicit versions return an S3 error.
+Response body: empty. Success status is `204`.
+
+- Unversioned bucket: the object is removed; deleting a missing key succeeds.
+- Versioning enabled: without `versionId` a new delete marker is added on top of the latest version (older versions
+  remain readable by version ID), and the response carries `x-amz-delete-marker: true` and the marker's
+  `x-amz-version-id`. This happens even when the key does not exist.
+- Versioning suspended: without `versionId` the key's `null` version is replaced by a `null` delete marker.
+- With `versionId`: that version is permanently removed, together with its ACL, tags, and data. Removing a delete
+  marker's version makes the previous version current again. A version that does not exist succeeds; a malformed
+  version ID returns `400 InvalidArgument`.
 
 ### Delete Multiple Objects
 
@@ -499,16 +592,25 @@ Response body:
 <DeleteResult>
   <Deleted>
     <Key>multi-1.txt</Key>
-    <VersionId>1</VersionId>
+  </Deleted>
+  <Deleted>
+    <Key>multi-2.txt</Key>
+    <VersionId>2</VersionId>
   </Deleted>
   <Error>
-    <Key>missing.txt</Key>
-    <VersionId>1</VersionId>
-    <Code>NoSuchKey</Code>
-    <Message>The specified key does not exist.</Message>
+    <Key>protected.txt</Key>
+    <Code>AccessDenied</Code>
+    <Message>Access denied.</Message>
   </Error>
 </DeleteResult>
 ```
+
+Each key follows the `DELETE Object` semantics above and is authorized individually, exactly as a `DELETE Object` on
+that key would be; one key failing never stops the others. A key or version that does not exist is reported as
+`Deleted`, not as an error. When a delete marker is created the entry includes `<DeleteMarker>true</DeleteMarker>` and
+`<DeleteMarkerVersionId>`. `VersionId` appears only when the request named one. With `<Quiet>true</Quiet>` only
+`Error` entries are returned. A request must name between 1 and 1,000 keys (`400 MalformedXML` otherwise), and a
+`Content-MD5` that does not match the body returns `400 BadDigest`.
 
 ### Get Object Tagging
 

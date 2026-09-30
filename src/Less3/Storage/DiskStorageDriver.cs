@@ -129,7 +129,7 @@
             string file = FilePath(key);
             FileInfo fi = new FileInfo(file);
             long contentLength = fi.Length;
-            FileStream stream = new FileStream(file, FileMode.Open);
+            FileStream stream = OpenShared(file);
             stream.Seek(0, SeekOrigin.Begin);
             return new ObjectStream(key, fi.Length, stream);
         }
@@ -237,50 +237,12 @@
         /// <param name="count">Number of bytes to read.</param>
         /// <returns>ObjectStream.</returns>
         public override ObjectStream ReadRangeStream(string key, long indexStart, long count)
-        { 
+        {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
             if (indexStart < 0) throw new ArgumentException("Index start must be zero or greater.");
             if (count < 0) throw new ArgumentException("Count must be zero or greater.");
 
-            string file = FilePath(key);
-            FileInfo fi = new FileInfo(file);
-            long contentLength = fi.Length;
-
-            if (indexStart + count > contentLength) throw new ArgumentException("Index start combined with count must not result in a position that exceeds the size of the file.");
-
-            MemoryStream ms = new MemoryStream();
-            try
-            {
-                using (FileStream fs = new FileStream(file, FileMode.Open))
-                {
-                    fs.Seek(indexStart, SeekOrigin.Begin);
-
-                    long bytesRemaining = count;
-                    int read = 0;
-                    byte[] buffer = null;
-
-                    while (bytesRemaining > 0)
-                    {
-                        if (bytesRemaining > _StreamBufferSize) buffer = new byte[_StreamBufferSize];
-                        else buffer = new byte[bytesRemaining];
-
-                        read = fs.Read(buffer, 0, buffer.Length);
-                        if (read > 0)
-                        {
-                            ms.Write(buffer, 0, read);
-                            bytesRemaining -= read;
-                        }
-                    }
-                }
-
-                ms.Seek(0, SeekOrigin.Begin);
-                return new ObjectStream(key, count, ms);
-            }
-            catch
-            {
-                ms.Dispose();
-                throw;
-            }
+            return OpenRangeStream(key, indexStart, count);
         }
 
         /// <summary>
@@ -291,51 +253,13 @@
         /// <param name="indexStart">Starting position.</param>
         /// <param name="count">Number of bytes to read.</param>
         /// <returns>ObjectStream.</returns>
-        public override async Task<ObjectStream> ReadRangeStreamAsync(string key, long indexStart, long count)
+        public override Task<ObjectStream> ReadRangeStreamAsync(string key, long indexStart, long count)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
             if (indexStart < 0) throw new ArgumentException("Index start must be zero or greater.");
             if (count < 0) throw new ArgumentException("Count must be zero or greater.");
 
-            string file = FilePath(key);
-            FileInfo fi = new FileInfo(file);
-            long contentLength = fi.Length;
-
-            if (indexStart + count > contentLength) throw new ArgumentException("Index start combined with count must not result in a position that exceeds the size of the file.");
-
-            MemoryStream ms = new MemoryStream();
-            try
-            {
-                using (FileStream fs = new FileStream(file, FileMode.Open))
-                {
-                    fs.Seek(indexStart, SeekOrigin.Begin);
-
-                    long bytesRemaining = count;
-                    int read = 0;
-                    byte[] buffer = null;
-
-                    while (bytesRemaining > 0)
-                    {
-                        if (bytesRemaining > _StreamBufferSize) buffer = new byte[_StreamBufferSize];
-                        else buffer = new byte[bytesRemaining];
-
-                        read = await fs.ReadAsync(buffer, 0, buffer.Length);
-                        if (read > 0)
-                        {
-                            await ms.WriteAsync(buffer, 0, read);
-                            bytesRemaining -= read;
-                        }
-                    }
-                }
-
-                ms.Seek(0, SeekOrigin.Begin);
-                return new ObjectStream(key, count, ms);
-            }
-            catch
-            {
-                ms.Dispose();
-                throw;
-            }
+            return Task.FromResult(OpenRangeStream(key, indexStart, count));
         }
 
         /// <summary>
@@ -457,7 +381,35 @@
         {
             return _BaseDirectory + key;
         }
-         
+
+        private static FileStream OpenShared(string file)
+        {
+            // Read-only, and shared with other readers and with deletion, so concurrent GETs of the same
+            // blob do not conflict and a superseded blob can be removed while a reader still streams it.
+            return new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+        }
+
+        private ObjectStream OpenRangeStream(string key, long indexStart, long count)
+        {
+            string file = FilePath(key);
+            FileInfo fi = new FileInfo(file);
+            long contentLength = fi.Length;
+
+            if (indexStart + count > contentLength) throw new ArgumentException("Index start combined with count must not result in a position that exceeds the size of the file.");
+
+            FileStream fs = OpenShared(file);
+            try
+            {
+                fs.Seek(indexStart, SeekOrigin.Begin);
+                return new ObjectStream(key, count, new BoundedReadStream(fs, count));
+            }
+            catch
+            {
+                fs.Dispose();
+                throw;
+            }
+        }
+
         #endregion
     }
 }

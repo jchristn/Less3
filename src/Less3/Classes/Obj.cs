@@ -81,6 +81,14 @@ namespace Less3.Classes
         public bool DeleteMarker { get; set; } = false;
 
         /// <summary>
+        /// Indicates that this row is the key's null version, i.e. it was written while versioning
+        /// was not enabled on the bucket (never enabled, or suspended). Default value is false.
+        /// A key has at most one null version; a write or delete while versioning is suspended
+        /// replaces it. Versions written while versioning is enabled are never null versions.
+        /// </summary>
+        public bool NullVersion { get; set; } = false;
+
+        /// <summary>
         /// MD5.
         /// </summary>
         public string Md5 { get; set; } = null;

@@ -1,12 +1,12 @@
 #
-# Less3 v4.0.0 - multi-node scale-out stack (the Docker default).
+# Less3 v4.1.0 - multi-node scale-out stack (the Docker default).
 #
 # nginx load-balances across two Less3 nodes that share a PostgreSQL control plane and a shared
 # storage volume. The distributed lock manager (native Postgres) keeps every object mutation
 # serialized and fenced, so scaling out never costs data integrity. Prometheus, Grafana, Loki,
 # Tempo, and an OpenTelemetry collector give you monitoring out of the box.
 #
-# Build and tag the images first (from the repo root: build-all.bat v4.0.0), then bring it up:
+# Build and tag the images first (from the repo root: build-all.bat v4.1.0), then bring it up:
 #   docker compose up -d
 # Tear it down:  docker compose down          (add -v to also drop the data volumes)
 #
@@ -43,7 +43,7 @@ services:
   #
   less3-node1:
     container_name: 'less3-node1'
-    image: 'jchristn77/less3:v4.0.0'
+    image: 'jchristn77/less3:v4.1.0'
     environment:
       - LESS3_NODE_ID=less3-node1
     volumes:
@@ -65,7 +65,7 @@ services:
   #
   less3-node2:
     container_name: 'less3-node2'
-    image: 'jchristn77/less3:v4.0.0'
+    image: 'jchristn77/less3:v4.1.0'
     environment:
       - LESS3_NODE_ID=less3-node2
     volumes:
@@ -104,7 +104,7 @@ services:
   #
   less3-ui:
     container_name: 'less3-ui'
-    image: 'jchristn77/less3-ui:v4.0.0'
+    image: 'jchristn77/less3-ui:v4.1.0'
     ports:
       - "3000:3000"
     environment:

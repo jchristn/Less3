@@ -167,6 +167,7 @@ namespace Less3.Database.SqlServer.Queries
                     enableversioning BIT NOT NULL DEFAULT 0,
                     enablepublicwrite BIT NOT NULL DEFAULT 0,
                     enablepublicread BIT NOT NULL DEFAULT 0,
+                    versioningsuspended BIT NOT NULL DEFAULT 0,
                     createdutc NVARCHAR(64) NOT NULL
                 );
 
@@ -184,7 +185,7 @@ namespace Less3.Database.SqlServer.Queries
                     bucket_id NVARCHAR(64) NOT NULL,
                     owner_id NVARCHAR(64),
                     author_id NVARCHAR(64),
-                    [key] NVARCHAR(1024),
+                    [key] NVARCHAR(1024) COLLATE Latin1_General_100_BIN2,
                     contenttype NVARCHAR(256),
                     contentlength BIGINT NOT NULL DEFAULT 0,
                     version BIGINT NOT NULL DEFAULT 1,
@@ -198,7 +199,9 @@ namespace Less3.Database.SqlServer.Queries
                     lastupdateutc NVARCHAR(64) NOT NULL,
                     lastaccessutc NVARCHAR(64) NOT NULL,
                     metadata NVARCHAR(MAX),
-                    expirationutc NVARCHAR(64)
+                    expirationutc NVARCHAR(64),
+                    nullversion BIT NOT NULL DEFAULT 0,
+                    keyhash AS CAST(HASHBYTES('SHA2_256', [key]) AS BINARY(32)) PERSISTED
                 );
 
                 IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='idx_objects_id')

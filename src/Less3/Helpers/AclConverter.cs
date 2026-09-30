@@ -236,7 +236,7 @@ namespace Less3.Helpers
 
             List<Grant> allGrants = new List<Grant>();
 
-            List<Grant> headerGrants = GrantsFromHeaders(currentUser, headers, config);
+            List<Grant> headerGrants = GrantsFromHeaders(currentUser, headers, config, ownerId);
             if (headerGrants != null && headerGrants.Count > 0)
             {
                 allGrants.AddRange(headerGrants);
@@ -285,9 +285,10 @@ namespace Less3.Helpers
         /// <param name="user">User making the request. Used for 'private' canned ACL.</param>
         /// <param name="headers">HTTP request headers to parse. May be null.</param>
         /// <param name="config">Configuration manager for user email/Id lookups.</param>
+        /// <param name="bucketOwnerId">Bucket owner Id, used by the bucket-owner-read and bucket-owner-full-control canned ACLs. May be null.</param>
         /// <returns>List of Grant objects parsed from headers. Empty list if no grants found.</returns>
         /// <exception cref="ArgumentNullException">Thrown when user or config is null.</exception>
-        internal static List<Grant> GrantsFromHeaders(User user, NameValueCollection headers, ConfigManager config)
+        internal static List<Grant> GrantsFromHeaders(User user, NameValueCollection headers, ConfigManager config, string bucketOwnerId = null)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             if (config == null) throw new ArgumentNullException(nameof(config));
@@ -350,6 +351,37 @@ namespace Less3.Helpers
                         ret.Add(grant);
                         break;
 
+                    case "bucket-owner-read":
+                    case "bucket-owner-full-control":
+                        grant = new Grant();
+                        grant.Permission = PermissionEnum.FullControl;
+                        grant.Grantee = new CanonicalUser();
+                        grant.Grantee.ID = user.Id;
+                        grant.Grantee.DisplayName = user.Name;
+                        ret.Add(grant);
+
+                        if (!String.IsNullOrEmpty(bucketOwnerId) && !String.Equals(bucketOwnerId, user.Id, StringComparison.Ordinal))
+                        {
+                            grant = new Grant();
+                            grant.Permission = headerVal.Equals("bucket-owner-read") ? PermissionEnum.Read : PermissionEnum.FullControl;
+                            grant.Grantee = new CanonicalUser();
+                            grant.Grantee.ID = bucketOwnerId;
+                            ret.Add(grant);
+                        }
+                        break;
+
+                    case "aws-exec-read":
+                    case "log-delivery-write":
+                        // Accepted for compatibility; these grant AWS service principals that do not exist
+                        // here, so only the owner's full control applies.
+                        grant = new Grant();
+                        grant.Permission = PermissionEnum.FullControl;
+                        grant.Grantee = new CanonicalUser();
+                        grant.Grantee.ID = user.Id;
+                        grant.Grantee.DisplayName = user.Name;
+                        ret.Add(grant);
+                        break;
+
                     case "authenticated-read":
                         grant = new Grant();
                         grant.Permission = PermissionEnum.FullControl;
@@ -364,6 +396,9 @@ namespace Less3.Helpers
                         grant.Grantee.URI = "http://acs.amazonaws.com/groups/global/AuthenticatedUsers";
                         ret.Add(grant);
                         break;
+
+                    default:
+                        throw new S3Exception(new Error(ErrorCode.InvalidArgument));
                 }
             }
 
@@ -755,15 +790,18 @@ namespace Less3.Helpers
             grant = null;
             if (String.IsNullOrEmpty(str)) return false;
 
-            string[] parts = str.Split('=');
-            if (parts.Length != 2) return false;
-            string granteeType = parts[0];
-            string grantee = parts[1].Trim().Trim('"');
+            // Grant headers look like: id="abc", emailAddress="x@y.com", uri="http://acs.amazonaws.com/groups/global/AllUsers".
+            // Values are usually quoted and entries are separated by ", ", so trim both parts.
+            int equalsIndex = str.IndexOf('=');
+            if (equalsIndex < 1) return false;
+            string granteeType = str.Substring(0, equalsIndex).Trim();
+            string grantee = str.Substring(equalsIndex + 1).Trim().Trim('"').Trim();
+            if (String.IsNullOrEmpty(grantee)) return false;
 
             grant = new Grant();
             grant.Permission = permType;
 
-            if (granteeType.Equals("emailAddress"))
+            if (granteeType.Equals("emailAddress", StringComparison.OrdinalIgnoreCase))
             {
                 User user = config.GetUserByEmail(tenantId, grantee);
                 if (user == null)
@@ -778,7 +816,7 @@ namespace Less3.Helpers
                     return true;
                 }
             }
-            else if (granteeType.Equals("id"))
+            else if (granteeType.Equals("id", StringComparison.OrdinalIgnoreCase))
             {
                 User user = config.GetUserById(tenantId, grantee);
                 if (user == null)
@@ -793,7 +831,7 @@ namespace Less3.Helpers
                     return true;
                 }
             }
-            else if (granteeType.Equals("uri"))
+            else if (granteeType.Equals("uri", StringComparison.OrdinalIgnoreCase))
             {
                 grant.Grantee = new Group();
                 grant.Grantee.URI = grantee;

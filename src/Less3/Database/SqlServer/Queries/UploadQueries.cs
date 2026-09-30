@@ -13,12 +13,12 @@ namespace Less3.Database.SqlServer.Queries
                 + "'" + Sanitizer.SanitizeString(upload.BucketId) + "', "
                 + "'" + Sanitizer.SanitizeString(upload.OwnerId) + "', "
                 + "'" + Sanitizer.SanitizeString(upload.AuthorId) + "', "
-                + "'" + Sanitizer.SanitizeString(upload.Key) + "', "
+                + "N'" + Sanitizer.SanitizeString(upload.Key) + "', "
                 + "'" + upload.CreatedUtc.ToString(Sanitizer.TimestampFormat) + "', "
                 + "'" + upload.LastAccessUtc.ToString(Sanitizer.TimestampFormat) + "', "
                 + "'" + upload.ExpirationUtc.ToString(Sanitizer.TimestampFormat) + "', "
-                + "'" + Sanitizer.SanitizeString(upload.ContentType) + "', "
-                + "'" + Sanitizer.SanitizeString(upload.Metadata) + "'"
+                + "N'" + Sanitizer.SanitizeString(upload.ContentType) + "', "
+                + "N'" + Sanitizer.SanitizeString(upload.Metadata) + "'"
                 + ");";
         }
 

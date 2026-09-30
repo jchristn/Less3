@@ -3,11 +3,9 @@ namespace Less3.Api.S3
     using System;
     using System.Collections.Generic;
     using System.Collections.Specialized;
-    using System.Data;
-    using System.IO;
+    using System.Globalization;
     using System.Linq;
     using System.Text;
-    using System.Threading;
     using System.Threading.Tasks;
 
     using SyslogLogging;
@@ -37,13 +35,16 @@ namespace Less3.Api.S3
         private BucketManager _Buckets = null;
         private AuthManager _Auth = null;
 
+        private const int _MaxListKeys = 1000;
+        private const string _ContinuationTokenPrefix = "less3:";
+
         #endregion
 
         #region Constructors-and-Factories
 
         internal BucketHandler(
             SettingsBase settings,
-            LoggingModule logging, 
+            LoggingModule logging,
             ConfigManager config,
             BucketManager buckets,
             AuthManager auth)
@@ -52,13 +53,13 @@ namespace Less3.Api.S3
             if (logging == null) throw new ArgumentNullException(nameof(logging));
             if (config == null) throw new ArgumentNullException(nameof(config));
             if (buckets == null) throw new ArgumentNullException(nameof(buckets));
-            if (auth == null) throw new ArgumentNullException(nameof(auth)); 
+            if (auth == null) throw new ArgumentNullException(nameof(auth));
 
             _Settings = settings;
             _Logging = logging;
             _Config = config;
             _Buckets = buckets;
-            _Auth = auth; 
+            _Auth = auth;
         }
 
         #endregion
@@ -67,84 +68,37 @@ namespace Less3.Api.S3
 
         internal async Task Delete(S3Context ctx)
         {
-            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
+            string header = Header(ctx);
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
-            if (md == null)
-            {
-                _Logging.Warn(header + "unable to retrieve metadata");
-                await ctx.Response.Send(ErrorCode.InternalError);
-                return;
-            }
-             
-            if (md.Authorization == AuthorizationResult.NotAuthorized)
-            {
-                _Logging.Warn(header + "not authorized");
-                await ctx.Response.Send(ErrorCode.AccessDenied);
-                return;
-            }
-             
-            if (md.Bucket == null || md.BucketClient == null)
-            {
-                _Logging.Warn(header + "no such bucket");
-                await ctx.Response.Send(ErrorCode.NoSuchBucket);
-                return;
-            }
+            RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
+            RequestValidator.ValidateAuthorization(md, _Logging, header);
+            RequestValidator.ValidateBucketExists(md, _Logging, header);
 
-            BucketStatistics stats = md.BucketClient.GetFullStatistics();
-            if (stats.Objects > 0 || stats.Bytes > 0)
+            // Amazon S3 refuses to delete a bucket until every object version and delete marker is gone.
+            if (md.BucketClient.HasAnyVersions())
             {
                 _Logging.Warn(header + "bucket " + md.Bucket.Name + " is not empty");
-                await ctx.Response.Send(ErrorCode.BucketNotEmpty);
-                return;
+                throw new S3Exception(new Error(ErrorCode.BucketNotEmpty));
             }
 
             _Logging.Info(header + "deleting bucket " + ctx.Request.Bucket);
             _Buckets.Remove(md.Bucket, true);
-
-            ctx.Response.StatusCode = 204;
-            ctx.Response.ContentType = "application/xml";
-            await ctx.Response.Send();
-            return;
         }
 
         internal async Task DeleteTags(S3Context ctx)
         {
-            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
+            string header = Header(ctx);
 
-            RequestMetadata md = ApiHelper.GetRequestMetadata(ctx);
-            if (md == null)
-            {
-                _Logging.Warn(header + "unable to retrieve metadata");
-                await ctx.Response.Send(ErrorCode.InternalError);
-                return;
-            }
-
-            if (md.Authorization == AuthorizationResult.NotAuthorized)
-            {
-                _Logging.Warn(header + "not authorized");
-                await ctx.Response.Send(ErrorCode.AccessDenied);
-                return;
-            }
-
-            if (md.Bucket == null || md.BucketClient == null)
-            {
-                _Logging.Warn(header + "no such bucket");
-                await ctx.Response.Send(ErrorCode.NoSuchBucket);
-                return;
-            }
+            RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
+            RequestValidator.ValidateAuthorization(md, _Logging, header);
+            RequestValidator.ValidateBucketExists(md, _Logging, header);
 
             md.BucketClient.DeleteBucketTags();
-
-            ctx.Response.StatusCode = 204;
-            ctx.Response.ContentType = "application/xml";
-            await ctx.Response.Send();
-            return;
         }
 
         internal async Task<bool> Exists(S3Context ctx)
         {
-            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
+            string header = Header(ctx);
 
             RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
             RequestValidator.ValidateAuthorization(md, _Logging, header);
@@ -159,91 +113,158 @@ namespace Less3.Api.S3
             return true;
         }
 
-        internal async Task<ListBucketResult> Read(S3Context ctx)
+        /// <summary>
+        /// ListObjects (v1) and ListObjectsV2. S3Server shapes the response for the requested list type
+        /// (Marker for v1; KeyCount, ContinuationToken and StartAfter for v2; Owner only with fetch-owner
+        /// for v2) and applies encoding-type=url, so values are returned unencoded.
+        /// </summary>
+        internal async Task<ListBucketResult> ListObjects(S3Context ctx)
         {
-            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
+            string header = Header(ctx);
 
             RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
             RequestValidator.ValidateAuthorization(md, _Logging, header);
             RequestValidator.ValidateBucketExists(md, _Logging, header);
-             
-            int startIndex = 0;
-            if (!String.IsNullOrEmpty(ctx.Request.ContinuationToken))
+
+            bool v2 = String.Equals(ctx.Request.RetrieveQueryValue("list-type"), "2", StringComparison.Ordinal);
+            string prefix = ctx.Request.Prefix;
+            string delimiter = ctx.Request.Delimiter;
+            int maxKeys = Math.Min(ctx.Request.MaxKeys, _MaxListKeys);
+
+            string marker = null;
+            string continuationToken = null;
+            string startAfter = null;
+
+            if (v2)
             {
-                startIndex = ParseContinuationToken(ctx.Request.ContinuationToken);
+                continuationToken = ctx.Request.ContinuationToken;
+                startAfter = ctx.Request.StartAfter;
+
+                // A continuation token takes precedence over start-after.
+                if (continuationToken != null) marker = DecodeContinuationToken(continuationToken, header);
+                else if (!String.IsNullOrEmpty(startAfter)) marker = startAfter;
+            }
+            else
+            {
+                marker = ctx.Request.Marker;
+                if (marker == "") marker = null;
             }
 
-            if (!String.IsNullOrEmpty(ctx.Request.Marker))
-            {
-                Obj marker = md.BucketClient.GetObjectLatestMetadata(ctx.Request.Marker);
-                if (marker != null) startIndex += 1;
-            }
-              
-            List<Obj> objects = new List<Obj>();
-            List<string> prefixes = new List<string>();
-            int nextStartIndex = startIndex;
-            bool isTruncated = false;
-            md.BucketClient.Enumerate(ctx.Request.Delimiter, ctx.Request.Prefix, startIndex, (int)ctx.Request.MaxKeys, out objects, out prefixes, out nextStartIndex, out isTruncated);
-             
-            ListBucketResult listBucketResult = new ListBucketResult();
-            listBucketResult.Contents = new List<ObjectMetadata>();
-
-            listBucketResult.Prefix = ctx.Request.Prefix;
-            listBucketResult.Delimiter = ctx.Request.Delimiter;
-            listBucketResult.KeyCount = objects.Count;
-            listBucketResult.MaxKeys = ctx.Request.MaxKeys;
-            listBucketResult.Name = ctx.Request.Bucket;
-            listBucketResult.BucketRegion = md.Bucket.RegionString;
-            listBucketResult.Marker = ctx.Request.Marker;
-            listBucketResult.Prefix = ctx.Request.Prefix; 
-            listBucketResult.CommonPrefixes = prefixes.Select(p => new CommonPrefixes(p)).ToList();
-            listBucketResult.IsTruncated = false;
-
-            if (isTruncated)
-            {
-                listBucketResult.IsTruncated = true;
-                listBucketResult.NextContinuationToken = BuildContinuationToken(nextStartIndex); 
-            }
-
-            bool fetchOwner = ctx.Request.QuerystringExists("fetch-owner")
-                && !String.IsNullOrEmpty(ctx.Request.RetrieveQueryValue("fetch-owner"))
-                && ctx.Request.RetrieveQueryValue("fetch-owner").Equals("true", StringComparison.OrdinalIgnoreCase);
-
+            ObjectListing listing = md.BucketClient.ListObjects(prefix, delimiter, marker, maxKeys);
             Dictionary<string, S3ServerLibrary.S3Objects.Owner> ownerCache = new Dictionary<string, S3ServerLibrary.S3Objects.Owner>();
 
-            foreach (Obj curr in objects)
+            ListBucketResult result = new ListBucketResult();
+            result.Name = md.Bucket.Name;
+            result.BucketRegion = md.Bucket.RegionString;
+            result.Prefix = prefix;
+            result.MaxKeys = maxKeys;
+            result.Delimiter = String.IsNullOrEmpty(delimiter) ? null : delimiter;
+            result.IsTruncated = listing.IsTruncated;
+
+            if (v2)
             {
-                ObjectMetadata c = new ObjectMetadata();
-                c.ETag = "\"" + (curr.Etag ?? curr.Md5) + "\"";
-                c.Key = curr.Key;
-                c.LastModified = curr.LastUpdateUtc;
-                c.Size = curr.ContentLength;
-                c.ContentType = curr.ContentType;
-                c.StorageClass = StorageClassEnum.STANDARD;
-
-                if (fetchOwner)
-                {
-                    c.Owner = new S3ServerLibrary.S3Objects.Owner();
-                    if (ownerCache.ContainsKey(curr.OwnerId))
-                    {
-                        c.Owner = ownerCache[curr.OwnerId];
-                    }
-                    else
-                    {
-                        User u = _Config.GetUserById(curr.OwnerId);
-                        if (u != null)
-                        {
-                            c.Owner.DisplayName = u.Name;
-                            c.Owner.ID = u.Id;
-                            ownerCache.Add(u.Id, c.Owner);
-                        }
-                    }
-                }
-
-                listBucketResult.Contents.Add(c);
+                result.ContinuationToken = continuationToken;
+                result.StartAfter = String.IsNullOrEmpty(startAfter) ? null : startAfter;
+                result.KeyCount = listing.Objects.Count + listing.CommonPrefixes.Count;
+                if (listing.IsTruncated) result.NextContinuationToken = EncodeContinuationToken(listing.NextMarker);
+            }
+            else
+            {
+                result.Marker = marker ?? "";
+                if (listing.IsTruncated && !String.IsNullOrEmpty(delimiter)) result.NextMarker = listing.NextMarker;
             }
 
-            return listBucketResult;
+            foreach (Obj obj in listing.Objects)
+            {
+                result.Contents.Add(new ObjectMetadata(
+                    obj.Key,
+                    UtcTimestamp.AsUtc(obj.LastUpdateUtc),
+                    obj.Etag ?? obj.Md5,
+                    obj.ContentLength,
+                    OwnerFor(obj.OwnerId, ownerCache)));
+            }
+
+            foreach (string commonPrefix in listing.CommonPrefixes)
+            {
+                result.CommonPrefixes.Add(new CommonPrefixes(commonPrefix));
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// ListObjectVersions, with versions and delete markers interleaved in key order, newest version
+        /// first. S3Server shapes delete markers and applies encoding-type=url, so values are returned unencoded.
+        /// </summary>
+        internal async Task<ListVersionsResult> ListObjectVersions(S3Context ctx)
+        {
+            string header = Header(ctx);
+
+            RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
+            RequestValidator.ValidateAuthorization(md, _Logging, header);
+            RequestValidator.ValidateBucketExists(md, _Logging, header);
+
+            string prefix = ctx.Request.Prefix;
+            string delimiter = ctx.Request.Delimiter;
+            int maxKeys = Math.Min(ctx.Request.MaxKeys, _MaxListKeys);
+            string keyMarker = ctx.Request.KeyMarker;
+            string versionIdMarker = ctx.Request.VersionIdMarker;
+            if (keyMarker == "") keyMarker = null;
+            if (versionIdMarker == "") versionIdMarker = null;
+
+            long? afterVersion = null;
+            if (versionIdMarker != null)
+            {
+                // A version-id-marker is only meaningful together with a key-marker.
+                if (keyMarker == null || !ObjectVersionReference.TryParse(versionIdMarker, out ObjectVersionReference markerReference))
+                {
+                    _Logging.Warn(header + "invalid version-id-marker " + versionIdMarker);
+                    throw new S3Exception(new Error(ErrorCode.InvalidArgument));
+                }
+
+                Obj markerObj = md.BucketClient.ResolveObject(keyMarker, markerReference);
+                if (markerObj != null) afterVersion = markerObj.Version;
+                else if (!markerReference.IsNullVersion) afterVersion = markerReference.Version;
+            }
+
+            ObjectListing listing = md.BucketClient.ListObjectVersions(prefix, delimiter, keyMarker, afterVersion, maxKeys);
+            Dictionary<string, S3ServerLibrary.S3Objects.Owner> ownerCache = new Dictionary<string, S3ServerLibrary.S3Objects.Owner>();
+
+            ListVersionsResult result = new ListVersionsResult();
+            result.Name = md.Bucket.Name;
+            result.BucketRegion = md.Bucket.RegionString;
+            result.Prefix = prefix;
+            result.KeyMarker = keyMarker ?? "";
+            result.VersionIdMarker = versionIdMarker ?? "";
+            result.MaxKeys = maxKeys;
+            result.Delimiter = String.IsNullOrEmpty(delimiter) ? null : delimiter;
+            result.IsTruncated = listing.IsTruncated;
+
+            if (listing.IsTruncated)
+            {
+                result.NextKeyMarker = listing.NextMarker;
+                result.NextVersionIdMarker = listing.NextVersionIdMarker;
+            }
+
+            foreach (Obj obj in listing.Objects)
+            {
+                string versionId = md.BucketClient.VersionIdString(obj);
+                bool isLatest = listing.LatestObjectIds.Contains(obj.Id);
+                DateTime lastModified = UtcTimestamp.AsUtc(obj.LastUpdateUtc);
+                S3ServerLibrary.S3Objects.Owner owner = OwnerFor(obj.OwnerId, ownerCache);
+
+                if (obj.DeleteMarker)
+                    result.Entries.Add(new DeleteMarker(obj.Key, versionId, isLatest, lastModified, owner));
+                else
+                    result.Entries.Add(new ObjectVersion(obj.Key, versionId, isLatest, lastModified, obj.Etag ?? obj.Md5, obj.ContentLength, owner));
+            }
+
+            foreach (string commonPrefix in listing.CommonPrefixes)
+            {
+                result.CommonPrefixes.Add(new CommonPrefixes(commonPrefix));
+            }
+
+            return result;
         }
 
         internal async Task<LocationConstraint> ReadLocation(S3Context ctx)
@@ -253,7 +274,7 @@ namespace Less3.Api.S3
 
         internal async Task<AccessControlPolicy> ReadAcl(S3Context ctx)
         {
-            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
+            string header = Header(ctx);
 
             RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
             RequestValidator.ValidateAuthorization(md, _Logging, header);
@@ -271,137 +292,27 @@ namespace Less3.Api.S3
 
         internal async Task<Tagging> ReadTags(S3Context ctx)
         {
-            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
+            string header = Header(ctx);
 
             RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
             RequestValidator.ValidateAuthorization(md, _Logging, header);
             RequestValidator.ValidateBucketExists(md, _Logging, header);
-             
+
             Tagging tags = new Tagging();
             tags.Tags = new TagSet();
             tags.Tags.Tags = new List<Tag>();
 
             foreach (BucketTag curr in md.BucketTags ?? new List<BucketTag>())
             {
-                Tag currTag = new Tag();
-                currTag.Key = curr.Key;
-                currTag.Value = curr.Value;
-                tags.Tags.Tags.Add(currTag);
+                tags.Tags.Tags.Add(new Tag { Key = curr.Key, Value = curr.Value });
             }
 
             return tags;
         }
 
-        internal async Task<ListVersionsResult> ReadVersions(S3Context ctx)
-        {
-            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
-
-            RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
-            RequestValidator.ValidateAuthorization(md, _Logging, header);
-            RequestValidator.ValidateBucketExists(md, _Logging, header);
-             
-            int startIndex = 0;
-            if (!String.IsNullOrEmpty(ctx.Request.ContinuationToken))
-            {
-                startIndex = ParseContinuationToken(ctx.Request.ContinuationToken);
-            }
-
-            if (!String.IsNullOrEmpty(ctx.Request.Marker))
-            {
-                Obj marker = md.BucketClient.GetObjectLatestMetadata(ctx.Request.Marker);
-                if (marker != null) startIndex += 1;
-            }
-              
-            List<Obj> objects = new List<Obj>();
-            List<string> prefixes = new List<string>();
-            int nextStartIndex = startIndex;
-            bool isTruncated = false;
-            md.BucketClient.EnumerateVersions(
-                ctx.Request.Delimiter, 
-                ctx.Request.Prefix, 
-                startIndex, 
-                (int)ctx.Request.MaxKeys, 
-                out objects, 
-                out prefixes, 
-                out nextStartIndex, 
-                out isTruncated);
-             
-            string lastKey = null; 
-            if (objects.Count > 0)
-            {
-                lastKey = objects[objects.Count - 1].Key; 
-            }
-             
-            ListVersionsResult lvr = new ListVersionsResult();
-            lvr.IsTruncated = isTruncated;
-            lvr.KeyMarker = lastKey;
-            lvr.MaxKeys = ctx.Request.MaxKeys;
-            lvr.Name = ctx.Request.Bucket;
-            lvr.BucketRegion = md.Bucket.RegionString;
-            lvr.Prefix = ctx.Request.Prefix;
-
-            Dictionary<string, S3ServerLibrary.S3Objects.Owner> ownerCache = new Dictionary<string, S3ServerLibrary.S3Objects.Owner>();
-
-            foreach (Obj curr in objects)
-            {
-                if (curr.DeleteMarker)
-                {
-                    DeleteMarker d = new DeleteMarker();
-                    d.IsLatest = IsLatest(objects, curr.Key, curr.Version);
-                    d.Key = curr.Key;
-                    d.LastModified = curr.LastUpdateUtc;
-                    d.VersionId = curr.Version.ToString();
-
-                    d.Owner = new S3ServerLibrary.S3Objects.Owner();
-                    if (ownerCache.ContainsKey(curr.OwnerId))
-                    {
-                        d.Owner = ownerCache[curr.OwnerId];
-                    }
-                    else
-                    {
-                        User u = _Config.GetUserById(curr.OwnerId);
-                        d.Owner.DisplayName = u.Name;
-                        d.Owner.ID = u.Id;
-                        ownerCache.Add(u.Id, d.Owner);
-                    }
-
-                    lvr.DeleteMarkers.Add(d);
-                }
-                else
-                {
-                    S3ServerLibrary.S3Objects.ObjectVersion v = new S3ServerLibrary.S3Objects.ObjectVersion();
-                    v.ETag = null;
-                    v.IsLatest = IsLatest(objects, curr.Key, curr.Version);
-                    v.Key = curr.Key;
-                    v.ETag = "\"" + (curr.Etag ?? curr.Md5) + "\"";
-                    v.LastModified = curr.LastUpdateUtc;
-                    v.VersionId = curr.Version.ToString();
-                    v.Size = curr.ContentLength;
-                    v.StorageClass = StorageClassEnum.STANDARD;
-
-                    v.Owner = new S3ServerLibrary.S3Objects.Owner();
-                    if (ownerCache.ContainsKey(curr.OwnerId))
-                    {
-                        v.Owner = ownerCache[curr.OwnerId];
-                    }
-                    else
-                    {
-                        User u = _Config.GetUserById(curr.OwnerId);
-                        v.Owner.DisplayName = u.Name;
-                        v.Owner.ID = u.Id;
-                        ownerCache.Add(u.Id, v.Owner);
-                    }
-
-                    lvr.Versions.Add(v);
-                }
-            }
-
-            return lvr;
-        }
-
         internal async Task<VersioningConfiguration> ReadVersioning(S3Context ctx)
         {
-            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
+            string header = Header(ctx);
 
             RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
             RequestValidator.ValidateAuthorization(md, _Logging, header);
@@ -415,8 +326,14 @@ namespace Less3.Api.S3
                 vc.IncludeStatus = true;
                 vc.Status = VersioningStatusEnum.Enabled;
             }
+            else if (md.Bucket.VersioningSuspended)
+            {
+                vc.IncludeStatus = true;
+                vc.Status = VersioningStatusEnum.Suspended;
+            }
             else
             {
+                // A bucket that has never had versioning enabled reports no status.
                 vc.IncludeStatus = false;
             }
 
@@ -425,7 +342,7 @@ namespace Less3.Api.S3
 
         internal async Task Write(S3Context ctx)
         {
-            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
+            string header = Header(ctx);
 
             RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
             RequestValidator.ValidateAuthentication(md, _Logging, header);
@@ -434,23 +351,27 @@ namespace Less3.Api.S3
             if (md.Bucket != null || md.BucketClient != null)
             {
                 _Logging.Warn(header + "bucket already exists");
-                throw new S3Exception(new Error(ErrorCode.BucketAlreadyExists));
+                bool ownedByRequester = md.Bucket != null && String.Equals(md.Bucket.OwnerId, md.User.Id, StringComparison.Ordinal);
+                throw new S3Exception(new Error(ownedByRequester ? ErrorCode.BucketAlreadyOwnedByYou : ErrorCode.BucketAlreadyExists));
             }
-               
+
             if (BucketNameValidator.IsInvalid(ctx.Request.Bucket))
             {
                 _Logging.Warn(header + "invalid bucket name: " + ctx.Request.Bucket);
-                throw new S3Exception(new Error(ErrorCode.InvalidRequest));
+                throw new S3Exception(new Error(ErrorCode.InvalidBucketName));
             }
-             
+
             Classes.Bucket bucket = new Classes.Bucket(
                 ctx.Request.Bucket,
-                md.User.Id, 
-                _Settings.Storage.StorageType, 
-                _Settings.Storage.DiskDirectory + ctx.Request.Bucket + "/Objects/", 
+                md.User.Id,
+                _Settings.Storage.StorageType,
+                _Settings.Storage.DiskDirectory + ctx.Request.Bucket + "/Objects/",
                 _Settings.RegionString);
             bucket.TenantId = md.TenantId;
-             
+
+            // Validate ACL headers before creating anything.
+            List<BucketAcl> acls = AclConverter.PolicyToBucketAcls(null, ctx.Http.Request.Headers, md.User, bucket.Id, md.User.Id, _Config, _Logging, header);
+
             if (!_Buckets.Add(bucket))
             {
                 _Logging.Warn(header + "unable to write bucket " + ctx.Request.Bucket);
@@ -465,89 +386,17 @@ namespace Less3.Api.S3
             }
 
             ctx.Response.Headers.Add("Location", "/" + ctx.Request.Bucket);
-
-            #region Permissions-in-Headers
-
-            List<Grant> grants = GrantsFromHeaders(md.User, ctx.Http.Request.Headers);
-            if (grants != null && grants.Count > 0)
-            {
-                foreach (Grant curr in grants)
-                {
-                    if (curr.Grantee != null)
-                    {
-                        BucketAcl bucketAcl = null;
-                        User tempUser = null;
-                        bool permitRead = false;
-                        bool permitWrite = false;
-                        bool permitReadAcp = false;
-                        bool permitWriteAcp = false;
-                        bool fullControl = false;
-
-                        if (!String.IsNullOrEmpty(curr.Grantee.ID))
-                        {
-                            tempUser = _Config.GetUserById(md.TenantId, curr.Grantee.ID);
-                            if (tempUser == null) 
-                            {
-                                _Logging.Warn(header + "unable to retrieve user " + curr.Grantee.ID + " to add ACL to bucket " + bucket.Id);
-                                continue;
-                            }
-
-                            if (curr.Permission == PermissionEnum.Read) permitRead = true;
-                            else if (curr.Permission == PermissionEnum.Write) permitWrite = true;
-                            else if (curr.Permission == PermissionEnum.ReadAcp) permitReadAcp = true;
-                            else if (curr.Permission == PermissionEnum.WriteAcp) permitWriteAcp = true;
-                            else if (curr.Permission == PermissionEnum.FullControl) fullControl = true;
-
-                            bucketAcl = BucketAcl.UserAcl(
-                                curr.Grantee.ID, 
-                                md.User.Id, 
-                                bucket.Id,
-                                permitRead, 
-                                permitWrite, 
-                                permitReadAcp, 
-                                permitWriteAcp, 
-                                fullControl);
-                            bucketAcl.TenantId = md.TenantId;
-
-                            client.AddBucketAcl(bucketAcl);
-                        }
-                        else if (!String.IsNullOrEmpty(curr.Grantee.URI))
-                        {
-                            if (curr.Permission == PermissionEnum.Read) permitRead = true;
-                            else if (curr.Permission == PermissionEnum.Write) permitWrite = true;
-                            else if (curr.Permission == PermissionEnum.ReadAcp) permitReadAcp = true;
-                            else if (curr.Permission == PermissionEnum.WriteAcp) permitWriteAcp = true;
-                            else if (curr.Permission == PermissionEnum.FullControl) fullControl = true;
-
-                            bucketAcl = BucketAcl.GroupAcl(
-                                curr.Grantee.URI, 
-                                md.User.Id, 
-                                bucket.Id,
-                                permitRead, 
-                                permitWrite, 
-                                permitReadAcp, 
-                                permitWriteAcp, 
-                                fullControl);
-                            bucketAcl.TenantId = md.TenantId;
-
-                            client.AddBucketAcl(bucketAcl);
-                        }
-                    }
-                }
-            }
-
-            #endregion
+            if (acls.Count > 0) client.SetBucketAcls(acls);
         }
 
         internal async Task WriteAcl(S3Context ctx, AccessControlPolicy acp)
         {
-            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
+            string header = Header(ctx);
 
             RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
             RequestValidator.ValidateAuthorization(md, _Logging, header);
             RequestValidator.ValidateBucketExists(md, _Logging, header);
-
-            md.BucketClient.DeleteBucketAcl();
+            RequestValidator.ValidateAuthentication(md, _Logging, header);
 
             List<BucketAcl> acls = AclConverter.PolicyToBucketAcls(
                 acp,
@@ -559,16 +408,12 @@ namespace Less3.Api.S3
                 _Logging,
                 header);
 
-            foreach (BucketAcl acl in acls)
-            {
-                acl.TenantId = md.Bucket.TenantId;
-                md.BucketClient.AddBucketAcl(acl);
-            }
+            md.BucketClient.SetBucketAcls(acls);
         }
 
         internal async Task WriteTagging(S3Context ctx, Tagging tagging)
         {
-            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
+            string header = Header(ctx);
 
             RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
             RequestValidator.ValidateAuthorization(md, _Logging, header);
@@ -580,10 +425,8 @@ namespace Less3.Api.S3
                 throw new S3Exception(new Error(ErrorCode.InvalidRequest));
             }
 
-            md.BucketClient.DeleteBucketTags();
-
-            List<BucketTag> tags = new List<BucketTag>(); 
-            if (tagging.Tags != null && tagging.Tags.Tags != null && tagging.Tags.Tags.Count > 0)
+            List<BucketTag> tags = new List<BucketTag>();
+            if (tagging.Tags != null && tagging.Tags.Tags != null)
             {
                 foreach (Tag curr in tagging.Tags.Tags)
                 {
@@ -601,131 +444,147 @@ namespace Less3.Api.S3
 
         internal async Task WriteVersioning(S3Context ctx, VersioningConfiguration vc)
         {
-            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
+            string header = Header(ctx);
 
             RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
             RequestValidator.ValidateAuthorization(md, _Logging, header);
             RequestValidator.ValidateBucketExists(md, _Logging, header);
 
-            if (vc.Status == VersioningStatusEnum.Enabled && !md.Bucket.EnableVersioning)
+            if (vc == null || (vc.Status != VersioningStatusEnum.Enabled && vc.Status != VersioningStatusEnum.Suspended))
             {
-                md.Bucket.EnableVersioning = true;
-                _Buckets.Remove(md.Bucket, false);
-                _Buckets.Add(md.Bucket);
+                _Logging.Warn(header + "versioning status must be Enabled or Suspended");
+                throw new S3Exception(new Error(ErrorCode.MalformedXML));
             }
-            else if (vc.Status != VersioningStatusEnum.Enabled && md.Bucket.EnableVersioning)
+
+            Classes.Bucket bucket = _Config.GetBucketById(md.Bucket.TenantId, md.Bucket.Id);
+            if (bucket == null) throw new S3Exception(new Error(ErrorCode.NoSuchBucket));
+
+            if (vc.Status == VersioningStatusEnum.Enabled)
             {
-                md.Bucket.EnableVersioning = false;
-                _Buckets.Remove(md.Bucket, false);
-                _Buckets.Add(md.Bucket);
+                bucket.EnableVersioning = true;
+                bucket.VersioningSuspended = false;
             }
+            else if (bucket.EnableVersioning || bucket.VersioningSuspended)
+            {
+                // Suspending keeps every existing version; new writes replace the null version.
+                bucket.EnableVersioning = false;
+                bucket.VersioningSuspended = true;
+            }
+            else
+            {
+                // Suspending versioning on a bucket that never had it enabled changes nothing; Amazon S3
+                // then reports the bucket as Suspended.
+                bucket.VersioningSuspended = true;
+            }
+
+            if (!_Buckets.Update(bucket))
+            {
+                _Logging.Warn(header + "unable to update versioning on bucket " + bucket.Name);
+                throw new S3Exception(new Error(ErrorCode.InternalError));
+            }
+
+            _Logging.Info(header + "versioning on bucket " + bucket.Name + " set to " + vc.Status.ToString());
         }
 
         internal async Task<ListMultipartUploadsResult> ReadMultipartUploads(S3Context ctx)
         {
-            string header = "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
+            string header = Header(ctx);
 
             RequestMetadata md = RequestValidator.ValidateAndGetMetadata(ctx, _Logging, header);
             RequestValidator.ValidateAuthorization(md, _Logging, header);
             RequestValidator.ValidateBucketExists(md, _Logging, header);
 
-            List<Less3.Classes.Upload> uploads = _Config.GetUploadsByBucketId(md.Bucket.TenantId, md.Bucket.Id);
-            if (uploads == null)
+            // S3Server validates max-uploads and applies encoding-type=url to the response.
+            string prefix = ctx.Request.Prefix ?? "";
+            string delimiter = String.IsNullOrEmpty(ctx.Request.Delimiter) ? null : ctx.Request.Delimiter;
+            string keyMarker = ctx.Request.KeyMarker;
+            string uploadIdMarker = ctx.Request.UploadIdMarker;
+            int maxUploads = Math.Min(ctx.Request.MaxUploads, _MaxListKeys);
+
+            List<Less3.Classes.Upload> uploads = (_Config.GetUploadsByBucketId(md.Bucket.TenantId, md.Bucket.Id) ?? new List<Less3.Classes.Upload>())
+                .Where(u => u.ExpirationUtc > DateTime.UtcNow)
+                .Where(u => u.Key.StartsWith(prefix, StringComparison.Ordinal))
+                .OrderBy(u => u.Key, StringComparer.Ordinal)
+                .ThenBy(u => u.CreatedUtc)
+                .ThenBy(u => u.Id, StringComparer.Ordinal)
+                .ToList();
+
+            if (!String.IsNullOrEmpty(keyMarker))
             {
-                uploads = new List<Less3.Classes.Upload>();
-            }
+                // With an upload-id-marker, uploads for the marker key after that upload are included;
+                // without one, every upload for the marker key is skipped.
+                int markerIndex = String.IsNullOrEmpty(uploadIdMarker)
+                    ? -1
+                    : uploads.FindIndex(u => String.Equals(u.Key, keyMarker, StringComparison.Ordinal) && String.Equals(u.Id, uploadIdMarker, StringComparison.Ordinal));
 
-            uploads = uploads.Where(u => u.ExpirationUtc > DateTime.UtcNow).ToList();
-
-            if (!String.IsNullOrEmpty(ctx.Request.Prefix))
-            {
-                uploads = uploads.Where(u => u.Key.StartsWith(ctx.Request.Prefix)).ToList();
-            }
-
-            uploads = uploads.OrderBy(u => u.Key).ThenBy(u => u.CreatedUtc).ToList();
-
-            int maxUploads = 1000;
-            bool isTruncated = false;
-            if (uploads.Count > maxUploads)
-            {
-                isTruncated = true;
-                uploads = uploads.Take(maxUploads).ToList();
+                uploads = uploads
+                    .Where((u, index) =>
+                        String.CompareOrdinal(u.Key, keyMarker) > 0
+                        || (markerIndex >= 0 && String.Equals(u.Key, keyMarker, StringComparison.Ordinal) && index > markerIndex))
+                    .ToList();
             }
 
             ListMultipartUploadsResult result = new ListMultipartUploadsResult();
             result.Bucket = ctx.Request.Bucket;
-            result.Prefix = ctx.Request.Prefix;
-            result.Delimiter = ctx.Request.Delimiter;
+            result.Prefix = prefix;
+            result.Delimiter = delimiter;
+            result.KeyMarker = keyMarker;
+            result.UploadIdMarker = uploadIdMarker;
             result.MaxUploads = maxUploads;
-            result.IsTruncated = isTruncated;
             result.Uploads = new List<S3ServerLibrary.S3Objects.Upload>();
+            result.CommonPrefixes = new List<CommonPrefixes>();
 
+            int count = 0;
+            string lastPrefix = null;
+            S3ServerLibrary.S3Objects.Upload lastUpload = null;
+            string lastKey = null;
             Dictionary<string, S3ServerLibrary.S3Objects.Owner> ownerCache = new Dictionary<string, S3ServerLibrary.S3Objects.Owner>();
 
             foreach (Less3.Classes.Upload upload in uploads)
             {
+                string commonPrefix = null;
+                if (!String.IsNullOrEmpty(delimiter))
+                {
+                    int index = upload.Key.IndexOf(delimiter, prefix.Length, StringComparison.Ordinal);
+                    if (index >= 0) commonPrefix = upload.Key.Substring(0, index + delimiter.Length);
+                }
+
+                if (commonPrefix != null && String.Equals(commonPrefix, lastPrefix, StringComparison.Ordinal)) continue;
+
+                if (count >= maxUploads)
+                {
+                    result.IsTruncated = true;
+                    break;
+                }
+
+                if (commonPrefix != null)
+                {
+                    result.CommonPrefixes.Add(new CommonPrefixes(commonPrefix));
+                    lastPrefix = commonPrefix;
+                    lastKey = commonPrefix;
+                    lastUpload = null;
+                    count++;
+                    continue;
+                }
+
                 S3ServerLibrary.S3Objects.Upload u = new S3ServerLibrary.S3Objects.Upload();
                 u.UploadId = upload.Id;
                 u.Key = upload.Key;
                 u.Initiated = upload.CreatedUtc;
                 u.StorageClass = StorageClassEnum.STANDARD;
-
-                if (ownerCache.ContainsKey(upload.AuthorId))
-                {
-                    u.Initiator = ownerCache[upload.AuthorId];
-                }
-                else
-                {
-                    User author = _Config.GetUserById(upload.AuthorId);
-                    if (author != null)
-                    {
-                        S3ServerLibrary.S3Objects.Owner initiatorOwner = new S3ServerLibrary.S3Objects.Owner();
-                        initiatorOwner.ID = author.Id;
-                        initiatorOwner.DisplayName = author.Name;
-                        u.Initiator = initiatorOwner;
-                        ownerCache.Add(author.Id, initiatorOwner);
-                    }
-                    else
-                    {
-                        S3ServerLibrary.S3Objects.Owner initiatorOwner = new S3ServerLibrary.S3Objects.Owner();
-                        initiatorOwner.ID = upload.AuthorId;
-                        initiatorOwner.DisplayName = upload.AuthorId;
-                        u.Initiator = initiatorOwner;
-                    }
-                }
-
-                if (ownerCache.ContainsKey(upload.OwnerId))
-                {
-                    u.Owner = ownerCache[upload.OwnerId];
-                }
-                else
-                {
-                    User owner = _Config.GetUserById(upload.OwnerId);
-                    if (owner != null)
-                    {
-                        S3ServerLibrary.S3Objects.Owner ownerObj = new S3ServerLibrary.S3Objects.Owner();
-                        ownerObj.ID = owner.Id;
-                        ownerObj.DisplayName = owner.Name;
-                        u.Owner = ownerObj;
-                        ownerCache.Add(owner.Id, ownerObj);
-                    }
-                    else
-                    {
-                        S3ServerLibrary.S3Objects.Owner ownerObj = new S3ServerLibrary.S3Objects.Owner();
-                        ownerObj.ID = upload.OwnerId;
-                        ownerObj.DisplayName = upload.OwnerId;
-                        u.Owner = ownerObj;
-                    }
-                }
-
+                u.Initiator = OwnerFor(upload.AuthorId, ownerCache);
+                u.Owner = OwnerFor(upload.OwnerId, ownerCache);
                 result.Uploads.Add(u);
+
+                lastKey = upload.Key;
+                lastUpload = u;
+                count++;
             }
 
-            if (isTruncated && result.Uploads.Count > 0)
+            if (result.IsTruncated)
             {
-                S3ServerLibrary.S3Objects.Upload last = result.Uploads[result.Uploads.Count - 1];
-                result.NextKeyMarker = last.Key;
-                result.NextUploadIdMarker = last.UploadId;
+                result.NextKeyMarker = lastKey;
+                result.NextUploadIdMarker = lastUpload != null ? lastUpload.UploadId : null;
             }
 
             _Logging.Debug(header + "returning " + result.Uploads.Count + " multipart uploads for bucket " + ctx.Request.Bucket);
@@ -737,225 +596,43 @@ namespace Less3.Api.S3
 
         #region Private-Methods
 
-        private string BuildContinuationToken(long lastId)
+        private static string Header(S3Context ctx)
         {
-            return Common.StringToBase64(lastId.ToString());
+            return "[" + ctx.Http.Request.Source.IpAddress + ":" + ctx.Http.Request.Source.Port + " " + ctx.Request.RequestType.ToString() + "] ";
         }
 
-        private int ParseContinuationToken(string base64)
+        private static string EncodeContinuationToken(string marker)
         {
-            return Convert.ToInt32(Common.Base64ToString(base64));
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes(_ContinuationTokenPrefix + marker));
         }
 
-        private bool IsLatest(List<Obj> objs, string key, long version)
+        private string DecodeContinuationToken(string token, string header)
         {
-            bool laterObjExists = objs.Exists(o =>
-                o.Key.Equals(key)
-                && o.Version > version);
+            try
+            {
+                string decoded = Encoding.UTF8.GetString(Convert.FromBase64String(token));
+                if (decoded.StartsWith(_ContinuationTokenPrefix, StringComparison.Ordinal))
+                    return decoded.Substring(_ContinuationTokenPrefix.Length);
+            }
+            catch (FormatException)
+            {
+            }
 
-            return !laterObjExists;
+            _Logging.Warn(header + "invalid continuation token");
+            throw new S3Exception(new Error(ErrorCode.InvalidArgument));
         }
 
-        private List<Grant> GrantsFromHeaders(User user, NameValueCollection headers)
+        private S3ServerLibrary.S3Objects.Owner OwnerFor(string id, Dictionary<string, S3ServerLibrary.S3Objects.Owner> cache)
         {
-            List<Grant> ret = new List<Grant>();
-            if (headers == null || headers.Count < 1) return ret;
+            if (String.IsNullOrEmpty(id)) return null;
+            if (cache.TryGetValue(id, out S3ServerLibrary.S3Objects.Owner cached)) return cached;
 
-            string headerVal = null;
-            string[] grantees = null;
-            Grant grant = null;
-
-            if (headers.AllKeys.Contains(Constants.Headers.AccessControlList.ToLower()))
-            {
-                headerVal = headers[Constants.Headers.AccessControlList.ToLower()];
-
-                switch (headerVal)
-                {
-                    case "private":
-                        grant = new Grant();
-                        grant.Permission = PermissionEnum.FullControl;
-                        grant.Grantee = new CanonicalUser();
-                        grant.Grantee.ID = user.Id;
-                        grant.Grantee.DisplayName = user.Name;
-                        ret.Add(grant);
-                        break;
-
-                    case "public-read":
-                        grant = new Grant();
-                        grant.Permission = PermissionEnum.FullControl;
-                        grant.Grantee = new CanonicalUser();
-                        grant.Grantee.ID = user.Id;
-                        grant.Grantee.DisplayName = user.Name;
-                        ret.Add(grant);
-
-                        grant = new Grant();
-                        grant.Permission = PermissionEnum.Read;
-                        grant.Grantee = new Group();
-                        grant.Grantee.URI = "http://acs.amazonaws.com/groups/global/AllUsers";
-                        ret.Add(grant);
-                        break;
-
-                    case "public-read-write":
-                        grant = new Grant();
-                        grant.Permission = PermissionEnum.FullControl;
-                        grant.Grantee = new CanonicalUser();
-                        grant.Grantee.ID = user.Id;
-                        grant.Grantee.DisplayName = user.Name;
-                        ret.Add(grant);
-
-                        grant = new Grant();
-                        grant.Permission = PermissionEnum.Read;
-                        grant.Grantee = new Group();
-                        grant.Grantee.URI = "http://acs.amazonaws.com/groups/global/AllUsers";
-                        ret.Add(grant);
-
-                        grant = new Grant();
-                        grant.Permission = PermissionEnum.Write;
-                        grant.Grantee = new Group();
-                        grant.Grantee.URI = "http://acs.amazonaws.com/groups/global/AllUsers";
-                        ret.Add(grant);
-                        break;
-
-                    case "authenticated-read":
-                        grant = new Grant();
-                        grant.Permission = PermissionEnum.FullControl;
-                        grant.Grantee = new CanonicalUser();
-                        grant.Grantee.ID = user.Id;
-                        grant.Grantee.DisplayName = user.Name;
-                        ret.Add(grant);
-
-                        grant = new Grant();
-                        grant.Permission = PermissionEnum.Read;
-                        grant.Grantee = new Group();
-                        grant.Grantee.URI = "http://acs.amazonaws.com/groups/global/AuthenticatedUsers";
-                        ret.Add(grant);
-                        break;
-                }
-            }
-
-            if (headers.AllKeys.Contains(Constants.Headers.AclGrantRead.ToLower()))
-            {
-                headerVal = headers[Constants.Headers.AclGrantRead.ToLower()];
-                grantees = headerVal.Split(',');
-                if (grantees.Length > 0)
-                {
-                    foreach (string curr in grantees)
-                    {
-                        grant = null;
-                        if (!GrantFromString(curr, PermissionEnum.Read, out grant)) continue;
-                        ret.Add(grant);
-                    }
-                }
-            }
-
-            if (headers.AllKeys.Contains(Constants.Headers.AclGrantWrite.ToLower()))
-            {
-                headerVal = headers[Constants.Headers.AclGrantWrite.ToLower()];
-                grantees = headerVal.Split(',');
-                if (grantees.Length > 0)
-                {
-                    foreach (string curr in grantees)
-                    {
-                        grant = null;
-                        if (!GrantFromString(curr, PermissionEnum.Write, out grant)) continue;
-                        ret.Add(grant);
-                    }
-                }
-            }
-
-            if (headers.AllKeys.Contains(Constants.Headers.AclGrantReadAcp.ToLower()))
-            {
-                headerVal = headers[Constants.Headers.AclGrantReadAcp.ToLower()];
-                grantees = headerVal.Split(',');
-                if (grantees.Length > 0)
-                {
-                    foreach (string curr in grantees)
-                    {
-                        grant = null;
-                        if (!GrantFromString(curr, PermissionEnum.ReadAcp, out grant)) continue;
-                        ret.Add(grant);
-                    }
-                }
-            }
-
-            if (headers.AllKeys.Contains(Constants.Headers.AclGrantWriteAcp.ToLower()))
-            {
-                headerVal = headers[Constants.Headers.AclGrantWriteAcp.ToLower()];
-                grantees = headerVal.Split(',');
-                if (grantees.Length > 0)
-                {
-                    foreach (string curr in grantees)
-                    {
-                        grant = null;
-                        if (!GrantFromString(curr, PermissionEnum.WriteAcp, out grant)) continue;
-                        ret.Add(grant);
-                    }
-                }
-            }
-
-            if (headers.AllKeys.Contains(Constants.Headers.AclGrantFullControl.ToLower()))
-            {
-                headerVal = headers[Constants.Headers.AclGrantFullControl.ToLower()];
-                grantees = headerVal.Split(',');
-                if (grantees.Length > 0)
-                {
-                    foreach (string curr in grantees)
-                    {
-                        grant = null;
-                        if (!GrantFromString(curr, PermissionEnum.FullControl, out grant)) continue;
-                        ret.Add(grant);
-                    }
-                }
-            }
-
-            return ret;
-        }
-
-        private bool GrantFromString(string str, PermissionEnum permType, out Grant grant)
-        {
-            grant = null;
-            if (String.IsNullOrEmpty(str)) return false;
-
-            string[] parts = str.Split('=');
-            if (parts.Length != 2) return false;
-            string granteeType = parts[0];
-            string grantee = parts[1];
-
-            grant = new Grant();
-            grant.Permission = permType;
-
-            if (granteeType.Equals("emailAddress"))
-            {
-                User user = _Config.GetUserByEmail(grantee);
-                if (user == null)
-                {
-                    return false;
-                }
-                grant.Grantee = new CanonicalUser();
-                grant.Grantee.ID = user.Id;
-                grant.Grantee.DisplayName = user.Name;
-                return true;
-            }
-            else if (granteeType.Equals("id"))
-            {
-                User user = _Config.GetUserById(grantee);
-                if (user == null)
-                {
-                    return false;
-                }
-                grant.Grantee = new CanonicalUser();
-                grant.Grantee.ID = user.Id;
-                grant.Grantee.DisplayName = user.Name;
-                return true;
-            }
-            else if (granteeType.Equals("uri"))
-            {
-                grant.Grantee = new Group();
-                grant.Grantee.URI = grantee;
-                return true;
-            }
-
-            return false;
+            User user = _Config.GetUserById(id);
+            S3ServerLibrary.S3Objects.Owner owner = new S3ServerLibrary.S3Objects.Owner();
+            owner.ID = id;
+            owner.DisplayName = user != null ? user.Name : id;
+            cache[id] = owner;
+            return owner;
         }
 
         #endregion

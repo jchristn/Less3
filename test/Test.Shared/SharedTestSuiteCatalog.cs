@@ -30,7 +30,11 @@ namespace Test.Shared
             Integration("S3ProtocolComplianceTests", "S3 Protocol Compliance Tests", server => new S3ProtocolComplianceTests(server!)),
             Integration("SecurityBoundaryTests", "Security Boundary Tests", server => new SecurityBoundaryTests(server!)),
             Integration("PerformanceRegressionTests", "Performance Regression Tests", server => new PerformanceRegressionTests(server!))
-        };
+        }
+        .Concat(S3Compatibility.S3CompatibilitySuites.All.Select(suite =>
+            Integration(suite.SuiteId, suite.DisplayName, _ => new DescriptorSuiteTests(suite))))
+        .Append(Standalone("HarnessProcessCleanup", "Test Harness Process Cleanup", _ => new DescriptorSuiteTests(Processes.HarnessProcessCleanupCases.Suite())))
+        .ToList();
 
         /// <summary>
         /// All legacy Test.Shared suites.

@@ -140,6 +140,7 @@ namespace Less3.Database.Sqlite.Queries
                     enableversioning INT NOT NULL DEFAULT 0,
                     enablepublicwrite INT NOT NULL DEFAULT 0,
                     enablepublicread INT NOT NULL DEFAULT 0,
+                    versioningsuspended INT NOT NULL DEFAULT 0,
                     createdutc VARCHAR(64) NOT NULL
                 );
 
@@ -167,7 +168,8 @@ namespace Less3.Database.Sqlite.Queries
                     lastupdateutc VARCHAR(64) NOT NULL,
                     lastaccessutc VARCHAR(64) NOT NULL,
                     metadata TEXT,
-                    expirationutc VARCHAR(64)
+                    expirationutc VARCHAR(64),
+                    nullversion INT NOT NULL DEFAULT 0
                 );
 
                 CREATE INDEX IF NOT EXISTS idx_objects_id ON objects (id);

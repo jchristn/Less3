@@ -14,8 +14,8 @@ Less3 is an S3-compatible object storage server for local development, private d
 
 ## Images
 
-- `jchristn77/less3:v4.0.0` - Less3 server
-- `jchristn77/less3-ui:v4.0.0` - Less3 dashboard
+- `jchristn77/less3:v4.1.0` - Less3 server
+- `jchristn77/less3-ui:v4.1.0` - Less3 dashboard
 
 ## Quick Start (multi-node cluster)
 

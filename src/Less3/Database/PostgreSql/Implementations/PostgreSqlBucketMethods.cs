@@ -150,9 +150,10 @@ namespace Less3.Database.PostgreSql.Implementations
 
                 bucket.DiskDirectory = row["diskdirectory"] != DBNull.Value ? row["diskdirectory"].ToString() : null;
                 bucket.EnableVersioning = ControlPlaneDataMapper.BoolValue(row, "enableversioning");
+                bucket.VersioningSuspended = ControlPlaneDataMapper.BoolValue(row, "versioningsuspended");
                 bucket.EnablePublicWrite = ControlPlaneDataMapper.BoolValue(row, "enablepublicwrite");
                 bucket.EnablePublicRead = ControlPlaneDataMapper.BoolValue(row, "enablepublicread");
-                bucket.CreatedUtc = Convert.ToDateTime(row["createdutc"]).ToUniversalTime();
+                bucket.CreatedUtc = ControlPlaneDataMapper.UtcDateTime(row["createdutc"]);
                 buckets.Add(bucket);
             }
 

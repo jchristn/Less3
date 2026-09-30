@@ -135,7 +135,7 @@ namespace Less3.Database.PostgreSql.Implementations
                 cred.Active = ControlPlaneDataMapper.BoolValue(row, "active");
                 cred.LastUsedUtc = ControlPlaneDataMapper.NullableDateValue(row, "lastusedutc");
                 cred.LastFailedUtc = ControlPlaneDataMapper.NullableDateValue(row, "lastfailedutc");
-                cred.CreatedUtc = Convert.ToDateTime(row["createdutc"]).ToUniversalTime();
+                cred.CreatedUtc = ControlPlaneDataMapper.UtcDateTime(row["createdutc"]);
                 creds.Add(cred);
             }
 

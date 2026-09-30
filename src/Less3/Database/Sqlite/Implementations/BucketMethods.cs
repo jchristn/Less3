@@ -153,6 +153,7 @@ namespace Less3.Database.Sqlite.Implementations
             bucket.StorageType = Enum.Parse<StorageDriverType>(row["storagetype"].ToString());
             bucket.DiskDirectory = row["diskdirectory"] != null && row["diskdirectory"] != DBNull.Value ? row["diskdirectory"].ToString() : null;
             bucket.EnableVersioning = ControlPlaneDataMapper.BoolValue(row, "enableversioning");
+            bucket.VersioningSuspended = ControlPlaneDataMapper.BoolValue(row, "versioningsuspended");
             bucket.EnablePublicWrite = ControlPlaneDataMapper.BoolValue(row, "enablepublicwrite");
             bucket.EnablePublicRead = ControlPlaneDataMapper.BoolValue(row, "enablepublicread");
             bucket.CreatedUtc = DateTime.Parse(row["createdutc"].ToString());

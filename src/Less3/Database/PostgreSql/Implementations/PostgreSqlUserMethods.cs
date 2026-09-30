@@ -166,7 +166,7 @@ namespace Less3.Database.PostgreSql.Implementations
                 user.IsAdmin = ControlPlaneDataMapper.BoolValue(row, "isadmin");
                 user.IsTenantAdmin = ControlPlaneDataMapper.BoolValue(row, "istenantadmin");
                 user.Active = ControlPlaneDataMapper.BoolValue(row, "active");
-                user.CreatedUtc = Convert.ToDateTime(row["createdutc"]).ToUniversalTime();
+                user.CreatedUtc = ControlPlaneDataMapper.UtcDateTime(row["createdutc"]);
                 users.Add(user);
             }
 

@@ -7,7 +7,7 @@ namespace Less3.Database.SqlServer.Queries
     {
         internal static string InsertQuery(Bucket bucket)
         {
-            return "INSERT INTO buckets (id, tenant_id, owner_id, name, regionstring, storagetype, diskdirectory, enableversioning, enablepublicwrite, enablepublicread, createdutc) VALUES ("
+            return "INSERT INTO buckets (id, tenant_id, owner_id, name, regionstring, storagetype, diskdirectory, enableversioning, enablepublicwrite, enablepublicread, createdutc, versioningsuspended) VALUES ("
                 + "'" + Sanitizer.SanitizeString(bucket.Id) + "', "
                 + "'" + Sanitizer.SanitizeString(bucket.TenantId) + "', "
                 + "'" + Sanitizer.SanitizeString(bucket.OwnerId) + "', "
@@ -18,7 +18,8 @@ namespace Less3.Database.SqlServer.Queries
                 + (bucket.EnableVersioning ? 1 : 0) + ", "
                 + (bucket.EnablePublicWrite ? 1 : 0) + ", "
                 + (bucket.EnablePublicRead ? 1 : 0) + ", "
-                + "'" + bucket.CreatedUtc.ToString(Sanitizer.TimestampFormat) + "'"
+                + "'" + bucket.CreatedUtc.ToString(Sanitizer.TimestampFormat) + "', "
+                + (bucket.VersioningSuspended ? 1 : 0)
                 + ");";
         }
 
@@ -84,7 +85,8 @@ namespace Less3.Database.SqlServer.Queries
                 + "enableversioning = " + (bucket.EnableVersioning ? 1 : 0) + ", "
                 + "enablepublicwrite = " + (bucket.EnablePublicWrite ? 1 : 0) + ", "
                 + "enablepublicread = " + (bucket.EnablePublicRead ? 1 : 0) + ", "
-                + "createdutc = '" + bucket.CreatedUtc.ToString(Sanitizer.TimestampFormat) + "' "
+                + "createdutc = '" + bucket.CreatedUtc.ToString(Sanitizer.TimestampFormat) + "', "
+                + "versioningsuspended = " + (bucket.VersioningSuspended ? 1 : 0) + " "
                 + "WHERE tenant_id = '" + Sanitizer.SanitizeString(bucket.TenantId)
                 + "' AND id = '" + Sanitizer.SanitizeString(bucket.Id) + "';";
         }

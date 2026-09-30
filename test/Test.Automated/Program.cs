@@ -1,10 +1,12 @@
 namespace Test.Automated
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using Test.Shared;
     using Touchstone.Cli;
+    using Touchstone.Core;
 
     /// <summary>
     /// Entry point for the Less3 automated test runner.
@@ -24,21 +26,26 @@ namespace Test.Automated
             }
 
             string? resultsPath = null;
+            string? suitePrefix = null;
 
             if (args != null)
             {
                 for (int i = 0; i < args.Length; i++)
                 {
-                    if (args[i] == "--results" && i + 1 < args.Length)
-                    {
-                        resultsPath = args[i + 1];
-                        break;
-                    }
+                    if (args[i] == "--results" && i + 1 < args.Length) resultsPath = args[i + 1];
+                    if (args[i] == "--suite" && i + 1 < args.Length) suitePrefix = args[i + 1];
                 }
             }
 
+            // --suite <prefix> runs only the suites whose id starts with the prefix, e.g. --suite S3Compat.
+            IReadOnlyList<TestSuiteDescriptor> suites = Less3TouchstoneSuites.All;
+            if (!String.IsNullOrEmpty(suitePrefix))
+            {
+                suites = suites.Where(s => s.SuiteId.StartsWith(suitePrefix, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
             return await ConsoleRunner.RunAsync(
-                Less3TouchstoneSuites.All,
+                suites,
                 resultsPath: resultsPath).ConfigureAwait(false);
         }
 

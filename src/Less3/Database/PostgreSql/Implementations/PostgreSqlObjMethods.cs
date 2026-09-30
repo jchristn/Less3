@@ -82,6 +82,32 @@ namespace Less3.Database.PostgreSql.Implementations
             return MapObjects(result);
         }
 
+        public Obj GetNullVersion(string key, string bucketId)
+        {
+            if (String.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            DataTable result = _Driver.ExecuteQuery(ObjQueries.SelectNullVersion(key, bucketId)).Result;
+            List<Obj> objects = MapObjects(result);
+            if (objects.Count > 0) return objects[0];
+            return null;
+        }
+
+        public List<Obj> EnumerateLatest(string bucketId, string prefix, string afterKey, int maxResults)
+        {
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            if (maxResults < 1) throw new ArgumentOutOfRangeException(nameof(maxResults), "Maximum results must be at least 1.");
+            DataTable result = _Driver.ExecuteQuery(ObjQueries.EnumerateLatest(bucketId, prefix, afterKey, maxResults)).Result;
+            return MapObjects(result);
+        }
+
+        public List<Obj> EnumerateVersions(string bucketId, string prefix, string afterKey, long? afterVersion, int maxResults)
+        {
+            if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
+            if (maxResults < 1) throw new ArgumentOutOfRangeException(nameof(maxResults), "Maximum results must be at least 1.");
+            DataTable result = _Driver.ExecuteQuery(ObjQueries.EnumerateVersions(bucketId, prefix, afterKey, afterVersion, maxResults)).Result;
+            return MapObjects(result);
+        }
+
         public BucketStatistics GetStatistics(string bucketId)
         {
             if (String.IsNullOrEmpty(bucketId)) throw new ArgumentNullException(nameof(bucketId));
@@ -124,12 +150,13 @@ namespace Less3.Database.PostgreSql.Implementations
                 obj.BlobFilename = row["blobfilename"] != DBNull.Value ? row["blobfilename"].ToString() : null;
                 obj.IsFolder = ControlPlaneDataMapper.BoolValue(row, "isfolder");
                 obj.DeleteMarker = ControlPlaneDataMapper.BoolValue(row, "deletemarker");
+                obj.NullVersion = ControlPlaneDataMapper.BoolValue(row, "nullversion");
                 obj.Md5 = row["md5"] != DBNull.Value ? row["md5"].ToString() : null;
-                obj.CreatedUtc = Convert.ToDateTime(row["createdutc"]).ToUniversalTime();
-                obj.LastUpdateUtc = Convert.ToDateTime(row["lastupdateutc"]).ToUniversalTime();
-                obj.LastAccessUtc = Convert.ToDateTime(row["lastaccessutc"]).ToUniversalTime();
+                obj.CreatedUtc = ControlPlaneDataMapper.UtcDateTime(row["createdutc"]);
+                obj.LastUpdateUtc = ControlPlaneDataMapper.UtcDateTime(row["lastupdateutc"]);
+                obj.LastAccessUtc = ControlPlaneDataMapper.UtcDateTime(row["lastaccessutc"]);
                 obj.Metadata = row["metadata"] != DBNull.Value ? row["metadata"].ToString() : null;
-                obj.ExpirationUtc = row["expirationutc"] != DBNull.Value ? Convert.ToDateTime(row["expirationutc"]).ToUniversalTime() : (DateTime?)null;
+                obj.ExpirationUtc = row["expirationutc"] != DBNull.Value ? ControlPlaneDataMapper.UtcDateTime(row["expirationutc"]) : (DateTime?)null;
                 objects.Add(obj);
             }
 

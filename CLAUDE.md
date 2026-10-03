@@ -236,7 +236,7 @@ Less3 follows Amazon S3 versioning semantics. `BucketClient` owns them; handlers
 
 ### S3Server 8 Contract
 
-Less3 uses S3Server 8.0.1, which frames the S3 wire details itself: ListObjects v1/v2 and ListObjectVersions shapes (including delete markers) and `encoding-type=url`, DeleteObjects `Quiet`, canned ACL writes (the callback receives a `null` policy), CopyObject and UploadPartCopy (`Object.Copy` / `Object.UploadPartCopy`, request types `ObjectCopy` / `ObjectUploadPartCopy`), suffix ranges (`S3Request.RangeSuffixLength`, routed to `Object.ReadRange`), HEAD ranges, `Content-Range` for the bytes returned, `304` (throw `ErrorCode.NotModified` after adding `ETag`/`Last-Modified`), per-operation parameter validation, and the S3 XML namespace. Callbacks return models with unencoded values.
+Less3 uses S3Server 8.1.0, which frames the S3 wire details itself: ListObjects v1/v2 and ListObjectVersions shapes (including delete markers) and `encoding-type=url`, DeleteObjects `Quiet`, canned ACL writes (the callback receives a `null` policy), CopyObject and UploadPartCopy (`Object.Copy` / `Object.UploadPartCopy`, request types `ObjectCopy` / `ObjectUploadPartCopy`), suffix ranges (`S3Request.RangeSuffixLength`, routed to `Object.ReadRange`), HEAD ranges, `Content-Range` for the bytes returned, `304` (throw `ErrorCode.NotModified` after adding `ETag`/`Last-Modified`), per-operation parameter validation, and the S3 XML namespace. Callbacks return models with unencoded values.
 
 - S3Server validates query parameters **before** `PreRequestHandler` and runs `PreRequestHandler` **before** signature validation, so nothing that acts on or discloses data may be answered from `PreRequestHandler`.
 - `ObjectCopy` and `ObjectUploadPartCopy` are authorized as `ObjectWrite` and `ObjectUploadPart` (Program.cs); the copy checks read access to the source itself.
@@ -716,7 +716,7 @@ The v4.0.0 cluster keeps one authority for each kind of truth: Postgres for all 
 - `CleanupManager` and schema migration run leader-only, elected via well-known lock leases (`cluster:cleanup`, `cluster:migration`). Nodes register in `less3_node` on boot and heartbeat; the dashboard and `/api/v1/cluster/*` expose membership, health, leader, and active locks.
 
 **Observability**
-- Library code is instrumented with plain BCL `Meter`/`ActivitySource` under `Less3.*` names (no telemetry-SDK dependency in the instrumented code). At the composition root a `RadiantHost` subscribes to the `Less3.*` meters and Watson's `Watson` meter, exposes Prometheus on `:9464`, and can export OTLP traces and logs. The Docker stack ships Prometheus, Grafana (dashboards pre-provisioned, including a Locks & Data Integrity board whose fencing-conflict count should stay at zero), Loki, Tempo, and an OpenTelemetry collector.
+- Library code is instrumented with plain BCL `Meter`/`ActivitySource` under `Less3.*` names (no telemetry-SDK dependency in the instrumented code). At the composition root a `RadiantHost` subscribes to the `Less3.*` meters, the S3Server library's `S3Server` meter and activity source (S3 protocol layer: operations, pipeline stages, callback timings, signature outcomes; see `Docker/grafana/dashboards/less3-s3server.json`), and Watson's `Watson` meter, exposes Prometheus on `:9464`, and can export OTLP traces and logs. The Docker stack ships Prometheus, Grafana (dashboards pre-provisioned, including a Locks & Data Integrity board whose fencing-conflict count should stay at zero), Loki, Tempo, and an OpenTelemetry collector.
 
 ## Admin API
 

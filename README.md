@@ -141,12 +141,12 @@ The Docker default is a two-node PostgreSQL cluster behind nginx, with the full 
 ```bash
 git clone https://github.com/jchristn/less3
 cd less3
-build-all.bat v4.1.0
+build-all.bat v4.1.0      # Windows; ./build-all.sh v4.1.0 on Linux/Mac
 cd Docker
 docker compose up -d
 ```
 
-`compose.yaml` uses the published, tagged images, so build and tag them first (`build-all.bat v4.1.0`), then bring the stack up. It starts PostgreSQL, two Less3 nodes sharing a storage volume, nginx on port `8000`, the dashboard on port `3000`, the Clutch lock server and dashboard, and Prometheus, Grafana, Loki, Tempo, and an OpenTelemetry collector. Point an S3 client at `http://localhost:8000` and requests round-robin across the nodes. See [`MULTINODE_SETUP.md`](MULTINODE_SETUP.md) for provisioning, shared-storage rules, the full HTTP port list, and running the same topology by hand. For one durable node on Postgres without the load balancer, use `docker compose -f compose.single.yaml up -d`.
+`compose.yaml` uses the published, tagged images, so build and tag them first (`build-all.bat v4.1.0`, or `./build-all.sh v4.1.0` on Linux/Mac), then bring the stack up. It starts PostgreSQL, two Less3 nodes sharing a storage volume, nginx on port `8000`, the dashboard on port `3000`, the Clutch lock server and dashboard, and Prometheus, Grafana, Loki, Tempo, and an OpenTelemetry collector. Point an S3 client at `http://localhost:8000` and requests round-robin across the nodes. See [`MULTINODE_SETUP.md`](MULTINODE_SETUP.md) for provisioning, shared-storage rules, the full HTTP port list, and running the same topology by hand. For one durable node on Postgres without the load balancer, use `docker compose -f compose.single.yaml up -d`.
 
 ### Starting the Dashboard
 
@@ -377,7 +377,9 @@ Ordering is strictly by arrival, so a steady stream of reads cannot starve a que
 
 Less3's library code is instrumented with base-class-library `Meter` and `ActivitySource` instruments under `Less3.*` names — no telemetry-SDK dependency in the instrumented code. Every S3, REST, and admin API operation is metered (request count and duration, labeled by surface and operation), and every object operation records per-stage timestamps throughout its execution (lock-acquire, metadata-read, storage read/write, database-commit, blob-delete).
 
-Each node also exposes Watson's native Prometheus `/metrics` endpoint on its main port. In the Docker stack, Prometheus scrapes that endpoint directly for the Watson HTTP metrics, while the `Less3.*` domain metrics and traces are exported over OTLP to an OpenTelemetry collector (metrics re-exported for Prometheus, traces to Tempo). Application logs are bridged from the SyslogLogging module into the same OTLP pipeline and land in Loki, so every node's log stream is queryable in Grafana (labeled by `service_instance_id`) and correlated with traces. Grafana ships with six pre-provisioned dashboards:
+The S3 protocol layer is instrumented by the S3Server library itself (meter and activity source `S3Server`, see S3Server's [TELEMETRY.md](https://github.com/jchristn/S3Server/blob/main/TELEMETRY.md)): requests by S3 operation (`GetObject`, `PutObject`, ...), the time spent in each request pipeline stage (parse, signature validation, deserialize, Less3 callback, serialize, send), each Less3 callback's duration and outcome, signature validation outcomes, error types, and object sizes. Less3's telemetry host subscribes to it, so every S3 request produces an `S3 <operation>` span under Watson's server span, with stage and callback child spans that Less3's own spans nest beneath. Bucket names are on spans; object keys are not.
+
+Each node also exposes Watson's native Prometheus `/metrics` endpoint on its main port. In the Docker stack, Prometheus scrapes that endpoint directly for the Watson HTTP metrics, while the `Less3.*` domain metrics and traces are exported over OTLP to an OpenTelemetry collector (metrics re-exported for Prometheus, traces to Tempo). Application logs are bridged from the SyslogLogging module into the same OTLP pipeline and land in Loki, so every node's log stream is queryable in Grafana (labeled by `service_instance_id`) and correlated with traces. Grafana ships with seven pre-provisioned dashboards:
 
 - **Less3 — Overview** - traffic, storage, and error-rate summary
 - **Less3 — Locks & Data Integrity** - lock acquires/denials/waiters and the fencing-conflict counter, which should stay at zero
@@ -385,6 +387,7 @@ Each node also exposes Watson's native Prometheus `/metrics` endpoint on its mai
 - **Less3 — API Operations** - per-operation request rate, error rate, p95 latency, and object-operation stage timings
 - **Less3 — Clutch Lock Server** - Clutch lock activity, WebSocket connections, and HTTP throughput (Clutch's own metrics are scraped into the same Prometheus)
 - **Less3 — Logs** - live application logs from every node (via Loki), with a per-node filter and log-volume graph
+- **Less3 - S3 Protocol (S3Server)** - S3 request rate, errors, and latency by S3 operation; pipeline stage timings; Less3 callback latency and outcomes; signature validation outcomes; error types by stage; object sizes
 
 ## Open Source Packages 
 
@@ -403,12 +406,12 @@ Less3 is available on [DockerHub](https://hub.docker.com/r/jchristn77/less3). Th
 From the `Docker` directory:
 
 ```bash
-build-all.bat v4.1.0
+build-all.bat v4.1.0      # Windows; ./build-all.sh v4.1.0 on Linux/Mac
 cd Docker
 docker compose up -d
 ```
 
-`compose.yaml` is the definitive multi-node deployment. It references the published, tagged images (`jchristn77/less3:v4.1.0`, `jchristn77/less3-ui:v4.1.0`), so build and tag them first with `build-all.bat v4.1.0`, then bring the stack up. It starts PostgreSQL 17, two Less3 nodes (`less3-node1` and `less3-node2`) sharing the `less3-data` volume mounted at `/less3`, nginx, the Less3 dashboard, the Clutch lock server and its dashboard, and the observability stack (an OpenTelemetry collector, Prometheus, Grafana, Loki, Tempo). The nodes read `system.node.json`, which sets `Cluster.Enabled`, `LockProvider: Clutch`, and the shared storage paths. Each node serves its Watson HTTP metrics at `/metrics` on its main port and pushes its `Less3.*` domain metrics to the collector over OTLP; Prometheus scrapes both.
+`compose.yaml` is the definitive multi-node deployment. It references the published, tagged images (`jchristn77/less3:v4.1.0`, `jchristn77/less3-ui:v4.1.0`), so build and tag them first with `build-all.bat v4.1.0` (or `./build-all.sh v4.1.0`), then bring the stack up. It starts PostgreSQL 17, two Less3 nodes (`less3-node1` and `less3-node2`) sharing the `less3-data` volume mounted at `/less3`, nginx, the Less3 dashboard, the Clutch lock server and its dashboard, and the observability stack (an OpenTelemetry collector, Prometheus, Grafana, Loki, Tempo). The nodes read `system.node.json`, which sets `Cluster.Enabled`, `LockProvider: Clutch`, and the shared storage paths. Each node serves its Watson HTTP metrics at `/metrics` on its main port and pushes its `Less3.*` domain metrics to the collector over OTLP; Prometheus scrapes both.
 
 The Docker stack routes Less3's locking through the bundled Clutch lock server by default, so each node holds a persistent lock WebSocket to Clutch (visible as two connections on the "Less3 — Clutch Lock Server" Grafana board) and the dashboard's "Manage Locks" action opens a live Clutch UI. Clutch shares this same PostgreSQL via bring-your-own-database, so the database stays authoritative for fencing tokens. Clutch is alpha; to use the in-database provider instead — no extra service, and the more battle-tested path — set `Cluster.LockProvider` to `Postgres` in `system.node.json`.
 
@@ -420,7 +423,7 @@ The default stack publishes these host ports (PostgreSQL and the individual node
 |---|---|---|
 | 8000 | nginx | Single entry point, load-balanced across the nodes: S3 API, REST API (`/api/v1/...`), admin API (`/admin/...`), `/healthz`, per-node `/metrics`. |
 | 3000 | less3-ui | Less3 dashboard. |
-| 3001 | grafana | Grafana (anonymous admin); six Less3 dashboards pre-provisioned (Overview, Locks & Data Integrity, Cluster, API Operations, Clutch, Logs). |
+| 3001 | grafana | Grafana (anonymous admin); seven Less3 dashboards pre-provisioned (Overview, Locks & Data Integrity, Cluster, API Operations, Clutch, Logs, S3 Protocol). |
 | 9090 | prometheus | Prometheus UI / query API. |
 | 3100 | loki | Loki log API. |
 | 3200 | tempo | Tempo trace API. |

@@ -7774,8 +7774,8 @@
         </member>
         <member name="T:Less3.Telemetry.TelemetryHost">
             <summary>
-            Owns the process-wide telemetry host. Subscribes a Radiant host to Less3's own meters and to
-            Watson's meter and activity source, exposes a Prometheus scrape endpoint, and optionally
+            Owns the process-wide telemetry host. Subscribes a Radiant host to Less3's own meters, to the
+            S3Server library's meter and activity source, and to Watson's activity source, exposes a Prometheus scrape endpoint, and optionally
             pushes OpenTelemetry metrics, traces, and logs to a collector. When observability is disabled
             the meters still exist but nothing collects them, which is effectively free.
             Thread-safe.

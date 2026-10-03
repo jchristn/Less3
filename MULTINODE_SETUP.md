@@ -121,7 +121,7 @@ Finally, storage points at the shared mount:
 If you just want a working cluster, the compose file is the fastest route. The compose files reference the published, tagged images (`jchristn77/less3:v4.1.0` and `jchristn77/less3-ui:v4.1.0`), so build and tag them first with the repo-root build scripts, then bring the stack up from the `Docker` directory:
 
 ```bash
-build-all.bat v4.1.0
+build-all.bat v4.1.0      # Windows; ./build-all.sh v4.1.0 on Linux/Mac
 cd Docker
 docker compose up -d
 ```
@@ -223,13 +223,14 @@ Under a load test you will see write locks appear and clear as object mutations 
 
 ## Observability and the dashboards
 
-Each node instruments itself with plain base-class-library meters under `Less3.*` names — storage throughput, lock activity, fencing conflicts, cache behavior, multipart progress, cleanup passes — plus the Watson webserver's own `http.server.*` request-rate and latency metrics. The two sets take different reachable paths: Watson serves its HTTP metrics directly at `/metrics` on each node's main port, and a Radiant telemetry host pushes the `Less3.*` metrics (and traces and logs) over OTLP to the collector. Every series carries the node id, so per-node breakdowns and whole-cluster rollups are both available.
+Each node instruments itself with plain base-class-library meters under `Less3.*` names — storage throughput, lock activity, fencing conflicts, cache behavior, multipart progress, cleanup passes — plus the Watson webserver's own `http.server.*` request-rate and latency metrics, plus the S3Server library's `s3server.*` metrics (requests, stages, callbacks, and signature validation by S3 operation). The two sets take different reachable paths: Watson serves its HTTP metrics directly at `/metrics` on each node's main port, and a Radiant telemetry host pushes the `Less3.*` and `s3server.*` metrics (and traces and logs) over OTLP to the collector. Every series carries the node id, so per-node breakdowns and whole-cluster rollups are both available.
 
 The Docker stack turns this into something you can watch without any setup. Prometheus (port 9090) scrapes each node's `/metrics` on its main port for the HTTP metrics and scrapes the collector for the `Less3.*` metrics, so there is no double counting. Grafana (port 3001, anonymous admin login, no password) comes up with three dashboards already provisioned from `Docker/grafana/dashboards`:
 
 - **Less3 — Overview**: request rate, latency percentiles by operation, error rate, and a per-node breakdown.
 - **Less3 — Locks & Data Integrity**: lock acquisitions, waits, denials, lease expirations, hold durations, and a fencing-conflict counter that should sit at zero. A nonzero fencing-conflict count is not noise — it is the cluster catching a stale lock holder before it could commit, and a sustained spike is the alarm you actually care about.
 - **Less3 — Cluster**: node up/down state, versions, and which node holds the cleanup lease.
+- **Less3 - S3 Protocol (S3Server)**: S3 requests, errors, and latency by S3 operation, with the time each request spends in parsing, signature validation, the Less3 callback, serialization, and sending. Use it to tell a slow storage callback from a slow client.
 
 Loki (port 3100) collects logs and Tempo (port 3200) collects traces, both wired into Grafana with trace-to-log correlation, so you can pivot from a slow request span to the exact log lines that request produced. The existing `SyslogLogging` output stays in place; the OTLP pipeline runs alongside it rather than replacing it.
 

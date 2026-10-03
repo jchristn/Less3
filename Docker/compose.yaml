@@ -165,7 +165,7 @@ services:
       - "3200:3200"
 
   #
-  # Grafana - dashboards pre-provisioned (Overview, Locks & Data Integrity, Cluster).
+  # Grafana - dashboards pre-provisioned (Overview, Locks & Data Integrity, Cluster, API Operations, Clutch, Logs, S3 Protocol).
   #
   grafana:
     container_name: 'less3-grafana'

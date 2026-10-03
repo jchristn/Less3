@@ -4,12 +4,13 @@ namespace Less3.Telemetry
     using Microsoft.Extensions.Logging;
     using Less3.Settings;
     using Radiant;
+    using S3ServerLibrary;
     using SyslogLogging;
     using WatsonWebserver.Core.Telemetry;
 
     /// <summary>
-    /// Owns the process-wide telemetry host. Subscribes a Radiant host to Less3's own meters and to
-    /// Watson's meter and activity source, exposes a Prometheus scrape endpoint, and optionally
+    /// Owns the process-wide telemetry host. Subscribes a Radiant host to Less3's own meters, to the
+    /// S3Server library's meter and activity source, and to Watson's activity source, exposes a Prometheus scrape endpoint, and optionally
     /// pushes OpenTelemetry metrics, traces, and logs to a collector. When observability is disabled
     /// the meters still exist but nothing collects them, which is effectively free.
     /// Thread-safe.
@@ -64,6 +65,13 @@ namespace Less3.Telemetry
             foreach (string meterName in Less3Telemetry.AllMeterNames) radiant.Sources.AddMeter(meterName);
             radiant.Sources.AddActivitySource(Less3Telemetry.ActivitySourceName);
             radiant.Sources.AddActivitySource(WatsonTelemetryNames.ActivitySourceName);
+
+            // S3Server emits the S3 protocol layer: requests by S3 operation, pipeline stage timings,
+            // callback (Less3 handler) timings and outcomes, signature validation, and error types.
+            // Its spans nest under Watson's server span and parent Less3's own spans. Exported over
+            // OTLP like the Less3.* meters; the names match S3ServerSettings.Telemetry defaults.
+            radiant.Sources.AddMeter(S3ServerTelemetryNames.DefaultSourceName);
+            radiant.Sources.AddActivitySource(S3ServerTelemetryNames.DefaultSourceName);
 
             radiant.Metrics.IncludeRuntime = true;
             radiant.Metrics.IncludeProcess = true;

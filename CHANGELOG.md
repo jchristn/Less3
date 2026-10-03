@@ -2,6 +2,15 @@
 
 ## Current Version
 
+v4.1.1 (2026-10-03)
+
+Dependency updates. No wire-protocol, schema, or configuration changes; the Docker images keep the `v4.1.0` tag.
+
+- Server: Watson 7.1.0 -> 7.2.2, Padlock 1.0.4 -> 1.2.0, SyslogLogging 2.2.1 -> 2.3.1, XmlToPox 1.0.3 -> 1.0.4, Microsoft.Data.SqlClient 7.0.2 -> 7.1.1, Microsoft.Data.Sqlite 10.0.11 -> 10.0.12.
+- Tests and tools: AWSSDK.S3 4.0.102.1 -> 4.0.104.1, Touchstone (Core, Cli, XunitAdapter, NunitAdapter) 0.1.12 -> 0.2.0, NUnit 4.6.1 -> 5.0.0, NUnit.Analyzers 4.14.0 -> 4.15.0, NUnit3TestAdapter 6.2.0 -> 6.3.0, Microsoft.NET.Test.Sdk 18.9.0 -> 18.10.1, coverlet.collector 10.0.1 -> 10.1.0.
+
+## Previous Versions
+
 v4.1.0 (2026-09-29)
 
 S3 compatibility and data-integrity fixes. Schema migrations run automatically on startup for every database provider.
@@ -33,8 +42,6 @@ S3 compatibility and data-integrity fixes. Schema migrations run automatically o
 - Test servers no longer outlive the test process that started them: on Windows they run in a kill-on-close job object, a process-exit hook stops any still registered, and each run sweeps and stops servers (and removes temp directories) whose owning test process is gone.
 - Added 158 S3 compatibility tests (positive and negative) in `test/Test.Shared/S3Compatibility`, including a protocol-details suite for the S3Server 8 behaviors above, plus 7 test-harness cleanup tests. They are part of the Touchstone catalog (`Test.Automated`, `--suite S3Compat` to run only them, and the xUnit theory adapter) and of the shared suite catalog (xUnit, NUnit, and `Test.Automated --legacy`). `LESS3_TEST_DB_TYPE`/`_HOST`/`_PORT`/`_USER`/`_PASSWORD`/`_NAME` run the tests against PostgreSQL, MySQL, or SQL Server, and `LESS3_TEST_DLL` runs them against another server build.
 - `AwsCliTest.bat` and `MinioClientTest.bat` now assert S3 compatibility with real clients: DeleteObjects (missing keys, Quiet, per-key errors), delete markers and version reads, Suspended versioning, listing order and pagination, delimiter/start-after/prefix, case-sensitive keys, suffix and clamped ranges, conditional GET/PUT, Content-MD5, stored metadata and tags, CopyObject, large server-side moves, HEAD ranges, empty-object ranges, keys with spaces and plus signs in both listings, and delete-marker fields (and, for mc, `mirror` + `diff`, `undo`, and `rm --versions`). Both take `LESS3_ENDPOINT` (and credentials: `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`, or `LESS3_ACCESS_KEY`/`LESS3_SECRET_KEY` for mc) so they run unattended, and both now clean up every object version.
-
-## Previous Versions
 
 v4.0.0 (2026-08-13)
 

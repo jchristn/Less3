@@ -28,6 +28,10 @@ Core use cases for Less3:
 
 ## Current Version
 
+v4.1.1
+
+- Dependency updates (Watson 7.2.2, Padlock 1.2.0, SyslogLogging 2.3.1, XmlToPox 1.0.4, Microsoft.Data.SqlClient 7.1.1, Microsoft.Data.Sqlite 10.0.12) on top of v4.1.0; no protocol or schema changes. The Docker images remain tagged `v4.1.0`
+
 v4.1.0
 
 - Fixed a data-loss bug when versioning is suspended: versioning is now `Enabled` or `Suspended` as in Amazon S3, and suspended writes replace only a key's `null` version

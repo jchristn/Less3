@@ -63,7 +63,7 @@
     "flatted": "^3.4.2",
     "@tootallnate/once": "^3.0.1",
     "immutable": "^5.1.9",
-    "sharp": "^0.35.3",
+    "sharp": "^0.35.5",
     "babel-plugin-istanbul": "^8.0.0",
     "test-exclude": "^8.0.0",
     "jsdom": "^29.1.1"

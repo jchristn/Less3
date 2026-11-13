@@ -1,6 +1,6 @@
 'use client';
 import React, { useMemo, useState, useEffect } from 'react';
-import { MenuProps, Form } from 'antd';
+import { MenuProps, Form, Progress } from 'antd';
 import {
   DownloadOutlined,
   SearchOutlined,
@@ -60,6 +60,7 @@ import {
   isTextObjectContent,
 } from '#/utils/objectContentUtils';
 import { message } from '#/utils/message';
+import { collectDroppedItems, type DroppedItems } from '#/utils/droppedFiles';
 import UploadObjectModal from './UploadObjectModal';
 import ObjectContentModal from './ObjectContentModal';
 
@@ -153,7 +154,7 @@ const ObjectsPage: React.FC = () => {
   const [uploadBucketObject] = useUploadBucketObjectMutation();
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number } | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number; current?: string } | null>(null);
   const dragCounterRef = React.useRef(0);
   const [writeObjectTags, { isLoading: isWritingTags }] = useWriteObjectTagsMutation();
   const [deleteObjectTags, { isLoading: isDeletingTags }] = useDeleteObjectTagsMutation();
@@ -508,18 +509,31 @@ const ObjectsPage: React.FC = () => {
       return;
     }
 
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length === 0) return;
+    // Collect synchronously from the event, then walk any dropped folders.
+    const collecting = collectDroppedItems(e.dataTransfer);
+
+    let dropped: DroppedItems;
+    try {
+      dropped = await collecting;
+    } catch {
+      message.error('Unable to read the dropped files');
+      return;
+    }
+
+    const { files, emptyDirectories } = dropped;
+    const total = files.length + emptyDirectories.length;
+    if (total === 0) return;
 
     setIsUploading(true);
-    setUploadProgress({ done: 0, total: files.length });
+    setUploadProgress({ done: 0, total });
 
     let successCount = 0;
     let failCount = 0;
 
-    for (const file of files) {
+    for (const { file, relativePath } of files) {
+      setUploadProgress({ done: successCount + failCount, total, current: relativePath });
       try {
-        const objectKey = currentPrefix + file.name;
+        const objectKey = currentPrefix + relativePath;
         await uploadBucketObject({
           bucketId: selectedBucketName,
           objectKey,
@@ -529,16 +543,31 @@ const ObjectsPage: React.FC = () => {
       } catch {
         failCount++;
       }
-      setUploadProgress({ done: successCount + failCount, total: files.length });
+      setUploadProgress({ done: successCount + failCount, total });
+    }
+
+    for (const directory of emptyDirectories) {
+      setUploadProgress({ done: successCount + failCount, total, current: directory + '/' });
+      try {
+        await writeBucketObject({
+          bucketId: selectedBucketName,
+          objectKey: currentPrefix + directory + '/',
+          content: '',
+        }).unwrap();
+        successCount++;
+      } catch {
+        failCount++;
+      }
+      setUploadProgress({ done: successCount + failCount, total });
     }
 
     setIsUploading(false);
     setUploadProgress(null);
 
     if (failCount === 0) {
-      message.success(`Uploaded ${successCount} file(s) successfully`);
+      message.success(`Uploaded ${successCount} item(s) successfully`);
     } else {
-      message.warning(`Uploaded ${successCount} file(s), ${failCount} failed`);
+      message.warning(`Uploaded ${successCount} item(s), ${failCount} failed`);
     }
 
     refetchObjects();
@@ -1502,29 +1531,6 @@ const ObjectsPage: React.FC = () => {
           </div>
         )}
 
-        {/* Upload progress overlay */}
-        {isUploading && uploadProgress && (
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              zIndex: 10,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'rgba(0, 0, 0, 0.04)',
-              borderRadius: 8,
-            }}
-          >
-            <Less3Flex vertical align="center" gap={8}>
-              <ReloadOutlined spin style={{ fontSize: 24, color: 'var(--ant-color-primary)' }} />
-              <Less3Text strong>
-                Uploading {uploadProgress.done} / {uploadProgress.total} file(s)...
-              </Less3Text>
-            </Less3Flex>
-          </div>
-        )}
-
         {!selectedBucketName ? (
           <div style={{ textAlign: 'center', padding: '40px' }}>
             <Less3Text type="secondary">Please select a bucket to view its objects</Less3Text>
@@ -1679,6 +1685,32 @@ const ObjectsPage: React.FC = () => {
         onClose={closeObjectContentModal}
         onSave={handleSaveObjectContents}
       />
+
+      <Less3Modal
+        title="Uploading"
+        open={isUploading && !!uploadProgress}
+        closable={false}
+        maskClosable={false}
+        keyboard={false}
+        footer={null}
+      >
+        {uploadProgress && (
+          <Less3Flex vertical gap={8}>
+            <Progress
+              percent={uploadProgress.total ? Math.round((uploadProgress.done / uploadProgress.total) * 100) : 0}
+              status="active"
+            />
+            <Less3Text>
+              {uploadProgress.done} of {uploadProgress.total} item(s) uploaded
+            </Less3Text>
+            {uploadProgress.current && (
+              <Less3Text type="secondary" ellipsis={{ tooltip: uploadProgress.current }}>
+                {uploadProgress.current}
+              </Less3Text>
+            )}
+          </Less3Flex>
+        )}
+      </Less3Modal>
 
       <Less3Modal
         title={`Object Details - ${viewingObject ? getDisplayName(viewingObject.Key) || viewingObject.Key : ''}`}

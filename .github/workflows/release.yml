@@ -235,9 +235,10 @@ jobs:
         env:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
-          mkdir -p assets
-          find downloads -type f -exec cp {} assets/ \;
-          cd assets
+          # Not "assets": that is the repository's own artwork folder, already checked out here.
+          mkdir -p release-assets
+          find downloads -type f -exec cp {} release-assets/ \;
+          cd release-assets
           expected="less3-$VERSION-win-x64-setup.exe less3-$VERSION-win-arm64-setup.exe less3-$VERSION-win-x64.zip less3-$VERSION-win-arm64.zip
           less3-$VERSION-osx-x64.pkg less3-$VERSION-osx-arm64.pkg less3-$VERSION-osx-x64.dmg less3-$VERSION-osx-arm64.dmg less3-$VERSION-osx-x64.tar.gz less3-$VERSION-osx-arm64.tar.gz
           less3_${VERSION}_amd64.deb less3_${VERSION}_arm64.deb less3-$VERSION-1.x86_64.rpm less3-$VERSION-1.aarch64.rpm
@@ -254,7 +255,7 @@ jobs:
         with:
           name: Less3 ${{ steps.version.outputs.version }}
           body_path: release-notes.md
-          files: assets/*
+          files: release-assets/*
           fail_on_unmatched_files: true
           prerelease: ${{ steps.version.outputs.prerelease == 'true' }}
           draft: ${{ vars.RELEASE_DRAFT == 'true' }}

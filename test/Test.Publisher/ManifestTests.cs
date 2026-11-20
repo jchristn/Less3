@@ -143,6 +143,9 @@ namespace Test.Publisher
                 .Split(new[] { ' ', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).ToList();
             Assert.Equal(produced.OrderBy(item => item, StringComparer.Ordinal), expected.OrderBy(item => item, StringComparer.Ordinal));
             Assert.Contains("if [ \"$count\" != " + produced.Count + " ]", workflow, StringComparison.Ordinal);
+            Assert.Contains("mkdir -p release-assets", workflow, StringComparison.Ordinal);
+            Assert.Contains("files: release-assets/*", workflow, StringComparison.Ordinal);
+            Assert.False(Directory.Exists(RepositoryPaths.File("release-assets")), "The release job stages into release-assets/, so the repository must not have a folder by that name.");
 
             string notes = File.ReadAllText(RepositoryPaths.File(".github/release-install-notes.md"));
             Assert.StartsWith("## Installing", notes, StringComparison.Ordinal);

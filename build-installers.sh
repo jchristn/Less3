@@ -1,5 +1,5 @@
 #!/bin/sh
-# Build every Less3 installer this machine's operating system can produce into installers/<version>/:
+# Build every Less3 and Less3 Dashboard installer this machine's operating system can produce into installers/<version>/:
 #   macOS  .pkg and .dmg (osx-x64, osx-arm64), and the portable .tar.gz archives
 #   Linux  .deb, .rpm, and AppImage (linux-x64, linux-arm64), and the portable .tar.gz archives
 # plus SHA256SUMS for the folder. Run build-installers.bat on Windows for the setup .exe and .zip files.
@@ -41,4 +41,4 @@ echo "Output  : $OUT"
 dotnet "$PUB" --channel installers --sums --output "$OUT" $VERSION_ARGS
 
 echo
-echo "Installers are in $OUT. Install one, open a new terminal, and run: less3"
+echo "Installers are in $OUT. Install one, open a new terminal, and run: less3 (or less3-dashboard)"

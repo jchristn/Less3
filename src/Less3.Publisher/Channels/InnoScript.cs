@@ -73,7 +73,8 @@ namespace Less3.Publisher.Channels
             s.Append("[Messages]\n");
             s.Append("WelcomeLabel2=").Append(MessageText(project.Tagline)).Append("%n%nThis installs:%n");
             foreach (string item in InstallerText.WhatGetsInstalled(project, artifact, OsFamilyEnum.Windows)) s.Append("  - ").Append(MessageText(item)).Append("%n");
-            s.Append("%n").Append(MessageText(InstallerText.WorkingDirectoryNote(project, artifact.MainExecutable))).Append("%n%nStop ").Append(MessageText(project.DisplayName)).Append(" before you continue.\n\n");
+            if (!String.IsNullOrEmpty(artifact.InstallerNote)) s.Append("%n").Append(MessageText(artifact.InstallerNote)).Append("%n");
+            s.Append("%nStop ").Append(MessageText(project.DisplayName)).Append(" before you continue.\n\n");
 
             if (launcher != null)
             {
@@ -95,7 +96,8 @@ namespace Less3.Publisher.Channels
                 s.Append("Name: \"{autodesktop}\\").Append(Quote(launcher.DisplayName)).Append("\"; Filename: \"{app}\\").Append(LauncherFile(launcher)).Append("\"; Comment: \"").Append(Quote(comment)).Append("\"; IconFilename: \"{app}\\").Append(mainExe).Append("\"; Tasks: desktopicon\n\n");
 
                 s.Append("[Run]\n");
-                s.Append("Filename: \"{app}\\").Append(LauncherFile(launcher)).Append("\"; Description: \"Run ").Append(Quote(project.DisplayName)).Append(" now (in ").Append(Quote(InstallerText.DataFolder(launcher, OsFamilyEnum.Windows))).Append(")\"; Flags: nowait postinstall skipifsilent runasoriginaluser shellexec unchecked\n\n");
+                string runNow = String.IsNullOrEmpty(launcher.DataFolder) ? "Run " + project.DisplayName + " now" : "Run " + project.DisplayName + " now (in " + InstallerText.DataFolder(launcher, OsFamilyEnum.Windows) + ")";
+                s.Append("Filename: \"{app}\\").Append(LauncherFile(launcher)).Append("\"; Description: \"").Append(Quote(runNow)).Append("\"; Flags: nowait postinstall skipifsilent runasoriginaluser shellexec unchecked\n\n");
             }
 
             if (artifact.PathCommands.Count > 0)

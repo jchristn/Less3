@@ -14,6 +14,49 @@ namespace Less3.Publisher.Manifest
         public string Id { get; set; } = "";
 
         /// <summary>
+        /// Lowercase name for this artifact's files and packages, for example "less3-dashboard". Empty uses
+        /// project.name. Each artifact with its own installers needs its own name.
+        /// </summary>
+        public string Name { get; set; } = "";
+
+        /// <summary>
+        /// Product name for this artifact's installers, for example "Less3 Dashboard". Empty uses project.displayName.
+        /// </summary>
+        public string DisplayName { get; set; } = "";
+
+        /// <summary>
+        /// Reverse-DNS identifier for this artifact, for example "ai.latticetech.less3.dashboard". Empty uses
+        /// project.bundleId.
+        /// </summary>
+        public string BundleId { get; set; } = "";
+
+        /// <summary>
+        /// Package identifier for winget and similar feeds. Empty uses project.packageId.
+        /// </summary>
+        public string PackageId { get; set; } = "";
+
+        /// <summary>
+        /// One sentence saying what this artifact is, for its installers' welcome pages. Empty uses project.tagline.
+        /// </summary>
+        public string Tagline { get; set; } = "";
+
+        /// <summary>
+        /// Paragraph for this artifact's package metadata. Empty uses project.description.
+        /// </summary>
+        public string Description { get; set; } = "";
+
+        /// <summary>
+        /// Stable Inno Setup AppId GUID for this artifact's Windows installer. Keep it constant so upgrades replace the
+        /// installed copy in place. Empty uses the inno channel's appId option.
+        /// </summary>
+        public string WindowsAppId { get; set; } = "";
+
+        /// <summary>
+        /// A sentence the installers' welcome pages add after the list of what gets installed, or empty.
+        /// </summary>
+        public string InstallerNote { get; set; } = "";
+
+        /// <summary>
         /// Project to publish, relative to the repository root.
         /// </summary>
         public string Csproj { get; set; } = "";
@@ -49,6 +92,12 @@ namespace Less3.Publisher.Manifest
         /// folder (for example developer scripts).
         /// </summary>
         public List<string> RemoveFromPayload { get; set; } = new List<string>();
+
+        /// <summary>
+        /// A Next.js web app built in standalone mode and bundled, with a Node.js runtime, beside the published
+        /// executable (which starts it), or null for none.
+        /// </summary>
+        public NextAppSettings? NextApp { get; set; } = null;
 
         /// <summary>
         /// The Start menu, application menu, and macOS app entry that opens the product in a terminal window, or

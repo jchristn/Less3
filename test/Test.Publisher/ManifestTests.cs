@@ -38,7 +38,16 @@ namespace Test.Publisher
             Assert.Equal("Lattice AI, LLC", manifest.Project.Publisher);
             Assert.Equal("https://latticetech.ai", manifest.Project.PublisherUrl);
             Assert.False(String.IsNullOrWhiteSpace(manifest.Project.Tagline));
-            Assert.True(Guid.TryParse(manifest.Channels["inno"].Options["appId"], out Guid _), "The Inno Setup AppId must be a fixed GUID so upgrades replace in place.");
+            foreach (ArtifactSettings artifact in manifest.Build.Artifacts)
+            {
+                Assert.True(Guid.TryParse(artifact.WindowsAppId, out Guid _), "Artifact '" + artifact.Id + "' needs a fixed Inno Setup AppId GUID so upgrades replace in place.");
+            }
+
+            Assert.NotEqual(manifest.Build.Artifacts[0].WindowsAppId, manifest.Build.Artifacts[1].WindowsAppId);
+            foreach (string id in new[] { "inno", "macos", "debrpm", "appimage", "archive" })
+            {
+                Assert.Equal(new[] { "server", "dashboard" }, manifest.Channels[id].ArtifactIds());
+            }
 
             ArtifactSettings server = RepositoryPaths.Server();
             Assert.Equal("less3", server.AssemblyName);
@@ -137,12 +146,23 @@ namespace Test.Publisher
             }
 
             string workflow = File.ReadAllText(RepositoryPaths.File(".github/workflows/release.yml"));
-            Match block = Regex.Match(workflow, "expected=\"([^\"]*)\"");
-            Assert.True(block.Success, "release.yml has no expected=\"...\" asset list.");
-            List<string> expected = block.Groups[1].Value.Replace("${VERSION}", version, StringComparison.Ordinal).Replace("$VERSION", version, StringComparison.Ordinal)
-                .Split(new[] { ' ', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).ToList();
-            Assert.Equal(produced.OrderBy(item => item, StringComparer.Ordinal), expected.OrderBy(item => item, StringComparer.Ordinal));
-            Assert.Contains("if [ \"$count\" != " + produced.Count + " ]", workflow, StringComparison.Ordinal);
+            Match loop = Regex.Match(workflow, "for name in ([^;]+); do\\s*\\n\\s*expected=\"\\$expected ([^\"]*)\"");
+            Assert.True(loop.Success, "release.yml has no 'for name in ...; do expected=\"$expected ...\"' asset list.");
+            PublisherManifest manifest = RepositoryPaths.Manifest();
+            List<string> names = manifest.Build.Artifacts.Select(item => manifest.Project.For(item).Name).ToList();
+            Assert.Equal(names, loop.Groups[1].Value.Split(' ', StringSplitOptions.RemoveEmptyEntries));
+            List<string> expected = new List<string>();
+            List<string> producedAll = new List<string>();
+            foreach (string name in names)
+            {
+                expected.AddRange(loop.Groups[2].Value.Replace("${name}", name, StringComparison.Ordinal).Replace("$name", name, StringComparison.Ordinal)
+                    .Replace("${VERSION}", version, StringComparison.Ordinal).Replace("$VERSION", version, StringComparison.Ordinal)
+                    .Split(new[] { ' ', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries));
+                producedAll.AddRange(produced.Select(item => item.Replace("less3", name, StringComparison.Ordinal)));
+            }
+
+            Assert.Equal(producedAll.OrderBy(item => item, StringComparer.Ordinal), expected.OrderBy(item => item, StringComparer.Ordinal));
+            Assert.Contains("if [ \"$count\" != " + producedAll.Count + " ]", workflow, StringComparison.Ordinal);
             Assert.Contains("mkdir -p release-assets", workflow, StringComparison.Ordinal);
             Assert.Contains("files: release-assets/*", workflow, StringComparison.Ordinal);
             Assert.False(Directory.Exists(RepositoryPaths.File("release-assets")), "The release job stages into release-assets/, so the repository must not have a folder by that name.");

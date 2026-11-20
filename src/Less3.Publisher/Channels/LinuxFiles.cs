@@ -89,7 +89,10 @@ namespace Less3.Publisher.Channels
             s.Append("User=").Append(service.User).Append('\n');
             s.Append("Group=").Append(service.User).Append('\n');
             s.Append("WorkingDirectory=").Append(service.WorkingDirectory).Append('\n');
-            s.Append("ExecStart=").Append(InstallDir(project)).Append('/').Append(artifact.MainExecutable).Append('\n');
+            foreach (string variable in service.Environment) s.Append("Environment=").Append(variable).Append('\n');
+            s.Append("ExecStart=").Append(InstallDir(project)).Append('/').Append(artifact.MainExecutable);
+            if (!String.IsNullOrEmpty(service.Arguments)) s.Append(' ').Append(service.Arguments);
+            s.Append('\n');
             s.Append("StandardInput=null\n");
             s.Append("Restart=on-failure\n");
             s.Append("RestartSec=5\n");

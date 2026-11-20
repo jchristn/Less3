@@ -1,7 +1,10 @@
 # Installing Less3
 
 Download the installer for your machine from the [latest release](https://github.com/jchristn/Less3/releases/latest).
-Every installer is self-contained, so nothing else (not even .NET) needs to be installed. Each one adds:
+There are two products, each with its own installers: **Less3**, the server (`less3-...` files), and **Less3
+Dashboard**, the web app for managing a server (`less3-dashboard-...` files; see [Less3 Dashboard](#less3-dashboard)).
+Every installer is self-contained, so nothing else (not even .NET or Node.js) needs to be installed. The server's
+installers add:
 
 - the `less3` command, on your PATH, which runs the Less3 server in the current folder
 - a **Less3** menu entry (Start menu, Applications, or the application menu) that runs the server in a terminal
@@ -30,6 +33,9 @@ to build from source, see the README's [Initial Setup](README.md#initial-setup).
 | Fedora / RHEL | `less3-<version>-1.x86_64.rpm` (or `.aarch64.rpm`) |
 | Any Linux | `less3-<version>-x86_64.AppImage` (or `-aarch64.AppImage`) |
 | Scripts and containers | `less3-<version>-<rid>.tar.gz` (macOS and Linux) or `.zip` (Windows) |
+
+For the dashboard, the same files start with `less3-dashboard` instead of `less3` (`less3-dashboard_<version>_amd64.deb`
+for Debian and Ubuntu).
 
 Not sure which Mac you have? Apple menu > **About This Mac**: "Chip: Apple M..." is Apple Silicon, "Processor: Intel"
 is Intel.
@@ -168,10 +174,56 @@ sudo apt remove less3       # or: sudo dnf remove less3
 The folders Less3 ran in, `/var/lib/less3`, and the `less3` account are kept. Remove them yourself if you no longer
 need the data: `sudo rm -rf /var/lib/less3 && sudo userdel less3`.
 
+## Less3 Dashboard
+
+The dashboard is the web app for managing a Less3 server: buckets, objects, tenants, users, credentials, roles and
+permissions, request history, and cluster health. Its installers bundle it with a Node.js 22 LTS runtime and add:
+
+- the `less3-dashboard` command, on your PATH, which serves the dashboard on `http://127.0.0.1:3000`
+- a **Less3 Dashboard** menu entry that starts it in a terminal window and opens it in your browser
+- on Linux (`.deb` and `.rpm`), a `less3-dashboard` systemd service, installed but not enabled
+
+| Platform | File |
+| --- | --- |
+| Windows | `less3-dashboard-<version>-win-x64-setup.exe` (or `win-arm64`) |
+| macOS | `less3-dashboard-<version>-osx-arm64.pkg` (Apple Silicon) or `osx-x64.pkg` (Intel) |
+| Debian / Ubuntu | `less3-dashboard_<version>_amd64.deb` (or `_arm64.deb`) |
+| Fedora / RHEL | `less3-dashboard-<version>-1.x86_64.rpm` (or `.aarch64.rpm`) |
+| Any Linux | `less3-dashboard-<version>-x86_64.AppImage` (or `-aarch64.AppImage`) |
+| Scripts and containers | `less3-dashboard-<version>-<rid>.tar.gz` / `.zip` |
+
+Install it the same way as the server, and get past the same prompts the same way: on macOS the prompt names
+"Less3 Dashboard", and the app is `/Applications/Less3 Dashboard.app`. Then sign in with your Less3 server's URL
+(`http://127.0.0.1:8000` for a server on the same machine) and its admin API key (`AdminApiKey` in the server's
+`system.json`). The dashboard runs in your browser and calls the server from there, so the server's URL must be one
+your browser can reach.
+
+```bash
+less3-dashboard                          # http://127.0.0.1:3000; Ctrl+C stops it
+less3-dashboard --port 3100 --open       # another port, and open the browser when it is ready
+less3-dashboard --host 0.0.0.0           # listen on every interface, so other machines can reach it
+```
+
+`LESS3_DASHBOARD_HOST` and `LESS3_DASHBOARD_PORT` set the same defaults. On Linux, run the dashboard as a service
+(it runs as a `less3-dashboard` account and listens on `127.0.0.1:3000`):
+
+```bash
+sudo systemctl enable --now less3-dashboard
+sudo systemctl edit less3-dashboard      # to listen elsewhere, add: [Service] / Environment=LESS3_DASHBOARD_HOST=0.0.0.0
+```
+
+To uninstall: **Settings > Apps > Installed apps > Less3 Dashboard** on Windows;
+`sudo "/Applications/Less3 Dashboard.app/Contents/Resources/uninstall.sh"` on macOS; `sudo apt remove less3-dashboard`
+(or `sudo dnf remove less3-dashboard`) on Linux. The dashboard keeps nothing on disk; the server URL and API key you
+sign in with stay in your browser.
+
+The dashboard also runs in Docker as part of the multi-node stack ([MULTINODE_SETUP.md](MULTINODE_SETUP.md)), and from
+source with `npm run build && npm run start` in `dashboard/`.
+
 ## Portable archives
 
-The `.tar.gz` and `.zip` archives hold the same self-contained `less3` executable as the installers, for scripts, CI
-jobs, and container images that pin a version:
+The `.tar.gz` and `.zip` archives hold the same self-contained files as the installers, for scripts, CI jobs, and
+container images that pin a version (keep the dashboard's `app` and `node` folders beside `less3-dashboard`):
 
 ```bash
 curl -fsSL https://github.com/jchristn/Less3/releases/download/v<version>/less3-<version>-linux-x64.tar.gz | tar xz

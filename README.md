@@ -28,7 +28,11 @@ Core use cases for Less3:
 
 ## Download and Install
 
-Installers for Windows, macOS, and Linux (x64 and ARM64) are on the **[latest release](https://github.com/jchristn/Less3/releases/latest)**. Each one is self-contained (no .NET install needed), puts the `less3` command on your PATH, and adds a **Less3** menu entry that runs the server in `~/Less3`. The Linux `.deb` and `.rpm` also install a `less3` systemd service. Run `less3` in any folder to keep the server's configuration, database, and objects there.
+Installers for Windows, macOS, and Linux (x64 and ARM64) are on the **[latest release](https://github.com/jchristn/Less3/releases/latest)**, for both the server and the dashboard. Each one is self-contained (no .NET or Node.js install needed).
+
+- **Less3** (`less3-...` files) puts the `less3` command on your PATH and adds a **Less3** menu entry that runs the server in `~/Less3`. Run `less3` in any folder to keep the server's configuration, database, and objects there.
+- **Less3 Dashboard** (`less3-dashboard-...` files) puts the `less3-dashboard` command on your PATH and adds a **Less3 Dashboard** menu entry that serves the dashboard on `http://127.0.0.1:3000` and opens your browser.
+- On Linux, the `.deb` and `.rpm` files also install `less3` and `less3-dashboard` systemd services.
 
 | Platform | File |
 | --- | --- |
@@ -39,6 +43,8 @@ Installers for Windows, macOS, and Linux (x64 and ARM64) are on the **[latest re
 | Any Linux | `less3-<version>-x86_64.AppImage` (or `-aarch64.AppImage`) |
 | Scripts and containers | `less3-<version>-<rid>.tar.gz` / `.zip` |
 
+The dashboard's files have the same names with `less3-dashboard` in place of `less3` (for example `less3-dashboard-<version>-win-x64-setup.exe`).
+
 > **Less3 is free, open-source software and is not code-signed** (signing certificates are an ongoing cost we choose not to pass on). Your operating system may warn that the developer is unidentified. That warning doesn't mean the download is damaged; to confirm a file is the one published, check it against `SHA256SUMS`.
 
 - **macOS** says *"Less3" Not Opened. Apple could not verify "Less3" is free of malware that may harm your Mac or compromise your privacy.* Click **Done** (not Move to Trash), open **System Settings > Privacy & Security**, scroll down to **Security**, click **Open Anyway** next to *"Less3" was blocked to protect your Mac*, then **Open Anyway** again and enter your password. Control-click > **Open** no longer works on macOS 15 and later. Or run `sudo installer -pkg ~/Downloads/less3-<version>-osx-arm64.pkg -target /` to install with no prompt.
@@ -48,6 +54,10 @@ Installers for Windows, macOS, and Linux (x64 and ARM64) are on the **[latest re
 Full instructions, including uninstalling and running Less3 as a Linux service, are in [`INSTALL.md`](INSTALL.md). Package-manager installs (winget, Chocolatey, Scoop, Homebrew, apt/yum) are planned but not live yet. The installers run a standalone node; for the multi-node cluster, use Docker (below).
 
 ## Current Version
+
+v4.1.3
+
+- Installers for the Less3 Dashboard on Windows, macOS, and Linux (x64 and ARM64), bundled with Node.js, with a `less3-dashboard` command, a menu entry that opens it in your browser, and a Linux systemd service. The server is unchanged from v4.1.2
 
 v4.1.2
 
@@ -181,7 +191,7 @@ docker compose up -d
 
 ### Starting the Dashboard
 
-Less3 includes a web-based dashboard for managing buckets, objects, tenants, users, credentials, RBAC, request history, and maintenance. After starting the Less3 server, you can start the dashboard:
+Less3 includes a web-based dashboard for managing buckets, objects, tenants, users, credentials, RBAC, request history, and maintenance. The easiest way to run it is the **Less3 Dashboard** installer (see [Download and Install](#download-and-install)), then `less3-dashboard`. To run it from source, after starting the Less3 server:
 
 ```bash
 cd dashboard

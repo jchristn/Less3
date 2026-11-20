@@ -178,7 +178,7 @@ namespace Less3.Publisher.Channels
             s.Append("<p>This installs:</p>\n<ul>\n");
             foreach (string item in items) s.Append("<li>").Append(WebUtility.HtmlEncode(item)).Append("</li>\n");
             s.Append("</ul>\n");
-            s.Append("<p>").Append(WebUtility.HtmlEncode(InstallerText.WorkingDirectoryNote(project, artifact.MainExecutable))).Append("</p>\n");
+            if (!String.IsNullOrEmpty(artifact.InstallerNote)) s.Append("<p>").Append(WebUtility.HtmlEncode(artifact.InstallerNote)).Append("</p>\n");
             s.Append("<p>To remove it later, run <code>sudo \"").Append(WebUtility.HtmlEncode(InstalledApp(project))).Append("/Contents/Resources/uninstall.sh\"</code>.</p>\n");
             s.Append("</body></html>\n");
             return s.ToString();

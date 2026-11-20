@@ -18,17 +18,34 @@
   },
   "build": {
     "framework": "net10.0",
-    "runtimes": ["win-x64", "win-arm64", "osx-x64", "osx-arm64", "linux-x64", "linux-arm64"],
+    "runtimes": [
+      "win-x64",
+      "win-arm64",
+      "osx-x64",
+      "osx-arm64",
+      "linux-x64",
+      "linux-arm64"
+    ],
     "artifacts": [
       {
         "id": "server",
+        "windowsAppId": "7A88C2CB-BE0A-595C-A1B6-132D92004939",
+        "installerNote": "Less3 keeps its configuration (system.json), database, and objects in the folder it runs in; the first run asks a few setup questions. Run less3 from any folder to use that folder instead.",
         "csproj": "src/Less3/Less3.csproj",
         "singleFile": true,
         "assemblyName": "less3",
         "mainExecutable": "less3",
-        "executables": ["less3"],
-        "pathCommands": ["less3"],
-        "removeFromPayload": ["clean.bat", "clean.sh", "Assets"],
+        "executables": [
+          "less3"
+        ],
+        "pathCommands": [
+          "less3"
+        ],
+        "removeFromPayload": [
+          "clean.bat",
+          "clean.sh",
+          "Assets"
+        ],
         "launcher": {
           "displayName": "Less3",
           "comment": "Run the Less3 S3-compatible object storage server",
@@ -52,8 +69,82 @@
             "libicu80 | libicu79 | libicu78 | libicu77 | libicu76 | libicu75 | libicu74 | libicu73 | libicu72 | libicu71 | libicu70 | libicu69 | libicu68 | libicu67 | libicu66",
             "ca-certificates"
           ],
-          "debRecommends": ["libgssapi-krb5-2"],
-          "rpm": ["glibc", "libgcc", "libstdc++", "zlib", "openssl-libs", "libicu", "ca-certificates"]
+          "debRecommends": [
+            "libgssapi-krb5-2"
+          ],
+          "rpm": [
+            "glibc",
+            "libgcc",
+            "libstdc++",
+            "zlib",
+            "openssl-libs",
+            "libicu",
+            "ca-certificates"
+          ]
+        }
+      },
+      {
+        "id": "dashboard",
+        "name": "less3-dashboard",
+        "displayName": "Less3 Dashboard",
+        "bundleId": "ai.latticetech.less3.dashboard",
+        "packageId": "LatticeAI.Less3.Dashboard",
+        "tagline": "The Less3 Dashboard is a web app for managing a Less3 server: buckets, objects, users, credentials, access control, request history, and cluster health.",
+        "description": "The Less3 Dashboard is the web interface for Less3, the S3-compatible object storage server. It runs locally on its own bundled Node.js runtime and connects to any Less3 server you can reach with that server's URL and admin API key. The installer adds the less3-dashboard command, which serves the dashboard on http://127.0.0.1:3000.",
+        "windowsAppId": "D600B49C-EBF5-5A95-B2F7-90A708834A1A",
+        "installerNote": "Sign in with your Less3 server's URL (http://127.0.0.1:8000 for a server on this machine) and its admin API key. Run less3-dashboard --help for the address and port options.",
+        "csproj": "src/Less3.Dashboard/Less3.Dashboard.csproj",
+        "singleFile": true,
+        "mainExecutable": "less3-dashboard",
+        "executables": [
+          "less3-dashboard"
+        ],
+        "pathCommands": [
+          "less3-dashboard"
+        ],
+        "nextApp": {
+          "directory": "dashboard",
+          "nodeVersion": "22.23.5",
+          "buildEnvironment": {
+            "LESS3_DASHBOARD_STANDALONE": "1",
+            "NEXT_TELEMETRY_DISABLED": "1"
+          },
+          "removeFromApp": [
+            "node_modules/sharp",
+            "node_modules/@img"
+          ]
+        },
+        "launcher": {
+          "displayName": "Less3 Dashboard",
+          "comment": "Open the Less3 Dashboard in your browser",
+          "fileName": "start-less3-dashboard",
+          "dataFolder": "",
+          "arguments": "--open"
+        },
+        "service": {
+          "name": "less3-dashboard",
+          "description": "Less3 Dashboard web app",
+          "user": "less3-dashboard",
+          "workingDirectory": "/var/lib/less3-dashboard",
+          "requiredFile": "",
+          "arguments": "",
+          "environment": [
+            "LESS3_DASHBOARD_HOST=127.0.0.1",
+            "LESS3_DASHBOARD_PORT=3000"
+          ]
+        },
+        "linuxDependencies": {
+          "deb": [
+            "libc6",
+            "libgcc-s1 | libgcc1",
+            "libstdc++6"
+          ],
+          "debRecommends": [],
+          "rpm": [
+            "glibc",
+            "libgcc",
+            "libstdc++"
+          ]
         }
       }
     ]
@@ -67,23 +158,102 @@
     "nugetSource": "https://api.nuget.org/v3/index.json"
   },
   "channels": {
-    "inno": { "enabled": true, "artifact": "server", "options": { "appId": "7A88C2CB-BE0A-595C-A1B6-132D92004939" } },
-    "macos": { "enabled": true, "artifact": "server" },
-    "debrpm": { "enabled": true, "artifact": "server" },
-    "appimage": { "enabled": true, "artifact": "server" },
-    "archive": { "enabled": true, "artifact": "server" },
-    "winget": { "enabled": true, "artifact": "server", "options": { "identifier": "LatticeAI.Less3" } },
-    "choco": { "enabled": true, "artifact": "server", "options": { "packageName": "less3" } },
-    "scoop": { "enabled": true, "artifact": "server", "options": { "manifestName": "less3" } },
-    "brew": { "enabled": true, "artifact": "server", "options": { "formulaName": "less3" } },
-    "aptyum": { "enabled": true, "artifact": "server" },
-    "snap": { "enabled": false, "artifact": "server" },
-    "flatpak": { "enabled": false, "artifact": "server" }
+    "inno": {
+      "enabled": true,
+      "artifacts": [
+        "server",
+        "dashboard"
+      ]
+    },
+    "macos": {
+      "enabled": true,
+      "artifacts": [
+        "server",
+        "dashboard"
+      ]
+    },
+    "debrpm": {
+      "enabled": true,
+      "artifacts": [
+        "server",
+        "dashboard"
+      ]
+    },
+    "appimage": {
+      "enabled": true,
+      "artifacts": [
+        "server",
+        "dashboard"
+      ]
+    },
+    "archive": {
+      "enabled": true,
+      "artifacts": [
+        "server",
+        "dashboard"
+      ]
+    },
+    "winget": {
+      "enabled": true,
+      "artifacts": [
+        "server",
+        "dashboard"
+      ]
+    },
+    "choco": {
+      "enabled": true,
+      "artifacts": [
+        "server",
+        "dashboard"
+      ]
+    },
+    "scoop": {
+      "enabled": true,
+      "artifacts": [
+        "server",
+        "dashboard"
+      ]
+    },
+    "brew": {
+      "enabled": true,
+      "artifacts": [
+        "server",
+        "dashboard"
+      ]
+    },
+    "aptyum": {
+      "enabled": true,
+      "artifacts": [
+        "server",
+        "dashboard"
+      ]
+    },
+    "snap": {
+      "enabled": false,
+      "artifact": "server"
+    },
+    "flatpak": {
+      "enabled": false,
+      "artifact": "server"
+    }
   },
   "signing": {
-    "macOs": { "vaultRef": "APPLE_DEVELOPER_ID", "notarizeProfileRef": "APPLE_NOTARY_PROFILE", "notarize": true, "isConfigured": false },
-    "windows": { "vaultRef": "WINDOWS_CERT_PFX", "passwordRef": "WINDOWS_CERT_PASSWORD", "isConfigured": false },
-    "linux": { "vaultRef": "GPG_PRIVATE_KEY", "passwordRef": "GPG_PASSPHRASE", "isConfigured": false }
+    "macOs": {
+      "vaultRef": "APPLE_DEVELOPER_ID",
+      "notarizeProfileRef": "APPLE_NOTARY_PROFILE",
+      "notarize": true,
+      "isConfigured": false
+    },
+    "windows": {
+      "vaultRef": "WINDOWS_CERT_PFX",
+      "passwordRef": "WINDOWS_CERT_PASSWORD",
+      "isConfigured": false
+    },
+    "linux": {
+      "vaultRef": "GPG_PRIVATE_KEY",
+      "passwordRef": "GPG_PASSPHRASE",
+      "isConfigured": false
+    }
   },
   "releaseNotes": {
     "source": "CHANGELOG.md",

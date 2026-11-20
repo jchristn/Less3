@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Unit tests for Less3.Publisher, the installer pipeline</Description>
+    <Description>Unit tests for Less3.Publisher, the installer pipeline, and the less3-dashboard launcher</Description>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Less3.Publisher\Less3.Publisher.csproj" />
+    <ProjectReference Include="..\..\src\Less3.Dashboard\Less3.Dashboard.csproj" />
   </ItemGroup>
 
 </Project>

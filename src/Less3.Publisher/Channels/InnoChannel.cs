@@ -53,7 +53,7 @@ namespace Less3.Publisher.Channels
 
                 InnoScriptInput input = new InnoScriptInput
                 {
-                    AppId = context.Option("appId", ""),
+                    AppId = String.IsNullOrWhiteSpace(context.Artifact.WindowsAppId) ? context.Option("appId", "") : context.Artifact.WindowsAppId,
                     Project = context.Project,
                     Artifact = context.Artifact,
                     Version = context.Version,

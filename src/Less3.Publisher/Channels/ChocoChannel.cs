@@ -33,7 +33,7 @@ namespace Less3.Publisher.Channels
             RuntimeTarget x64 = RuntimeTarget.Parse("win-x64");
             string file = AssetNames.WindowsSetup(context.Project.Name, context.Version, x64);
             string sha = Checksums.Sha256(context.RequireAsset(file, "inno"));
-            string name = context.Option("packageName", context.Project.Name);
+            string name = context.Project.Name;
             string directory = ManifestOutput.Directory(context, Id);
             Directory.CreateDirectory(Path.Combine(directory, "tools"));
 

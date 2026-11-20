@@ -32,7 +32,7 @@ namespace Less3.Publisher.Channels
         public IReadOnlyList<string> Build(ChannelContext context)
         {
             ArgumentNullException.ThrowIfNull(context);
-            string name = context.Option("formulaName", context.Project.Name);
+            string name = context.Project.Name;
             RuntimeTarget arm = RuntimeTarget.Parse("osx-arm64");
             RuntimeTarget intel = RuntimeTarget.Parse("osx-x64");
             string armFile = AssetNames.Archive(context.Project.Name, context.Version, arm);
@@ -71,7 +71,10 @@ namespace Less3.Publisher.Channels
             s.Append("    on_intel do\n      url \"").Append(intelUrl).Append("\"\n      sha256 \"").Append(intelSha).Append("\"\n    end\n");
             s.Append("  end\n\n");
             s.Append("  def install\n");
-            foreach (string command in context.Artifact.PathCommands) s.Append("    bin.install \"").Append(command).Append("\"\n");
+            // The archive's folder is kept whole (a bundled web app needs its app/ and node/ folders beside the
+            // launcher) and the commands are linked into bin.
+            s.Append("    libexec.install Dir[\"*\"]\n");
+            foreach (string command in context.Artifact.PathCommands) s.Append("    bin.install_symlink libexec/\"").Append(command).Append("\"\n");
             s.Append("  end\n\n");
             s.Append("  test do\n");
             foreach (string command in context.Artifact.PathCommands) s.Append("    assert_predicate bin/\"").Append(command).Append("\", :executable?\n");

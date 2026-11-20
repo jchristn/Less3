@@ -151,24 +151,30 @@ namespace Less3.Publisher
             List<string> missing = channel.Tools.Where(tool => !ProcessRunner.IsAvailable(tool.Command, tool.Probe)).Select(tool => "  " + tool.Command + ": " + tool.InstallHint).ToList();
             if (missing.Count > 0) throw new PublisherException("Channel '" + id + "' needs tools that are not installed:\n" + String.Join("\n", missing));
 
-            ArtifactSettings artifact = manifest.FindArtifact(settings.Artifact) ?? throw new ArgumentException("Channel '" + id + "' references unknown artifact '" + settings.Artifact + "'.");
-            List<RuntimeTarget> targets = ResolveTargets(manifest, settings, channel, options.Rid);
-            if (targets.Count == 0) throw new ArgumentException("Channel '" + id + "' has no runtimes to build on this host.");
-
-            if (!payloads.TryGetValue(artifact.Id, out Payload? payload))
+            List<string> produced = new List<string>();
+            foreach (string artifactId in settings.ArtifactIds())
             {
-                payload = new Payload(repoRoot, artifact, manifest.Build.Framework, version, Path.Combine(staging, "payload"));
-                payloads[artifact.Id] = payload;
+                ArtifactSettings artifact = manifest.FindArtifact(artifactId) ?? throw new ArgumentException("Channel '" + id + "' references unknown artifact '" + artifactId + "'.");
+                List<RuntimeTarget> targets = ResolveTargets(manifest, settings, channel, options.Rid);
+                if (targets.Count == 0) throw new ArgumentException("Channel '" + id + "' has no runtimes to build on this host.");
+
+                if (!payloads.TryGetValue(artifact.Id, out Payload? payload))
+                {
+                    payload = new Payload(repoRoot, artifact, manifest.Build.Framework, version, Path.Combine(staging, "payload"));
+                    payloads[artifact.Id] = payload;
+                }
+
+                string channelStaging = FileSystemUtil.Reset(Path.Combine(staging, id + "-" + artifact.Id));
+                ChannelContext context = new ChannelContext(repoRoot, manifest, settings, artifact, version, targets, output, channelStaging, payload);
+                Console.WriteLine();
+                Console.WriteLine("== " + channel.DisplayName + " (" + id + "): " + context.Project.DisplayName + " ==");
+                Console.WriteLine("   version  : " + version);
+                Console.WriteLine("   runtimes : " + String.Join(", ", targets.Select(item => item.Rid)));
+                Console.WriteLine("   output   : " + output);
+                produced.AddRange(channel.Build(context));
             }
 
-            string channelStaging = FileSystemUtil.Reset(Path.Combine(staging, id));
-            ChannelContext context = new ChannelContext(repoRoot, manifest, settings, artifact, version, targets, output, channelStaging, payload);
-            Console.WriteLine();
-            Console.WriteLine("== " + channel.DisplayName + " (" + id + ") ==");
-            Console.WriteLine("   version  : " + version);
-            Console.WriteLine("   runtimes : " + String.Join(", ", targets.Select(item => item.Rid)));
-            Console.WriteLine("   output   : " + output);
-            return channel.Build(context);
+            return produced;
         }
 
         private static void List(PublisherManifest manifest)

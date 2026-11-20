@@ -30,7 +30,7 @@ namespace Less3.Publisher.Channels
         public IReadOnlyList<string> Build(ChannelContext context)
         {
             ArgumentNullException.ThrowIfNull(context);
-            string id = context.Option("identifier", context.Project.PackageId);
+            string id = context.Project.PackageId;
             string directory = ManifestOutput.Directory(context, Id);
             StringBuilder installers = new StringBuilder();
             foreach (RuntimeTarget target in context.Targets)

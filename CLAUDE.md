@@ -55,6 +55,7 @@ docker compose down
 build-installers.bat           # Windows: setup .exe and .zip
 dotnet test test/Test.Publisher
 ```
+- Two products get installers: the server (`less3`) and the dashboard (`less3-dashboard`: `src/Less3.Dashboard` launches the Next.js standalone build of `dashboard/` on a bundled Node.js runtime; `LESS3_DASHBOARD_STANDALONE=1` selects that build in `next.config.mjs`).
 - `publisher.json` is the manifest and `src/Less3.Publisher` the only packaging code; `.github/workflows/release.yml` builds every OS on its own runner and publishes a GitHub Release when a `v<version>` tag is pushed (see `INSTALL.md`, `src/Less3.Publisher/README.md`).
 - The version lives only in `src/Directory.Build.props`; the release job refuses a tag that does not match it or a `CHANGELOG.md` without a `## [<version>]` section.
 

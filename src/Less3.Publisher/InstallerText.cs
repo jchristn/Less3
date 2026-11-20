@@ -43,18 +43,16 @@ namespace Less3.Publisher
 
             if (artifact.Launcher != null)
             {
-                string folder = DataFolder(artifact.Launcher, os);
-                switch (os)
+                string where = os == OsFamilyEnum.MacOs ? project.DisplayName + ".app in Applications" : artifact.Launcher.DisplayName + (os == OsFamilyEnum.Windows ? " in the Start menu" : " in the application menu");
+                string window = os == OsFamilyEnum.MacOs ? "a Terminal window" : os == OsFamilyEnum.Windows ? "a console window" : "a terminal";
+                if (String.IsNullOrEmpty(artifact.Launcher.DataFolder))
                 {
-                    case OsFamilyEnum.MacOs:
-                        items.Add(project.DisplayName + ".app in Applications, which runs " + project.DisplayName + " in a Terminal window in " + folder);
-                        break;
-                    case OsFamilyEnum.Windows:
-                        items.Add(artifact.Launcher.DisplayName + " in the Start menu, which runs " + project.DisplayName + " in a console window in " + folder);
-                        break;
-                    default:
-                        items.Add(artifact.Launcher.DisplayName + " in the application menu, which runs " + project.DisplayName + " in a terminal in " + folder);
-                        break;
+                    bool opens = (" " + artifact.Launcher.Arguments + " ").Contains(" --open ", StringComparison.Ordinal);
+                    items.Add(where + ", which runs " + project.DisplayName + " in " + window + (opens ? " and opens it in your browser" : ""));
+                }
+                else
+                {
+                    items.Add(where + ", which runs " + project.DisplayName + " in " + window + " in " + DataFolder(artifact.Launcher, os));
                 }
             }
 
@@ -67,18 +65,6 @@ namespace Less3.Publisher
         }
 
         /// <summary>
-        /// One sentence on where the server keeps its files, shown after the list of what gets installed.
-        /// </summary>
-        /// <param name="project">Project settings.</param>
-        /// <param name="mainExecutable">The command, for example "less3".</param>
-        /// <returns>Plain text.</returns>
-        public static string WorkingDirectoryNote(ProjectSettings project, string mainExecutable)
-        {
-            ArgumentNullException.ThrowIfNull(project);
-            return project.DisplayName + " keeps its configuration (system.json), database, and objects in the folder it runs in; the first run asks a few setup questions. Run " + mainExecutable + " from any folder to use that folder instead.";
-        }
-
-        /// <summary>
         /// The welcome paragraph: the tagline followed by what gets installed.
         /// </summary>
         /// <param name="project">Project settings.</param>
@@ -88,8 +74,10 @@ namespace Less3.Publisher
         public static string Welcome(ProjectSettings project, ArtifactSettings artifact, OsFamilyEnum os)
         {
             ArgumentNullException.ThrowIfNull(project);
+            ArgumentNullException.ThrowIfNull(artifact);
             List<string> items = WhatGetsInstalled(project, artifact, os);
-            return project.Tagline + " This installs: " + String.Join("; ", items.Select(item => LowerFirst(item))) + ".";
+            string text = project.Tagline + " This installs: " + String.Join("; ", items.Select(item => LowerFirst(item))) + ".";
+            return String.IsNullOrEmpty(artifact.InstallerNote) ? text : text + " " + artifact.InstallerNote;
         }
 
         /// <summary>

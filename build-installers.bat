@@ -28,7 +28,7 @@ dotnet "%PUB%" --channel installers --sums --output "%OUT%" %VERSION_ARGS%
 if errorlevel 1 exit /b 1
 
 echo.
-echo Installers are in %OUT%. Install one, open a new terminal, and run: less3
+echo Installers are in %OUT%. Install one, open a new terminal, and run: less3 (or less3-dashboard)
 endlocal & exit /b 0
 
 :usage

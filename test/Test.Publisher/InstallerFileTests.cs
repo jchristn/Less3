@@ -24,7 +24,7 @@ namespace Test.Publisher
             PublisherManifest manifest = RepositoryPaths.Manifest();
             InnoScriptInput input = new InnoScriptInput
             {
-                AppId = manifest.Channels["inno"].Options["appId"],
+                AppId = RepositoryPaths.Server().WindowsAppId,
                 Project = manifest.Project,
                 Artifact = RepositoryPaths.Server(),
                 Version = "4.1.2",
@@ -41,7 +41,7 @@ namespace Test.Publisher
                 "AppId={{" + input.AppId + "}", "AppName=Less3\n", "AppPublisher=Lattice AI, LLC\n", "AppPublisherURL=https://latticetech.ai\n",
                 "LicenseFile=LICENSE.txt", "SetupIconFile=setup.ico", "WizardImageFile=wizard-100.bmp,wizard-200.bmp", "WizardSmallImageFile=wizard-small-100.bmp",
                 "ArchitecturesAllowed=arm64", "ChangesEnvironment=yes", "UninstallDisplayIcon={app}\\less3.exe", "WelcomeLabel2=" + manifest.Project.Tagline,
-                "The less3 command, added to PATH", "%%USERPROFILE%%\\Less3", "ValueData: \"{olddata};{app}\"; Check: NeedsAddPath",
+                "The less3 command, added to PATH", "%%USERPROFILE%%\\Less3", "keeps its configuration (system.json)", "ValueData: \"{olddata};{app}\"; Check: NeedsAddPath",
                 "Source: \"start-less3.cmd\"; DestDir: \"{app}\"", "Name: \"{group}\\Less3\"; Filename: \"{app}\\start-less3.cmd\"", "IconFilename: \"{app}\\less3.exe\"",
                 "runasoriginaluser shellexec unchecked", "RemovePath(ExpandConstant('{app}'))", "OutputBaseFilename=less3-4.1.2-win-arm64-setup"
             })

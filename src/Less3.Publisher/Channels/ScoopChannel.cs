@@ -51,7 +51,7 @@ namespace Less3.Publisher.Channels
             }
 
             foreach (string command in context.Artifact.PathCommands) manifest.Bin.Add(command + ".exe");
-            string name = context.Option("manifestName", context.Project.Name);
+            string name = context.Project.Name;
             string output = Path.Combine(ManifestOutput.Directory(context, Id), name + ".json");
             File.WriteAllText(output, JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }) + "\n");
             Console.WriteLine("[scoop] wrote " + output + " (commit it to bucket/ in " + context.Manifest.Destinations.ScoopBucketRepo + ")");

@@ -77,5 +77,39 @@ namespace Less3.Publisher.Manifest
         /// Project home page URL.
         /// </summary>
         public string Homepage { get; set; } = "";
+
+        /// <summary>
+        /// The identity an artifact's installers use: these settings with the artifact's own name, display name,
+        /// identifiers, tagline, and description in place of the project's where it sets them.
+        /// </summary>
+        /// <param name="artifact">Artifact.</param>
+        /// <returns>A new settings object; this one is not changed.</returns>
+        /// <exception cref="System.ArgumentNullException">The artifact is null.</exception>
+        public ProjectSettings For(ArtifactSettings artifact)
+        {
+            System.ArgumentNullException.ThrowIfNull(artifact);
+            return new ProjectSettings
+            {
+                Name = Pick(artifact.Name, Name),
+                DisplayName = Pick(artifact.DisplayName, DisplayName),
+                PackageId = Pick(artifact.PackageId, PackageId),
+                BundleId = Pick(artifact.BundleId, BundleId),
+                Tagline = Pick(artifact.Tagline, Tagline),
+                Description = Pick(artifact.Description, Description),
+                License = License,
+                LicenseFile = LicenseFile,
+                Logo = Logo,
+                Publisher = Publisher,
+                PublisherUrl = PublisherUrl,
+                Maintainer = Maintainer,
+                Repo = Repo,
+                Homepage = Homepage
+            };
+        }
+
+        private static string Pick(string preferred, string fallback)
+        {
+            return string.IsNullOrWhiteSpace(preferred) ? fallback : preferred;
+        }
     }
 }

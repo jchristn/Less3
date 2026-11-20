@@ -5,7 +5,7 @@
     all read it; .github/workflows/release.yml refuses to publish a tag that does not match it.
   -->
   <PropertyGroup>
-    <Version>4.1.2</Version>
+    <Version>4.1.3</Version>
   </PropertyGroup>
 
 </Project>

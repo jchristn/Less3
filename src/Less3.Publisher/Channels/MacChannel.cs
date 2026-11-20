@@ -66,7 +66,10 @@ namespace Less3.Publisher.Channels
             string resources = Path.Combine(contents, "Resources");
             Directory.CreateDirectory(resources);
             Directory.CreateDirectory(macOs);
-            FileSystemUtil.CopyTree(payload, macOs);
+            // Contents/MacOS holds only the executables; payload folders (a bundled web app and its Node.js runtime)
+            // go in Contents/Resources, where codesign seals them as resources and the launcher looks for them.
+            foreach (string file in Directory.GetFiles(payload)) File.Copy(file, Path.Combine(macOs, Path.GetFileName(file)), true);
+            foreach (string directory in Directory.GetDirectories(payload)) FileSystemUtil.CopyTree(directory, Path.Combine(resources, Path.GetFileName(directory)));
 
             FileSystemUtil.WriteUnixText(Path.Combine(contents, "Info.plist"), MacBundleFiles.InfoPlist(context.Project, context.Artifact, context.Version));
             File.WriteAllText(Path.Combine(contents, "PkgInfo"), "APPL????");

@@ -173,7 +173,7 @@ namespace Test.Publisher
 
                 ChannelContext brewContext = Context(manifest, server, "brew", "osx-arm64,osx-x64", directory);
                 string formula = File.ReadAllText(new BrewFormulaChannel().Build(brewContext).Single());
-                foreach (string expected in new[] { "class Less3 < Formula", "version \"4.1.2\"", "license \"MIT\"", "https://github.com/jchristn/Less3/releases/download/v4.1.2/less3-4.1.2-osx-arm64.tar.gz", "https://github.com/jchristn/Less3/releases/download/v4.1.2/less3-4.1.2-osx-x64.tar.gz", "bin.install \"less3\"", "on_arm do", "on_intel do" })
+                foreach (string expected in new[] { "class Less3 < Formula", "version \"4.1.2\"", "license \"MIT\"", "https://github.com/jchristn/Less3/releases/download/v4.1.2/less3-4.1.2-osx-arm64.tar.gz", "https://github.com/jchristn/Less3/releases/download/v4.1.2/less3-4.1.2-osx-x64.tar.gz", "libexec.install Dir[\"*\"]", "bin.install_symlink libexec/\"less3\"", "on_arm do", "on_intel do" })
                 {
                     Assert.Contains(expected, formula, StringComparison.Ordinal);
                 }

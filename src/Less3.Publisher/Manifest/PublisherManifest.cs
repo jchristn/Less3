@@ -137,7 +137,7 @@ namespace Less3.Publisher.Manifest
                 if (!String.IsNullOrWhiteSpace(artifact.MainExecutable) && !artifact.Executables.Contains(artifact.MainExecutable, StringComparer.Ordinal)) problems.Add("Artifact '" + artifact.Id + "' runs '" + artifact.MainExecutable + "' but does not list it in executables.");
                 if (artifact.Launcher != null)
                 {
-                    if (String.IsNullOrWhiteSpace(artifact.Launcher.DisplayName) || String.IsNullOrWhiteSpace(artifact.Launcher.FileName) || String.IsNullOrWhiteSpace(artifact.Launcher.DataFolder)) problems.Add("Artifact '" + artifact.Id + "' launcher needs a displayName, fileName, and dataFolder.");
+                    if (String.IsNullOrWhiteSpace(artifact.Launcher.DisplayName) || String.IsNullOrWhiteSpace(artifact.Launcher.FileName)) problems.Add("Artifact '" + artifact.Id + "' launcher needs a displayName and a fileName.");
                     if (artifact.Executables.Contains(artifact.Launcher.FileName, StringComparer.OrdinalIgnoreCase)) problems.Add("Artifact '" + artifact.Id + "' launcher fileName '" + artifact.Launcher.FileName + "' collides with an executable; macOS file names ignore case.");
                 }
 
@@ -145,11 +145,33 @@ namespace Less3.Publisher.Manifest
                 {
                     if (String.IsNullOrWhiteSpace(artifact.Service.Name) || String.IsNullOrWhiteSpace(artifact.Service.User) || !artifact.Service.WorkingDirectory.StartsWith("/", StringComparison.Ordinal)) problems.Add("Artifact '" + artifact.Id + "' service needs a name, a user, and an absolute workingDirectory.");
                 }
+
+                if (artifact.NextApp != null)
+                {
+                    if (String.IsNullOrWhiteSpace(artifact.NextApp.Directory)) problems.Add("Artifact '" + artifact.Id + "' nextApp needs a directory.");
+                    if (!System.Text.RegularExpressions.Regex.IsMatch(artifact.NextApp.NodeVersion ?? "", "^\\d+\\.\\d+\\.\\d+$")) problems.Add("Artifact '" + artifact.Id + "' nextApp needs an exact nodeVersion such as 22.23.5.");
+                }
+            }
+
+            List<ArtifactSettings> packaged = Channels.Values.Where(item => item.Enabled).SelectMany(item => item.ArtifactIds()).Distinct(StringComparer.OrdinalIgnoreCase).Select(FindArtifact).Where(item => item != null).Select(item => item!).ToList();
+            foreach (IGrouping<string, ArtifactSettings> group in packaged.GroupBy(item => Project.For(item).Name, StringComparer.Ordinal).Where(group => group.Count() > 1))
+            {
+                problems.Add("Artifacts " + String.Join(", ", group.Select(item => "'" + item.Id + "'")) + " would all produce installers named '" + group.Key + "'; give each its own name.");
+            }
+
+            foreach (IGrouping<string, ArtifactSettings> group in packaged.GroupBy(item => Project.For(item).BundleId, StringComparer.Ordinal).Where(group => group.Count() > 1))
+            {
+                problems.Add("Artifacts " + String.Join(", ", group.Select(item => "'" + item.Id + "'")) + " share the identifier '" + group.Key + "'; give each its own bundleId.");
             }
 
             foreach (KeyValuePair<string, ChannelSettings> channel in Channels)
             {
-                if (FindArtifact(channel.Value.Artifact) == null) problems.Add("Channel '" + channel.Key + "' references unknown artifact '" + channel.Value.Artifact + "'.");
+                List<string> ids = channel.Value.ArtifactIds();
+                if (ids.Count == 0) problems.Add("Channel '" + channel.Key + "' names no artifact.");
+                foreach (string id in ids)
+                {
+                    if (FindArtifact(id) == null) problems.Add("Channel '" + channel.Key + "' references unknown artifact '" + id + "'.");
+                }
             }
 
             return problems;

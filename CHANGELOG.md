@@ -5,6 +5,15 @@ that section as the release notes.
 
 ## [Unreleased]
 
+## [4.1.3] - 2026-11-20
+
+Installers for the Less3 Dashboard. The server is unchanged from 4.1.2; the Docker images keep the `v4.1.0` tag.
+
+- Added Less3 Dashboard installers for Windows, macOS, and Linux on x64 and ARM64, beside the server's: `less3-dashboard-<version>-<rid>-setup.exe`, `.pkg` and `.dmg`, `.deb`, `.rpm`, AppImage, and `.zip`/`.tar.gz` files. Each bundles the dashboard (`dashboard/`, built as a Next.js standalone server) with the Node.js 22 LTS runtime, so nothing else needs to be installed. They add the `less3-dashboard` command, which serves the dashboard on `http://127.0.0.1:3000` (`--host`, `--port`, `--open`, or `LESS3_DASHBOARD_HOST`/`LESS3_DASHBOARD_PORT`), and a **Less3 Dashboard** menu entry that starts it and opens it in your browser. The `.deb` and `.rpm` also install a `less3-dashboard` systemd service (not enabled). See [INSTALL.md](INSTALL.md).
+- Added `src/Less3.Dashboard`, the `less3-dashboard` launcher: it starts the bundled Node.js runtime, stops it on Ctrl+C or a termination signal, and reports its exit code.
+- `dashboard/next.config.mjs` builds the standalone server, with unoptimized images, when `LESS3_DASHBOARD_STANDALONE=1`; `npm run build`, `npm run start`, and the Docker image are unchanged.
+- The installer pipeline (`publisher.json`, `src/Less3.Publisher`) packages several artifacts, each with its own name, identifiers, and installers, and can bundle a Next.js app with a checksum-verified Node.js runtime. The release workflow installs and runs both products on each operating system's runner before publishing.
+
 ## [4.1.2] - 2026-11-20
 
 Installers for Windows, macOS, and Linux, published on [GitHub Releases](https://github.com/jchristn/Less3/releases).

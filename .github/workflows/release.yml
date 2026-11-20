@@ -1,10 +1,10 @@
 name: Release
 
-# Builds the Less3 installers on each operating system's own runner and, on a v<version> tag, publishes them together
+# Builds the Less3 and Less3 Dashboard installers on each operating system's own runner and, on a v<version> tag, publishes them together
 # as one GitHub Release. publisher.json is the source of truth and src/Less3.Publisher does the packaging; the same
 # Publisher commands run locally through build-installers.sh and build-installers.bat.
 #
-#   Tag push (v4.1.2):    build every installer, then the release job checks the tag and CHANGELOG.md and publishes.
+#   Tag push (v4.1.3):    build every installer, then the release job checks the tag and CHANGELOG.md and publishes.
 #   Manual run:           build every installer and upload them as workflow artifacts; nothing is published.
 #   release-check.yml:    calls this workflow on pushes to main that touch packaging, also without publishing.
 #
@@ -37,34 +37,45 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: Install Inno Setup
         run: choco install innosetup --no-progress -y
       - name: Build the setup .exe and .zip files
         run: dotnet run --project src/Less3.Publisher -c Release -- --channel inno,archive --output artifacts
-      - name: Install, run, and uninstall the x64 setup
+      - name: Install, run, and uninstall the x64 setups
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $setup = Get-ChildItem artifacts -Filter 'less3-*-win-x64-setup.exe' | Select-Object -First 1
-          Start-Process -Wait -FilePath $setup.FullName -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-','/LOG=install.log'
-          $app = Join-Path $env:ProgramFiles 'Less3'
-          foreach ($file in 'less3.exe','start-less3.cmd','LICENSE.txt') { if (-not (Test-Path (Join-Path $app $file))) { throw "Missing $file in $app" } }
-          $path = [Environment]::GetEnvironmentVariable('Path', 'Machine')
-          if (($path -split ';') -notcontains $app) { throw "The installer did not add $app to the system PATH." }
-          if (-not (Test-Path (Join-Path $env:ProgramData 'Microsoft\Windows\Start Menu\Programs\Less3\Less3.lnk'))) { throw 'The Start menu shortcut is missing.' }
-          $work = New-Item -ItemType Directory -Path (Join-Path $env:RUNNER_TEMP 'less3-run')
-          $env:DOTNET_RUNNING_IN_CONTAINER = 'true'; $env:LESS3_PORT = '18000'
-          $server = Start-Process -FilePath (Join-Path $app 'less3.exe') -WorkingDirectory $work -PassThru -RedirectStandardOutput (Join-Path $work 'out.log') -RedirectStandardError (Join-Path $work 'err.log')
-          $status = 0
-          for ($i = 0; $i -lt 30 -and $status -ne 200; $i++) { Start-Sleep 1; try { $status = (Invoke-WebRequest -UseBasicParsing http://localhost:18000/).StatusCode } catch { } }
-          Stop-Process -Id $server.Id -Force
-          if ($status -ne 200) { Get-Content (Join-Path $work 'out.log'), (Join-Path $work 'err.log'); throw "less3.exe did not answer (status $status)." }
-          Write-Host "less3.exe answered 200."
-          Start-Process -Wait -FilePath (Join-Path $app 'unins000.exe') -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART'
-          $path = [Environment]::GetEnvironmentVariable('Path', 'Machine')
-          if (($path -split ';') -contains $app) { throw "The uninstaller left $app on the system PATH." }
-          if (Test-Path (Join-Path $app 'less3.exe')) { throw 'The uninstaller left less3.exe behind.' }
-          Write-Host 'Install, PATH, Start menu entry, run, and uninstall all checked.'
+          function Test-Setup([string]$Name, [string]$DisplayName, [string]$Exe, [string]$Launcher, [string[]]$Arguments, [hashtable]$Environment, [string]$Url) {
+            $setup = Get-ChildItem artifacts -Filter "$Name-*-win-x64-setup.exe" | Select-Object -First 1
+            Start-Process -Wait -FilePath $setup.FullName -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-'
+            $app = Join-Path $env:ProgramFiles $DisplayName
+            foreach ($file in $Exe, $Launcher, 'LICENSE.txt') { if (-not (Test-Path (Join-Path $app $file))) { throw "Missing $file in $app" } }
+            $path = [Environment]::GetEnvironmentVariable('Path', 'Machine')
+            if (($path -split ';') -notcontains $app) { throw "The installer did not add $app to the system PATH." }
+            if (-not (Test-Path (Join-Path $env:ProgramData "Microsoft\Windows\Start Menu\Programs\$DisplayName\$DisplayName.lnk"))) { throw "The $DisplayName Start menu shortcut is missing." }
+            $work = New-Item -ItemType Directory -Force -Path (Join-Path $env:RUNNER_TEMP "$Name-run")
+            foreach ($key in $Environment.Keys) { Set-Item -Path "Env:$key" -Value $Environment[$key] }
+            $start = @{ FilePath = (Join-Path $app $Exe); WorkingDirectory = $work; PassThru = $true; RedirectStandardOutput = (Join-Path $work 'out.log'); RedirectStandardError = (Join-Path $work 'err.log') }
+            if ($Arguments.Count -gt 0) { $start.ArgumentList = $Arguments }
+            $server = Start-Process @start
+            $status = 0
+            for ($i = 0; $i -lt 60 -and $status -ne 200; $i++) { Start-Sleep 1; try { $status = (Invoke-WebRequest -UseBasicParsing $Url).StatusCode } catch { } }
+            Stop-Process -Id $server.Id -Force
+            Get-Process -Name node -ErrorAction SilentlyContinue | Stop-Process -Force
+            if ($status -ne 200) { Get-Content (Join-Path $work 'out.log'), (Join-Path $work 'err.log'); throw "$Exe did not answer at $Url (status $status)." }
+            Write-Host "$Exe answered 200 at $Url."
+            Start-Sleep 2
+            Start-Process -Wait -FilePath (Join-Path $app 'unins000.exe') -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART'
+            $path = [Environment]::GetEnvironmentVariable('Path', 'Machine')
+            if (($path -split ';') -contains $app) { throw "The uninstaller left $app on the system PATH." }
+            if (Test-Path (Join-Path $app $Exe)) { throw "The uninstaller left $Exe behind." }
+            Write-Host "${DisplayName}: install, PATH, Start menu entry, run, and uninstall all checked."
+          }
+          Test-Setup 'less3' 'Less3' 'less3.exe' 'start-less3.cmd' @() @{ DOTNET_RUNNING_IN_CONTAINER = 'true'; LESS3_PORT = '18000' } 'http://localhost:18000/'
+          Test-Setup 'less3-dashboard' 'Less3 Dashboard' 'less3-dashboard.exe' 'start-less3-dashboard.cmd' @('--port', '13000') @{} 'http://127.0.0.1:13000/'
       - uses: actions/upload-artifact@v4
         with:
           name: installers-windows
@@ -81,40 +92,65 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: Build the .pkg, .dmg, and .tar.gz files
         run: dotnet run --project src/Less3.Publisher -c Release -- --channel macos,archive --output artifacts
       - name: Check the ad-hoc signatures
         run: |
           for dmg in artifacts/*.dmg; do
             mount="$(hdiutil attach -nobrowse -readonly "$dmg" | tail -1 | awk -F'\t' '{print $NF}')"
-            codesign --verify --deep --strict --verbose=2 "$mount/Less3.app"
-            test -f "$mount/If Less3 won't open.txt"
+            app="$(find "$mount" -maxdepth 1 -name '*.app' | head -1)"
+            name="$(basename "$app" .app)"
+            codesign --verify --deep --strict --verbose=2 "$app"
+            test -f "$mount/If $name won't open.txt"
             hdiutil detach -quiet "$mount"
           done
           for archive in artifacts/*.tar.gz; do
             dir="$(mktemp -d)"; tar xzf "$archive" -C "$dir"
-            codesign --verify --strict --verbose=2 "$dir"/less3-*/less3
+            for exe in "$dir"/*/less3 "$dir"/*/less3-dashboard; do [ -f "$exe" ] && codesign --verify --strict --verbose=2 "$exe"; done
           done
-      - name: Install, run, and uninstall the .pkg
+      - name: Install, run, and uninstall the .pkg files
         run: |
           case "$(uname -m)" in arm64) arch=osx-arm64 ;; *) arch=osx-x64 ;; esac
-          sudo installer -pkg artifacts/less3-*-"$arch".pkg -target /
+          wait_for() {
+            for i in $(seq 1 60); do curl -fs -o /dev/null "$1" && return 0; sleep 1; done
+            return 1
+          }
+          sudo installer -pkg artifacts/less3-4*-"$arch".pkg -target /
+          sudo installer -pkg artifacts/less3-dashboard-*-"$arch".pkg -target /
           test -x /Applications/Less3.app/Contents/MacOS/less3
           test -x /Applications/Less3.app/Contents/MacOS/start-less3
           test "$(readlink /usr/local/bin/less3)" = /Applications/Less3.app/Contents/MacOS/less3
+          test -x "/Applications/Less3 Dashboard.app/Contents/MacOS/less3-dashboard"
+          test -x "/Applications/Less3 Dashboard.app/Contents/Resources/node/node"
+          test -f "/Applications/Less3 Dashboard.app/Contents/Resources/app/server.js"
+          test "$(readlink /usr/local/bin/less3-dashboard)" = "/Applications/Less3 Dashboard.app/Contents/MacOS/less3-dashboard"
           codesign --verify --deep --strict /Applications/Less3.app
+          codesign --verify --deep --strict "/Applications/Less3 Dashboard.app"
           work="$(mktemp -d)"; cd "$work"
           DOTNET_RUNNING_IN_CONTAINER=true LESS3_PORT=18000 less3 > less3.log 2>&1 < /dev/null &
-          pid=$!
-          for i in $(seq 1 30); do curl -fs -o /dev/null http://localhost:18000/ && break; sleep 1; done
-          status="$(curl -s -o /dev/null -w '%{http_code}' http://localhost:18000/ || true)"
-          kill "$pid" || true
-          if [ "$status" != 200 ]; then cat less3.log; echo "::error::less3 did not answer (status $status)"; exit 1; fi
-          echo "less3 answered 200."
+          server=$!
+          less3-dashboard --port 13000 > dashboard.log 2>&1 < /dev/null &
+          dashboard=$!
+          ok=1
+          wait_for http://localhost:18000/ || { cat less3.log; echo "::error::less3 did not answer"; ok=0; }
+          wait_for http://127.0.0.1:13000/ || { cat dashboard.log; echo "::error::less3-dashboard did not answer"; ok=0; }
+          kill "$server" "$dashboard" || true
+          sleep 2
+          if lsof -ti tcp:13000 >/dev/null; then echo "::error::the dashboard's Node.js process outlived less3-dashboard"; ok=0; fi
+          [ "$ok" = 1 ] || exit 1
+          echo "less3 and less3-dashboard answered 200."
           sudo /Applications/Less3.app/Contents/Resources/uninstall.sh
+          sudo "/Applications/Less3 Dashboard.app/Contents/Resources/uninstall.sh"
           test ! -e /Applications/Less3.app
+          test ! -e "/Applications/Less3 Dashboard.app"
           test ! -e /usr/local/bin/less3
-          if pkgutil --pkg-info ai.latticetech.less3.pkg >/dev/null 2>&1; then echo "::error::The installer receipt is still registered."; exit 1; fi
+          test ! -e /usr/local/bin/less3-dashboard
+          for id in ai.latticetech.less3.pkg ai.latticetech.less3.dashboard.pkg; do
+            if pkgutil --pkg-info "$id" >/dev/null 2>&1; then echo "::error::The installer receipt $id is still registered."; exit 1; fi
+          done
       - uses: actions/upload-artifact@v4
         with:
           name: installers-macos
@@ -132,6 +168,9 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: Install packaging tools
         env:
           DEBIAN_FRONTEND: noninteractive
@@ -145,34 +184,55 @@ jobs:
         run: dotnet run --project src/Less3.Publisher -c Release -- --channel debrpm,appimage,archive --output artifacts
       - name: Check the packages
         run: |
-          for deb in artifacts/*.deb; do dpkg-deb --info "$deb" | grep -E 'Package|Version|Architecture|Depends'; dpkg-deb --contents "$deb" | grep -E 'usr/bin/less3|less3.service|hicolor/256|start-less3'; done
-          for rpm in artifacts/*.rpm; do rpm -qip "$rpm" | grep -E 'Name|Version|Architecture'; rpm -qlp "$rpm" | grep -E 'usr/bin/less3|less3.service'; done
+          for deb in artifacts/*.deb; do dpkg-deb --info "$deb" | grep -E 'Package|Version|Architecture|Depends'; dpkg-deb --contents "$deb" | grep -E 'usr/bin/less3|\.service|hicolor/256|start-less3'; done
+          for rpm in artifacts/*.rpm; do rpm -qip "$rpm" | grep -E 'Name|Version|Architecture'; rpm -qlp "$rpm" | grep -E 'usr/bin/less3|\.service'; done
           chmod +x artifacts/*.AppImage
-          dir="$(mktemp -d)"; (cd "$dir" && "$GITHUB_WORKSPACE"/artifacts/less3-*-x86_64.AppImage --appimage-extract >/dev/null)
-          test -x "$dir/squashfs-root/usr/bin/less3"
-          test -x "$dir/squashfs-root/AppRun"
-      - name: Install, run, and remove the .deb
+          for image in artifacts/less3-4*-x86_64.AppImage artifacts/less3-dashboard-*-x86_64.AppImage; do
+            dir="$(mktemp -d)"; (cd "$dir" && "$GITHUB_WORKSPACE/$image" --appimage-extract >/dev/null)
+            test -x "$dir/squashfs-root/AppRun"
+            ls "$dir/squashfs-root/usr/bin"
+          done
+          dir="$(mktemp -d)"; (cd "$dir" && "$GITHUB_WORKSPACE"/artifacts/less3-dashboard-*-x86_64.AppImage --appimage-extract >/dev/null)
+          test -x "$dir/squashfs-root/usr/bin/node/node"
+          test -f "$dir/squashfs-root/usr/bin/app/server.js"
+      - name: Install, run, and remove the .deb files
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          sudo apt-get install -y ./artifacts/less3_*_amd64.deb
+          wait_for() {
+            for i in $(seq 1 60); do curl -fs -o /dev/null "$1" && return 0; sleep 1; done
+            return 1
+          }
+          sudo apt-get install -y ./artifacts/less3_*_amd64.deb ./artifacts/less3-dashboard_*_amd64.deb
           test "$(command -v less3)" = /usr/bin/less3
+          test "$(command -v less3-dashboard)" = /usr/bin/less3-dashboard
           id less3
+          id less3-dashboard
           test -d /var/lib/less3
           test "$(stat -c %U /var/lib/less3)" = less3
           systemctl cat less3.service
+          systemctl cat less3-dashboard.service
           test "$(systemctl is-enabled less3.service || true)" = disabled
+          test "$(systemctl is-enabled less3-dashboard.service || true)" = disabled
           work="$(mktemp -d)"; cd "$work"
           DOTNET_RUNNING_IN_CONTAINER=true LESS3_PORT=18000 less3 > less3.log 2>&1 < /dev/null &
-          pid=$!
-          for i in $(seq 1 30); do curl -fs -o /dev/null http://localhost:18000/ && break; sleep 1; done
-          status="$(curl -s -o /dev/null -w '%{http_code}' http://localhost:18000/ || true)"
-          kill "$pid" || true
-          if [ "$status" != 200 ]; then cat less3.log; echo "::error::less3 did not answer (status $status)"; exit 1; fi
-          echo "less3 answered 200."
-          sudo apt-get remove -y less3
+          server=$!
+          ok=1
+          wait_for http://localhost:18000/ || { cat less3.log; echo "::error::less3 did not answer"; ok=0; }
+          kill "$server" || true
+          # The dashboard as its service runs it: as the less3-dashboard account, from the read-only install folder.
+          sudo systemctl start less3-dashboard.service
+          wait_for http://127.0.0.1:3000/ || { sudo journalctl -u less3-dashboard --no-pager; echo "::error::the less3-dashboard service did not answer"; ok=0; }
+          sudo systemctl stop less3-dashboard.service
+          sleep 2
+          if ss -ltn | grep -q ':3000 '; then echo "::error::the dashboard's Node.js process outlived the service"; ok=0; fi
+          [ "$ok" = 1 ] || exit 1
+          echo "less3 and the less3-dashboard service answered 200."
+          sudo apt-get remove -y less3 less3-dashboard
           test ! -e /usr/bin/less3
+          test ! -e /usr/bin/less3-dashboard
           test ! -e /usr/lib/systemd/system/less3.service
+          test ! -e /usr/lib/systemd/system/less3-dashboard.service
           test -d /var/lib/less3
       - uses: actions/upload-artifact@v4
         with:
@@ -239,15 +299,18 @@ jobs:
           mkdir -p release-assets
           find downloads -type f -exec cp {} release-assets/ \;
           cd release-assets
-          expected="less3-$VERSION-win-x64-setup.exe less3-$VERSION-win-arm64-setup.exe less3-$VERSION-win-x64.zip less3-$VERSION-win-arm64.zip
-          less3-$VERSION-osx-x64.pkg less3-$VERSION-osx-arm64.pkg less3-$VERSION-osx-x64.dmg less3-$VERSION-osx-arm64.dmg less3-$VERSION-osx-x64.tar.gz less3-$VERSION-osx-arm64.tar.gz
-          less3_${VERSION}_amd64.deb less3_${VERSION}_arm64.deb less3-$VERSION-1.x86_64.rpm less3-$VERSION-1.aarch64.rpm
-          less3-$VERSION-x86_64.AppImage less3-$VERSION-aarch64.AppImage less3-$VERSION-linux-x64.tar.gz less3-$VERSION-linux-arm64.tar.gz"
+          expected=""
+          for name in less3 less3-dashboard; do
+            expected="$expected $name-$VERSION-win-x64-setup.exe $name-$VERSION-win-arm64-setup.exe $name-$VERSION-win-x64.zip $name-$VERSION-win-arm64.zip
+            $name-$VERSION-osx-x64.pkg $name-$VERSION-osx-arm64.pkg $name-$VERSION-osx-x64.dmg $name-$VERSION-osx-arm64.dmg $name-$VERSION-osx-x64.tar.gz $name-$VERSION-osx-arm64.tar.gz
+            ${name}_${VERSION}_amd64.deb ${name}_${VERSION}_arm64.deb $name-$VERSION-1.x86_64.rpm $name-$VERSION-1.aarch64.rpm
+            $name-$VERSION-x86_64.AppImage $name-$VERSION-aarch64.AppImage $name-$VERSION-linux-x64.tar.gz $name-$VERSION-linux-arm64.tar.gz"
+          done
           missing=0
           for file in $expected; do [ -f "$file" ] || { echo "::error::Missing $file"; missing=1; }; done
           [ "$missing" = 0 ] || exit 1
           count="$(ls | wc -l)"
-          if [ "$count" != 18 ]; then echo "::error::Expected 18 assets, found $count:"; ls; exit 1; fi
+          if [ "$count" != 36 ]; then echo "::error::Expected 36 assets, found $count:"; ls; exit 1; fi
           sha256sum * > SHA256SUMS
           cat SHA256SUMS
       - name: Create the GitHub Release
@@ -321,11 +384,11 @@ jobs:
           VERSION: ${{ github.ref_name }}
         run: |
           mkdir -p bucket Formula
-          cp artifacts/manifests/scoop/less3.json bucket/less3.json
-          cp artifacts/manifests/brew/less3.rb Formula/less3.rb
+          cp artifacts/manifests/scoop/*.json bucket/
+          cp artifacts/manifests/brew/*.rb Formula/
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add bucket/less3.json Formula/less3.rb
+          git add bucket Formula
           git diff --cached --quiet || { git commit -m "Package manifests for $VERSION" && git push origin HEAD:main; }
       - uses: actions/upload-artifact@v4
         with:
@@ -357,6 +420,6 @@ jobs:
         env:
           CHOCO_API_KEY: ${{ secrets.CHOCO_API_KEY }}
         run: |
-          choco pack artifacts/manifests/choco/less3.nuspec --outputdirectory artifacts
-          if (-not $env:CHOCO_API_KEY) { Write-Host "::warning::CHOCO_API_KEY is not set; the package was packed but not pushed (pending)."; exit 0 }
-          choco push (Get-ChildItem artifacts -Filter 'less3.*.nupkg' | Select-Object -First 1).FullName --source https://push.chocolatey.org/ --api-key $env:CHOCO_API_KEY
+          foreach ($nuspec in Get-ChildItem artifacts/manifests/choco -Filter '*.nuspec') { choco pack $nuspec.FullName --outputdirectory artifacts/choco }
+          if (-not $env:CHOCO_API_KEY) { Write-Host "::warning::CHOCO_API_KEY is not set; the packages were packed but not pushed (pending)."; exit 0 }
+          foreach ($package in Get-ChildItem artifacts/choco -Filter '*.nupkg') { choco push $package.FullName --source https://push.chocolatey.org/ --api-key $env:CHOCO_API_KEY }

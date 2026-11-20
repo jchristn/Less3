@@ -57,9 +57,10 @@ namespace Less3.Publisher.Channels
         public Payload Payload { get; }
 
         /// <summary>
-        /// Project settings, a shortcut for Manifest.Project.
+        /// The identity this artifact's installers use: the manifest's project settings with the artifact's own name,
+        /// display name, identifiers, tagline, and description where it sets them.
         /// </summary>
-        public ProjectSettings Project => Manifest.Project;
+        public ProjectSettings Project { get; }
 
         /// <summary>
         /// Creates a context.
@@ -85,6 +86,7 @@ namespace Less3.Publisher.Channels
             OutputDir = outputDir ?? throw new ArgumentNullException(nameof(outputDir));
             StagingDir = stagingDir ?? throw new ArgumentNullException(nameof(stagingDir));
             Payload = payload ?? throw new ArgumentNullException(nameof(payload));
+            Project = manifest.Project.For(artifact);
         }
 
         /// <summary>

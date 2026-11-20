@@ -1,8 +1,10 @@
 namespace Less3.Publisher.Manifest
 {
+    using System.Collections.Generic;
+
     /// <summary>
-    /// A systemd system service for a server, installed by the .deb and .rpm but not enabled: the server needs its
-    /// configuration written once (interactively) before the service can start it.
+    /// A systemd system service for a server, installed by the .deb and .rpm but not enabled, so installing a package
+    /// never starts a server or opens a port by itself.
     /// </summary>
     public sealed class ServiceSettings
     {
@@ -32,5 +34,15 @@ namespace Less3.Publisher.Manifest
         /// The unit's ConditionPathExists keeps an unconfigured server from starting. Empty for no condition.
         /// </summary>
         public string RequiredFile { get; set; } = "";
+
+        /// <summary>
+        /// Arguments appended to ExecStart, or empty.
+        /// </summary>
+        public string Arguments { get; set; } = "";
+
+        /// <summary>
+        /// Environment variables the unit sets, as NAME=value. Empty for none.
+        /// </summary>
+        public List<string> Environment { get; set; } = new List<string>();
     }
 }

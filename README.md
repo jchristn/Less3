@@ -26,7 +26,32 @@ Core use cases for Less3:
 - Remote storage - deploy S3-compatible storage in environments where you must control data placement
 - Scale-out storage - run several nodes behind a load balancer against a shared Postgres control plane and shared storage
 
+## Download and Install
+
+Installers for Windows, macOS, and Linux (x64 and ARM64) are on the **[latest release](https://github.com/jchristn/Less3/releases/latest)**. Each one is self-contained (no .NET install needed), puts the `less3` command on your PATH, and adds a **Less3** menu entry that runs the server in `~/Less3`. The Linux `.deb` and `.rpm` also install a `less3` systemd service. Run `less3` in any folder to keep the server's configuration, database, and objects there.
+
+| Platform | File |
+| --- | --- |
+| Windows | `less3-<version>-win-x64-setup.exe` (or `win-arm64`) |
+| macOS | `less3-<version>-osx-arm64.pkg` (Apple Silicon) or `osx-x64.pkg` (Intel) |
+| Debian / Ubuntu | `less3_<version>_amd64.deb` (or `_arm64.deb`) |
+| Fedora / RHEL | `less3-<version>-1.x86_64.rpm` (or `.aarch64.rpm`) |
+| Any Linux | `less3-<version>-x86_64.AppImage` (or `-aarch64.AppImage`) |
+| Scripts and containers | `less3-<version>-<rid>.tar.gz` / `.zip` |
+
+> **Less3 is free, open-source software and is not code-signed** (signing certificates are an ongoing cost we choose not to pass on). Your operating system may warn that the developer is unidentified. That warning doesn't mean the download is damaged; to confirm a file is the one published, check it against `SHA256SUMS`.
+
+- **macOS** says *"Less3" Not Opened. Apple could not verify "Less3" is free of malware that may harm your Mac or compromise your privacy.* Click **Done** (not Move to Trash), open **System Settings > Privacy & Security**, scroll down to **Security**, click **Open Anyway** next to *"Less3" was blocked to protect your Mac*, then **Open Anyway** again and enter your password. Control-click > **Open** no longer works on macOS 15 and later. Or run `sudo installer -pkg ~/Downloads/less3-<version>-osx-arm64.pkg -target /` to install with no prompt.
+- **Windows** says *Windows protected your PC*. Click **More info**, then **Run anyway**. Unblock a `.zip` (`Unblock-File`, or right-click > **Properties** > **Unblock**) before extracting it.
+- **Linux** has no prompt: `sudo apt install ./less3_<version>_amd64.deb` or `sudo dnf install ./less3-<version>-1.x86_64.rpm`.
+
+Full instructions, including uninstalling and running Less3 as a Linux service, are in [`INSTALL.md`](INSTALL.md). Package-manager installs (winget, Chocolatey, Scoop, Homebrew, apt/yum) are planned but not live yet. The installers run a standalone node; for the multi-node cluster, use Docker (below).
+
 ## Current Version
+
+v4.1.2
+
+- Installers for Windows, macOS, and Linux on x64 and ARM64, published on GitHub Releases (see [Download and Install](#download-and-install)), and a fix for the interactive console spinning when standard input is redirected. No protocol or schema changes. The Docker images remain tagged `v4.1.0`
 
 v4.1.1
 
@@ -113,6 +138,8 @@ Thanks to @iain-cyborn for helping make the platform better!
 
 ### Prerequisites
 
+To run Less3 without building it, use an installer (see [Download and Install](#download-and-install)). To build from source:
+
 - .NET 10.0 SDK or runtime
 - Supported databases: SQLite (default for standalone), SQL Server, MySQL, or PostgreSQL (default and required for clusters)
 
@@ -181,6 +208,8 @@ dotnet publish src/Less3/Less3.csproj -c Release -o ./publish
 cd publish
 dotnet Less3.dll
 ```
+
+To build the installers yourself, run `./build-installers.sh` (macOS and Linux) or `build-installers.bat` (Windows). Each builds the installers its own OS can produce into `installers/<version>/`; all three are built together by `.github/workflows/release.yml` when a `v<version>` tag is pushed. See [`src/Less3.Publisher/README.md`](src/Less3.Publisher/README.md).
 
 ### Configuration Requirements
 

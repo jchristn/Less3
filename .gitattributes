@@ -1,0 +1,6 @@
+# Scripts that run on macOS and Linux (and inside packages) must keep LF line endings even when checked out on
+# Windows; a CRLF shell script fails with "bad interpreter".
+*.sh text eol=lf
+*.command text eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf

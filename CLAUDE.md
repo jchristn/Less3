@@ -49,6 +49,15 @@ docker compose down
 ./Docker/compose-up.bat   # Windows
 ```
 
+### Building Installers
+```bash
+./build-installers.sh          # macOS: .pkg/.dmg/.tar.gz; Linux: .deb/.rpm/AppImage/.tar.gz -> installers/<version>/
+build-installers.bat           # Windows: setup .exe and .zip
+dotnet test test/Test.Publisher
+```
+- `publisher.json` is the manifest and `src/Less3.Publisher` the only packaging code; `.github/workflows/release.yml` builds every OS on its own runner and publishes a GitHub Release when a `v<version>` tag is pushed (see `INSTALL.md`, `src/Less3.Publisher/README.md`).
+- The version lives only in `src/Directory.Build.props`; the release job refuses a tag that does not match it or a `CHANGELOG.md` without a `## [<version>]` section.
+
 ### Running Tests
 ```bash
 cd test/Test.Automated

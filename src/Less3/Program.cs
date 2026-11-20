@@ -62,7 +62,9 @@ namespace Less3
             Welcome();
             InitializeGlobals();
 
-            if (_Settings.EnableConsole && Environment.UserInteractive)
+            // With stdin redirected (a systemd service, nohup, or < /dev/null) Console.ReadLine returns null at once,
+            // so the console would spin; run headless instead.
+            if (_Settings.EnableConsole && Environment.UserInteractive && !Console.IsInputRedirected)
             {
                 _Console.Worker();
             }

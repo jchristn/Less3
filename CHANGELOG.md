@@ -1,17 +1,28 @@
 # Change Log
 
-## Current Version
+All notable changes to Less3. Each release has a `## [<version>] - <date>` section; the release workflow publishes
+that section as the release notes.
 
-v4.1.1 (2026-10-03)
+## [Unreleased]
+
+## [4.1.2] - 2026-11-20
+
+Installers for Windows, macOS, and Linux, published on [GitHub Releases](https://github.com/jchristn/Less3/releases).
+No wire-protocol, schema, or configuration changes; the Docker images keep the `v4.1.0` tag.
+
+- Added installers built from one manifest (`publisher.json`) by `src/Less3.Publisher`: an Inno Setup `.exe` for Windows x64 and ARM64, a `.pkg` and `.dmg` for macOS on Apple silicon and Intel, `.deb`, `.rpm`, and AppImage files for Linux x64 and ARM64, and portable `.zip`/`.tar.gz` archives, all self-contained (no .NET install needed) with one `SHA256SUMS` file. Every installer puts the `less3` command on PATH and adds a **Less3** menu entry (Start menu, Applications, or the application menu) that runs the server in `~/Less3`. The `.deb` and `.rpm` also install a `less3` systemd service (not enabled) that runs as a `less3` account in `/var/lib/less3`. See [INSTALL.md](INSTALL.md).
+- Added `build-installers.sh` and `build-installers.bat`, which build the installers the current OS can produce into `installers/<version>/`, and the `release.yml` and `release-check.yml` workflows, which build every OS on its own runner, install and run each package on that runner, and publish one GitHub Release when a `v<version>` tag is pushed.
+- The version now lives only in `src/Directory.Build.props`.
+- The interactive console no longer starts when standard input is redirected (a systemd service, `nohup`, or `< /dev/null`). It used to spin at full CPU because every read returned immediately; the server now runs headless and stops on a termination signal.
+
+## [4.1.1] - 2026-10-03
 
 Dependency updates. No wire-protocol, schema, or configuration changes; the Docker images keep the `v4.1.0` tag.
 
 - Server: Watson 7.1.0 -> 7.2.2, Padlock 1.0.4 -> 1.2.0, SyslogLogging 2.2.1 -> 2.3.1, XmlToPox 1.0.3 -> 1.0.4, Microsoft.Data.SqlClient 7.0.2 -> 7.1.1, Microsoft.Data.Sqlite 10.0.11 -> 10.0.12.
 - Tests and tools: AWSSDK.S3 4.0.102.1 -> 4.0.104.1, Touchstone (Core, Cli, XunitAdapter, NunitAdapter) 0.1.12 -> 0.2.0, NUnit 4.6.1 -> 5.0.0, NUnit.Analyzers 4.14.0 -> 4.15.0, NUnit3TestAdapter 6.2.0 -> 6.3.0, Microsoft.NET.Test.Sdk 18.9.0 -> 18.10.1, coverlet.collector 10.0.1 -> 10.1.0.
 
-## Previous Versions
-
-v4.1.0 (2026-09-29)
+## [4.1.0] - 2026-09-29
 
 S3 compatibility and data-integrity fixes. Schema migrations run automatically on startup for every database provider.
 
@@ -43,7 +54,7 @@ S3 compatibility and data-integrity fixes. Schema migrations run automatically o
 - Added 158 S3 compatibility tests (positive and negative) in `test/Test.Shared/S3Compatibility`, including a protocol-details suite for the S3Server 8 behaviors above, plus 7 test-harness cleanup tests. They are part of the Touchstone catalog (`Test.Automated`, `--suite S3Compat` to run only them, and the xUnit theory adapter) and of the shared suite catalog (xUnit, NUnit, and `Test.Automated --legacy`). `LESS3_TEST_DB_TYPE`/`_HOST`/`_PORT`/`_USER`/`_PASSWORD`/`_NAME` run the tests against PostgreSQL, MySQL, or SQL Server, and `LESS3_TEST_DLL` runs them against another server build.
 - `AwsCliTest.bat` and `MinioClientTest.bat` now assert S3 compatibility with real clients: DeleteObjects (missing keys, Quiet, per-key errors), delete markers and version reads, Suspended versioning, listing order and pagination, delimiter/start-after/prefix, case-sensitive keys, suffix and clamped ranges, conditional GET/PUT, Content-MD5, stored metadata and tags, CopyObject, large server-side moves, HEAD ranges, empty-object ranges, keys with spaces and plus signs in both listings, and delete-marker fields (and, for mc, `mirror` + `diff`, `undo`, and `rm --versions`). Both take `LESS3_ENDPOINT` (and credentials: `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`, or `LESS3_ACCESS_KEY`/`LESS3_SECRET_KEY` for mc) so they run unattended, and both now clean up every object version.
 
-v4.0.0 (2026-08-13)
+## [4.0.0] - 2026-08-13
 
 - Added the multi-node scale-out cluster. The same binary now runs standalone (SQLite control plane, local disk, in-process lock) or as a cluster (PostgreSQL control plane, shared storage, distributed lock, nginx load balancer), selected by configuration. Native OOBE is unchanged; the Docker default is now the cluster.
 - Targeted `net10.0`.
@@ -66,7 +77,7 @@ v4.0.0 (2026-08-13)
 - Added a startup guard: cluster mode refuses to start on SQLite, because a shared SQLite file cannot back multiple writers.
 - Added `MULTINODE_SETUP.md`, `archive/MULTINODE_PLAN.md`, and `MIGRATING_V3_TO_V4.md`.
 
-v3.0.0
+## [3.0.0]
 
 - Added the v3 tenant and RBAC foundation, including tenant, role, permission, role assignment, session, authorization audit, and request context contracts
 - Switched new identifier generation to PrettyID K-sortable string IDs with stable prefixes and a 32-character maximum
@@ -78,7 +89,7 @@ v3.0.0
 - Added `S3_API.md`, `REST_API.md`, and `MIGRATING_V2_TO_V3.md`
 - Added shared Touchstone descriptors and CLI, xUnit, and NUnit runners for v3 coverage expansion, with 407 descriptors and 267 active assertions passing in the latest automated run
 
-v2.2.0
+## [2.2.0]
 
 - Updated to `S3Server v7.0.3`
 - Added broad native `AWSSDK.S3` integration coverage for bucket APIs, object APIs, ACLs, tagging, versioning, multipart upload, protocol/error shapes, and signature validation
@@ -90,16 +101,16 @@ v2.2.0
 - Added admin statistics APIs and dashboard summary cards for total buckets, total objects, total storage, plus per-bucket object count and total size in the Buckets table
 - Added admin-side user and credential edit flows backed by update endpoints, with clearer dashboard error reporting during connectivity and admin operations
 
-v2.1.x
+## [2.1.x]
 
 - Dependency update and changes to improve compatibility with AWS CLI
 - Testing with key AWS CLI capabilities, see AWSCLI.md
 
-v2.0.0
+## [2.0.0]
 
 - Dependency updates, internal refactor
 
-v1.5.0
+## [1.5.0]
 
 - Breaking change; signatures no longer being validated
 - Dependency updates
@@ -107,13 +118,13 @@ v1.5.0
 - Owner information included in enumeration
 - Better alerts on startup about request requirements (virtual hosting vs path style URLs)
 
-v1.4.0
+## [1.4.0]
 
 - Minor refactor
 - Fixes to enumeration including folder support
 - Request signature authentication
 
-v1.3.0.1
+## [1.3.0.1]
 
 - Migrate database layer to ORM
 - Improved usability and console log messages
@@ -123,23 +134,23 @@ v1.3.0.1
 - Updated Postman collection
 - Dockerfile for containerized deployments
 
-v1.2.0.2
+## [1.2.0.2]
 
 - Minor cleanup, version from assembly, dependency update, XML documentation, Postman collection
 
-v1.2.0
+## [1.2.0]
 
 - Support for bucket in hostname or bucket in URL
 - Dependency update
 
-v1.1.0
+## [1.1.0]
  
 - Dependency update with performance improvements, better async behavior
 - Better support for large objects using streams instead of memory-intensive byte arrays
 - Better support for chunked transfer-encoding
 - Bugfixes
  
-v1.0.x
+## [1.0.x]
 
 - Added bucket location API
 - Changed serializer to remove pretty print for Cyberduck compatibility (S3 Java SDK compatibility)

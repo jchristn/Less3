@@ -1,0 +1,11 @@
+<Project>
+
+  <!--
+    The one place the Less3 version lives. Less3.csproj, the installers (src/Less3.Publisher), and the release workflow
+    all read it; .github/workflows/release.yml refuses to publish a tag that does not match it.
+  -->
+  <PropertyGroup>
+    <Version>4.1.2</Version>
+  </PropertyGroup>
+
+</Project>

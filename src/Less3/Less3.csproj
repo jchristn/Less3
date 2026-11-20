@@ -3,7 +3,6 @@
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net10.0</TargetFramework>
-		<Version>4.1.1</Version>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<Authors>Joel Christner</Authors>
@@ -17,7 +16,7 @@
 		<RepositoryUrl>https://github.com/jchristn/less3</RepositoryUrl>
 		<RepositoryType>Github</RepositoryType>
 		<PackageTags>S3 storage blob object storage rest restful</PackageTags>
-		<PackageReleaseNotes>v4.1.1 Dependency updates: Watson 7.2.2, Padlock 1.2.0, SyslogLogging 2.3.1, XmlToPox 1.0.4, Microsoft.Data.SqlClient 7.1.1, and Microsoft.Data.Sqlite 10.0.12. No wire-protocol or schema changes.</PackageReleaseNotes>
+		<PackageReleaseNotes>v4.1.2 Installers for Windows, macOS, and Linux on GitHub Releases; the console no longer spins when stdin is redirected. No wire-protocol or schema changes.</PackageReleaseNotes>
 		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
 		<PackageIcon>favicon.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>

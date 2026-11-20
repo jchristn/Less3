@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>less3-publish</AssemblyName>
+    <RootNamespace>Less3.Publisher</RootNamespace>
+    <Description>Less3 publisher: reads publisher.json and builds the Windows, macOS, and Linux installers and the package-manager manifests.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Resizes the logo for every installer format and draws the Inno Setup wizard bitmaps, on any host OS. -->
+    <PackageReference Include="SkiaSharp" Version="3.119.4" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.119.4" />
+  </ItemGroup>
+
+</Project>

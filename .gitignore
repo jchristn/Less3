@@ -265,3 +265,6 @@ __pycache__/
 
 # Cake - Uncomment if you are using it
 # tools/
+
+# Installers built by build-installers.sh / build-installers.bat (src/Less3.Publisher).
+installers/
